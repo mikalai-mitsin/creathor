@@ -1,0 +1,66 @@
+package models
+
+import (
+	domainErrors "{{ .Module }}/internal/domain/errors"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+)
+
+type {{ .Model }} struct {
+	ID string `json:"id"`
+}
+
+func (c *{{ .Model }}) Validate() error {
+    err := validation.ValidateStruct(
+        c,
+        validation.Field(&c.ID),
+    )
+    if err != nil {
+        return domainErrors.FromValidationError(err)
+    }
+    return nil
+}
+
+
+type {{ .Model }}Filter struct {
+	IDs []string `json:"ids"`
+}
+
+func (c *{{ .Model }}Filter) Validate() error {
+	err := validation.ValidateStruct(
+		c,
+		validation.Field(&c.IDs),
+	)
+	if err != nil {
+		return domainErrors.FromValidationError(err)
+	}
+	return nil
+}
+
+type {{ .Model }}Create struct {
+
+}
+
+func (c *{{ .Model }}Create) Validate() error {
+	err := validation.ValidateStruct(
+		c,
+	)
+	if err != nil {
+		return domainErrors.FromValidationError(err)
+	}
+	return nil
+}
+
+
+type {{ .Model }}Update struct {
+
+}
+
+func (c *{{ .Model }}Update) Validate() error {
+    err := validation.ValidateStruct(
+        c,
+    )
+    if err != nil {
+        return domainErrors.FromValidationError(err)
+    }
+    return nil
+}

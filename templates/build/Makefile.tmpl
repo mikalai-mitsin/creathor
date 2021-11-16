@@ -1,0 +1,20 @@
+.PHONY: build
+.DEFAULT_GOAL := build
+COVERAGE_FORMAT := func
+
+build:
+	CGO_ENABLED=0 go build -v -o ./dist/{{ .Name }} ./cmd/{{ .Name }}
+
+test:
+	mkdir -p reports
+	go test -cover ./... -coverprofile ./reports/coverage.out -coverpkg ./...
+	go tool cover -$(COVERAGE_FORMAT) ./reports/coverage.out
+
+lint:
+	golangci-lint run ./... --timeout 5m0s
+
+clean:
+	golangci-lint run ./... --fix
+
+log:
+	git-chglog --config docs/.chglog/config.yml --output docs/CHANGELOG.md --next-tag $(tag)

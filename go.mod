@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/urfave/cli/v2 v2.3.0
 	golang.org/x/mod v0.5.1
+	golang.org/x/text v0.3.7
 )
 
 require (

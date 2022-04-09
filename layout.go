@@ -23,7 +23,6 @@ func CreateLayout(data *Project) error {
 		path.Join(destinationPath, "docs"),
 		path.Join(destinationPath, "internal"),
 		path.Join(destinationPath, "internal", "configs"),
-		path.Join(destinationPath, "internal", "containers"),
 		path.Join(destinationPath, "internal", "domain", "errs"),
 		path.Join(destinationPath, "internal", "domain", "interceptors"),
 		path.Join(destinationPath, "internal", "domain", "models"),

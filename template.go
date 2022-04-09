@@ -2,6 +2,8 @@ package main
 
 import (
 	"errors"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"os"
 	"path"
 	"strings"
@@ -11,6 +13,7 @@ import (
 var funcMap = template.FuncMap{
 	"ToUpper": strings.ToUpper,
 	"ToLower": strings.ToLower,
+	"Title":   func(value string) string { return cases.Title(language.English).String(value) },
 }
 
 type Template struct {

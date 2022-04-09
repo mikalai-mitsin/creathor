@@ -2,7 +2,7 @@ package main
 
 import (
     "os"
-
+    "{{ .Module }}/internal/containers"
     "github.com/urfave/cli/v2"
 )
 
@@ -36,5 +36,10 @@ func main() {
 
 // runApp - run app
 func runApp(context *cli.Context) error {
-    panic("implement me")
+    app := containers.New{{ .Name | Title }}(configPath)
+    err := app.Start(context.Context)
+    if err != nil {
+        return err
+    }
+    return nil
 }

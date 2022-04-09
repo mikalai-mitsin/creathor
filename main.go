@@ -109,6 +109,9 @@ func initProject(ctx *cli.Context) error {
 	if err := CreateCI(); err != nil {
 		return err
 	}
+	if err := CreateDI(data); err != nil {
+		return err
+	}
 	if err := CreateBuild(data); err != nil {
 		return err
 	}

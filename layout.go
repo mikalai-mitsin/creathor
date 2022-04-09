@@ -31,10 +31,11 @@ func CreateLayout(data *Project) error {
 		path.Join(destinationPath, "internal", "domain", "usecases"),
 		path.Join(destinationPath, "internal", "interceptors"),
 		path.Join(destinationPath, "internal", "interfaces"),
-		path.Join(destinationPath, "internal", "stores"),
 		path.Join(destinationPath, "internal", "usecases"),
+		path.Join(destinationPath, "internal", "repositories"),
 		path.Join(destinationPath, "pkg"),
 		path.Join(destinationPath, "pkg", "clock"),
+		path.Join(destinationPath, "pkg", "log"),
 	}
 	for _, directory := range directories {
 		if err := os.MkdirAll(directory, 0777); err != nil {
@@ -86,6 +87,11 @@ func CreateLayout(data *Project) error {
 			SourcePath:      "templates/clock/clock.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "pkg", "clock", "clock.go"),
 			Name:            "clock",
+		},
+		{
+			SourcePath:      "templates/log/logger.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "pkg", "log", "logger.go"),
+			Name:            "logger interface",
 		},
 		{
 			SourcePath:      "templates/go.mod.tmpl",

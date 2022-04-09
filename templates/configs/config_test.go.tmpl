@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	domainErrors "{{ .Module }}/internal/domain/errors"
+	"{{ .Module }}/internal/domain/errs"
 )
 
 func TestParseConfig(t *testing.T) {
@@ -68,7 +68,7 @@ log_level = 2
 				configPath: badConfigPath,
 			},
 			want:    nil,
-			wantErr: domainErrors.NewUnexpectedBehaviorError("config file parsing error: toml: cannot load TOML value of type int64 into a Go string"),
+			wantErr: errs.NewUnexpectedBehaviorError("config file parsing error: toml: cannot load TOML value of type int64 into a Go string"),
 		},
 	}
 	for _, tt := range tests {

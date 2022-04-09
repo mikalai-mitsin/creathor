@@ -1,7 +1,7 @@
 package models
 
 import (
-	domainErrors "{{ .Module }}/internal/domain/errors"
+	"{{ .Module }}/internal/domain/errs"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
@@ -15,7 +15,7 @@ func (c *{{ .Model }}) Validate() error {
         validation.Field(&c.ID),
     )
     if err != nil {
-        return domainErrors.FromValidationError(err)
+        return errs.FromValidationError(err)
     }
     return nil
 }
@@ -31,7 +31,7 @@ func (c *{{ .Model }}Filter) Validate() error {
 		validation.Field(&c.IDs),
 	)
 	if err != nil {
-		return domainErrors.FromValidationError(err)
+		return errs.FromValidationError(err)
 	}
 	return nil
 }
@@ -45,7 +45,7 @@ func (c *{{ .Model }}Create) Validate() error {
 		c,
 	)
 	if err != nil {
-		return domainErrors.FromValidationError(err)
+		return errs.FromValidationError(err)
 	}
 	return nil
 }
@@ -60,7 +60,7 @@ func (c *{{ .Model }}Update) Validate() error {
         c,
     )
     if err != nil {
-        return domainErrors.FromValidationError(err)
+        return errs.FromValidationError(err)
     }
     return nil
 }

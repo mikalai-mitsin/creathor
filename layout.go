@@ -24,7 +24,7 @@ func CreateLayout(data *Project) error {
 		path.Join(destinationPath, "internal"),
 		path.Join(destinationPath, "internal", "configs"),
 		path.Join(destinationPath, "internal", "containers"),
-		path.Join(destinationPath, "internal", "domain", "errors"),
+		path.Join(destinationPath, "internal", "domain", "errs"),
 		path.Join(destinationPath, "internal", "domain", "interceptors"),
 		path.Join(destinationPath, "internal", "domain", "models"),
 		path.Join(destinationPath, "internal", "domain", "repositories"),
@@ -72,13 +72,13 @@ func CreateLayout(data *Project) error {
 			Name:            "config tests",
 		},
 		{
-			SourcePath:      "templates/errors/errors.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "domain", "errors", "errors.go"),
+			SourcePath:      "templates/errs/errors.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "domain", "errs", "errors.go"),
 			Name:            "domain errors",
 		},
 		{
-			SourcePath:      "templates/errors/errors_test.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "domain", "errors", "errors_test.go"),
+			SourcePath:      "templates/errs/errors_test.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "domain", "errs", "errors_test.go"),
 			Name:            "domain errors tests",
 		},
 		{

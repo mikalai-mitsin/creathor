@@ -2,7 +2,7 @@ package configs
 
 import (
 	"github.com/ilyakaznacheev/cleanenv"
-	domainErrors "{{ .Module }}/internal/domain/errors"
+	"{{ .Module }}/internal/domain/errs"
 )
 
 type Config struct {
@@ -14,11 +14,11 @@ func ParseConfig(configPath string) (*Config, error) {
 	config := &Config{}
 	if configPath != "" {
 		if err := cleanenv.ReadConfig(configPath, config); err != nil {
-			return nil, domainErrors.NewUnexpectedBehaviorError(err.Error())
+			return nil, errs.NewUnexpectedBehaviorError(err.Error())
 		}
 	} else {
 		if err := cleanenv.ReadEnv(config); err != nil {
-			return nil, domainErrors.NewUnexpectedBehaviorError(err.Error())
+			return nil, errs.NewUnexpectedBehaviorError(err.Error())
 		}
 	}
 	return config, nil

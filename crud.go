@@ -16,23 +16,33 @@ func CreateCRUD(name, module string) error {
 	filename := fmt.Sprintf("%s.go", strings.ToLower(name))
 	files := []*Template{
 		{
-			SourcePath:      "templates/models/model.go.tmpl",
+			SourcePath:      "templates/domain/model.go.tmpl",
 			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "models", filename),
 			Name:            "model",
 		},
 		{
-			SourcePath:      "templates/models/repository.go.tmpl",
+			SourcePath:      "templates/domain/repository.go.tmpl",
 			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "repositories", filename),
 			Name:            "repository",
 		},
 		{
-			SourcePath:      "templates/models/usecase.go.tmpl",
+			SourcePath:      "templates/domain/usecase.go.tmpl",
 			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "usecases", filename),
 			Name:            "usecase",
 		},
 		{
-			SourcePath:      "templates/models/interceptor.go.tmpl",
+			SourcePath:      "templates/domain/interceptor.go.tmpl",
 			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "interceptors", filename),
+			Name:            "interceptor",
+		},
+		{
+			SourcePath:      "templates/implementations/usecase.go.tmpl",
+			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", filename),
+			Name:            "usecase",
+		},
+		{
+			SourcePath:      "templates/implementations/interceptor.go.tmpl",
+			DestinationPath: filepath.Join(destinationPath, "internal", "interceptors", filename),
 			Name:            "interceptor",
 		},
 	}

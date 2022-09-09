@@ -52,7 +52,7 @@ func (c *{{ .Model }}Create) Validate() error {
 
 
 type {{ .Model }}Update struct {
-
+	ID string `json:"id"`
 }
 
 func (c *{{ .Model }}Update) Validate() error {

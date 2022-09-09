@@ -1,0 +1,81 @@
+package usecases
+
+import (
+	"context"
+
+	"{{ .Module }}/internal/domain/models"
+	"{{ .Module }}/internal/domain/repositories"
+	"{{ .Module }}/internal/domain/usecases"
+
+	"{{ .Module }}/pkg/log"
+)
+
+//nolint: lll
+//go:generate mockgen -destination mock/{{ .Model | ToLower }}_mock.go {{ .Module }}/internal/usecases {{ .Model }}UseCase
+
+
+type {{ .Model }}UseCase struct {
+	{{ .Model | ToLower }}Repository repositories.{{ .Model }}Repository
+	logger                           log.Logger
+}
+
+func New{{ .Model }}UseCase(
+        {{ .Model | ToLower }}Repository repositories.{{ .Model }}Repository,
+		logger log.Logger,
+) usecases.{{ .Model }}UseCase {
+	return &{{ .Model }}UseCase{
+        {{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+		logger:                           logger,
+	}
+}
+
+func (u *{{ .Model }}UseCase) Get(ctx context.Context, id string) (*models.{{ .Model }}, error) {
+	qr, err := u.{{ .Model | ToLower }}Repository.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return qr, nil
+}
+
+func (u *{{ .Model }}UseCase) List(ctx context.Context, filter *models.{{ .Model }}Filter) ([]*models.{{ .Model }}, error) {
+	qrs, err := u.{{ .Model | ToLower }}Repository.List(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	return qrs, nil
+}
+
+func (u *{{ .Model }}UseCase) Create(ctx context.Context, create *models.{{ .Model }}Create) (*models.{{ .Model }}, error) {
+	if err := create.Validate(); err != nil {
+		return nil, err
+	}
+    {{ .Model | ToLower }} := &models.{{ .Model }}{
+		ID: "",
+	}
+
+	if err := u.{{ .Model | ToLower }}Repository.Create(ctx, {{ .Model | ToLower }}); err != nil {
+		return nil, err
+	}
+	return {{ .Model | ToLower }}, nil
+}
+
+func (u *{{ .Model }}UseCase) Update(ctx context.Context, update *models.{{ .Model }}Update) (*models.{{ .Model }}, error) {
+	if err := update.Validate(); err != nil {
+		return nil, err
+	}
+    {{ .Model | ToLower }}, err := u.{{ .Model | ToLower }}Repository.Get(ctx, update.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := u.{{ .Model | ToLower }}Repository.Update(ctx, {{ .Model | ToLower }}); err != nil {
+		return nil, err
+	}
+	return {{ .Model | ToLower }}, nil
+}
+
+func (u *{{ .Model }}UseCase) Delete(ctx context.Context, id string) error {
+	if err := u.{{ .Model | ToLower }}Repository.Delete(ctx, id); err != nil {
+		return err
+	}
+	return nil
+}

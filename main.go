@@ -61,7 +61,7 @@ func main() {
 						Usage:       "go",
 						Destination: &goVersion,
 						Required:    false,
-						Value:       "1.18",
+						Value:       "1.19",
 					},
 					&cli.StringSliceFlag{
 						Name:        "model",

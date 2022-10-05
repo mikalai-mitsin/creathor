@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"os/exec"
 	"path"
 )
 
@@ -102,10 +101,6 @@ func CreateLayout(data *Project) error {
 		if err := file.renderToFile(data); err != nil {
 			return err
 		}
-	}
-	command := exec.Command("go", "mod", "tidy")
-	if err := command.Run(); err != nil {
-		return err
 	}
 	return nil
 }

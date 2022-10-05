@@ -10,9 +10,9 @@ import (
 //go:generate mockgen -destination mock/{{ .Model | ToLower }}_mock.go {{ .Module }}/internal/domain/interceptors {{ .Model }}Interceptor
 
 type {{ .Model }}Interceptor interface {
-	Get(ctx context.Context, id string, *models.User) (*models.{{ .Model }}, error)
-	List(ctx context.Context, filter *models.{{ .Model }}Filter, *models.User) ([]*models.{{ .Model }}, error)
-	Create(ctx context.Context, create *models.{{ .Model }}Create, *models.User) (*models.{{ .Model }}, error)
-	Update(ctx context.Context, update *models.{{ .Model }}Update, *models.User) (*models.{{ .Model }}, error)
-	Delete(ctx context.Context, id string, *models.User) error
+	Get(ctx context.Context, id string, user *models.User) (*models.{{ .Model }}, error)
+	List(ctx context.Context, filter *models.{{ .Model }}Filter, user *models.User) ([]*models.{{ .Model }}, error)
+	Create(ctx context.Context, create *models.{{ .Model }}Create, user  *models.User) (*models.{{ .Model }}, error)
+	Update(ctx context.Context, update *models.{{ .Model }}Update, user *models.User) (*models.{{ .Model }}, error)
+	Delete(ctx context.Context, id string, user *models.User) error
 }

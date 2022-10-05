@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"path/filepath"
 	"strings"
 )
@@ -12,7 +14,7 @@ type Model struct {
 }
 
 func CreateCRUD(name, module string) error {
-	name = strings.Title(name)
+	name = cases.Title(language.English).String(name)
 	filename := fmt.Sprintf("%s.go", strings.ToLower(name))
 	files := []*Template{
 		{
@@ -44,6 +46,11 @@ func CreateCRUD(name, module string) error {
 			SourcePath:      "templates/implementations/interceptor.go.tmpl",
 			DestinationPath: filepath.Join(destinationPath, "internal", "interceptors", filename),
 			Name:            "interceptor",
+		},
+		{
+			SourcePath:      "templates/implementations/repository.go.tmpl",
+			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", filename),
+			Name:            "repository",
 		},
 	}
 	data := Model{

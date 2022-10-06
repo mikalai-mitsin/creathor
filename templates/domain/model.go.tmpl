@@ -1,0 +1,71 @@
+package models
+
+import (
+	"{{ .Module }}/internal/domain/errs"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
+)
+
+type {{ .Model }} struct {
+	ID string `json:"id"`
+}
+
+func (c *{{ .Model }}) Validate() error {
+    err := validation.ValidateStruct(
+        c,
+        validation.Field(&c.ID, is.UUID),
+    )
+    if err != nil {
+        return errs.FromValidationError(err)
+    }
+    return nil
+}
+
+type {{ .Model }}Filter struct {
+    IDs        []string `json:"ids"`
+    PageSize   *uint64  `json:"page_size"`
+    PageNumber *uint64  `json:"page_number"`
+    OrderBy    []string `json:"order_by"`
+}
+
+func (c *{{ .Model }}Filter) Validate() error {
+	err := validation.ValidateStruct(
+		c,
+		validation.Field(&c.IDs),
+		validation.Field(&c.PageSize),
+		validation.Field(&c.PageNumber),
+		validation.Field(&c.OrderBy),
+	)
+	if err != nil {
+		return errs.FromValidationError(err)
+	}
+	return nil
+}
+
+type {{ .Model }}Create struct {
+}
+
+func (c *{{ .Model }}Create) Validate() error {
+	err := validation.ValidateStruct(
+		c,
+	)
+	if err != nil {
+		return errs.FromValidationError(err)
+	}
+	return nil
+}
+
+type {{ .Model }}Update struct {
+	ID string `json:"id"`
+}
+
+func (c *{{ .Model }}Update) Validate() error {
+    err := validation.ValidateStruct(
+        c,
+        validation.Field(&c.ID, validation.Required, is.UUID),
+    )
+    if err != nil {
+        return errs.FromValidationError(err)
+    }
+    return nil
+}

@@ -1,0 +1,81 @@
+package interceptors
+
+import (
+	"context"
+
+	"{{ .Module }}/internal/domain/interceptors"
+	"{{ .Module }}/internal/domain/models"
+	"{{ .Module }}/internal/domain/usecases"
+
+	"{{ .Module }}/pkg/log"
+)
+
+//nolint: lll
+//go:generate mockgen -destination mock/{{ .Model | ToLower }}_mock.go {{ .Module }}/internal/interceptors {{ .Model }}Interceptor
+
+
+type {{ .Model }}Interceptor struct {
+	{{ .Model | ToLower}}UseCase usecases.{{ .Model }}UseCase
+	logger                       log.Logger
+}
+
+func New{{ .Model }}Interceptor(
+		{{ .Model | ToLower }}UseCase usecases.{{ .Model }}UseCase,
+		logger log.Logger,
+) interceptors.{{ .Model }}Interceptor {
+	return &{{ .Model }}Interceptor{
+		{{ .Model | ToLower }}UseCase: {{ .Model | ToLower }}UseCase,
+		logger:                        logger,
+	}
+}
+
+func (i *{{ .Model }}Interceptor) Get(ctx context.Context, id string, user *models.User) (*models.{{ .Model }}, error) {
+	{{ .Model | ToLower }}, err := i.{{ .Model | ToLower }}UseCase.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return {{ .Model | ToLower }}, nil
+}
+
+func (i *{{ .Model }}Interceptor) List(
+		ctx context.Context,
+		filter *models.{{ .Model }}Filter,
+		user *models.User,
+) ([]*models.{{ .Model }}, error) {
+	{{ .Model | ToLower }}s, err := i.{{ .Model | ToLower }}UseCase.List(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	return {{ .Model | ToLower }}s, nil
+}
+
+func (i *{{ .Model }}Interceptor) Create(
+		ctx context.Context,
+		create *models.{{ .Model }}Create,
+		user *models.User,
+) (*models.{{ .Model }}, error) {
+	{{ .Model | ToLower }}, err := i.{{ .Model | ToLower }}UseCase.Create(ctx, create)
+	if err != nil {
+		return nil, err
+	}
+	return {{ .Model | ToLower }}, nil
+}
+
+func (i *{{ .Model }}Interceptor) Update(
+		ctx context.Context,
+		update *models.{{ .Model }}Update,
+		user *models.User,
+) (*models.{{ .Model }}, error) {
+	{{ .Model | ToLower }}, err := i.{{ .Model | ToLower }}UseCase.Update(ctx, update)
+	if err != nil {
+		return nil, err
+	}
+	return {{ .Model | ToLower }}, nil
+}
+
+func (i *{{ .Model }}Interceptor) Delete(ctx context.Context, id string, user *models.User) error {
+	if err := i.{{ .Model | ToLower }}UseCase.Delete(ctx, id); err != nil {
+		return err
+	}
+	return nil
+}

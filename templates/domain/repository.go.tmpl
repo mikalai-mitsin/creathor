@@ -1,0 +1,18 @@
+package repositories
+
+import (
+	"context"
+
+	"{{ .Module }}/internal/domain/models"
+)
+
+//nolint: lll
+//go:generate mockgen -destination mock/{{ .Model | ToLower }}_mock.go {{ .Module }}/internal/domain/repositories {{ .Model }}Repository
+
+type {{ .Model }}Repository interface {
+	Get(ctx context.Context, id string) (*models.{{ .Model }}, error)
+	List(ctx context.Context, filter *models.{{ .Model }}Filter) ([]*models.{{ .Model }}, error)
+	Create(ctx context.Context, {{ .Model | ToLower }} *models.{{ .Model }}) error
+	Update(ctx context.Context, {{ .Model | ToLower }} *models.{{ .Model }}) error
+	Delete(ctx context.Context, id string) error
+}

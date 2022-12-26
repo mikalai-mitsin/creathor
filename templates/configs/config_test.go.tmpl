@@ -2,7 +2,6 @@ package configs
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 	"path"
 	"reflect"
@@ -23,11 +22,11 @@ log_level = 2
 	`
 	configPath := path.Join(os.TempDir(), "config.toml")
 	badConfigPath := path.Join(os.TempDir(), "bad-config.toml")
-	if err := ioutil.WriteFile(configPath, []byte(file), 0600); err != nil {
+	if err := os.WriteFile(configPath, []byte(file), 0600); err != nil {
 		t.Fatal(err)
 		return
 	}
-	if err := ioutil.WriteFile(badConfigPath, []byte(badFile), 0600); err != nil {
+	if err := os.WriteFile(badConfigPath, []byte(badFile), 0600); err != nil {
 		t.Fatal(err)
 		return
 	}

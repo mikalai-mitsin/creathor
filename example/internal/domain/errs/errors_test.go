@@ -508,7 +508,7 @@ func Test_renderErrorMessage(t *testing.T) {
 			args: func() args {
 				obj := validation.ErrorObject{}.
 					SetCode("12").
-					SetMessage("simple message \{\{.first\}\} \{\{.second\}\}").
+					SetMessage("simple message {{.first}} {{.second}}").
 					SetParams(map[string]interface{}{
 						"first":  "foo",
 						"second": "bar",
@@ -522,7 +522,7 @@ func Test_renderErrorMessage(t *testing.T) {
 		{
 			name: "bad message",
 			args: func() args {
-				obj := validation.ErrorObject{}.SetCode("12").SetMessage("\{\{ .text | asd \}\}").SetParams(map[string]interface{}{
+				obj := validation.ErrorObject{}.SetCode("12").SetMessage("{{ .text | asd }}").SetParams(map[string]interface{}{
 					"first":  "foo",
 					"second": "bar",
 				})

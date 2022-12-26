@@ -31,7 +31,7 @@ func (r *PostgresSessionRepository) Create(ctx context.Context, session *models.
 	q := sq.Insert("public.sessions").
 		Columns(). // TODO: add columns
 		Values().  // TODO: add values
-		Suffix("RETURNING \"id\"")
+		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.QueryRowxContext(ctx, query, args...).Scan(&session.ID); err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
@@ -49,7 +49,7 @@ func (r *PostgresSessionRepository) Get(ctx context.Context, id string) (*models
 		Where(sq.Eq{"id": id}).
 		Limit(1)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.GetContext(ctx, &session, query, args...); err != nil {
+	if err := r.database.GetContext(ctx, session, query, args...); err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
 		return nil, e
 	}

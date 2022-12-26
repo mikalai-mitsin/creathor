@@ -31,7 +31,7 @@ func (r *PostgresApproachRepository) Create(ctx context.Context, approach *model
 	q := sq.Insert("public.approachs").
 		Columns(). // TODO: add columns
 		Values().  // TODO: add values
-		Suffix("RETURNING \"id\"")
+		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.QueryRowxContext(ctx, query, args...).Scan(&approach.ID); err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
@@ -49,7 +49,7 @@ func (r *PostgresApproachRepository) Get(ctx context.Context, id string) (*model
 		Where(sq.Eq{"id": id}).
 		Limit(1)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.GetContext(ctx, &approach, query, args...); err != nil {
+	if err := r.database.GetContext(ctx, approach, query, args...); err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
 		return nil, e
 	}

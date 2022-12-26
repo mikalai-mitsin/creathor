@@ -31,7 +31,7 @@ func (r *PostgresEquipmentRepository) Create(ctx context.Context, equipment *mod
 	q := sq.Insert("public.equipments").
 		Columns(). // TODO: add columns
 		Values().  // TODO: add values
-		Suffix("RETURNING \"id\"")
+		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.QueryRowxContext(ctx, query, args...).Scan(&equipment.ID); err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
@@ -49,7 +49,7 @@ func (r *PostgresEquipmentRepository) Get(ctx context.Context, id string) (*mode
 		Where(sq.Eq{"id": id}).
 		Limit(1)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.GetContext(ctx, &equipment, query, args...); err != nil {
+	if err := r.database.GetContext(ctx, equipment, query, args...); err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
 		return nil, e
 	}

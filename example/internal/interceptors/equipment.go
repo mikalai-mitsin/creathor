@@ -10,9 +10,6 @@ import (
 	"github.com/018bf/example/pkg/log"
 )
 
-//nolint: lll
-//go:generate mockgen -destination mock/equipment_mock.go github.com/018bf/example/internal/interceptors EquipmentInterceptor
-
 type EquipmentInterceptor struct {
 	equipmentUseCase usecases.EquipmentUseCase
 	logger           log.Logger

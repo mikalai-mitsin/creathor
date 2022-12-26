@@ -10,9 +10,6 @@ import (
 	"github.com/018bf/example/pkg/log"
 )
 
-//nolint: lll
-//go:generate mockgen -destination mock/user_mock.go github.com/018bf/example/internal/usecases UserUseCase
-
 type UserUseCase struct {
 	userRepository repositories.UserRepository
 	logger         log.Logger

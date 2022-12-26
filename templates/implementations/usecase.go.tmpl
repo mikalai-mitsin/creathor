@@ -10,10 +10,6 @@ import (
 	"{{ .Module }}/pkg/log"
 )
 
-//nolint: lll
-//go:generate mockgen -destination mock/{{ .Model | ToLower }}_mock.go {{ .Module }}/internal/usecases {{ .Model }}UseCase
-
-
 type {{ .Model }}UseCase struct {
 	{{ .Model | ToLower }}Repository repositories.{{ .Model }}Repository
 	logger                           log.Logger

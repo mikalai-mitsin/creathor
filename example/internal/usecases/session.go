@@ -10,9 +10,6 @@ import (
 	"github.com/018bf/example/pkg/log"
 )
 
-//nolint: lll
-//go:generate mockgen -destination mock/session_mock.go github.com/018bf/example/internal/usecases SessionUseCase
-
 type SessionUseCase struct {
 	sessionRepository repositories.SessionRepository
 	logger            log.Logger

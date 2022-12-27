@@ -3,10 +3,12 @@ package main
 import (
 	"embed"
 	_ "embed"
+	"fmt"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/mod/modfile"
 	"log"
 	"os"
+	"os/exec"
 	"path"
 )
 
@@ -120,6 +122,7 @@ func initProject(ctx *cli.Context) error {
 			return err
 		}
 	}
+	postInit()
 	return nil
 }
 
@@ -129,6 +132,7 @@ func initModels(ctx *cli.Context) error {
 			return err
 		}
 	}
+	postInit()
 	return nil
 }
 
@@ -138,4 +142,22 @@ func getModuleName() string {
 		return serviceName
 	}
 	return modfile.ModulePath(gomod)
+}
+
+func postInit() {
+	tidy := exec.Command("go", "mod", "tidy")
+	tidy.Dir = destinationPath
+	if err := tidy.Run(); err != nil {
+		fmt.Println(err.Error())
+	}
+
+	generate := exec.Command("go", "generate", "./...")
+	generate.Dir = destinationPath
+	if err := generate.Run(); err != nil {
+		fmt.Println(err.Error())
+	}
+
+	clean := exec.Command("golangci-lint", "run", "./...", "--fix")
+	clean.Dir = destinationPath
+	_ = clean.Run()
 }

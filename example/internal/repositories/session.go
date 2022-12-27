@@ -6,63 +6,63 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"time"
 
-	"{{ .Module }}/pkg/log"
+	"github.com/018bf/example/pkg/log"
 
-	"{{ .Module }}/internal/domain/models"
-	"{{ .Module }}/internal/domain/repositories"
+	"github.com/018bf/example/internal/domain/models"
+	"github.com/018bf/example/internal/domain/repositories"
 
+	"github.com/018bf/example/internal/domain/errs"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
-	"{{ .Module }}/internal/domain/errs"
 )
 
-type Postgres{{ .Model }}Repository struct {
+type PostgresSessionRepository struct {
 	database *sqlx.DB
 	logger   log.Logger
 }
 
-func NewPostgres{{ .Model }}Repository(database *sqlx.DB, logger log.Logger) repositories.{{ .Model }}Repository {
-	return &Postgres{{ .Model }}Repository{database: database, logger: logger}
+func NewPostgresSessionRepository(database *sqlx.DB, logger log.Logger) repositories.SessionRepository {
+	return &PostgresSessionRepository{database: database, logger: logger}
 }
 
-func (r *Postgres{{ .Model }}Repository) Create(ctx context.Context, {{ .Model | ToLower }} *models.{{ .Model }}) error {
+func (r *PostgresSessionRepository) Create(ctx context.Context, session *models.Session) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Insert("public.{{ .Model | ToLower }}s").
+	q := sq.Insert("public.sessions").
 		Columns(). // TODO: add columns
 		Values().  // TODO: add values
 		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.QueryRowxContext(ctx, query, args...).Scan(&{{ .Model | ToLower }}.ID); err != nil {
+	if err := r.database.QueryRowxContext(ctx, query, args...).Scan(&session.ID); err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
 		return e
 	}
 	return nil
 }
 
-func (r *Postgres{{ .Model }}Repository) Get(ctx context.Context, id string) (*models.{{ .Model }}, error) {
+func (r *PostgresSessionRepository) Get(ctx context.Context, id string) (*models.Session, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	{{ .Model | ToLower }} := &models.{{ .Model }}{}
+	session := &models.Session{}
 	q := sq.Select("*").
-		From("public.{{ .Model | ToLower }}s").
+		From("public.sessions").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.GetContext(ctx, {{ .Model | ToLower }}, query, args...); err != nil {
+	if err := r.database.GetContext(ctx, session, query, args...); err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
 		return nil, e
 	}
-	return {{ .Model | ToLower }}, nil
+	return session, nil
 }
 
-func (r *Postgres{{ .Model }}Repository) List(ctx context.Context, filter *models.{{ .Model }}Filter) ([]*models.{{ .Model }}, error) {
+func (r *PostgresSessionRepository) List(ctx context.Context, filter *models.SessionFilter) ([]*models.Session, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	var {{ .Model | ToLower }}s []*models.{{ .Model }}
+	var sessions []*models.Session
 	const pageSize = 10
 	q := sq.Select("*").
-		From("public.{{ .Model | ToLower }}s").
+		From("public.sessions").
 		Limit(pageSize) //
 	// TODO: add filtering
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
@@ -75,17 +75,17 @@ func (r *Postgres{{ .Model }}Repository) List(ctx context.Context, filter *model
 		q = q.OrderBy(filter.OrderBy...)
 	}
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.SelectContext(ctx, &{{ .Model | ToLower }}s, query, args...); err != nil {
+	if err := r.database.SelectContext(ctx, &sessions, query, args...); err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
 		return nil, e
 	}
-	return {{ .Model | ToLower }}s, nil
+	return sessions, nil
 }
 
-func (r *Postgres{{ .Model }}Repository) Update(ctx context.Context, {{ .Model | ToLower }} *models.{{ .Model }}) error {
+func (r *PostgresSessionRepository) Update(ctx context.Context, session *models.Session) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Update("public.{{ .Model | ToLower }}s").Where(sq.Eq{"id": {{ .Model | ToLower }}.ID}).Set("", "") // TODO: set values
+	q := sq.Update("public.sessions").Where(sq.Eq{"id": session.ID}).Set("", "") // TODO: set values
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
@@ -100,7 +100,7 @@ func (r *Postgres{{ .Model }}Repository) Update(ctx context.Context, {{ .Model |
 				e = errs.NewUnexpectedBehaviorError(pgError.Detail)
 			}
 		}
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint({{ .Model | ToLower }}.ID))
+		e.AddParam("session_id", fmt.Sprint(session.ID))
 		return e
 	}
 	affected, err := result.RowsAffected()
@@ -108,33 +108,33 @@ func (r *Postgres{{ .Model }}Repository) Update(ctx context.Context, {{ .Model |
 		return errs.NewUnexpectedBehaviorError(err.Error())
 	}
 	if affected == 0 {
-		e := errs.New{{ .Model }}NotFound()
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint({{ .Model | ToLower }}.ID))
+		e := errs.NewSessionNotFound()
+		e.AddParam("session_id", fmt.Sprint(session.ID))
 		return e
 	}
 	return nil
 }
 
-func (r *Postgres{{ .Model }}Repository) Delete(ctx context.Context, id string) error {
+func (r *PostgresSessionRepository) Delete(ctx context.Context, id string) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Delete("public.{{ .Model | ToLower }}s").Where(sq.Eq{"id": id})
+	q := sq.Delete("public.sessions").Where(sq.Eq{"id": id})
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
+		e.AddParam("session_id", fmt.Sprint(id))
 		return e
 	}
 	affected, err := result.RowsAffected()
 	if err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
+		e.AddParam("session_id", fmt.Sprint(id))
 		return e
 	}
 	if affected == 0 {
-		e := errs.New{{ .Model }}NotFound()
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
+		e := errs.NewSessionNotFound()
+		e.AddParam("session_id", fmt.Sprint(id))
 		return e
 	}
 	return nil

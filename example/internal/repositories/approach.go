@@ -6,63 +6,63 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"time"
 
-	"{{ .Module }}/pkg/log"
+	"github.com/018bf/example/pkg/log"
 
-	"{{ .Module }}/internal/domain/models"
-	"{{ .Module }}/internal/domain/repositories"
+	"github.com/018bf/example/internal/domain/models"
+	"github.com/018bf/example/internal/domain/repositories"
 
+	"github.com/018bf/example/internal/domain/errs"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
-	"{{ .Module }}/internal/domain/errs"
 )
 
-type Postgres{{ .Model }}Repository struct {
+type PostgresApproachRepository struct {
 	database *sqlx.DB
 	logger   log.Logger
 }
 
-func NewPostgres{{ .Model }}Repository(database *sqlx.DB, logger log.Logger) repositories.{{ .Model }}Repository {
-	return &Postgres{{ .Model }}Repository{database: database, logger: logger}
+func NewPostgresApproachRepository(database *sqlx.DB, logger log.Logger) repositories.ApproachRepository {
+	return &PostgresApproachRepository{database: database, logger: logger}
 }
 
-func (r *Postgres{{ .Model }}Repository) Create(ctx context.Context, {{ .Model | ToLower }} *models.{{ .Model }}) error {
+func (r *PostgresApproachRepository) Create(ctx context.Context, approach *models.Approach) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Insert("public.{{ .Model | ToLower }}s").
+	q := sq.Insert("public.approachs").
 		Columns(). // TODO: add columns
 		Values().  // TODO: add values
 		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.QueryRowxContext(ctx, query, args...).Scan(&{{ .Model | ToLower }}.ID); err != nil {
+	if err := r.database.QueryRowxContext(ctx, query, args...).Scan(&approach.ID); err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
 		return e
 	}
 	return nil
 }
 
-func (r *Postgres{{ .Model }}Repository) Get(ctx context.Context, id string) (*models.{{ .Model }}, error) {
+func (r *PostgresApproachRepository) Get(ctx context.Context, id string) (*models.Approach, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	{{ .Model | ToLower }} := &models.{{ .Model }}{}
+	approach := &models.Approach{}
 	q := sq.Select("*").
-		From("public.{{ .Model | ToLower }}s").
+		From("public.approachs").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.GetContext(ctx, {{ .Model | ToLower }}, query, args...); err != nil {
+	if err := r.database.GetContext(ctx, approach, query, args...); err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
 		return nil, e
 	}
-	return {{ .Model | ToLower }}, nil
+	return approach, nil
 }
 
-func (r *Postgres{{ .Model }}Repository) List(ctx context.Context, filter *models.{{ .Model }}Filter) ([]*models.{{ .Model }}, error) {
+func (r *PostgresApproachRepository) List(ctx context.Context, filter *models.ApproachFilter) ([]*models.Approach, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	var {{ .Model | ToLower }}s []*models.{{ .Model }}
+	var approachs []*models.Approach
 	const pageSize = 10
 	q := sq.Select("*").
-		From("public.{{ .Model | ToLower }}s").
+		From("public.approachs").
 		Limit(pageSize) //
 	// TODO: add filtering
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
@@ -75,17 +75,17 @@ func (r *Postgres{{ .Model }}Repository) List(ctx context.Context, filter *model
 		q = q.OrderBy(filter.OrderBy...)
 	}
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.SelectContext(ctx, &{{ .Model | ToLower }}s, query, args...); err != nil {
+	if err := r.database.SelectContext(ctx, &approachs, query, args...); err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
 		return nil, e
 	}
-	return {{ .Model | ToLower }}s, nil
+	return approachs, nil
 }
 
-func (r *Postgres{{ .Model }}Repository) Update(ctx context.Context, {{ .Model | ToLower }} *models.{{ .Model }}) error {
+func (r *PostgresApproachRepository) Update(ctx context.Context, approach *models.Approach) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Update("public.{{ .Model | ToLower }}s").Where(sq.Eq{"id": {{ .Model | ToLower }}.ID}).Set("", "") // TODO: set values
+	q := sq.Update("public.approachs").Where(sq.Eq{"id": approach.ID}).Set("", "") // TODO: set values
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
@@ -100,7 +100,7 @@ func (r *Postgres{{ .Model }}Repository) Update(ctx context.Context, {{ .Model |
 				e = errs.NewUnexpectedBehaviorError(pgError.Detail)
 			}
 		}
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint({{ .Model | ToLower }}.ID))
+		e.AddParam("approach_id", fmt.Sprint(approach.ID))
 		return e
 	}
 	affected, err := result.RowsAffected()
@@ -108,33 +108,33 @@ func (r *Postgres{{ .Model }}Repository) Update(ctx context.Context, {{ .Model |
 		return errs.NewUnexpectedBehaviorError(err.Error())
 	}
 	if affected == 0 {
-		e := errs.New{{ .Model }}NotFound()
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint({{ .Model | ToLower }}.ID))
+		e := errs.NewApproachNotFound()
+		e.AddParam("approach_id", fmt.Sprint(approach.ID))
 		return e
 	}
 	return nil
 }
 
-func (r *Postgres{{ .Model }}Repository) Delete(ctx context.Context, id string) error {
+func (r *PostgresApproachRepository) Delete(ctx context.Context, id string) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Delete("public.{{ .Model | ToLower }}s").Where(sq.Eq{"id": id})
+	q := sq.Delete("public.approachs").Where(sq.Eq{"id": id})
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
+		e.AddParam("approach_id", fmt.Sprint(id))
 		return e
 	}
 	affected, err := result.RowsAffected()
 	if err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
+		e.AddParam("approach_id", fmt.Sprint(id))
 		return e
 	}
 	if affected == 0 {
-		e := errs.New{{ .Model }}NotFound()
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
+		e := errs.NewApproachNotFound()
+		e.AddParam("approach_id", fmt.Sprint(id))
 		return e
 	}
 	return nil

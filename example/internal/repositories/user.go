@@ -6,63 +6,63 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"time"
 
-	"{{ .Module }}/pkg/log"
+	"github.com/018bf/example/pkg/log"
 
-	"{{ .Module }}/internal/domain/models"
-	"{{ .Module }}/internal/domain/repositories"
+	"github.com/018bf/example/internal/domain/models"
+	"github.com/018bf/example/internal/domain/repositories"
 
+	"github.com/018bf/example/internal/domain/errs"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
-	"{{ .Module }}/internal/domain/errs"
 )
 
-type Postgres{{ .Model }}Repository struct {
+type PostgresUserRepository struct {
 	database *sqlx.DB
 	logger   log.Logger
 }
 
-func NewPostgres{{ .Model }}Repository(database *sqlx.DB, logger log.Logger) repositories.{{ .Model }}Repository {
-	return &Postgres{{ .Model }}Repository{database: database, logger: logger}
+func NewPostgresUserRepository(database *sqlx.DB, logger log.Logger) repositories.UserRepository {
+	return &PostgresUserRepository{database: database, logger: logger}
 }
 
-func (r *Postgres{{ .Model }}Repository) Create(ctx context.Context, {{ .Model | ToLower }} *models.{{ .Model }}) error {
+func (r *PostgresUserRepository) Create(ctx context.Context, user *models.User) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Insert("public.{{ .Model | ToLower }}s").
+	q := sq.Insert("public.users").
 		Columns(). // TODO: add columns
 		Values().  // TODO: add values
 		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.QueryRowxContext(ctx, query, args...).Scan(&{{ .Model | ToLower }}.ID); err != nil {
+	if err := r.database.QueryRowxContext(ctx, query, args...).Scan(&user.ID); err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
 		return e
 	}
 	return nil
 }
 
-func (r *Postgres{{ .Model }}Repository) Get(ctx context.Context, id string) (*models.{{ .Model }}, error) {
+func (r *PostgresUserRepository) Get(ctx context.Context, id string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	{{ .Model | ToLower }} := &models.{{ .Model }}{}
+	user := &models.User{}
 	q := sq.Select("*").
-		From("public.{{ .Model | ToLower }}s").
+		From("public.users").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.GetContext(ctx, {{ .Model | ToLower }}, query, args...); err != nil {
+	if err := r.database.GetContext(ctx, user, query, args...); err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
 		return nil, e
 	}
-	return {{ .Model | ToLower }}, nil
+	return user, nil
 }
 
-func (r *Postgres{{ .Model }}Repository) List(ctx context.Context, filter *models.{{ .Model }}Filter) ([]*models.{{ .Model }}, error) {
+func (r *PostgresUserRepository) List(ctx context.Context, filter *models.UserFilter) ([]*models.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	var {{ .Model | ToLower }}s []*models.{{ .Model }}
+	var users []*models.User
 	const pageSize = 10
 	q := sq.Select("*").
-		From("public.{{ .Model | ToLower }}s").
+		From("public.users").
 		Limit(pageSize) //
 	// TODO: add filtering
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
@@ -75,17 +75,17 @@ func (r *Postgres{{ .Model }}Repository) List(ctx context.Context, filter *model
 		q = q.OrderBy(filter.OrderBy...)
 	}
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.SelectContext(ctx, &{{ .Model | ToLower }}s, query, args...); err != nil {
+	if err := r.database.SelectContext(ctx, &users, query, args...); err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
 		return nil, e
 	}
-	return {{ .Model | ToLower }}s, nil
+	return users, nil
 }
 
-func (r *Postgres{{ .Model }}Repository) Update(ctx context.Context, {{ .Model | ToLower }} *models.{{ .Model }}) error {
+func (r *PostgresUserRepository) Update(ctx context.Context, user *models.User) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Update("public.{{ .Model | ToLower }}s").Where(sq.Eq{"id": {{ .Model | ToLower }}.ID}).Set("", "") // TODO: set values
+	q := sq.Update("public.users").Where(sq.Eq{"id": user.ID}).Set("", "") // TODO: set values
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
@@ -100,7 +100,7 @@ func (r *Postgres{{ .Model }}Repository) Update(ctx context.Context, {{ .Model |
 				e = errs.NewUnexpectedBehaviorError(pgError.Detail)
 			}
 		}
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint({{ .Model | ToLower }}.ID))
+		e.AddParam("user_id", fmt.Sprint(user.ID))
 		return e
 	}
 	affected, err := result.RowsAffected()
@@ -108,33 +108,33 @@ func (r *Postgres{{ .Model }}Repository) Update(ctx context.Context, {{ .Model |
 		return errs.NewUnexpectedBehaviorError(err.Error())
 	}
 	if affected == 0 {
-		e := errs.New{{ .Model }}NotFound()
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint({{ .Model | ToLower }}.ID))
+		e := errs.NewUserNotFound()
+		e.AddParam("user_id", fmt.Sprint(user.ID))
 		return e
 	}
 	return nil
 }
 
-func (r *Postgres{{ .Model }}Repository) Delete(ctx context.Context, id string) error {
+func (r *PostgresUserRepository) Delete(ctx context.Context, id string) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Delete("public.{{ .Model | ToLower }}s").Where(sq.Eq{"id": id})
+	q := sq.Delete("public.users").Where(sq.Eq{"id": id})
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
+		e.AddParam("user_id", fmt.Sprint(id))
 		return e
 	}
 	affected, err := result.RowsAffected()
 	if err != nil {
 		e := errs.NewUnexpectedBehaviorError(err.Error())
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
+		e.AddParam("user_id", fmt.Sprint(id))
 		return e
 	}
 	if affected == 0 {
-		e := errs.New{{ .Model }}NotFound()
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
+		e := errs.NewUserNotFound()
+		e.AddParam("user_id", fmt.Sprint(id))
 		return e
 	}
 	return nil

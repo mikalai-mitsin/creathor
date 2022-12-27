@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"{{ .Module }}/internal/domain/errs"
+	"github.com/018bf/example/internal/domain/errs"
 )
 
 func TestParseConfig(t *testing.T) {

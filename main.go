@@ -12,7 +12,7 @@ import (
 	"path"
 )
 
-const version = "0.1.3"
+const version = "0.1.5"
 
 var (
 	serviceName     string

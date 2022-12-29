@@ -2,8 +2,11 @@ package errs
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/lib/pq"
 	"reflect"
 	"text/template"
 
@@ -36,6 +39,11 @@ type Error struct {
 	Code    ErrorCode         `json:"code"`
 	Message string            `json:"message"`
 	Params  map[string]string `json:"params"`
+}
+
+func (e *Error) WithParam(key, value string) *Error {
+	e.AddParam(key, value)
+	return e
 }
 
 func (e Error) Error() string {
@@ -125,4 +133,32 @@ func renderErrorMessage(object validation.ErrorObject) string {
 	var tpl bytes.Buffer
 	_ = parse.Execute(&tpl, object.Params())
 	return tpl.String()
+}
+
+func FromPostgresError(err error) *Error {
+	e := &Error{
+		Code:    ErrorCodeInternal,
+		Message: "Unexpected behavior.",
+		Params: map[string]string{
+			"error": err.Error(),
+		},
+	}
+	var pqErr *pq.Error
+	if errors.As(err, &pqErr) {
+		e.AddParam("details", pqErr.Detail)
+		e.AddParam("message", pqErr.Message)
+		e.AddParam("postgres_code", fmt.Sprint(pqErr.Code))
+	}
+	if errors.Is(err, sql.ErrNoRows) {
+		e = NewEntityNotFound()
+	}
+	return e
+}
+
+func NewEntityNotFound() *Error {
+	return &Error{
+		Code:    ErrorCodeNotFound,
+		Message: "Entity not found.",
+		Params:  map[string]string{},
+	}
 }

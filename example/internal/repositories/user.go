@@ -13,7 +13,6 @@ import (
 
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
 )
 
 type PostgresUserRepository struct {
@@ -33,8 +32,8 @@ func (r *PostgresUserRepository) Create(ctx context.Context, user *models.User) 
 		Values().  // TODO: add values
 		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.QueryRowxContext(ctx, query, args...).Scan(&user.ID); err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
+	if err := r.database.QueryRowxContext(ctx, query, args...).StructScan(user); err != nil {
+		e := errs.FromPostgresError(err)
 		return e
 	}
 	return nil
@@ -50,7 +49,8 @@ func (r *PostgresUserRepository) Get(ctx context.Context, id string) (*models.Us
 		Limit(1)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.GetContext(ctx, user, query, args...); err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
+		e := errs.FromPostgresError(err).
+			WithParam("user_id", id)
 		return nil, e
 	}
 	return user, nil
@@ -63,7 +63,7 @@ func (r *PostgresUserRepository) List(ctx context.Context, filter *models.UserFi
 	const pageSize = 10
 	q := sq.Select("*").
 		From("public.users").
-		Limit(pageSize) //
+		Limit(pageSize)
 	// TODO: add filtering
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
 		q = q.Offset((*filter.PageNumber - 1) * *filter.PageSize)
@@ -76,7 +76,7 @@ func (r *PostgresUserRepository) List(ctx context.Context, filter *models.UserFi
 	}
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.SelectContext(ctx, &users, query, args...); err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
+		e := errs.FromPostgresError(err)
 		return nil, e
 	}
 	return users, nil
@@ -89,27 +89,18 @@ func (r *PostgresUserRepository) Update(ctx context.Context, user *models.User) 
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
-		pgError, ok := err.(*pq.Error)
-		if ok {
-			switch pgError.Code {
-			case "23505":
-				e = errs.NewInvalidFormError()
-				e.AddParam("phone", "The phone field has already been taken.")
-			default:
-				e = errs.NewUnexpectedBehaviorError(pgError.Detail)
-			}
-		}
-		e.AddParam("user_id", fmt.Sprint(user.ID))
+		e := errs.FromPostgresError(err).
+			WithParam("user_id", fmt.Sprint(user.ID))
 		return e
 	}
 	affected, err := result.RowsAffected()
 	if err != nil {
-		return errs.NewUnexpectedBehaviorError(err.Error())
+		return errs.FromPostgresError(err).
+			WithParam("user_id", fmt.Sprint(user.ID))
 	}
 	if affected == 0 {
-		e := errs.NewUserNotFound()
-		e.AddParam("user_id", fmt.Sprint(user.ID))
+		e := errs.NewEntityNotFound().
+			WithParam("user_id", fmt.Sprint(user.ID))
 		return e
 	}
 	return nil
@@ -122,19 +113,19 @@ func (r *PostgresUserRepository) Delete(ctx context.Context, id string) error {
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
-		e.AddParam("user_id", fmt.Sprint(id))
+		e := errs.FromPostgresError(err).
+			WithParam("user_id", fmt.Sprint(id))
 		return e
 	}
 	affected, err := result.RowsAffected()
 	if err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
-		e.AddParam("user_id", fmt.Sprint(id))
+		e := errs.FromPostgresError(err).
+			WithParam("user_id", fmt.Sprint(id))
 		return e
 	}
 	if affected == 0 {
-		e := errs.NewUserNotFound()
-		e.AddParam("user_id", fmt.Sprint(id))
+		e := errs.NewEntityNotFound().
+			WithParam("user_id", fmt.Sprint(id))
 		return e
 	}
 	return nil

@@ -13,7 +13,6 @@ import (
 
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
 )
 
 type PostgresEquipmentRepository struct {
@@ -33,8 +32,8 @@ func (r *PostgresEquipmentRepository) Create(ctx context.Context, equipment *mod
 		Values().  // TODO: add values
 		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.QueryRowxContext(ctx, query, args...).Scan(&equipment.ID); err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
+	if err := r.database.QueryRowxContext(ctx, query, args...).StructScan(equipment); err != nil {
+		e := errs.FromPostgresError(err)
 		return e
 	}
 	return nil
@@ -50,7 +49,8 @@ func (r *PostgresEquipmentRepository) Get(ctx context.Context, id string) (*mode
 		Limit(1)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.GetContext(ctx, equipment, query, args...); err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
+		e := errs.FromPostgresError(err).
+			WithParam("equipment_id", id)
 		return nil, e
 	}
 	return equipment, nil
@@ -63,7 +63,7 @@ func (r *PostgresEquipmentRepository) List(ctx context.Context, filter *models.E
 	const pageSize = 10
 	q := sq.Select("*").
 		From("public.equipments").
-		Limit(pageSize) //
+		Limit(pageSize)
 	// TODO: add filtering
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
 		q = q.Offset((*filter.PageNumber - 1) * *filter.PageSize)
@@ -76,7 +76,7 @@ func (r *PostgresEquipmentRepository) List(ctx context.Context, filter *models.E
 	}
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.SelectContext(ctx, &equipments, query, args...); err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
+		e := errs.FromPostgresError(err)
 		return nil, e
 	}
 	return equipments, nil
@@ -89,27 +89,18 @@ func (r *PostgresEquipmentRepository) Update(ctx context.Context, equipment *mod
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
-		pgError, ok := err.(*pq.Error)
-		if ok {
-			switch pgError.Code {
-			case "23505":
-				e = errs.NewInvalidFormError()
-				e.AddParam("phone", "The phone field has already been taken.")
-			default:
-				e = errs.NewUnexpectedBehaviorError(pgError.Detail)
-			}
-		}
-		e.AddParam("equipment_id", fmt.Sprint(equipment.ID))
+		e := errs.FromPostgresError(err).
+			WithParam("equipment_id", fmt.Sprint(equipment.ID))
 		return e
 	}
 	affected, err := result.RowsAffected()
 	if err != nil {
-		return errs.NewUnexpectedBehaviorError(err.Error())
+		return errs.FromPostgresError(err).
+			WithParam("equipment_id", fmt.Sprint(equipment.ID))
 	}
 	if affected == 0 {
-		e := errs.NewEquipmentNotFound()
-		e.AddParam("equipment_id", fmt.Sprint(equipment.ID))
+		e := errs.NewEntityNotFound().
+			WithParam("equipment_id", fmt.Sprint(equipment.ID))
 		return e
 	}
 	return nil
@@ -122,19 +113,19 @@ func (r *PostgresEquipmentRepository) Delete(ctx context.Context, id string) err
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
-		e.AddParam("equipment_id", fmt.Sprint(id))
+		e := errs.FromPostgresError(err).
+			WithParam("equipment_id", fmt.Sprint(id))
 		return e
 	}
 	affected, err := result.RowsAffected()
 	if err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
-		e.AddParam("equipment_id", fmt.Sprint(id))
+		e := errs.FromPostgresError(err).
+			WithParam("equipment_id", fmt.Sprint(id))
 		return e
 	}
 	if affected == 0 {
-		e := errs.NewEquipmentNotFound()
-		e.AddParam("equipment_id", fmt.Sprint(id))
+		e := errs.NewEntityNotFound().
+			WithParam("equipment_id", fmt.Sprint(id))
 		return e
 	}
 	return nil

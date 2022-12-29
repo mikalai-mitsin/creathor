@@ -1,9 +1,0 @@
-package errs
-
-func New{{ .Model }}NotFound() *Error {
-	return &Error{
-		Code:    ErrorCodeNotFound,
-		Message: "{{ .Model }} not found.",
-		Params:  map[string]string{},
-	}
-}

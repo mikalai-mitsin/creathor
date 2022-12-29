@@ -30,4 +30,3 @@ To add new models use the `model` command
 ```
 creathor model --model category --model item
 ```
-creathor -d backend init --name ogorod --module git.jetbrains.space/elasticsoft/ogorod/Backend.git --model user --model notification --model notificationChannel --model token --model culture --model cultureCategory --model handbook --model handbookCategory --model handbookCard --model handbookLink --model work --model myWork --model workTag --model region --model masterClass --model masterClassCategory --model masterClassStep --model article --model articleCategory --model articleComment --model question --model questionLike --model answer --model answerLike

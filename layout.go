@@ -26,6 +26,7 @@ func CreateLayout(data *Project) error {
 		path.Join(destinationPath, "internal", "domain", "errs"),
 		path.Join(destinationPath, "internal", "domain", "interceptors"),
 		path.Join(destinationPath, "internal", "domain", "models"),
+		path.Join(destinationPath, "internal", "domain", "models", "mock"),
 		path.Join(destinationPath, "internal", "domain", "repositories"),
 		path.Join(destinationPath, "internal", "domain", "usecases"),
 		path.Join(destinationPath, "internal", "interceptors"),
@@ -35,6 +36,7 @@ func CreateLayout(data *Project) error {
 		path.Join(destinationPath, "pkg"),
 		path.Join(destinationPath, "pkg", "clock"),
 		path.Join(destinationPath, "pkg", "log"),
+		path.Join(destinationPath, "pkg", "utils"),
 	}
 	for _, directory := range directories {
 		if err := os.MkdirAll(directory, 0777); err != nil {
@@ -91,6 +93,11 @@ func CreateLayout(data *Project) error {
 			SourcePath:      "templates/log/logger.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "pkg", "log", "logger.go"),
 			Name:            "logger interface",
+		},
+		{
+			SourcePath:      "templates/utils/pointer.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "pkg", "utils", "pointer.go"),
+			Name:            "utils pointer",
 		},
 		{
 			SourcePath:      "templates/go.mod.tmpl",

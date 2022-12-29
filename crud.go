@@ -23,6 +23,11 @@ func CreateCRUD(name, module string) error {
 			Name:            "model",
 		},
 		{
+			SourcePath:      "templates/domain/model_mock.go.tmpl",
+			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "models", "mock", filename),
+			Name:            "model_mock",
+		},
+		{
 			SourcePath:      "templates/domain/repository.go.tmpl",
 			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "repositories", filename),
 			Name:            "repository",

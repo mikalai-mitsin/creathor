@@ -145,12 +145,12 @@ func getModuleName() string {
 }
 
 func postInit() {
+	fmt.Println("post init...")
 	tidy := exec.Command("go", "mod", "tidy")
 	tidy.Dir = destinationPath
 	if err := tidy.Run(); err != nil {
 		fmt.Println(err.Error())
 	}
-
 	generate := exec.Command("go", "generate", "./...")
 	generate.Dir = destinationPath
 	if err := generate.Run(); err != nil {

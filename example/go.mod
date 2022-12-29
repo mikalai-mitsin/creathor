@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/Masterminds/squirrel v1.5.3
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
+	github.com/google/uuid v1.3.0
 	github.com/ilyakaznacheev/cleanenv v1.2.5
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.10.7
@@ -25,6 +26,8 @@ require (
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 	olympos.io/encoding/edn v0.0.0-20200308123125-93e3b8dd0e24 // indirect
 )
+
+require syreclabs.com/go/faker v1.2.3
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496 // indirect

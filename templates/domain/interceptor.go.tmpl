@@ -11,7 +11,7 @@ import (
 
 type {{ .Model }}Interceptor interface {
 	Get(ctx context.Context, id string, user *models.User) (*models.{{ .Model }}, error)
-	List(ctx context.Context, filter *models.{{ .Model }}Filter, user *models.User) ([]*models.{{ .Model }}, error)
+	List(ctx context.Context, filter *models.{{ .Model }}Filter, user *models.User) ([]*models.{{ .Model }}, uint64, error)
 	Create(ctx context.Context, create *models.{{ .Model }}Create, user  *models.User) (*models.{{ .Model }}, error)
 	Update(ctx context.Context, update *models.{{ .Model }}Update, user *models.User) (*models.{{ .Model }}, error)
 	Delete(ctx context.Context, id string, user *models.User) error

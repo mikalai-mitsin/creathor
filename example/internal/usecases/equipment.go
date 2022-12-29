@@ -26,19 +26,26 @@ func NewEquipmentUseCase(
 }
 
 func (u *EquipmentUseCase) Get(ctx context.Context, id string) (*models.Equipment, error) {
-	qr, err := u.equipmentRepository.Get(ctx, id)
+	equipment, err := u.equipmentRepository.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return qr, nil
+	return equipment, nil
 }
 
-func (u *EquipmentUseCase) List(ctx context.Context, filter *models.EquipmentFilter) ([]*models.Equipment, error) {
-	qrs, err := u.equipmentRepository.List(ctx, filter)
+func (u *EquipmentUseCase) List(
+	ctx context.Context,
+	filter *models.EquipmentFilter,
+) ([]*models.Equipment, uint64, error) {
+	equipments, err := u.equipmentRepository.List(ctx, filter)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return qrs, nil
+	count, err := u.equipmentRepository.Count(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	return equipments, count, nil
 }
 
 func (u *EquipmentUseCase) Create(ctx context.Context, create *models.EquipmentCreate) (*models.Equipment, error) {
@@ -48,7 +55,6 @@ func (u *EquipmentUseCase) Create(ctx context.Context, create *models.EquipmentC
 	equipment := &models.Equipment{
 		ID: "",
 	}
-
 	if err := u.equipmentRepository.Create(ctx, equipment); err != nil {
 		return nil, err
 	}

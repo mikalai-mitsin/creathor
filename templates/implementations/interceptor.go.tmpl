@@ -34,15 +34,15 @@ func (i *{{ .Model }}Interceptor) Get(ctx context.Context, id string, _ *models.
 }
 
 func (i *{{ .Model }}Interceptor) List(
-		ctx context.Context,
-		filter *models.{{ .Model }}Filter,
-		_ *models.User,
-) ([]*models.{{ .Model }}, error) {
-	{{ .Model | ToLower }}s, err := i.{{ .Model | ToLower }}UseCase.List(ctx, filter)
+	ctx context.Context,
+	filter *models.{{ .Model }}Filter,
+	_ *models.User,
+) ([]*models.{{ .Model }}, uint64, error) {
+	{{ .Model | ToLower }}s, count, err := i.{{ .Model | ToLower }}UseCase.List(ctx, filter)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return {{ .Model | ToLower }}s, nil
+	return {{ .Model | ToLower }}s, count, nil
 }
 
 func (i *{{ .Model }}Interceptor) Create(

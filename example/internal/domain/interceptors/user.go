@@ -11,7 +11,7 @@ import (
 
 type UserInterceptor interface {
 	Get(ctx context.Context, id string, user *models.User) (*models.User, error)
-	List(ctx context.Context, filter *models.UserFilter, user *models.User) ([]*models.User, error)
+	List(ctx context.Context, filter *models.UserFilter, user *models.User) ([]*models.User, uint64, error)
 	Create(ctx context.Context, create *models.UserCreate, user *models.User) (*models.User, error)
 	Update(ctx context.Context, update *models.UserUpdate, user *models.User) (*models.User, error)
 	Delete(ctx context.Context, id string, user *models.User) error

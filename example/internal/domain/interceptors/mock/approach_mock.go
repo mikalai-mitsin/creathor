@@ -80,12 +80,13 @@ func (mr *MockApproachInterceptorMockRecorder) Get(arg0, arg1, arg2 interface{})
 }
 
 // List mocks base method.
-func (m *MockApproachInterceptor) List(arg0 context.Context, arg1 *models.ApproachFilter, arg2 *models.User) ([]*models.Approach, error) {
+func (m *MockApproachInterceptor) List(arg0 context.Context, arg1 *models.ApproachFilter, arg2 *models.User) ([]*models.Approach, uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]*models.Approach)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(uint64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // List indicates an expected call of List.

@@ -37,12 +37,12 @@ func (i *ApproachInterceptor) List(
 	ctx context.Context,
 	filter *models.ApproachFilter,
 	_ *models.User,
-) ([]*models.Approach, error) {
-	approachs, err := i.approachUseCase.List(ctx, filter)
+) ([]*models.Approach, uint64, error) {
+	approachs, count, err := i.approachUseCase.List(ctx, filter)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return approachs, nil
+	return approachs, count, nil
 }
 
 func (i *ApproachInterceptor) Create(

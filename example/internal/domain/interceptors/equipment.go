@@ -11,7 +11,7 @@ import (
 
 type EquipmentInterceptor interface {
 	Get(ctx context.Context, id string, user *models.User) (*models.Equipment, error)
-	List(ctx context.Context, filter *models.EquipmentFilter, user *models.User) ([]*models.Equipment, error)
+	List(ctx context.Context, filter *models.EquipmentFilter, user *models.User) ([]*models.Equipment, uint64, error)
 	Create(ctx context.Context, create *models.EquipmentCreate, user *models.User) (*models.Equipment, error)
 	Update(ctx context.Context, update *models.EquipmentUpdate, user *models.User) (*models.Equipment, error)
 	Delete(ctx context.Context, id string, user *models.User) error

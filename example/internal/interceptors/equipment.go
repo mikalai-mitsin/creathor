@@ -37,12 +37,12 @@ func (i *EquipmentInterceptor) List(
 	ctx context.Context,
 	filter *models.EquipmentFilter,
 	_ *models.User,
-) ([]*models.Equipment, error) {
-	equipments, err := i.equipmentUseCase.List(ctx, filter)
+) ([]*models.Equipment, uint64, error) {
+	equipments, count, err := i.equipmentUseCase.List(ctx, filter)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return equipments, nil
+	return equipments, count, nil
 }
 
 func (i *EquipmentInterceptor) Create(

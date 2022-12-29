@@ -130,3 +130,22 @@ func (r *PostgresUserRepository) Delete(ctx context.Context, id string) error {
 	}
 	return nil
 }
+
+func (r *PostgresUserRepository) Count(ctx context.Context, filter *models.UserFilter) (uint64, error) {
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+	q := sq.Select("count(id)").From("public.users")
+	// TODO: add filtering
+	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
+	result := r.database.QueryRowxContext(ctx, query, args...)
+	if err := result.Err(); err != nil {
+		e := errs.FromPostgresError(err)
+		return 0, e
+	}
+	var count uint64
+	if err := result.Scan(&count); err != nil {
+		e := errs.FromPostgresError(err)
+		return 0, e
+	}
+	return count, nil
+}

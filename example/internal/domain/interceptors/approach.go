@@ -11,7 +11,7 @@ import (
 
 type ApproachInterceptor interface {
 	Get(ctx context.Context, id string, user *models.User) (*models.Approach, error)
-	List(ctx context.Context, filter *models.ApproachFilter, user *models.User) ([]*models.Approach, error)
+	List(ctx context.Context, filter *models.ApproachFilter, user *models.User) ([]*models.Approach, uint64, error)
 	Create(ctx context.Context, create *models.ApproachCreate, user *models.User) (*models.Approach, error)
 	Update(ctx context.Context, update *models.ApproachUpdate, user *models.User) (*models.Approach, error)
 	Delete(ctx context.Context, id string, user *models.User) error

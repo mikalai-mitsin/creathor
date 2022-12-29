@@ -16,6 +16,7 @@ type Model struct {
 func CreateCRUD(name, module string) error {
 	name = cases.Title(language.English).String(name)
 	filename := fmt.Sprintf("%s.go", strings.ToLower(name))
+	testFilename := fmt.Sprintf("%s_test.go", strings.ToLower(name))
 	files := []*Template{
 		{
 			SourcePath:      "templates/domain/model.go.tmpl",
@@ -46,6 +47,11 @@ func CreateCRUD(name, module string) error {
 			SourcePath:      "templates/implementations/usecase.go.tmpl",
 			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", filename),
 			Name:            "usecase",
+		},
+		{
+			SourcePath:      "templates/implementations/usecase_test.go.tmpl",
+			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", testFilename),
+			Name:            "usecase test",
 		},
 		{
 			SourcePath:      "templates/implementations/interceptor.go.tmpl",

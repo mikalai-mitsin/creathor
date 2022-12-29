@@ -37,12 +37,12 @@ func (i *UserInterceptor) List(
 	ctx context.Context,
 	filter *models.UserFilter,
 	_ *models.User,
-) ([]*models.User, error) {
-	users, err := i.userUseCase.List(ctx, filter)
+) ([]*models.User, uint64, error) {
+	users, count, err := i.userUseCase.List(ctx, filter)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return users, nil
+	return users, count, nil
 }
 
 func (i *UserInterceptor) Create(

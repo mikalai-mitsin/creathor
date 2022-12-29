@@ -37,12 +37,12 @@ func (i *SessionInterceptor) List(
 	ctx context.Context,
 	filter *models.SessionFilter,
 	_ *models.User,
-) ([]*models.Session, error) {
-	sessions, err := i.sessionUseCase.List(ctx, filter)
+) ([]*models.Session, uint64, error) {
+	sessions, count, err := i.sessionUseCase.List(ctx, filter)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return sessions, nil
+	return sessions, count, nil
 }
 
 func (i *SessionInterceptor) Create(

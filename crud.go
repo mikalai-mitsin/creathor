@@ -63,6 +63,11 @@ func CreateCRUD(name, module string) error {
 			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", filename),
 			Name:            "repository",
 		},
+		{
+			SourcePath:      "templates/implementations/repository_test.go.tmpl",
+			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", testFilename),
+			Name:            "repository test",
+		},
 	}
 	data := Model{
 		Model:  name,

@@ -31,6 +31,8 @@ func CreateLayout(data *Project) error {
 		path.Join(destinationPath, "internal", "domain", "usecases"),
 		path.Join(destinationPath, "internal", "interceptors"),
 		path.Join(destinationPath, "internal", "interfaces"),
+		path.Join(destinationPath, "internal", "interfaces", "postgres"),
+		path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations"),
 		path.Join(destinationPath, "internal", "usecases"),
 		path.Join(destinationPath, "internal", "repositories"),
 		path.Join(destinationPath, "pkg"),
@@ -123,6 +125,26 @@ func CreateLayout(data *Project) error {
 			SourcePath:      "templates/docs/CHANGELOG.md.tmpl",
 			DestinationPath: path.Join(destinationPath, "docs", "CHANGELOG.md"),
 			Name:            "CHANGELOG.md",
+		},
+		{
+			SourcePath:      "templates/interfaces/postgres/fx.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "fx.go"),
+			Name:            "postgres fx",
+		},
+		{
+			SourcePath:      "templates/interfaces/postgres/postgres.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "postgres.go"),
+			Name:            "postgres",
+		},
+		{
+			SourcePath:      "templates/interfaces/postgres/testing.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "testing.go"),
+			Name:            "postgres testing",
+		},
+		{
+			SourcePath:      "templates/interfaces/postgres/migrations/init.sql.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "init.sql"),
+			Name:            "postgres init migration",
 		},
 	}
 	for _, file := range files {

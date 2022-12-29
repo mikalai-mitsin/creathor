@@ -43,7 +43,7 @@ func (r *PostgresSessionRepository) Get(ctx context.Context, id string) (*models
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	session := &models.Session{}
-	q := sq.Select("*").
+	q := sq.Select("sessions.id", "sessions.updated_at", "sessions.created_at").
 		From("public.sessions").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
@@ -61,7 +61,7 @@ func (r *PostgresSessionRepository) List(ctx context.Context, filter *models.Ses
 	defer cancel()
 	var sessions []*models.Session
 	const pageSize = 10
-	q := sq.Select("*").
+	q := sq.Select("sessions.id", "sessions.updated_at", "sessions.created_at").
 		From("public.sessions").
 		Limit(pageSize)
 	// TODO: add filtering

@@ -43,7 +43,7 @@ func (r *PostgresApproachRepository) Get(ctx context.Context, id string) (*model
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	approach := &models.Approach{}
-	q := sq.Select("*").
+	q := sq.Select("approachs.id", "approachs.updated_at", "approachs.created_at").
 		From("public.approachs").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
@@ -61,7 +61,7 @@ func (r *PostgresApproachRepository) List(ctx context.Context, filter *models.Ap
 	defer cancel()
 	var approachs []*models.Approach
 	const pageSize = 10
-	q := sq.Select("*").
+	q := sq.Select("approachs.id", "approachs.updated_at", "approachs.created_at").
 		From("public.approachs").
 		Limit(pageSize)
 	// TODO: add filtering

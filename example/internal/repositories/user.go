@@ -43,7 +43,7 @@ func (r *PostgresUserRepository) Get(ctx context.Context, id string) (*models.Us
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	user := &models.User{}
-	q := sq.Select("*").
+	q := sq.Select("users.id", "users.updated_at", "users.created_at").
 		From("public.users").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
@@ -61,7 +61,7 @@ func (r *PostgresUserRepository) List(ctx context.Context, filter *models.UserFi
 	defer cancel()
 	var users []*models.User
 	const pageSize = 10
-	q := sq.Select("*").
+	q := sq.Select("users.id", "users.updated_at", "users.created_at").
 		From("public.users").
 		Limit(pageSize)
 	// TODO: add filtering

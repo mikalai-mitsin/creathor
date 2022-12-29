@@ -43,7 +43,7 @@ func (r *PostgresEquipmentRepository) Get(ctx context.Context, id string) (*mode
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	equipment := &models.Equipment{}
-	q := sq.Select("*").
+	q := sq.Select("equipments.id", "equipments.updated_at", "equipments.created_at").
 		From("public.equipments").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
@@ -61,7 +61,7 @@ func (r *PostgresEquipmentRepository) List(ctx context.Context, filter *models.E
 	defer cancel()
 	var equipments []*models.Equipment
 	const pageSize = 10
-	q := sq.Select("*").
+	q := sq.Select("equipments.id", "equipments.updated_at", "equipments.created_at").
 		From("public.equipments").
 		Limit(pageSize)
 	// TODO: add filtering

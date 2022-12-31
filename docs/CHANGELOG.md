@@ -2,8 +2,40 @@
 ## [Unreleased]
 
 
-<a name="0.1.1"></a>
-## [0.1.1] - 2022-10-06
+<a name="0.1.6"></a>
+## [0.1.6] - 2022-12-31
+### Docs
+- cleanup readme
+
+### Feat
+- add auth flag
+- add repository tests
+- **errors:** decode domain error from postgres
+- **interceptor:** add permission check
+- **models:** add mock
+- **usecase:** add count and tests
+
+
+<a name="v0.1.5"></a>
+## [v0.1.5] - 2022-12-28
+
+<a name="v0.1.3"></a>
+## [v0.1.3] - 2022-12-28
+
+<a name="v0.1.4"></a>
+## [v0.1.4] - 2022-12-27
+### Docs
+- add example
+
+### Feat
+- clean and generate mocks
+
+### Fix
+- update errors, repository and config
+
+
+<a name="v0.1.1"></a>
+## [v0.1.1] - 2022-10-06
 ### Docs
 - add readme
 
@@ -23,5 +55,9 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/018bf/creathor/compare/0.1.1...HEAD
-[0.1.1]: https://github.com/018bf/creathor/compare/v0.1.0...0.1.1
+[Unreleased]: https://github.com/018bf/creathor/compare/0.1.6...HEAD
+[0.1.6]: https://github.com/018bf/creathor/compare/v0.1.5...0.1.6
+[v0.1.5]: https://github.com/018bf/creathor/compare/v0.1.3...v0.1.5
+[v0.1.3]: https://github.com/018bf/creathor/compare/v0.1.4...v0.1.3
+[v0.1.4]: https://github.com/018bf/creathor/compare/v0.1.1...v0.1.4
+[v0.1.1]: https://github.com/018bf/creathor/compare/v0.1.0...v0.1.1

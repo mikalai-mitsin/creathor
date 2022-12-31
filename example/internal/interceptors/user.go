@@ -12,20 +12,27 @@ import (
 
 type UserInterceptor struct {
 	userUseCase usecases.UserUseCase
+	authUseCase usecases.AuthUseCase
 	logger      log.Logger
 }
 
 func NewUserInterceptor(
 	userUseCase usecases.UserUseCase,
+	authUseCase usecases.AuthUseCase,
 	logger log.Logger,
 ) interceptors.UserInterceptor {
 	return &UserInterceptor{
 		userUseCase: userUseCase,
+		authUseCase: authUseCase,
 		logger:      logger,
 	}
 }
 
-func (i *UserInterceptor) Get(ctx context.Context, id string, _ *models.User) (*models.User, error) {
+func (i *UserInterceptor) Get(
+	ctx context.Context,
+	id string,
+	requestUser *models.User,
+) (*models.User, error) {
 	user, err := i.userUseCase.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -36,7 +43,7 @@ func (i *UserInterceptor) Get(ctx context.Context, id string, _ *models.User) (*
 func (i *UserInterceptor) List(
 	ctx context.Context,
 	filter *models.UserFilter,
-	_ *models.User,
+	requestUser *models.User,
 ) ([]*models.User, uint64, error) {
 	users, count, err := i.userUseCase.List(ctx, filter)
 	if err != nil {
@@ -48,7 +55,7 @@ func (i *UserInterceptor) List(
 func (i *UserInterceptor) Create(
 	ctx context.Context,
 	create *models.UserCreate,
-	_ *models.User,
+	requestUser *models.User,
 ) (*models.User, error) {
 	user, err := i.userUseCase.Create(ctx, create)
 	if err != nil {
@@ -60,7 +67,7 @@ func (i *UserInterceptor) Create(
 func (i *UserInterceptor) Update(
 	ctx context.Context,
 	update *models.UserUpdate,
-	_ *models.User,
+	requestUser *models.User,
 ) (*models.User, error) {
 	updatedUser, err := i.userUseCase.Update(ctx, update)
 	if err != nil {
@@ -69,7 +76,11 @@ func (i *UserInterceptor) Update(
 	return updatedUser, nil
 }
 
-func (i *UserInterceptor) Delete(ctx context.Context, id string, _ *models.User) error {
+func (i *UserInterceptor) Delete(
+	ctx context.Context,
+	id string,
+	requestUser *models.User,
+) error {
 	if err := i.userUseCase.Delete(ctx, id); err != nil {
 		return err
 	}

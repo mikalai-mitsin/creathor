@@ -11,9 +11,10 @@ import (
 type Model struct {
 	Model  string
 	Module string
+	Auth   bool
 }
 
-func CreateCRUD(name, module string) error {
+func CreateCRUD(name, module string, auth bool) error {
 	name = cases.Title(language.English).String(name)
 	filename := fmt.Sprintf("%s.go", strings.ToLower(name))
 	testFilename := fmt.Sprintf("%s_test.go", strings.ToLower(name))
@@ -72,6 +73,7 @@ func CreateCRUD(name, module string) error {
 	data := Model{
 		Model:  name,
 		Module: module,
+		Auth:   auth,
 	}
 	for _, tmpl := range files {
 		if err := tmpl.renderToFile(data); err != nil {

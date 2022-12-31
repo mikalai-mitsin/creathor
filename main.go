@@ -20,6 +20,7 @@ var (
 	goVersion       string
 	destinationPath = "."
 	models          cli.StringSlice
+	authEnabled     bool
 )
 
 //go:embed templates/*
@@ -36,6 +37,13 @@ func main() {
 				Aliases:     []string{"d"},
 				Usage:       "module name",
 				Destination: &destinationPath,
+				Required:    false,
+			},
+			&cli.BoolFlag{
+				Name:        "auth",
+				Aliases:     []string{"a"},
+				Usage:       "enable auth",
+				Destination: &authEnabled,
 				Required:    false,
 			},
 		},
@@ -118,7 +126,7 @@ func initProject(ctx *cli.Context) error {
 		return err
 	}
 	for _, model := range models.Value() {
-		if err := CreateCRUD(model, moduleName); err != nil {
+		if err := CreateCRUD(model, moduleName, authEnabled); err != nil {
 			return err
 		}
 	}
@@ -128,7 +136,7 @@ func initProject(ctx *cli.Context) error {
 
 func initModels(ctx *cli.Context) error {
 	for _, model := range models.Value() {
-		if err := CreateCRUD(model, moduleName); err != nil {
+		if err := CreateCRUD(model, moduleName, authEnabled); err != nil {
 			return err
 		}
 	}

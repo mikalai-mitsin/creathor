@@ -12,20 +12,34 @@ import (
 
 type {{ .Model }}Interceptor struct {
 	{{ .Model | ToLower}}UseCase usecases.{{ .Model }}UseCase
-	logger                       log.Logger
+{{- if .Auth}}
+	authUseCase usecases.AuthUseCase
+{{- end}}
+	logger log.Logger
 }
 
 func New{{ .Model }}Interceptor(
-		{{ .Model | ToLower }}UseCase usecases.{{ .Model }}UseCase,
-		logger log.Logger,
+	{{ .Model | ToLower }}UseCase usecases.{{ .Model }}UseCase,
+{{- if .Auth}}
+	authUseCase usecases.AuthUseCase,
+{{- end}}
+	logger log.Logger,
 ) interceptors.{{ .Model }}Interceptor {
 	return &{{ .Model }}Interceptor{
 		{{ .Model | ToLower }}UseCase: {{ .Model | ToLower }}UseCase,
+{{- if .Auth}}
+		authUseCase:   authUseCase,
+{{- end}}
 		logger:                        logger,
 	}
 }
 
-func (i *{{ .Model }}Interceptor) Get(ctx context.Context, id string, _ *models.User) (*models.{{ .Model }}, error) {
+func (i *{{ .Model }}Interceptor) Get(
+	ctx context.Context,
+	id string,{{if .Auth}}
+	requestUser *models.User,
+{{- end}}
+) (*models.{{ .Model }}, error) {
 	{{ .Model | ToLower }}, err := i.{{ .Model | ToLower }}UseCase.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -35,8 +49,9 @@ func (i *{{ .Model }}Interceptor) Get(ctx context.Context, id string, _ *models.
 
 func (i *{{ .Model }}Interceptor) List(
 	ctx context.Context,
-	filter *models.{{ .Model }}Filter,
-	_ *models.User,
+	filter *models.{{ .Model }}Filter,{{if .Auth}}
+	requestUser *models.User,
+{{- end}}
 ) ([]*models.{{ .Model }}, uint64, error) {
 	{{ .Model | ToLower }}s, count, err := i.{{ .Model | ToLower }}UseCase.List(ctx, filter)
 	if err != nil {
@@ -46,9 +61,10 @@ func (i *{{ .Model }}Interceptor) List(
 }
 
 func (i *{{ .Model }}Interceptor) Create(
-		ctx context.Context,
-		create *models.{{ .Model }}Create,
-		_ *models.User,
+	ctx context.Context,
+	create *models.{{ .Model }}Create,{{if .Auth}}
+	requestUser *models.User,
+{{- end}}
 ) (*models.{{ .Model }}, error) {
 	{{ .Model | ToLower }}, err := i.{{ .Model | ToLower }}UseCase.Create(ctx, create)
 	if err != nil {
@@ -58,9 +74,10 @@ func (i *{{ .Model }}Interceptor) Create(
 }
 
 func (i *{{ .Model }}Interceptor) Update(
-		ctx context.Context,
-		update *models.{{ .Model }}Update,
-		_ *models.User,
+	ctx context.Context,
+	update *models.{{ .Model }}Update,{{if .Auth}}
+	requestUser *models.User,
+{{- end }}
 ) (*models.{{ .Model }}, error) {
 	updated{{ .Model }}, err := i.{{ .Model | ToLower }}UseCase.Update(ctx, update)
 	if err != nil {
@@ -69,7 +86,12 @@ func (i *{{ .Model }}Interceptor) Update(
 	return updated{{ .Model }}, nil
 }
 
-func (i *{{ .Model }}Interceptor) Delete(ctx context.Context, id string, _ *models.User) error {
+func (i *{{ .Model }}Interceptor) Delete(
+	ctx context.Context,
+	id string,{{if .Auth}}
+	requestUser *models.User,
+{{- end}}
+) error {
 	if err := i.{{ .Model | ToLower }}UseCase.Delete(ctx, id); err != nil {
 		return err
 	}

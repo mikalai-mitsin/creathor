@@ -12,20 +12,27 @@ import (
 
 type EquipmentInterceptor struct {
 	equipmentUseCase usecases.EquipmentUseCase
+	authUseCase      usecases.AuthUseCase
 	logger           log.Logger
 }
 
 func NewEquipmentInterceptor(
 	equipmentUseCase usecases.EquipmentUseCase,
+	authUseCase usecases.AuthUseCase,
 	logger log.Logger,
 ) interceptors.EquipmentInterceptor {
 	return &EquipmentInterceptor{
 		equipmentUseCase: equipmentUseCase,
+		authUseCase:      authUseCase,
 		logger:           logger,
 	}
 }
 
-func (i *EquipmentInterceptor) Get(ctx context.Context, id string, _ *models.User) (*models.Equipment, error) {
+func (i *EquipmentInterceptor) Get(
+	ctx context.Context,
+	id string,
+	requestUser *models.User,
+) (*models.Equipment, error) {
 	equipment, err := i.equipmentUseCase.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -36,7 +43,7 @@ func (i *EquipmentInterceptor) Get(ctx context.Context, id string, _ *models.Use
 func (i *EquipmentInterceptor) List(
 	ctx context.Context,
 	filter *models.EquipmentFilter,
-	_ *models.User,
+	requestUser *models.User,
 ) ([]*models.Equipment, uint64, error) {
 	equipments, count, err := i.equipmentUseCase.List(ctx, filter)
 	if err != nil {
@@ -48,7 +55,7 @@ func (i *EquipmentInterceptor) List(
 func (i *EquipmentInterceptor) Create(
 	ctx context.Context,
 	create *models.EquipmentCreate,
-	_ *models.User,
+	requestUser *models.User,
 ) (*models.Equipment, error) {
 	equipment, err := i.equipmentUseCase.Create(ctx, create)
 	if err != nil {
@@ -60,7 +67,7 @@ func (i *EquipmentInterceptor) Create(
 func (i *EquipmentInterceptor) Update(
 	ctx context.Context,
 	update *models.EquipmentUpdate,
-	_ *models.User,
+	requestUser *models.User,
 ) (*models.Equipment, error) {
 	updatedEquipment, err := i.equipmentUseCase.Update(ctx, update)
 	if err != nil {
@@ -69,7 +76,11 @@ func (i *EquipmentInterceptor) Update(
 	return updatedEquipment, nil
 }
 
-func (i *EquipmentInterceptor) Delete(ctx context.Context, id string, _ *models.User) error {
+func (i *EquipmentInterceptor) Delete(
+	ctx context.Context,
+	id string,
+	requestUser *models.User,
+) error {
 	if err := i.equipmentUseCase.Delete(ctx, id); err != nil {
 		return err
 	}

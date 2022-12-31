@@ -147,6 +147,26 @@ func CreateLayout(data *Project) error {
 			Name:            "postgres init migration",
 		},
 	}
+	if authEnabled {
+		files = append(
+			files,
+			&Template{
+				SourcePath:      "templates/domain/usecase_auth.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "domain", "usecases", "auth.go"),
+				Name:            "auth usecase",
+			},
+			&Template{
+				SourcePath:      "templates/domain/model_auth.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "domain", "models", "auth.go"),
+				Name:            "auth models",
+			},
+			&Template{
+				SourcePath:      "templates/domain/model_permission.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "domain", "models", "permission.go"),
+				Name:            "auth permission",
+			},
+		)
+	}
 	for _, file := range files {
 		if err := file.renderToFile(data); err != nil {
 			return err

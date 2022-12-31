@@ -12,20 +12,27 @@ import (
 
 type ApproachInterceptor struct {
 	approachUseCase usecases.ApproachUseCase
+	authUseCase     usecases.AuthUseCase
 	logger          log.Logger
 }
 
 func NewApproachInterceptor(
 	approachUseCase usecases.ApproachUseCase,
+	authUseCase usecases.AuthUseCase,
 	logger log.Logger,
 ) interceptors.ApproachInterceptor {
 	return &ApproachInterceptor{
 		approachUseCase: approachUseCase,
+		authUseCase:     authUseCase,
 		logger:          logger,
 	}
 }
 
-func (i *ApproachInterceptor) Get(ctx context.Context, id string, _ *models.User) (*models.Approach, error) {
+func (i *ApproachInterceptor) Get(
+	ctx context.Context,
+	id string,
+	requestUser *models.User,
+) (*models.Approach, error) {
 	approach, err := i.approachUseCase.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -36,7 +43,7 @@ func (i *ApproachInterceptor) Get(ctx context.Context, id string, _ *models.User
 func (i *ApproachInterceptor) List(
 	ctx context.Context,
 	filter *models.ApproachFilter,
-	_ *models.User,
+	requestUser *models.User,
 ) ([]*models.Approach, uint64, error) {
 	approachs, count, err := i.approachUseCase.List(ctx, filter)
 	if err != nil {
@@ -48,7 +55,7 @@ func (i *ApproachInterceptor) List(
 func (i *ApproachInterceptor) Create(
 	ctx context.Context,
 	create *models.ApproachCreate,
-	_ *models.User,
+	requestUser *models.User,
 ) (*models.Approach, error) {
 	approach, err := i.approachUseCase.Create(ctx, create)
 	if err != nil {
@@ -60,7 +67,7 @@ func (i *ApproachInterceptor) Create(
 func (i *ApproachInterceptor) Update(
 	ctx context.Context,
 	update *models.ApproachUpdate,
-	_ *models.User,
+	requestUser *models.User,
 ) (*models.Approach, error) {
 	updatedApproach, err := i.approachUseCase.Update(ctx, update)
 	if err != nil {
@@ -69,7 +76,11 @@ func (i *ApproachInterceptor) Update(
 	return updatedApproach, nil
 }
 
-func (i *ApproachInterceptor) Delete(ctx context.Context, id string, _ *models.User) error {
+func (i *ApproachInterceptor) Delete(
+	ctx context.Context,
+	id string,
+	requestUser *models.User,
+) error {
 	if err := i.approachUseCase.Delete(ctx, id); err != nil {
 		return err
 	}

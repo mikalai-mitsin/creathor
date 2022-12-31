@@ -11,7 +11,7 @@ import (
 
 type SessionUseCase interface {
 	Get(ctx context.Context, id string) (*models.Session, error)
-	List(ctx context.Context, filter *models.SessionFilter) ([]*models.Session, error)
+	List(ctx context.Context, filter *models.SessionFilter) ([]*models.Session, uint64, error)
 	Create(ctx context.Context, create *models.SessionCreate) (*models.Session, error)
 	Update(ctx context.Context, update *models.SessionUpdate) (*models.Session, error)
 	Delete(ctx context.Context, id string) error

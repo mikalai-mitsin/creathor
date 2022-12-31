@@ -26,19 +26,26 @@ func NewApproachUseCase(
 }
 
 func (u *ApproachUseCase) Get(ctx context.Context, id string) (*models.Approach, error) {
-	qr, err := u.approachRepository.Get(ctx, id)
+	approach, err := u.approachRepository.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return qr, nil
+	return approach, nil
 }
 
-func (u *ApproachUseCase) List(ctx context.Context, filter *models.ApproachFilter) ([]*models.Approach, error) {
-	qrs, err := u.approachRepository.List(ctx, filter)
+func (u *ApproachUseCase) List(
+	ctx context.Context,
+	filter *models.ApproachFilter,
+) ([]*models.Approach, uint64, error) {
+	approachs, err := u.approachRepository.List(ctx, filter)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return qrs, nil
+	count, err := u.approachRepository.Count(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	return approachs, count, nil
 }
 
 func (u *ApproachUseCase) Create(ctx context.Context, create *models.ApproachCreate) (*models.Approach, error) {
@@ -48,7 +55,6 @@ func (u *ApproachUseCase) Create(ctx context.Context, create *models.ApproachCre
 	approach := &models.Approach{
 		ID: "",
 	}
-
 	if err := u.approachRepository.Create(ctx, approach); err != nil {
 		return nil, err
 	}

@@ -16,8 +16,8 @@ type {{ .Model }}UseCase struct {
 }
 
 func New{{ .Model }}UseCase(
-        {{ .Model | ToLower }}Repository repositories.{{ .Model }}Repository,
-		logger log.Logger,
+	{{ .Model | ToLower }}Repository repositories.{{ .Model }}Repository,
+	logger log.Logger,
 ) usecases.{{ .Model }}UseCase {
 	return &{{ .Model }}UseCase{
         {{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
@@ -26,19 +26,26 @@ func New{{ .Model }}UseCase(
 }
 
 func (u *{{ .Model }}UseCase) Get(ctx context.Context, id string) (*models.{{ .Model }}, error) {
-	qr, err := u.{{ .Model | ToLower }}Repository.Get(ctx, id)
+	{{ .Model | ToLower }}, err := u.{{ .Model | ToLower }}Repository.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return qr, nil
+	return {{ .Model | ToLower }}, nil
 }
 
-func (u *{{ .Model }}UseCase) List(ctx context.Context, filter *models.{{ .Model }}Filter) ([]*models.{{ .Model }}, error) {
-	qrs, err := u.{{ .Model | ToLower }}Repository.List(ctx, filter)
+func (u *{{ .Model }}UseCase) List(
+	ctx context.Context,
+	filter *models.{{ .Model }}Filter,
+) ([]*models.{{ .Model }}, uint64, error) {
+	{{ .Model | ToLower }}s, err := u.{{ .Model | ToLower }}Repository.List(ctx, filter)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return qrs, nil
+	count, err := u.{{ .Model | ToLower }}Repository.Count(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	return {{ .Model | ToLower }}s, count, nil
 }
 
 func (u *{{ .Model }}UseCase) Create(ctx context.Context, create *models.{{ .Model }}Create) (*models.{{ .Model }}, error) {
@@ -48,7 +55,6 @@ func (u *{{ .Model }}UseCase) Create(ctx context.Context, create *models.{{ .Mod
     {{ .Model | ToLower }} := &models.{{ .Model }}{
 		ID: "",
 	}
-
 	if err := u.{{ .Model | ToLower }}Repository.Create(ctx, {{ .Model | ToLower }}); err != nil {
 		return nil, err
 	}

@@ -13,7 +13,6 @@ import (
 
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
 )
 
 type PostgresApproachRepository struct {
@@ -33,8 +32,8 @@ func (r *PostgresApproachRepository) Create(ctx context.Context, approach *model
 		Values().  // TODO: add values
 		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.QueryRowxContext(ctx, query, args...).Scan(&approach.ID); err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
+	if err := r.database.QueryRowxContext(ctx, query, args...).StructScan(approach); err != nil {
+		e := errs.FromPostgresError(err)
 		return e
 	}
 	return nil
@@ -44,13 +43,14 @@ func (r *PostgresApproachRepository) Get(ctx context.Context, id string) (*model
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	approach := &models.Approach{}
-	q := sq.Select("*").
+	q := sq.Select("approachs.id", "approachs.updated_at", "approachs.created_at").
 		From("public.approachs").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.GetContext(ctx, approach, query, args...); err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
+		e := errs.FromPostgresError(err).
+			WithParam("approach_id", id)
 		return nil, e
 	}
 	return approach, nil
@@ -61,9 +61,9 @@ func (r *PostgresApproachRepository) List(ctx context.Context, filter *models.Ap
 	defer cancel()
 	var approachs []*models.Approach
 	const pageSize = 10
-	q := sq.Select("*").
+	q := sq.Select("approachs.id", "approachs.updated_at", "approachs.created_at").
 		From("public.approachs").
-		Limit(pageSize) //
+		Limit(pageSize)
 	// TODO: add filtering
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
 		q = q.Offset((*filter.PageNumber - 1) * *filter.PageSize)
@@ -76,7 +76,7 @@ func (r *PostgresApproachRepository) List(ctx context.Context, filter *models.Ap
 	}
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.SelectContext(ctx, &approachs, query, args...); err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
+		e := errs.FromPostgresError(err)
 		return nil, e
 	}
 	return approachs, nil
@@ -89,27 +89,18 @@ func (r *PostgresApproachRepository) Update(ctx context.Context, approach *model
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
-		pgError, ok := err.(*pq.Error)
-		if ok {
-			switch pgError.Code {
-			case "23505":
-				e = errs.NewInvalidFormError()
-				e.AddParam("phone", "The phone field has already been taken.")
-			default:
-				e = errs.NewUnexpectedBehaviorError(pgError.Detail)
-			}
-		}
-		e.AddParam("approach_id", fmt.Sprint(approach.ID))
+		e := errs.FromPostgresError(err).
+			WithParam("approach_id", fmt.Sprint(approach.ID))
 		return e
 	}
 	affected, err := result.RowsAffected()
 	if err != nil {
-		return errs.NewUnexpectedBehaviorError(err.Error())
+		return errs.FromPostgresError(err).
+			WithParam("approach_id", fmt.Sprint(approach.ID))
 	}
 	if affected == 0 {
-		e := errs.NewApproachNotFound()
-		e.AddParam("approach_id", fmt.Sprint(approach.ID))
+		e := errs.NewEntityNotFound().
+			WithParam("approach_id", fmt.Sprint(approach.ID))
 		return e
 	}
 	return nil
@@ -122,20 +113,39 @@ func (r *PostgresApproachRepository) Delete(ctx context.Context, id string) erro
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
-		e.AddParam("approach_id", fmt.Sprint(id))
+		e := errs.FromPostgresError(err).
+			WithParam("approach_id", fmt.Sprint(id))
 		return e
 	}
 	affected, err := result.RowsAffected()
 	if err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
-		e.AddParam("approach_id", fmt.Sprint(id))
+		e := errs.FromPostgresError(err).
+			WithParam("approach_id", fmt.Sprint(id))
 		return e
 	}
 	if affected == 0 {
-		e := errs.NewApproachNotFound()
-		e.AddParam("approach_id", fmt.Sprint(id))
+		e := errs.NewEntityNotFound().
+			WithParam("approach_id", fmt.Sprint(id))
 		return e
 	}
 	return nil
+}
+
+func (r *PostgresApproachRepository) Count(ctx context.Context, filter *models.ApproachFilter) (uint64, error) {
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+	q := sq.Select("count(id)").From("public.approachs")
+	// TODO: add filtering
+	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
+	result := r.database.QueryRowxContext(ctx, query, args...)
+	if err := result.Err(); err != nil {
+		e := errs.FromPostgresError(err)
+		return 0, e
+	}
+	var count uint64
+	if err := result.Scan(&count); err != nil {
+		e := errs.FromPostgresError(err)
+		return 0, e
+	}
+	return count, nil
 }

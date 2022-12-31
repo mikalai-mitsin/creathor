@@ -12,6 +12,7 @@ import (
 type {{ .Model }}Repository interface {
 	Get(ctx context.Context, id string) (*models.{{ .Model }}, error)
 	List(ctx context.Context, filter *models.{{ .Model }}Filter) ([]*models.{{ .Model }}, error)
+	Count(ctx context.Context, filter *models.{{ .Model }}Filter) (uint64, error)
 	Create(ctx context.Context, {{ .Model | ToLower }} *models.{{ .Model }}) error
 	Update(ctx context.Context, {{ .Model | ToLower }} *models.{{ .Model }}) error
 	Delete(ctx context.Context, id string) error

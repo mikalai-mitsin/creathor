@@ -47,6 +47,11 @@ log_level = 2
 			want: &Config{
 				BindAddr: ":8005",
 				LogLevel: "debug",
+				Database: database{
+					URI:                "",
+					MaxOpenConnections: 50,
+					MaxIDLEConnections: 10,
+				},
 			},
 			wantErr: nil,
 		},
@@ -58,6 +63,11 @@ log_level = 2
 			want: &Config{
 				BindAddr: ":8000",
 				LogLevel: "debug",
+				Database: database{
+					URI:                "",
+					MaxOpenConnections: 50,
+					MaxIDLEConnections: 10,
+				},
 			},
 			wantErr: nil,
 		},

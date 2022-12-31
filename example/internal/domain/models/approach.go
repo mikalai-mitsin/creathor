@@ -4,10 +4,13 @@ import (
 	"github.com/018bf/example/internal/domain/errs"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
+	"time"
 )
 
 type Approach struct {
-	ID string `json:"id"`
+	ID        string    `json:"id" db:"id,omitempty"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at,omitempty"`
+	CreatedAt time.Time `json:"created_at" db:"created_at,omitempty"`
 }
 
 func (c *Approach) Validate() error {

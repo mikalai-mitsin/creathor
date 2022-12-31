@@ -12,6 +12,7 @@ import (
 type UserRepository interface {
 	Get(ctx context.Context, id string) (*models.User, error)
 	List(ctx context.Context, filter *models.UserFilter) ([]*models.User, error)
+	Count(ctx context.Context, filter *models.UserFilter) (uint64, error)
 	Create(ctx context.Context, user *models.User) error
 	Update(ctx context.Context, user *models.User) error
 	Delete(ctx context.Context, id string) error

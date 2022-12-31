@@ -11,7 +11,7 @@ import (
 
 type {{ .Model }}UseCase interface {
 	Get(ctx context.Context, id string) (*models.{{ .Model }}, error)
-	List(ctx context.Context, filter *models.{{ .Model }}Filter) ([]*models.{{ .Model }}, error)
+	List(ctx context.Context, filter *models.{{ .Model }}Filter) ([]*models.{{ .Model }}, uint64, error)
 	Create(ctx context.Context, create *models.{{ .Model }}Create) (*models.{{ .Model }}, error)
 	Update(ctx context.Context, update *models.{{ .Model }}Update) (*models.{{ .Model }}, error)
 	Delete(ctx context.Context, id string) error

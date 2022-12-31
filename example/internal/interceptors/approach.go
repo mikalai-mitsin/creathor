@@ -25,7 +25,10 @@ func NewApproachInterceptor(
 	}
 }
 
-func (i *ApproachInterceptor) Get(ctx context.Context, id string, _ *models.User) (*models.Approach, error) {
+func (i *ApproachInterceptor) Get(
+	ctx context.Context,
+	id string,
+) (*models.Approach, error) {
 	approach, err := i.approachUseCase.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -36,19 +39,17 @@ func (i *ApproachInterceptor) Get(ctx context.Context, id string, _ *models.User
 func (i *ApproachInterceptor) List(
 	ctx context.Context,
 	filter *models.ApproachFilter,
-	_ *models.User,
-) ([]*models.Approach, error) {
-	approachs, err := i.approachUseCase.List(ctx, filter)
+) ([]*models.Approach, uint64, error) {
+	approachs, count, err := i.approachUseCase.List(ctx, filter)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return approachs, nil
+	return approachs, count, nil
 }
 
 func (i *ApproachInterceptor) Create(
 	ctx context.Context,
 	create *models.ApproachCreate,
-	_ *models.User,
 ) (*models.Approach, error) {
 	approach, err := i.approachUseCase.Create(ctx, create)
 	if err != nil {
@@ -60,7 +61,6 @@ func (i *ApproachInterceptor) Create(
 func (i *ApproachInterceptor) Update(
 	ctx context.Context,
 	update *models.ApproachUpdate,
-	_ *models.User,
 ) (*models.Approach, error) {
 	updatedApproach, err := i.approachUseCase.Update(ctx, update)
 	if err != nil {
@@ -69,7 +69,10 @@ func (i *ApproachInterceptor) Update(
 	return updatedApproach, nil
 }
 
-func (i *ApproachInterceptor) Delete(ctx context.Context, id string, _ *models.User) error {
+func (i *ApproachInterceptor) Delete(
+	ctx context.Context,
+	id string,
+) error {
 	if err := i.approachUseCase.Delete(ctx, id); err != nil {
 		return err
 	}

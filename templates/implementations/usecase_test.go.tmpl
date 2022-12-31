@@ -1,0 +1,521 @@
+package usecases
+
+import (
+	"context"
+	"errors"
+	"reflect"
+	"testing"
+
+	"{{ .Module }}/internal/domain/errs"
+	"{{ .Module }}/internal/domain/models"
+	mock_models "{{ .Module }}/internal/domain/models/mock"
+	"{{ .Module }}/internal/domain/repositories"
+	mock_repositories "{{ .Module }}/internal/domain/repositories/mock"
+	"{{ .Module }}/internal/domain/usecases"
+	"{{ .Module }}/pkg/log"
+	mock_log "{{ .Module }}/pkg/log/mock"
+	"github.com/golang/mock/gomock"
+	"syreclabs.com/go/faker"
+)
+
+func TestNew{{ .Model }}UseCase(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	{{ .Model | ToLower }}Repository := mock_repositories.NewMock{{ .Model }}Repository(ctrl)
+	logger := mock_log.NewMockLogger(ctrl)
+	type args struct {
+		{{ .Model | ToLower }}Repository repositories.{{ .Model }}Repository
+		logger           log.Logger
+	}
+	tests := []struct {
+		name  string
+		setup func()
+		args  args
+		want  usecases.{{ .Model }}UseCase
+	}{
+		{
+			name: "ok",
+			setup: func() {
+			},
+			args: args{
+				{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+				logger:           logger,
+			},
+			want: &{{ .Model }}UseCase{
+				{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+				logger:           logger,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setup()
+			if got := New{{ .Model }}UseCase(tt.args.{{ .Model | ToLower }}Repository, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("New{{ .Model }}UseCase() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test{{ .Model }}UseCase_Get(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	{{ .Model | ToLower }}Repository := mock_repositories.NewMock{{ .Model }}Repository(ctrl)
+	logger := mock_log.NewMockLogger(ctrl)
+	ctx := context.Background()
+	{{ .Model | ToLower }} := mock_models.New{{ .Model }}(t)
+	type fields struct {
+		{{ .Model | ToLower }}Repository repositories.{{ .Model }}Repository
+		logger           log.Logger
+	}
+	type args struct {
+		ctx context.Context
+		id  string
+	}
+	tests := []struct {
+		name    string
+		setup   func()
+		fields  fields
+		args    args
+		want    *models.{{ .Model }}
+		wantErr error
+	}{
+		{
+			name: "ok",
+			setup: func() {
+				{{ .Model | ToLower }}Repository.EXPECT().Get(ctx, {{ .Model | ToLower }}.ID).Return({{ .Model | ToLower }}, nil)
+			},
+			fields: fields{
+				{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+				logger:           logger,
+			},
+			args: args{
+				ctx: ctx,
+				id:  {{ .Model | ToLower }}.ID,
+			},
+			want:    {{ .Model | ToLower }},
+			wantErr: nil,
+		},
+		{
+			name: "{{ .Model | ToLower }} not found",
+			setup: func() {
+				{{ .Model | ToLower }}Repository.EXPECT().Get(ctx, {{ .Model | ToLower }}.ID).Return(nil, errs.NewEntityNotFound())
+			},
+			fields: fields{
+				{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+				logger:           logger,
+			},
+			args: args{
+				ctx: ctx,
+				id:  {{ .Model | ToLower }}.ID,
+			},
+			want:    nil,
+			wantErr: errs.NewEntityNotFound(),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setup()
+			u := &{{ .Model }}UseCase{
+				{{ .Model | ToLower }}Repository: tt.fields.{{ .Model | ToLower }}Repository,
+				logger:           tt.fields.logger,
+			}
+			got, err := u.Get(tt.args.ctx, tt.args.id)
+			if !errors.Is(err, tt.wantErr) {
+				t.Errorf("{{ .Model }}UseCase.Get() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("{{ .Model }}UseCase.Get() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test{{ .Model }}UseCase_List(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	{{ .Model | ToLower }}Repository := mock_repositories.NewMock{{ .Model }}Repository(ctrl)
+	logger := mock_log.NewMockLogger(ctrl)
+	ctx := context.Background()
+	var {{ .Model | ToLower }}s []*models.{{ .Model }}
+	count := uint64(faker.Number().NumberInt(2))
+	for i := uint64(0); i < count; i++ {
+		{{ .Model | ToLower }}s = append({{ .Model | ToLower }}s, mock_models.New{{ .Model }}(t))
+	}
+	filter := mock_models.New{{ .Model }}Filter(t)
+	type fields struct {
+		{{ .Model | ToLower }}Repository repositories.{{ .Model }}Repository
+		logger           log.Logger
+	}
+	type args struct {
+		ctx    context.Context
+		filter *models.{{ .Model }}Filter
+	}
+	tests := []struct {
+		name    string
+		setup   func()
+		fields  fields
+		args    args
+		want    []*models.{{ .Model }}
+		want1   uint64
+		wantErr error
+	}{
+		{
+			name: "ok",
+			setup: func() {
+				{{ .Model | ToLower }}Repository.EXPECT().List(ctx, filter).Return({{ .Model | ToLower }}s, nil)
+				{{ .Model | ToLower }}Repository.EXPECT().Count(ctx, filter).Return(count, nil)
+			},
+			fields: fields{
+				{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+				logger:           logger,
+			},
+			args: args{
+				ctx:    ctx,
+				filter: filter,
+			},
+			want:    {{ .Model | ToLower }}s,
+			want1:   count,
+			wantErr: nil,
+		},
+		{
+			name: "list error",
+			setup: func() {
+				{{ .Model | ToLower }}Repository.EXPECT().List(ctx, filter).Return(nil, errs.NewUnexpectedBehaviorError("test error"))
+			},
+			fields: fields{
+				{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+				logger:           logger,
+			},
+			args: args{
+				ctx:    ctx,
+				filter: filter,
+			},
+			want:    nil,
+			want1:   0,
+			wantErr: errs.NewUnexpectedBehaviorError("test error"),
+		},
+		{
+			name: "count error",
+			setup: func() {
+				{{ .Model | ToLower }}Repository.EXPECT().List(ctx, filter).Return({{ .Model | ToLower }}s, nil)
+				{{ .Model | ToLower }}Repository.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
+			},
+			fields: fields{
+				{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+				logger:           logger,
+			},
+			args: args{
+				ctx:    ctx,
+				filter: filter,
+			},
+			want:    nil,
+			want1:   0,
+			wantErr: errs.NewUnexpectedBehaviorError("test error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setup()
+			u := &{{ .Model }}UseCase{
+				{{ .Model | ToLower }}Repository: tt.fields.{{ .Model | ToLower }}Repository,
+				logger:           tt.fields.logger,
+			}
+			got, got1, err := u.List(tt.args.ctx, tt.args.filter)
+			if !errors.Is(err, tt.wantErr) {
+				t.Errorf("{{ .Model }}UseCase.List() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("{{ .Model }}UseCase.List() = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("{{ .Model }}UseCase.List() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func Test{{ .Model }}UseCase_Create(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	{{ .Model | ToLower }}Repository := mock_repositories.NewMock{{ .Model }}Repository(ctrl)
+	logger := mock_log.NewMockLogger(ctrl)
+	ctx := context.Background()
+    create := mock_models.New{{ .Model }}Create(t)
+	type fields struct {
+		{{ .Model | ToLower }}Repository repositories.{{ .Model }}Repository
+		logger           log.Logger
+	}
+	type args struct {
+		ctx    context.Context
+		create *models.{{ .Model }}Create
+	}
+	tests := []struct {
+		name    string
+		setup   func()
+		fields  fields
+		args    args
+		want    *models.{{ .Model }}
+		wantErr error
+	}{
+		{
+			name: "ok",
+			setup: func() {
+				{{ .Model | ToLower }}Repository.EXPECT().
+					Create(ctx, &models.{{ .Model }}{}).
+					Return(nil)
+			},
+			fields: fields{
+				{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+				logger:           logger,
+			},
+			args: args{
+				ctx: ctx,
+				create: create,
+			},
+			want:    &models.{{ .Model }}{},
+			wantErr: nil,
+		},
+		{
+			name: "unexpected behavior",
+			setup: func() {
+				{{ .Model | ToLower }}Repository.EXPECT().
+					Create(ctx, &models.{{ .Model }}{}).
+					Return(errs.NewUnexpectedBehaviorError("test error"))
+			},
+			fields: fields{
+				{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+				logger:           logger,
+			},
+			args: args{
+				ctx: ctx,
+				create: create,
+			},
+			want:    nil,
+			wantErr: errs.NewUnexpectedBehaviorError("test error"),
+		},
+		// TODO: Add validation rules or delete this case
+		//{
+		//	name: "invalid",
+		//	setup: func() {
+		//	},
+		//	fields: fields{
+		//		{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+		//		logger:           logger,
+		//	},
+		//	args: args{
+		//		ctx: ctx,
+		//		create: &models.{{ .Model }}Create{},
+		//	},
+		//	want: nil,
+		//	wantErr: errs.NewInvalidFormError().WithParam("set", "it"),
+		//},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setup()
+			u := &{{ .Model }}UseCase{
+				{{ .Model | ToLower }}Repository: tt.fields.{{ .Model | ToLower }}Repository,
+				logger:           tt.fields.logger,
+			}
+			got, err := u.Create(tt.args.ctx, tt.args.create)
+			if !errors.Is(err, tt.wantErr) {
+				t.Errorf("{{ .Model }}UseCase.Create() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("{{ .Model }}UseCase.Create() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test{{ .Model }}UseCase_Update(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	{{ .Model | ToLower }}Repository := mock_repositories.NewMock{{ .Model }}Repository(ctrl)
+	logger := mock_log.NewMockLogger(ctrl)
+	ctx := context.Background()
+	{{ .Model | ToLower }} := mock_models.New{{ .Model }}(t)
+	update := mock_models.New{{ .Model }}Update(t)
+	type fields struct {
+		{{ .Model | ToLower }}Repository repositories.{{ .Model }}Repository
+		logger           log.Logger
+	}
+	type args struct {
+		ctx    context.Context
+		update *models.{{ .Model }}Update
+	}
+	tests := []struct {
+		name    string
+		setup   func()
+		fields  fields
+		args    args
+		want    *models.{{ .Model }}
+		wantErr error
+	}{
+		{
+			name: "ok",
+			setup: func() {
+				{{ .Model | ToLower }}Repository.EXPECT().
+					Get(ctx, update.ID).Return({{ .Model | ToLower }}, nil)
+				{{ .Model | ToLower }}Repository.EXPECT().
+					Update(ctx, {{ .Model | ToLower }}).Return(nil)
+			},
+			fields: fields{
+				{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+				logger:           logger,
+			},
+			args: args{
+				ctx: ctx,
+				update: update,
+			},
+			want:    {{ .Model | ToLower }},
+			wantErr: nil,
+		},
+		{
+			name: "update error",
+			setup: func() {
+				{{ .Model | ToLower }}Repository.EXPECT().
+					Get(ctx, update.ID).
+					Return({{ .Model | ToLower }}, nil)
+				{{ .Model | ToLower }}Repository.EXPECT().
+					Update(ctx, {{ .Model | ToLower }}).
+					Return(errs.NewUnexpectedBehaviorError("test error"))
+			},
+			fields: fields{
+				{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+				logger:           logger,
+			},
+			args: args{
+				ctx: ctx,
+				update: update,
+			},
+			want:    nil,
+			wantErr: errs.NewUnexpectedBehaviorError("test error"),
+		},
+		{
+			name: "{{ .Model | ToLower }} not found",
+			setup: func() {
+				{{ .Model | ToLower }}Repository.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFound())
+			},
+			fields: fields{
+				{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+				logger:           logger,
+			},
+			args: args{
+				ctx: ctx,
+				update: update,
+			},
+			want:    nil,
+			wantErr: errs.NewEntityNotFound(),
+		},
+		{
+			name: "invalid",
+			setup: func() {
+			},
+			fields: fields{
+				{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+				logger:           logger,
+			},
+			args: args{
+				ctx: ctx,
+				update: &models.{{ .Model }}Update{
+					ID:   faker.Number().Number(1),
+				},
+			},
+			want: nil,
+			wantErr: errs.NewInvalidFormError().WithParam("id", "must be a valid UUID"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setup()
+			u := &{{ .Model }}UseCase{
+				{{ .Model | ToLower }}Repository: tt.fields.{{ .Model | ToLower }}Repository,
+				logger:           tt.fields.logger,
+			}
+			got, err := u.Update(tt.args.ctx, tt.args.update)
+			if !errors.Is(err, tt.wantErr) {
+				t.Errorf("{{ .Model }}UseCase.Update() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("{{ .Model }}UseCase.Update() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test{{ .Model }}UseCase_Delete(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	{{ .Model | ToLower }}Repository := mock_repositories.NewMock{{ .Model }}Repository(ctrl)
+	logger := mock_log.NewMockLogger(ctrl)
+	ctx := context.Background()
+	{{ .Model | ToLower }} := mock_models.New{{ .Model }}(t)
+	type fields struct {
+		{{ .Model | ToLower }}Repository repositories.{{ .Model }}Repository
+		logger           log.Logger
+	}
+	type args struct {
+		ctx context.Context
+		id  string
+	}
+	tests := []struct {
+		name    string
+		setup   func()
+		fields  fields
+		args    args
+		wantErr error
+	}{
+		{
+			name: "ok",
+			setup: func() {
+				{{ .Model | ToLower }}Repository.EXPECT().
+					Delete(ctx, {{ .Model | ToLower }}.ID).
+					Return(nil)
+			},
+			fields: fields{
+				{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+				logger:           logger,
+			},
+			args: args{
+				ctx: ctx,
+				id:  {{ .Model | ToLower }}.ID,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "{{ .Model | ToLower }} not found",
+			setup: func() {
+				{{ .Model | ToLower }}Repository.EXPECT().
+					Delete(ctx, {{ .Model | ToLower }}.ID).
+					Return(errs.NewEntityNotFound())
+			},
+			fields: fields{
+				{{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+				logger:           logger,
+			},
+			args: args{
+				ctx: ctx,
+				id:  {{ .Model | ToLower }}.ID,
+			},
+			wantErr: errs.NewEntityNotFound(),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setup()
+			u := &{{ .Model }}UseCase{
+				{{ .Model | ToLower }}Repository: tt.fields.{{ .Model | ToLower }}Repository,
+				logger:           tt.fields.logger,
+			}
+			if err := u.Delete(tt.args.ctx, tt.args.id); !errors.Is(err, tt.wantErr) {
+				t.Errorf("{{ .Model }}UseCase.Delete() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

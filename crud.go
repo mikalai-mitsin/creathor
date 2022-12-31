@@ -11,16 +11,23 @@ import (
 type Model struct {
 	Model  string
 	Module string
+	Auth   bool
 }
 
-func CreateCRUD(name, module string) error {
+func CreateCRUD(name, module string, auth bool) error {
 	name = cases.Title(language.English).String(name)
 	filename := fmt.Sprintf("%s.go", strings.ToLower(name))
+	testFilename := fmt.Sprintf("%s_test.go", strings.ToLower(name))
 	files := []*Template{
 		{
 			SourcePath:      "templates/domain/model.go.tmpl",
 			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "models", filename),
 			Name:            "model",
+		},
+		{
+			SourcePath:      "templates/domain/model_mock.go.tmpl",
+			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "models", "mock", filename),
+			Name:            "model_mock",
 		},
 		{
 			SourcePath:      "templates/domain/repository.go.tmpl",
@@ -43,6 +50,11 @@ func CreateCRUD(name, module string) error {
 			Name:            "usecase",
 		},
 		{
+			SourcePath:      "templates/implementations/usecase_test.go.tmpl",
+			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", testFilename),
+			Name:            "usecase test",
+		},
+		{
 			SourcePath:      "templates/implementations/interceptor.go.tmpl",
 			DestinationPath: filepath.Join(destinationPath, "internal", "interceptors", filename),
 			Name:            "interceptor",
@@ -53,14 +65,15 @@ func CreateCRUD(name, module string) error {
 			Name:            "repository",
 		},
 		{
-			SourcePath:      "templates/errs/model.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "errs", filename),
-			Name:            "errors",
+			SourcePath:      "templates/implementations/repository_test.go.tmpl",
+			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", testFilename),
+			Name:            "repository test",
 		},
 	}
 	data := Model{
 		Model:  name,
 		Module: module,
+		Auth:   auth,
 	}
 	for _, tmpl := range files {
 		if err := tmpl.renderToFile(data); err != nil {

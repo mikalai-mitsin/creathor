@@ -12,7 +12,6 @@ import (
 	"{{ .Module }}/internal/domain/repositories"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
 	"{{ .Module }}/internal/domain/errs"
 )
 
@@ -33,8 +32,8 @@ func (r *Postgres{{ .Model }}Repository) Create(ctx context.Context, {{ .Model |
 		Values().  // TODO: add values
 		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.QueryRowxContext(ctx, query, args...).Scan(&{{ .Model | ToLower }}.ID); err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
+	if err := r.database.QueryRowxContext(ctx, query, args...).StructScan({{ .Model | ToLower }}); err != nil {
+		e := errs.FromPostgresError(err)
 		return e
 	}
 	return nil
@@ -44,13 +43,14 @@ func (r *Postgres{{ .Model }}Repository) Get(ctx context.Context, id string) (*m
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	{{ .Model | ToLower }} := &models.{{ .Model }}{}
-	q := sq.Select("*").
+	q := sq.Select("{{ .Model | ToLower }}s.id", "{{ .Model | ToLower }}s.updated_at", "{{ .Model | ToLower }}s.created_at").
 		From("public.{{ .Model | ToLower }}s").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.GetContext(ctx, {{ .Model | ToLower }}, query, args...); err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
+		e := errs.FromPostgresError(err).
+			WithParam("{{ .Model | ToLower }}_id", id)
 		return nil, e
 	}
 	return {{ .Model | ToLower }}, nil
@@ -61,9 +61,9 @@ func (r *Postgres{{ .Model }}Repository) List(ctx context.Context, filter *model
 	defer cancel()
 	var {{ .Model | ToLower }}s []*models.{{ .Model }}
 	const pageSize = 10
-	q := sq.Select("*").
+	q := sq.Select("{{ .Model | ToLower }}s.id", "{{ .Model | ToLower }}s.updated_at", "{{ .Model | ToLower }}s.created_at").
 		From("public.{{ .Model | ToLower }}s").
-		Limit(pageSize) //
+		Limit(pageSize)
 	// TODO: add filtering
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
 		q = q.Offset((*filter.PageNumber - 1) * *filter.PageSize)
@@ -76,7 +76,7 @@ func (r *Postgres{{ .Model }}Repository) List(ctx context.Context, filter *model
 	}
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.SelectContext(ctx, &{{ .Model | ToLower }}s, query, args...); err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
+		e := errs.FromPostgresError(err)
 		return nil, e
 	}
 	return {{ .Model | ToLower }}s, nil
@@ -89,27 +89,18 @@ func (r *Postgres{{ .Model }}Repository) Update(ctx context.Context, {{ .Model |
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
-		pgError, ok := err.(*pq.Error)
-		if ok {
-			switch pgError.Code {
-			case "23505":
-				e = errs.NewInvalidFormError()
-				e.AddParam("phone", "The phone field has already been taken.")
-			default:
-				e = errs.NewUnexpectedBehaviorError(pgError.Detail)
-			}
-		}
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint({{ .Model | ToLower }}.ID))
+		e := errs.FromPostgresError(err).
+			WithParam("{{ .Model | ToLower }}_id", fmt.Sprint({{ .Model | ToLower }}.ID))
 		return e
 	}
 	affected, err := result.RowsAffected()
 	if err != nil {
-		return errs.NewUnexpectedBehaviorError(err.Error())
+		return errs.FromPostgresError(err).
+			WithParam("{{ .Model | ToLower }}_id", fmt.Sprint({{ .Model | ToLower }}.ID))
 	}
 	if affected == 0 {
-		e := errs.New{{ .Model }}NotFound()
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint({{ .Model | ToLower }}.ID))
+		e := errs.NewEntityNotFound().
+			WithParam("{{ .Model | ToLower }}_id", fmt.Sprint({{ .Model | ToLower }}.ID))
 		return e
 	}
 	return nil
@@ -122,20 +113,39 @@ func (r *Postgres{{ .Model }}Repository) Delete(ctx context.Context, id string) 
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
+		e := errs.FromPostgresError(err).
+			WithParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
 		return e
 	}
 	affected, err := result.RowsAffected()
 	if err != nil {
-		e := errs.NewUnexpectedBehaviorError(err.Error())
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
+		e := errs.FromPostgresError(err).
+			WithParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
 		return e
 	}
 	if affected == 0 {
-		e := errs.New{{ .Model }}NotFound()
-		e.AddParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
+		e := errs.NewEntityNotFound().
+			WithParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
 		return e
 	}
 	return nil
+}
+
+func (r *Postgres{{ .Model }}Repository) Count(ctx context.Context, filter *models.{{ .Model }}Filter) (uint64, error) {
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+	q := sq.Select("count(id)").From("public.{{ .Model | ToLower }}s")
+	// TODO: add filtering
+	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
+	result := r.database.QueryRowxContext(ctx, query, args...)
+	if err := result.Err(); err != nil {
+		e := errs.FromPostgresError(err)
+		return 0, e
+	}
+	var count uint64
+	if err := result.Scan(&count); err != nil {
+		e := errs.FromPostgresError(err)
+		return 0, e
+	}
+	return count, nil
 }

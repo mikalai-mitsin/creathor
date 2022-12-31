@@ -26,19 +26,26 @@ func NewUserUseCase(
 }
 
 func (u *UserUseCase) Get(ctx context.Context, id string) (*models.User, error) {
-	qr, err := u.userRepository.Get(ctx, id)
+	user, err := u.userRepository.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return qr, nil
+	return user, nil
 }
 
-func (u *UserUseCase) List(ctx context.Context, filter *models.UserFilter) ([]*models.User, error) {
-	qrs, err := u.userRepository.List(ctx, filter)
+func (u *UserUseCase) List(
+	ctx context.Context,
+	filter *models.UserFilter,
+) ([]*models.User, uint64, error) {
+	users, err := u.userRepository.List(ctx, filter)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return qrs, nil
+	count, err := u.userRepository.Count(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	return users, count, nil
 }
 
 func (u *UserUseCase) Create(ctx context.Context, create *models.UserCreate) (*models.User, error) {
@@ -48,7 +55,6 @@ func (u *UserUseCase) Create(ctx context.Context, create *models.UserCreate) (*m
 	user := &models.User{
 		ID: "",
 	}
-
 	if err := u.userRepository.Create(ctx, user); err != nil {
 		return nil, err
 	}

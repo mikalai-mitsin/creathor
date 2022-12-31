@@ -26,19 +26,26 @@ func NewSessionUseCase(
 }
 
 func (u *SessionUseCase) Get(ctx context.Context, id string) (*models.Session, error) {
-	qr, err := u.sessionRepository.Get(ctx, id)
+	session, err := u.sessionRepository.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return qr, nil
+	return session, nil
 }
 
-func (u *SessionUseCase) List(ctx context.Context, filter *models.SessionFilter) ([]*models.Session, error) {
-	qrs, err := u.sessionRepository.List(ctx, filter)
+func (u *SessionUseCase) List(
+	ctx context.Context,
+	filter *models.SessionFilter,
+) ([]*models.Session, uint64, error) {
+	sessions, err := u.sessionRepository.List(ctx, filter)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return qrs, nil
+	count, err := u.sessionRepository.Count(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	return sessions, count, nil
 }
 
 func (u *SessionUseCase) Create(ctx context.Context, create *models.SessionCreate) (*models.Session, error) {
@@ -48,7 +55,6 @@ func (u *SessionUseCase) Create(ctx context.Context, create *models.SessionCreat
 	session := &models.Session{
 		ID: "",
 	}
-
 	if err := u.sessionRepository.Create(ctx, session); err != nil {
 		return nil, err
 	}

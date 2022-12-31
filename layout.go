@@ -26,15 +26,19 @@ func CreateLayout(data *Project) error {
 		path.Join(destinationPath, "internal", "domain", "errs"),
 		path.Join(destinationPath, "internal", "domain", "interceptors"),
 		path.Join(destinationPath, "internal", "domain", "models"),
+		path.Join(destinationPath, "internal", "domain", "models", "mock"),
 		path.Join(destinationPath, "internal", "domain", "repositories"),
 		path.Join(destinationPath, "internal", "domain", "usecases"),
 		path.Join(destinationPath, "internal", "interceptors"),
 		path.Join(destinationPath, "internal", "interfaces"),
+		path.Join(destinationPath, "internal", "interfaces", "postgres"),
+		path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations"),
 		path.Join(destinationPath, "internal", "usecases"),
 		path.Join(destinationPath, "internal", "repositories"),
 		path.Join(destinationPath, "pkg"),
 		path.Join(destinationPath, "pkg", "clock"),
 		path.Join(destinationPath, "pkg", "log"),
+		path.Join(destinationPath, "pkg", "utils"),
 	}
 	for _, directory := range directories {
 		if err := os.MkdirAll(directory, 0777); err != nil {
@@ -93,6 +97,11 @@ func CreateLayout(data *Project) error {
 			Name:            "logger interface",
 		},
 		{
+			SourcePath:      "templates/utils/pointer.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "pkg", "utils", "pointer.go"),
+			Name:            "utils pointer",
+		},
+		{
 			SourcePath:      "templates/go.mod.tmpl",
 			DestinationPath: path.Join(destinationPath, "go.mod"),
 			Name:            "go.mod",
@@ -117,6 +126,46 @@ func CreateLayout(data *Project) error {
 			DestinationPath: path.Join(destinationPath, "docs", "CHANGELOG.md"),
 			Name:            "CHANGELOG.md",
 		},
+		{
+			SourcePath:      "templates/interfaces/postgres/fx.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "fx.go"),
+			Name:            "postgres fx",
+		},
+		{
+			SourcePath:      "templates/interfaces/postgres/postgres.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "postgres.go"),
+			Name:            "postgres",
+		},
+		{
+			SourcePath:      "templates/interfaces/postgres/testing.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "testing.go"),
+			Name:            "postgres testing",
+		},
+		{
+			SourcePath:      "templates/interfaces/postgres/migrations/init.sql.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "init.sql"),
+			Name:            "postgres init migration",
+		},
+	}
+	if authEnabled {
+		files = append(
+			files,
+			&Template{
+				SourcePath:      "templates/domain/usecase_auth.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "domain", "usecases", "auth.go"),
+				Name:            "auth usecase",
+			},
+			&Template{
+				SourcePath:      "templates/domain/model_auth.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "domain", "models", "auth.go"),
+				Name:            "auth models",
+			},
+			&Template{
+				SourcePath:      "templates/domain/model_permission.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "domain", "models", "permission.go"),
+				Name:            "auth permission",
+			},
+		)
 	}
 	for _, file := range files {
 		if err := file.renderToFile(data); err != nil {

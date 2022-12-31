@@ -12,6 +12,7 @@ import (
 type SessionRepository interface {
 	Get(ctx context.Context, id string) (*models.Session, error)
 	List(ctx context.Context, filter *models.SessionFilter) ([]*models.Session, error)
+	Count(ctx context.Context, filter *models.SessionFilter) (uint64, error)
 	Create(ctx context.Context, session *models.Session) error
 	Update(ctx context.Context, session *models.Session) error
 	Delete(ctx context.Context, id string) error

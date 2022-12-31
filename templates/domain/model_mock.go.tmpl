@@ -1,0 +1,38 @@
+package mock_models
+
+import (
+	"{{ .Module }}/internal/domain/models"
+	"{{ .Module }}/pkg/utils"
+	"syreclabs.com/go/faker"
+	"github.com/google/uuid"
+	"testing"
+)
+
+func New{{ .Model }}(t *testing.T) *models.{{ .Model }} {
+	t.Helper()
+	return &models.{{ .Model }}{
+		ID:         uuid.New().String(),
+	}
+}
+
+func New{{ .Model }}Create(t *testing.T) *models.{{ .Model }}Create {
+	t.Helper()
+	return &models.{{ .Model }}Create{}
+}
+
+func New{{ .Model }}Update(t *testing.T) *models.{{ .Model }}Update {
+	t.Helper()
+	return &models.{{ .Model }}Update{
+		ID: uuid.New().String(),
+	}
+}
+
+func New{{ .Model }}Filter(t *testing.T) *models.{{ .Model }}Filter {
+	t.Helper()
+	return &models.{{ .Model }}Filter{
+		PageSize:   utils.Pointer(uint64(faker.RandomInt64(2, 100))),
+		PageNumber: utils.Pointer(uint64(faker.RandomInt64(2, 100))),
+		OrderBy:    faker.Lorem().Words(5),
+		IDs:        []string{uuid.New().String(), uuid.New().String(), uuid.New().String()},
+	}
+}

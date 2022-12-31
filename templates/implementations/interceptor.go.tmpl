@@ -12,44 +12,87 @@ import (
 
 type {{ .Model }}Interceptor struct {
 	{{ .Model | ToLower}}UseCase usecases.{{ .Model }}UseCase
-	logger                       log.Logger
+{{- if .Auth}}
+	authUseCase usecases.AuthUseCase
+{{- end}}
+	logger log.Logger
 }
 
 func New{{ .Model }}Interceptor(
-		{{ .Model | ToLower }}UseCase usecases.{{ .Model }}UseCase,
-		logger log.Logger,
+	{{ .Model | ToLower }}UseCase usecases.{{ .Model }}UseCase,
+{{- if .Auth}}
+	authUseCase usecases.AuthUseCase,
+{{- end}}
+	logger log.Logger,
 ) interceptors.{{ .Model }}Interceptor {
 	return &{{ .Model }}Interceptor{
 		{{ .Model | ToLower }}UseCase: {{ .Model | ToLower }}UseCase,
+{{- if .Auth}}
+		authUseCase:   authUseCase,
+{{- end}}
 		logger:                        logger,
 	}
 }
 
-func (i *{{ .Model }}Interceptor) Get(ctx context.Context, id string, _ *models.User) (*models.{{ .Model }}, error) {
+func (i *{{ .Model }}Interceptor) Get(
+	ctx context.Context,
+	id string,{{if .Auth}}
+	requestUser *models.User,
+{{- end}}
+) (*models.{{ .Model }}, error) {
+	{{- if .Auth }}
+	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionID{{ .Model }}Detail); err != nil {
+		return nil, err
+	}
+	{{- end }}
 	{{ .Model | ToLower }}, err := i.{{ .Model | ToLower }}UseCase.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
+	{{- if .Auth }}
+	err = i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionID{{ .Model }}Detail, {{ .Model | ToLower }})
+	if err != nil {
+		return nil, err
+	}
+	{{- end }}
 	return {{ .Model | ToLower }}, nil
 }
 
 func (i *{{ .Model }}Interceptor) List(
-		ctx context.Context,
-		filter *models.{{ .Model }}Filter,
-		_ *models.User,
-) ([]*models.{{ .Model }}, error) {
-	{{ .Model | ToLower }}s, err := i.{{ .Model | ToLower }}UseCase.List(ctx, filter)
-	if err != nil {
-		return nil, err
+	ctx context.Context,
+	filter *models.{{ .Model }}Filter,{{if .Auth}}
+	requestUser *models.User,
+{{- end}}
+) ([]*models.{{ .Model }}, uint64, error) {
+	{{- if .Auth }}
+	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionID{{ .Model }}List); err != nil {
+		return nil, 0, err
 	}
-	return {{ .Model | ToLower }}s, nil
+	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionID{{ .Model }}List, filter); err != nil {
+		return nil, 0, err
+	}
+	{{- end }}
+	{{ .Model | ToLower }}s, count, err := i.{{ .Model | ToLower }}UseCase.List(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	return {{ .Model | ToLower }}s, count, nil
 }
 
 func (i *{{ .Model }}Interceptor) Create(
-		ctx context.Context,
-		create *models.{{ .Model }}Create,
-		_ *models.User,
+	ctx context.Context,
+	create *models.{{ .Model }}Create,{{if .Auth}}
+	requestUser *models.User,
+{{- end}}
 ) (*models.{{ .Model }}, error) {
+{{- if .Auth }}
+	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionID{{ .Model }}Create); err != nil {
+		return nil, err
+	}
+	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionID{{ .Model }}Create, create); err != nil {
+		return nil, err
+	}
+{{- end }}
 	{{ .Model | ToLower }}, err := i.{{ .Model | ToLower }}UseCase.Create(ctx, create)
 	if err != nil {
 		return nil, err
@@ -58,10 +101,23 @@ func (i *{{ .Model }}Interceptor) Create(
 }
 
 func (i *{{ .Model }}Interceptor) Update(
-		ctx context.Context,
-		update *models.{{ .Model }}Update,
-		_ *models.User,
+	ctx context.Context,
+	update *models.{{ .Model }}Update,{{if .Auth}}
+	requestUser *models.User,
+{{- end }}
 ) (*models.{{ .Model }}, error) {
+	{{- if .Auth }}
+	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionID{{ .Model }}Update); err != nil {
+		return nil, err
+	}
+	{{ .Model | ToLower }}, err := i.{{ .Model | ToLower }}UseCase.Get(ctx, update.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionID{{ .Model }}Update, {{ .Model | ToLower }}); err != nil {
+		return nil, err
+	}
+	{{- end }}
 	updated{{ .Model }}, err := i.{{ .Model | ToLower }}UseCase.Update(ctx, update)
 	if err != nil {
 		return nil, err
@@ -69,7 +125,25 @@ func (i *{{ .Model }}Interceptor) Update(
 	return updated{{ .Model }}, nil
 }
 
-func (i *{{ .Model }}Interceptor) Delete(ctx context.Context, id string, _ *models.User) error {
+func (i *{{ .Model }}Interceptor) Delete(
+	ctx context.Context,
+	id string,{{if .Auth}}
+	requestUser *models.User,
+{{- end}}
+) error {
+{{- if .Auth }}
+	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionID{{ .Model }}Delete); err != nil {
+		return err
+	}
+	{{ .Model | ToLower }}, err := i.{{ .Model | ToLower }}UseCase.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	err = i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionID{{ .Model }}Delete, {{ .Model | ToLower }})
+	if err != nil {
+		return err
+	}
+{{- end }}
 	if err := i.{{ .Model | ToLower }}UseCase.Delete(ctx, id); err != nil {
 		return err
 	}

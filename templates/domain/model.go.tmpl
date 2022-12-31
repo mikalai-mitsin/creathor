@@ -72,3 +72,12 @@ func (c *{{ .Model }}Update) Validate() error {
     }
     return nil
 }
+{{ if .Auth }}
+const (
+	PermissionID{{ .Model }}List   PermissionID = "{{ .Model | ToLower }}_list"
+	PermissionID{{ .Model }}Detail PermissionID = "{{ .Model | ToLower }}_detail"
+	PermissionID{{ .Model }}Create PermissionID = "{{ .Model | ToLower }}_create"
+	PermissionID{{ .Model }}Update PermissionID = "{{ .Model | ToLower }}_update"
+	PermissionID{{ .Model }}Delete PermissionID = "{{ .Model | ToLower }}_delete"
+)
+{{ end }}

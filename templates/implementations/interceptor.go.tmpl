@@ -40,10 +40,21 @@ func (i *{{ .Model }}Interceptor) Get(
 	requestUser *models.User,
 {{- end}}
 ) (*models.{{ .Model }}, error) {
+	{{- if .Auth }}
+	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionID{{ .Model }}Detail); err != nil {
+		return nil, err
+	}
+	{{- end }}
 	{{ .Model | ToLower }}, err := i.{{ .Model | ToLower }}UseCase.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
+	{{- if .Auth }}
+	err = i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionID{{ .Model }}Detail, {{ .Model | ToLower }})
+	if err != nil {
+		return nil, err
+	}
+	{{- end }}
 	return {{ .Model | ToLower }}, nil
 }
 
@@ -53,6 +64,14 @@ func (i *{{ .Model }}Interceptor) List(
 	requestUser *models.User,
 {{- end}}
 ) ([]*models.{{ .Model }}, uint64, error) {
+	{{- if .Auth }}
+	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionID{{ .Model }}List); err != nil {
+		return nil, 0, err
+	}
+	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionID{{ .Model }}List, filter); err != nil {
+		return nil, 0, err
+	}
+	{{- end }}
 	{{ .Model | ToLower }}s, count, err := i.{{ .Model | ToLower }}UseCase.List(ctx, filter)
 	if err != nil {
 		return nil, 0, err
@@ -66,6 +85,14 @@ func (i *{{ .Model }}Interceptor) Create(
 	requestUser *models.User,
 {{- end}}
 ) (*models.{{ .Model }}, error) {
+{{- if .Auth }}
+	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionID{{ .Model }}Create); err != nil {
+		return nil, err
+	}
+	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionID{{ .Model }}Create, create); err != nil {
+		return nil, err
+	}
+{{- end }}
 	{{ .Model | ToLower }}, err := i.{{ .Model | ToLower }}UseCase.Create(ctx, create)
 	if err != nil {
 		return nil, err
@@ -79,6 +106,18 @@ func (i *{{ .Model }}Interceptor) Update(
 	requestUser *models.User,
 {{- end }}
 ) (*models.{{ .Model }}, error) {
+	{{- if .Auth }}
+	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionID{{ .Model }}Update); err != nil {
+		return nil, err
+	}
+	{{ .Model | ToLower }}, err := i.{{ .Model | ToLower }}UseCase.Get(ctx, update.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionID{{ .Model }}Update, {{ .Model | ToLower }}); err != nil {
+		return nil, err
+	}
+	{{- end }}
 	updated{{ .Model }}, err := i.{{ .Model | ToLower }}UseCase.Update(ctx, update)
 	if err != nil {
 		return nil, err
@@ -92,6 +131,19 @@ func (i *{{ .Model }}Interceptor) Delete(
 	requestUser *models.User,
 {{- end}}
 ) error {
+{{- if .Auth }}
+	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionID{{ .Model }}Delete); err != nil {
+		return err
+	}
+	{{ .Model | ToLower }}, err := i.{{ .Model | ToLower }}UseCase.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	err = i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionID{{ .Model }}Delete, {{ .Model | ToLower }})
+	if err != nil {
+		return err
+	}
+{{- end }}
 	if err := i.{{ .Model | ToLower }}UseCase.Delete(ctx, id); err != nil {
 		return err
 	}

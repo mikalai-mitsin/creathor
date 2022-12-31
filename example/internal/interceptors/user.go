@@ -12,18 +12,15 @@ import (
 
 type UserInterceptor struct {
 	userUseCase usecases.UserUseCase
-	authUseCase usecases.AuthUseCase
 	logger      log.Logger
 }
 
 func NewUserInterceptor(
 	userUseCase usecases.UserUseCase,
-	authUseCase usecases.AuthUseCase,
 	logger log.Logger,
 ) interceptors.UserInterceptor {
 	return &UserInterceptor{
 		userUseCase: userUseCase,
-		authUseCase: authUseCase,
 		logger:      logger,
 	}
 }
@@ -31,7 +28,6 @@ func NewUserInterceptor(
 func (i *UserInterceptor) Get(
 	ctx context.Context,
 	id string,
-	requestUser *models.User,
 ) (*models.User, error) {
 	user, err := i.userUseCase.Get(ctx, id)
 	if err != nil {
@@ -43,7 +39,6 @@ func (i *UserInterceptor) Get(
 func (i *UserInterceptor) List(
 	ctx context.Context,
 	filter *models.UserFilter,
-	requestUser *models.User,
 ) ([]*models.User, uint64, error) {
 	users, count, err := i.userUseCase.List(ctx, filter)
 	if err != nil {
@@ -55,7 +50,6 @@ func (i *UserInterceptor) List(
 func (i *UserInterceptor) Create(
 	ctx context.Context,
 	create *models.UserCreate,
-	requestUser *models.User,
 ) (*models.User, error) {
 	user, err := i.userUseCase.Create(ctx, create)
 	if err != nil {
@@ -67,7 +61,6 @@ func (i *UserInterceptor) Create(
 func (i *UserInterceptor) Update(
 	ctx context.Context,
 	update *models.UserUpdate,
-	requestUser *models.User,
 ) (*models.User, error) {
 	updatedUser, err := i.userUseCase.Update(ctx, update)
 	if err != nil {
@@ -79,7 +72,6 @@ func (i *UserInterceptor) Update(
 func (i *UserInterceptor) Delete(
 	ctx context.Context,
 	id string,
-	requestUser *models.User,
 ) error {
 	if err := i.userUseCase.Delete(ctx, id); err != nil {
 		return err

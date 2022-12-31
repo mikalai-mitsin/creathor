@@ -12,18 +12,15 @@ import (
 
 type SessionInterceptor struct {
 	sessionUseCase usecases.SessionUseCase
-	authUseCase    usecases.AuthUseCase
 	logger         log.Logger
 }
 
 func NewSessionInterceptor(
 	sessionUseCase usecases.SessionUseCase,
-	authUseCase usecases.AuthUseCase,
 	logger log.Logger,
 ) interceptors.SessionInterceptor {
 	return &SessionInterceptor{
 		sessionUseCase: sessionUseCase,
-		authUseCase:    authUseCase,
 		logger:         logger,
 	}
 }
@@ -31,7 +28,6 @@ func NewSessionInterceptor(
 func (i *SessionInterceptor) Get(
 	ctx context.Context,
 	id string,
-	requestUser *models.User,
 ) (*models.Session, error) {
 	session, err := i.sessionUseCase.Get(ctx, id)
 	if err != nil {
@@ -43,7 +39,6 @@ func (i *SessionInterceptor) Get(
 func (i *SessionInterceptor) List(
 	ctx context.Context,
 	filter *models.SessionFilter,
-	requestUser *models.User,
 ) ([]*models.Session, uint64, error) {
 	sessions, count, err := i.sessionUseCase.List(ctx, filter)
 	if err != nil {
@@ -55,7 +50,6 @@ func (i *SessionInterceptor) List(
 func (i *SessionInterceptor) Create(
 	ctx context.Context,
 	create *models.SessionCreate,
-	requestUser *models.User,
 ) (*models.Session, error) {
 	session, err := i.sessionUseCase.Create(ctx, create)
 	if err != nil {
@@ -67,7 +61,6 @@ func (i *SessionInterceptor) Create(
 func (i *SessionInterceptor) Update(
 	ctx context.Context,
 	update *models.SessionUpdate,
-	requestUser *models.User,
 ) (*models.Session, error) {
 	updatedSession, err := i.sessionUseCase.Update(ctx, update)
 	if err != nil {
@@ -79,7 +72,6 @@ func (i *SessionInterceptor) Update(
 func (i *SessionInterceptor) Delete(
 	ctx context.Context,
 	id string,
-	requestUser *models.User,
 ) error {
 	if err := i.sessionUseCase.Delete(ctx, id); err != nil {
 		return err

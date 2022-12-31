@@ -36,53 +36,53 @@ func (m *MockApproachInterceptor) EXPECT() *MockApproachInterceptorMockRecorder 
 }
 
 // Create mocks base method.
-func (m *MockApproachInterceptor) Create(arg0 context.Context, arg1 *models.ApproachCreate, arg2 *models.User) (*models.Approach, error) {
+func (m *MockApproachInterceptor) Create(arg0 context.Context, arg1 *models.ApproachCreate) (*models.Approach, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Create", arg0, arg1)
 	ret0, _ := ret[0].(*models.Approach)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockApproachInterceptorMockRecorder) Create(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockApproachInterceptorMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockApproachInterceptor)(nil).Create), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockApproachInterceptor)(nil).Create), arg0, arg1)
 }
 
 // Delete mocks base method.
-func (m *MockApproachInterceptor) Delete(arg0 context.Context, arg1 string, arg2 *models.User) error {
+func (m *MockApproachInterceptor) Delete(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockApproachInterceptorMockRecorder) Delete(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockApproachInterceptorMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockApproachInterceptor)(nil).Delete), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockApproachInterceptor)(nil).Delete), arg0, arg1)
 }
 
 // Get mocks base method.
-func (m *MockApproachInterceptor) Get(arg0 context.Context, arg1 string, arg2 *models.User) (*models.Approach, error) {
+func (m *MockApproachInterceptor) Get(arg0 context.Context, arg1 string) (*models.Approach, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(*models.Approach)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockApproachInterceptorMockRecorder) Get(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockApproachInterceptorMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockApproachInterceptor)(nil).Get), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockApproachInterceptor)(nil).Get), arg0, arg1)
 }
 
 // List mocks base method.
-func (m *MockApproachInterceptor) List(arg0 context.Context, arg1 *models.ApproachFilter, arg2 *models.User) ([]*models.Approach, uint64, error) {
+func (m *MockApproachInterceptor) List(arg0 context.Context, arg1 *models.ApproachFilter) ([]*models.Approach, uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "List", arg0, arg1)
 	ret0, _ := ret[0].([]*models.Approach)
 	ret1, _ := ret[1].(uint64)
 	ret2, _ := ret[2].(error)
@@ -90,22 +90,22 @@ func (m *MockApproachInterceptor) List(arg0 context.Context, arg1 *models.Approa
 }
 
 // List indicates an expected call of List.
-func (mr *MockApproachInterceptorMockRecorder) List(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockApproachInterceptorMockRecorder) List(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockApproachInterceptor)(nil).List), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockApproachInterceptor)(nil).List), arg0, arg1)
 }
 
 // Update mocks base method.
-func (m *MockApproachInterceptor) Update(arg0 context.Context, arg1 *models.ApproachUpdate, arg2 *models.User) (*models.Approach, error) {
+func (m *MockApproachInterceptor) Update(arg0 context.Context, arg1 *models.ApproachUpdate) (*models.Approach, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Update", arg0, arg1)
 	ret0, _ := ret[0].(*models.Approach)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockApproachInterceptorMockRecorder) Update(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockApproachInterceptorMockRecorder) Update(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockApproachInterceptor)(nil).Update), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockApproachInterceptor)(nil).Update), arg0, arg1)
 }

@@ -72,3 +72,11 @@ func (c *ApproachUpdate) Validate() error {
 	}
 	return nil
 }
+
+const (
+	PermissionIDApproachList   PermissionID = "approach_list"
+	PermissionIDApproachDetail PermissionID = "approach_detail"
+	PermissionIDApproachCreate PermissionID = "approach_create"
+	PermissionIDApproachUpdate PermissionID = "approach_update"
+	PermissionIDApproachDelete PermissionID = "approach_delete"
+)

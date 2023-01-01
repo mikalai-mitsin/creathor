@@ -9,6 +9,7 @@ type Project struct {
 	Name      string
 	Module    string
 	GoVersion string
+	Auth      bool
 }
 
 func CreateLayout(data *Project) error {

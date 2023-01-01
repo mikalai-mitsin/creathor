@@ -112,7 +112,7 @@ func main() {
 }
 
 func initProject(ctx *cli.Context) error {
-	data := &Project{Name: serviceName, Module: moduleName, GoVersion: goVersion}
+	data := &Project{Name: serviceName, Module: moduleName, GoVersion: goVersion, Auth: authEnabled}
 	if err := CreateLayout(data); err != nil {
 		return err
 	}

@@ -60,6 +60,11 @@ func CreateCRUD(name, module string, auth bool) error {
 			Name:            "interceptor",
 		},
 		{
+			SourcePath:      "templates/implementations/interceptor_test.go.tmpl",
+			DestinationPath: filepath.Join(destinationPath, "internal", "interceptors", testFilename),
+			Name:            "interceptor test",
+		},
+		{
 			SourcePath:      "templates/implementations/repository.go.tmpl",
 			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", filename),
 			Name:            "repository",

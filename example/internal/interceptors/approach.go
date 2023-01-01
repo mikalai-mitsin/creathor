@@ -58,11 +58,11 @@ func (i *ApproachInterceptor) List(
 	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDApproachList, filter); err != nil {
 		return nil, 0, err
 	}
-	approachs, count, err := i.approachUseCase.List(ctx, filter)
+	approaches, count, err := i.approachUseCase.List(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}
-	return approachs, count, nil
+	return approaches, count, nil
 }
 
 func (i *ApproachInterceptor) Create(

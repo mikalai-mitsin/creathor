@@ -20,7 +20,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func TestNewPostgresUserRepository(t *testing.T) {
+func TestNewUserRepository(t *testing.T) {
 	mockDB, _, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -43,7 +43,7 @@ func TestNewPostgresUserRepository(t *testing.T) {
 			args: args{
 				database: mockDB,
 			},
-			want: &PostgresUserRepository{
+			want: &UserRepository{
 				database: mockDB,
 			},
 		},
@@ -51,14 +51,14 @@ func TestNewPostgresUserRepository(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewPostgresUserRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewPostgresUserRepository() = %v, want %v", got, tt.want)
+			if got := NewUserRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewUserRepository() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestPostgresUserRepository_Create(t *testing.T) {
+func TestUserRepository_Create(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -127,18 +127,18 @@ func TestPostgresUserRepository_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresUserRepository{
+			r := &UserRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			if err := r.Create(tt.args.ctx, tt.args.card); !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresUserRepository.Create() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("UserRepository.Create() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestPostgresUserRepository_Get(t *testing.T) {
+func TestUserRepository_Get(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -221,23 +221,23 @@ func TestPostgresUserRepository_Get(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresUserRepository{
+			r := &UserRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			got, err := r.Get(tt.args.ctx, tt.args.id)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresUserRepository.Get() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("UserRepository.Get() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PostgresUserRepository.Get() = %v, want %v", got, tt.want)
+				t.Errorf("UserRepository.Get() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestPostgresUserRepository_List(t *testing.T) {
+func TestUserRepository_List(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -330,23 +330,23 @@ func TestPostgresUserRepository_List(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresUserRepository{
+			r := &UserRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			got, err := r.List(tt.args.ctx, tt.args.filter)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresUserRepository.List() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("UserRepository.List() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PostgresUserRepository.List() = %v, want %v", got, tt.want)
+				t.Errorf("UserRepository.List() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestPostgresUserRepository_Update(t *testing.T) {
+func TestUserRepository_Update(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -463,18 +463,18 @@ func TestPostgresUserRepository_Update(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresUserRepository{
+			r := &UserRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			if err := r.Update(tt.args.ctx, tt.args.card); !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresUserRepository.Update() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("UserRepository.Update() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestPostgresUserRepository_Delete(t *testing.T) {
+func TestUserRepository_Delete(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -572,18 +572,18 @@ func TestPostgresUserRepository_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresUserRepository{
+			r := &UserRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			if err := r.Delete(tt.args.ctx, tt.args.id); !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresUserRepository.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("UserRepository.Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestPostgresUserRepository_Count(t *testing.T) {
+func TestUserRepository_Count(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -669,7 +669,7 @@ func TestPostgresUserRepository_Count(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresUserRepository{
+			r := &UserRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}

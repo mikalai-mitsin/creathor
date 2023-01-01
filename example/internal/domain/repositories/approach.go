@@ -7,7 +7,7 @@ import (
 )
 
 //nolint: lll
-//go:generate mockgen -destination mock/approach_mock.go github.com/018bf/example/internal/domain/repositories ApproachRepository
+//go:generate mockgen -build_flags=-mod=mod -destination mock/approach_mock.go github.com/018bf/example/internal/domain/repositories ApproachRepository
 
 type ApproachRepository interface {
 	Get(ctx context.Context, id string) (*models.Approach, error)

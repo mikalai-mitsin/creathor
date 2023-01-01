@@ -97,7 +97,7 @@ func TestEquipmentUseCase_Get(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "equipment not found",
+			name: "Equipment not found",
 			setup: func() {
 				equipmentRepository.EXPECT().Get(ctx, equipment.ID).Return(nil, errs.NewEntityNotFound())
 			},
@@ -138,10 +138,10 @@ func TestEquipmentUseCase_List(t *testing.T) {
 	equipmentRepository := mock_repositories.NewMockEquipmentRepository(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
-	var equipments []*models.Equipment
+	var equipment []*models.Equipment
 	count := uint64(faker.Number().NumberInt(2))
 	for i := uint64(0); i < count; i++ {
-		equipments = append(equipments, mock_models.NewEquipment(t))
+		equipment = append(equipment, mock_models.NewEquipment(t))
 	}
 	filter := mock_models.NewEquipmentFilter(t)
 	type fields struct {
@@ -164,7 +164,7 @@ func TestEquipmentUseCase_List(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				equipmentRepository.EXPECT().List(ctx, filter).Return(equipments, nil)
+				equipmentRepository.EXPECT().List(ctx, filter).Return(equipment, nil)
 				equipmentRepository.EXPECT().Count(ctx, filter).Return(count, nil)
 			},
 			fields: fields{
@@ -175,7 +175,7 @@ func TestEquipmentUseCase_List(t *testing.T) {
 				ctx:    ctx,
 				filter: filter,
 			},
-			want:    equipments,
+			want:    equipment,
 			want1:   count,
 			wantErr: nil,
 		},
@@ -199,7 +199,7 @@ func TestEquipmentUseCase_List(t *testing.T) {
 		{
 			name: "count error",
 			setup: func() {
-				equipmentRepository.EXPECT().List(ctx, filter).Return(equipments, nil)
+				equipmentRepository.EXPECT().List(ctx, filter).Return(equipment, nil)
 				equipmentRepository.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
@@ -397,7 +397,7 @@ func TestEquipmentUseCase_Update(t *testing.T) {
 			wantErr: errs.NewUnexpectedBehaviorError("test error"),
 		},
 		{
-			name: "equipment not found",
+			name: "Equipment not found",
 			setup: func() {
 				equipmentRepository.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFound())
 			},
@@ -489,7 +489,7 @@ func TestEquipmentUseCase_Delete(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "equipment not found",
+			name: "Equipment not found",
 			setup: func() {
 				equipmentRepository.EXPECT().
 					Delete(ctx, equipment.ID).

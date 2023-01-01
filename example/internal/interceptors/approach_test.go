@@ -160,7 +160,7 @@ func TestApproachInterceptor_Get(t *testing.T) {
 			wantErr: errs.NewPermissionDeniedError(),
 		},
 		{
-			name: "approach not found",
+			name: "Approach not found",
 			setup: func() {
 				authUseCase.EXPECT().
 					HasPermission(ctx, requestUser, models.PermissionIDApproachDetail).
@@ -573,7 +573,7 @@ func TestApproachInterceptor_Delete(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "approach not found",
+			name: "Approach not found",
 			setup: func() {
 				authUseCase.EXPECT().
 					HasPermission(ctx, requestUser, models.PermissionIDApproachDelete).
@@ -692,9 +692,9 @@ func TestApproachInterceptor_List(t *testing.T) {
 	ctx := context.Background()
 	filter := mock_models.NewApproachFilter(t)
 	count := uint64(faker.Number().NumberInt64(2))
-	approachs := make([]*models.Approach, 0, count)
+	approaches := make([]*models.Approach, 0, count)
 	for i := uint64(0); i < count; i++ {
-		approachs = append(approachs, mock_models.NewApproach(t))
+		approaches = append(approaches, mock_models.NewApproach(t))
 	}
 	type fields struct {
 		approachUseCase usecases.ApproachUseCase
@@ -726,7 +726,7 @@ func TestApproachInterceptor_List(t *testing.T) {
 					Return(nil)
 				approachUseCase.EXPECT().
 					List(ctx, filter).
-					Return(approachs, count, nil)
+					Return(approaches, count, nil)
 			},
 			fields: fields{
 				approachUseCase: approachUseCase,
@@ -738,7 +738,7 @@ func TestApproachInterceptor_List(t *testing.T) {
 				filter:      filter,
 				requestUser: requestUser,
 			},
-			want:    approachs,
+			want:    approaches,
 			want1:   count,
 			wantErr: nil,
 		},

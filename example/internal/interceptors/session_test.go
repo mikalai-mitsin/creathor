@@ -160,7 +160,7 @@ func TestSessionInterceptor_Get(t *testing.T) {
 			wantErr: errs.NewPermissionDeniedError(),
 		},
 		{
-			name: "session not found",
+			name: "Session not found",
 			setup: func() {
 				authUseCase.EXPECT().
 					HasPermission(ctx, requestUser, models.PermissionIDSessionDetail).
@@ -573,7 +573,7 @@ func TestSessionInterceptor_Delete(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "session not found",
+			name: "Session not found",
 			setup: func() {
 				authUseCase.EXPECT().
 					HasPermission(ctx, requestUser, models.PermissionIDSessionDelete).

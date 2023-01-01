@@ -97,7 +97,7 @@ func TestSessionUseCase_Get(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "session not found",
+			name: "Session not found",
 			setup: func() {
 				sessionRepository.EXPECT().Get(ctx, session.ID).Return(nil, errs.NewEntityNotFound())
 			},
@@ -397,7 +397,7 @@ func TestSessionUseCase_Update(t *testing.T) {
 			wantErr: errs.NewUnexpectedBehaviorError("test error"),
 		},
 		{
-			name: "session not found",
+			name: "Session not found",
 			setup: func() {
 				sessionRepository.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFound())
 			},
@@ -489,7 +489,7 @@ func TestSessionUseCase_Delete(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "session not found",
+			name: "Session not found",
 			setup: func() {
 				sessionRepository.EXPECT().
 					Delete(ctx, session.ID).

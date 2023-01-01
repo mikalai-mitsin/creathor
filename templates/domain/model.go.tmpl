@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-type {{ .Model }} struct {
+type {{ .ModelName }} struct {
 	ID        string `json:"id" db:"id,omitempty"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at,omitempty"`
 	CreatedAt time.Time `json:"created_at" db:"created_at,omitempty"`
 }
 
-func (c *{{ .Model }}) Validate() error {
+func (c *{{ .ModelName }}) Validate() error {
     err := validation.ValidateStruct(
         c,
         validation.Field(&c.ID, is.UUID),
@@ -24,14 +24,14 @@ func (c *{{ .Model }}) Validate() error {
     return nil
 }
 
-type {{ .Model }}Filter struct {
+type {{ .FilterTypeName }} struct {
     IDs        []string `json:"ids"`
     PageSize   *uint64  `json:"page_size"`
     PageNumber *uint64  `json:"page_number"`
     OrderBy    []string `json:"order_by"`
 }
 
-func (c *{{ .Model }}Filter) Validate() error {
+func (c *{{ .FilterTypeName }}) Validate() error {
 	err := validation.ValidateStruct(
 		c,
 		validation.Field(&c.IDs),
@@ -45,10 +45,10 @@ func (c *{{ .Model }}Filter) Validate() error {
 	return nil
 }
 
-type {{ .Model }}Create struct {
+type {{ .CreateTypeName }} struct {
 }
 
-func (c *{{ .Model }}Create) Validate() error {
+func (c *{{ .CreateTypeName }}) Validate() error {
 	err := validation.ValidateStruct(
 		c,
 	)
@@ -58,11 +58,11 @@ func (c *{{ .Model }}Create) Validate() error {
 	return nil
 }
 
-type {{ .Model }}Update struct {
+type {{ .UpdateTypeName }} struct {
 	ID string `json:"id"`
 }
 
-func (c *{{ .Model }}Update) Validate() error {
+func (c *{{ .UpdateTypeName }}) Validate() error {
     err := validation.ValidateStruct(
         c,
         validation.Field(&c.ID, validation.Required, is.UUID),
@@ -74,10 +74,10 @@ func (c *{{ .Model }}Update) Validate() error {
 }
 {{ if .Auth }}
 const (
-	PermissionID{{ .Model }}List   PermissionID = "{{ .Model | ToLower }}_list"
-	PermissionID{{ .Model }}Detail PermissionID = "{{ .Model | ToLower }}_detail"
-	PermissionID{{ .Model }}Create PermissionID = "{{ .Model | ToLower }}_create"
-	PermissionID{{ .Model }}Update PermissionID = "{{ .Model | ToLower }}_update"
-	PermissionID{{ .Model }}Delete PermissionID = "{{ .Model | ToLower }}_delete"
+	PermissionID{{ .ModelName }}List   PermissionID = "{{ .KeyName }}_list"
+	PermissionID{{ .ModelName }}Detail PermissionID = "{{ .KeyName }}_detail"
+	PermissionID{{ .ModelName }}Create PermissionID = "{{ .KeyName }}_create"
+	PermissionID{{ .ModelName }}Update PermissionID = "{{ .KeyName }}_update"
+	PermissionID{{ .ModelName }}Delete PermissionID = "{{ .KeyName }}_delete"
 )
 {{ end }}

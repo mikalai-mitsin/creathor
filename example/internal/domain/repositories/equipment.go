@@ -7,7 +7,7 @@ import (
 )
 
 //nolint: lll
-//go:generate mockgen -destination mock/equipment_mock.go github.com/018bf/example/internal/domain/repositories EquipmentRepository
+//go:generate mockgen -build_flags=-mod=mod -destination mock/equipment_mock.go github.com/018bf/example/internal/domain/repositories EquipmentRepository
 
 type EquipmentRepository interface {
 	Get(ctx context.Context, id string) (*models.Equipment, error)

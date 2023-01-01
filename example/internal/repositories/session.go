@@ -15,16 +15,16 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type PostgresSessionRepository struct {
+type SessionRepository struct {
 	database *sqlx.DB
 	logger   log.Logger
 }
 
-func NewPostgresSessionRepository(database *sqlx.DB, logger log.Logger) repositories.SessionRepository {
-	return &PostgresSessionRepository{database: database, logger: logger}
+func NewSessionRepository(database *sqlx.DB, logger log.Logger) repositories.SessionRepository {
+	return &SessionRepository{database: database, logger: logger}
 }
 
-func (r *PostgresSessionRepository) Create(ctx context.Context, session *models.Session) error {
+func (r *SessionRepository) Create(ctx context.Context, session *models.Session) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Insert("public.sessions").
@@ -39,7 +39,7 @@ func (r *PostgresSessionRepository) Create(ctx context.Context, session *models.
 	return nil
 }
 
-func (r *PostgresSessionRepository) Get(ctx context.Context, id string) (*models.Session, error) {
+func (r *SessionRepository) Get(ctx context.Context, id string) (*models.Session, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	session := &models.Session{}
@@ -56,7 +56,7 @@ func (r *PostgresSessionRepository) Get(ctx context.Context, id string) (*models
 	return session, nil
 }
 
-func (r *PostgresSessionRepository) List(ctx context.Context, filter *models.SessionFilter) ([]*models.Session, error) {
+func (r *SessionRepository) List(ctx context.Context, filter *models.SessionFilter) ([]*models.Session, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	var sessions []*models.Session
@@ -82,7 +82,7 @@ func (r *PostgresSessionRepository) List(ctx context.Context, filter *models.Ses
 	return sessions, nil
 }
 
-func (r *PostgresSessionRepository) Update(ctx context.Context, session *models.Session) error {
+func (r *SessionRepository) Update(ctx context.Context, session *models.Session) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Update("public.sessions").Where(sq.Eq{"id": session.ID}).Set("", "") // TODO: set values
@@ -106,7 +106,7 @@ func (r *PostgresSessionRepository) Update(ctx context.Context, session *models.
 	return nil
 }
 
-func (r *PostgresSessionRepository) Delete(ctx context.Context, id string) error {
+func (r *SessionRepository) Delete(ctx context.Context, id string) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Delete("public.sessions").Where(sq.Eq{"id": id})
@@ -131,7 +131,7 @@ func (r *PostgresSessionRepository) Delete(ctx context.Context, id string) error
 	return nil
 }
 
-func (r *PostgresSessionRepository) Count(ctx context.Context, filter *models.SessionFilter) (uint64, error) {
+func (r *SessionRepository) Count(ctx context.Context, filter *models.SessionFilter) (uint64, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Select("count(id)").From("public.sessions")

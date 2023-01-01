@@ -15,19 +15,19 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type PostgresApproachRepository struct {
+type ApproachRepository struct {
 	database *sqlx.DB
 	logger   log.Logger
 }
 
-func NewPostgresApproachRepository(database *sqlx.DB, logger log.Logger) repositories.ApproachRepository {
-	return &PostgresApproachRepository{database: database, logger: logger}
+func NewApproachRepository(database *sqlx.DB, logger log.Logger) repositories.ApproachRepository {
+	return &ApproachRepository{database: database, logger: logger}
 }
 
-func (r *PostgresApproachRepository) Create(ctx context.Context, approach *models.Approach) error {
+func (r *ApproachRepository) Create(ctx context.Context, approach *models.Approach) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Insert("public.approachs").
+	q := sq.Insert("public.approaches").
 		Columns(). // TODO: add columns
 		Values().  // TODO: add values
 		Suffix("RETURNING id")
@@ -39,12 +39,12 @@ func (r *PostgresApproachRepository) Create(ctx context.Context, approach *model
 	return nil
 }
 
-func (r *PostgresApproachRepository) Get(ctx context.Context, id string) (*models.Approach, error) {
+func (r *ApproachRepository) Get(ctx context.Context, id string) (*models.Approach, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	approach := &models.Approach{}
-	q := sq.Select("approachs.id", "approachs.updated_at", "approachs.created_at").
-		From("public.approachs").
+	q := sq.Select("approaches.id", "approaches.updated_at", "approaches.created_at").
+		From("public.approaches").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
@@ -56,13 +56,13 @@ func (r *PostgresApproachRepository) Get(ctx context.Context, id string) (*model
 	return approach, nil
 }
 
-func (r *PostgresApproachRepository) List(ctx context.Context, filter *models.ApproachFilter) ([]*models.Approach, error) {
+func (r *ApproachRepository) List(ctx context.Context, filter *models.ApproachFilter) ([]*models.Approach, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	var approachs []*models.Approach
+	var approaches []*models.Approach
 	const pageSize = 10
-	q := sq.Select("approachs.id", "approachs.updated_at", "approachs.created_at").
-		From("public.approachs").
+	q := sq.Select("approaches.id", "approaches.updated_at", "approaches.created_at").
+		From("public.approaches").
 		Limit(pageSize)
 	// TODO: add filtering
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
@@ -75,17 +75,17 @@ func (r *PostgresApproachRepository) List(ctx context.Context, filter *models.Ap
 		q = q.OrderBy(filter.OrderBy...)
 	}
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.SelectContext(ctx, &approachs, query, args...); err != nil {
+	if err := r.database.SelectContext(ctx, &approaches, query, args...); err != nil {
 		e := errs.FromPostgresError(err)
 		return nil, e
 	}
-	return approachs, nil
+	return approaches, nil
 }
 
-func (r *PostgresApproachRepository) Update(ctx context.Context, approach *models.Approach) error {
+func (r *ApproachRepository) Update(ctx context.Context, approach *models.Approach) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Update("public.approachs").Where(sq.Eq{"id": approach.ID}).Set("", "") // TODO: set values
+	q := sq.Update("public.approaches").Where(sq.Eq{"id": approach.ID}).Set("", "") // TODO: set values
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
@@ -106,10 +106,10 @@ func (r *PostgresApproachRepository) Update(ctx context.Context, approach *model
 	return nil
 }
 
-func (r *PostgresApproachRepository) Delete(ctx context.Context, id string) error {
+func (r *ApproachRepository) Delete(ctx context.Context, id string) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Delete("public.approachs").Where(sq.Eq{"id": id})
+	q := sq.Delete("public.approaches").Where(sq.Eq{"id": id})
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
@@ -131,10 +131,10 @@ func (r *PostgresApproachRepository) Delete(ctx context.Context, id string) erro
 	return nil
 }
 
-func (r *PostgresApproachRepository) Count(ctx context.Context, filter *models.ApproachFilter) (uint64, error) {
+func (r *ApproachRepository) Count(ctx context.Context, filter *models.ApproachFilter) (uint64, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Select("count(id)").From("public.approachs")
+	q := sq.Select("count(id)").From("public.approaches")
 	// TODO: add filtering
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result := r.database.QueryRowxContext(ctx, query, args...)

@@ -97,7 +97,7 @@ func TestApproachUseCase_Get(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "approach not found",
+			name: "Approach not found",
 			setup: func() {
 				approachRepository.EXPECT().Get(ctx, approach.ID).Return(nil, errs.NewEntityNotFound())
 			},
@@ -138,10 +138,10 @@ func TestApproachUseCase_List(t *testing.T) {
 	approachRepository := mock_repositories.NewMockApproachRepository(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
-	var approachs []*models.Approach
+	var approaches []*models.Approach
 	count := uint64(faker.Number().NumberInt(2))
 	for i := uint64(0); i < count; i++ {
-		approachs = append(approachs, mock_models.NewApproach(t))
+		approaches = append(approaches, mock_models.NewApproach(t))
 	}
 	filter := mock_models.NewApproachFilter(t)
 	type fields struct {
@@ -164,7 +164,7 @@ func TestApproachUseCase_List(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				approachRepository.EXPECT().List(ctx, filter).Return(approachs, nil)
+				approachRepository.EXPECT().List(ctx, filter).Return(approaches, nil)
 				approachRepository.EXPECT().Count(ctx, filter).Return(count, nil)
 			},
 			fields: fields{
@@ -175,7 +175,7 @@ func TestApproachUseCase_List(t *testing.T) {
 				ctx:    ctx,
 				filter: filter,
 			},
-			want:    approachs,
+			want:    approaches,
 			want1:   count,
 			wantErr: nil,
 		},
@@ -199,7 +199,7 @@ func TestApproachUseCase_List(t *testing.T) {
 		{
 			name: "count error",
 			setup: func() {
-				approachRepository.EXPECT().List(ctx, filter).Return(approachs, nil)
+				approachRepository.EXPECT().List(ctx, filter).Return(approaches, nil)
 				approachRepository.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
@@ -397,7 +397,7 @@ func TestApproachUseCase_Update(t *testing.T) {
 			wantErr: errs.NewUnexpectedBehaviorError("test error"),
 		},
 		{
-			name: "approach not found",
+			name: "Approach not found",
 			setup: func() {
 				approachRepository.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFound())
 			},
@@ -489,7 +489,7 @@ func TestApproachUseCase_Delete(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "approach not found",
+			name: "Approach not found",
 			setup: func() {
 				approachRepository.EXPECT().
 					Delete(ctx, approach.ID).

@@ -1,84 +1,67 @@
 package main
 
 import (
-	"fmt"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 	"path/filepath"
-	"strings"
 )
 
-type Model struct {
-	Model  string
-	Module string
-	Auth   bool
-}
+func CreateCRUD(data Model) error {
 
-func CreateCRUD(name, module string, auth bool) error {
-	name = cases.Title(language.English).String(name)
-	filename := fmt.Sprintf("%s.go", strings.ToLower(name))
-	testFilename := fmt.Sprintf("%s_test.go", strings.ToLower(name))
 	files := []*Template{
 		{
 			SourcePath:      "templates/domain/model.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "models", filename),
+			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "models", data.FileName()),
 			Name:            "model",
 		},
 		{
 			SourcePath:      "templates/domain/model_mock.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "models", "mock", filename),
+			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "models", "mock", data.FileName()),
 			Name:            "model_mock",
 		},
 		{
 			SourcePath:      "templates/domain/repository.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "repositories", filename),
+			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "repositories", data.FileName()),
 			Name:            "repository",
 		},
 		{
 			SourcePath:      "templates/domain/usecase.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "usecases", filename),
+			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "usecases", data.FileName()),
 			Name:            "usecase",
 		},
 		{
 			SourcePath:      "templates/domain/interceptor.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "interceptors", filename),
+			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "interceptors", data.FileName()),
 			Name:            "interceptor",
 		},
 		{
 			SourcePath:      "templates/implementations/usecase.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", filename),
+			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", data.FileName()),
 			Name:            "usecase",
 		},
 		{
 			SourcePath:      "templates/implementations/usecase_test.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", testFilename),
+			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", data.TestFileName()),
 			Name:            "usecase test",
 		},
 		{
 			SourcePath:      "templates/implementations/interceptor.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "interceptors", filename),
+			DestinationPath: filepath.Join(destinationPath, "internal", "interceptors", data.FileName()),
 			Name:            "interceptor",
 		},
 		{
 			SourcePath:      "templates/implementations/interceptor_test.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "interceptors", testFilename),
+			DestinationPath: filepath.Join(destinationPath, "internal", "interceptors", data.TestFileName()),
 			Name:            "interceptor test",
 		},
 		{
 			SourcePath:      "templates/implementations/repository.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", filename),
+			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", data.FileName()),
 			Name:            "repository",
 		},
 		{
 			SourcePath:      "templates/implementations/repository_test.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", testFilename),
+			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", data.TestFileName()),
 			Name:            "repository test",
 		},
-	}
-	data := Model{
-		Model:  name,
-		Module: module,
-		Auth:   auth,
 	}
 	for _, tmpl := range files {
 		if err := tmpl.renderToFile(data); err != nil {

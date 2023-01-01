@@ -7,7 +7,7 @@ import (
 )
 
 //nolint: lll
-//go:generate mockgen -destination mock/user_mock.go github.com/018bf/example/internal/domain/interceptors UserInterceptor
+//go:generate mockgen -build_flags=-mod=mod -destination mock/user_mock.go github.com/018bf/example/internal/domain/interceptors UserInterceptor
 
 type UserInterceptor interface {
 	Get(ctx context.Context, id string, requestUser *models.User) (*models.User, error)

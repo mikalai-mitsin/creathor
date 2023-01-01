@@ -3,9 +3,11 @@ module github.com/018bf/creathor
 go 1.18
 
 require (
+	github.com/iancoleman/strcase v0.2.0
+	github.com/jinzhu/inflection v1.0.0
 	github.com/urfave/cli/v2 v2.3.0
-	golang.org/x/mod v0.5.1
-	golang.org/x/text v0.3.7
+	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4
+	golang.org/x/text v0.5.0
 )
 
 require (

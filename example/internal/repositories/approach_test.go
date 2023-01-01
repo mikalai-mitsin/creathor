@@ -20,7 +20,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func TestNewPostgresApproachRepository(t *testing.T) {
+func TestNewApproachRepository(t *testing.T) {
 	mockDB, _, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -43,7 +43,7 @@ func TestNewPostgresApproachRepository(t *testing.T) {
 			args: args{
 				database: mockDB,
 			},
-			want: &PostgresApproachRepository{
+			want: &ApproachRepository{
 				database: mockDB,
 			},
 		},
@@ -51,14 +51,14 @@ func TestNewPostgresApproachRepository(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewPostgresApproachRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewPostgresApproachRepository() = %v, want %v", got, tt.want)
+			if got := NewApproachRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewApproachRepository() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestPostgresApproachRepository_Create(t *testing.T) {
+func TestApproachRepository_Create(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -68,7 +68,7 @@ func TestPostgresApproachRepository_Create(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	query := "INSERT INTO public.approachs"
+	query := "INSERT INTO public.approaches"
 	approach := mock_models.NewApproach(t)
 	ctx := context.Background()
 	type fields struct {
@@ -127,18 +127,18 @@ func TestPostgresApproachRepository_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresApproachRepository{
+			r := &ApproachRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			if err := r.Create(tt.args.ctx, tt.args.card); !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresApproachRepository.Create() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ApproachRepository.Create() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestPostgresApproachRepository_Get(t *testing.T) {
+func TestApproachRepository_Get(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -148,7 +148,7 @@ func TestPostgresApproachRepository_Get(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	query := "SELECT approachs.id, approachs.updated_at, approachs.created_at FROM public.approachs WHERE id = \\$1 LIMIT 1"
+	query := "SELECT approaches.id, approaches.updated_at, approaches.created_at FROM public.approaches WHERE id = \\$1 LIMIT 1"
 	approach := mock_models.NewApproach(t)
 	ctx := context.Background()
 	type fields struct {
@@ -221,23 +221,23 @@ func TestPostgresApproachRepository_Get(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresApproachRepository{
+			r := &ApproachRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			got, err := r.Get(tt.args.ctx, tt.args.id)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresApproachRepository.Get() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ApproachRepository.Get() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PostgresApproachRepository.Get() = %v, want %v", got, tt.want)
+				t.Errorf("ApproachRepository.Get() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestPostgresApproachRepository_List(t *testing.T) {
+func TestApproachRepository_List(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -248,12 +248,12 @@ func TestPostgresApproachRepository_List(t *testing.T) {
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
-	var approachs []*models.Approach
+	var approaches []*models.Approach
 	for i := 0; i < faker.RandomInt(1, 20); i++ {
-		approachs = append(approachs, mock_models.NewApproach(t))
+		approaches = append(approaches, mock_models.NewApproach(t))
 	}
 	filter := mock_models.NewApproachFilter(t)
-	query := "SELECT approachs.id, approachs.updated_at, approachs.created_at FROM public.approachs"
+	query := "SELECT approaches.id, approaches.updated_at, approaches.created_at FROM public.approaches"
 	type fields struct {
 		database *sqlx.DB
 		logger   log.Logger
@@ -274,7 +274,7 @@ func TestPostgresApproachRepository_List(t *testing.T) {
 			name: "ok",
 			setup: func() {
 				mock.ExpectQuery(query).
-					WillReturnRows(newApproachRows(t, approachs))
+					WillReturnRows(newApproachRows(t, approaches))
 			},
 			fields: fields{
 				database: db,
@@ -284,7 +284,7 @@ func TestPostgresApproachRepository_List(t *testing.T) {
 				ctx:    ctx,
 				filter: filter,
 			},
-			want:    approachs,
+			want:    approaches,
 			wantErr: nil,
 		},
 		{
@@ -330,23 +330,23 @@ func TestPostgresApproachRepository_List(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresApproachRepository{
+			r := &ApproachRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			got, err := r.List(tt.args.ctx, tt.args.filter)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresApproachRepository.List() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ApproachRepository.List() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PostgresApproachRepository.List() = %v, want %v", got, tt.want)
+				t.Errorf("ApproachRepository.List() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestPostgresApproachRepository_Update(t *testing.T) {
+func TestApproachRepository_Update(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -357,7 +357,7 @@ func TestPostgresApproachRepository_Update(t *testing.T) {
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
 	approach := mock_models.NewApproach(t)
-	query := `UPDATE public.approachs`
+	query := `UPDATE public.approaches`
 	ctx := context.Background()
 	type fields struct {
 		database *sqlx.DB
@@ -463,18 +463,18 @@ func TestPostgresApproachRepository_Update(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresApproachRepository{
+			r := &ApproachRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			if err := r.Update(tt.args.ctx, tt.args.card); !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresApproachRepository.Update() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ApproachRepository.Update() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestPostgresApproachRepository_Delete(t *testing.T) {
+func TestApproachRepository_Delete(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -507,7 +507,7 @@ func TestPostgresApproachRepository_Delete(t *testing.T) {
 				logger:   logger,
 			},
 			setup: func() {
-				mock.ExpectExec("DELETE FROM public.approachs WHERE id = \\$1").
+				mock.ExpectExec("DELETE FROM public.approaches WHERE id = \\$1").
 					WithArgs(approach.ID).
 					WillReturnResult(sqlmock.NewResult(0, 1))
 			},
@@ -520,7 +520,7 @@ func TestPostgresApproachRepository_Delete(t *testing.T) {
 		{
 			name: "article card not found",
 			setup: func() {
-				mock.ExpectExec("DELETE FROM public.approachs WHERE id = \\$1").
+				mock.ExpectExec("DELETE FROM public.approaches WHERE id = \\$1").
 					WithArgs(approach.ID).
 					WillReturnResult(sqlmock.NewResult(0, 0))
 			},
@@ -537,7 +537,7 @@ func TestPostgresApproachRepository_Delete(t *testing.T) {
 		{
 			name: "database error",
 			setup: func() {
-				mock.ExpectExec("DELETE FROM public.approachs WHERE id = \\$1").
+				mock.ExpectExec("DELETE FROM public.approaches WHERE id = \\$1").
 					WithArgs(approach.ID).
 					WillReturnError(errors.New("test error"))
 			},
@@ -554,7 +554,7 @@ func TestPostgresApproachRepository_Delete(t *testing.T) {
 		{
 			name: "result error",
 			setup: func() {
-				mock.ExpectExec("DELETE FROM public.approachs WHERE id = \\$1").
+				mock.ExpectExec("DELETE FROM public.approaches WHERE id = \\$1").
 					WithArgs(approach.ID).
 					WillReturnResult(sqlmock.NewErrorResult(errors.New("test error")))
 			},
@@ -572,25 +572,25 @@ func TestPostgresApproachRepository_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresApproachRepository{
+			r := &ApproachRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			if err := r.Delete(tt.args.ctx, tt.args.id); !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresApproachRepository.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ApproachRepository.Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestPostgresApproachRepository_Count(t *testing.T) {
+func TestApproachRepository_Count(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
 	defer db.Close()
-	query := `SELECT count\(id\) FROM public.approachs`
+	query := `SELECT count\(id\) FROM public.approaches`
 	ctx := context.Background()
 	filter := mock_models.NewApproachFilter(t)
 	type fields struct {
@@ -669,7 +669,7 @@ func TestPostgresApproachRepository_Count(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresApproachRepository{
+			r := &ApproachRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
@@ -685,14 +685,14 @@ func TestPostgresApproachRepository_Count(t *testing.T) {
 	}
 }
 
-func newApproachRows(t *testing.T, approachs []*models.Approach) *sqlmock.Rows {
+func newApproachRows(t *testing.T, approaches []*models.Approach) *sqlmock.Rows {
 	t.Helper()
 	rows := sqlmock.NewRows([]string{
 		"id",
 		"updated_at",
 		"created_at",
 	})
-	for _, approach := range approachs {
+	for _, approach := range approaches {
 		rows.AddRow(
 			approach.ID,
 			approach.UpdatedAt,

@@ -10,73 +10,73 @@ import (
 	"{{ .Module }}/pkg/log"
 )
 
-type {{ .Model }}UseCase struct {
-	{{ .Model | ToLower }}Repository repositories.{{ .Model }}Repository
+type {{ .UseCaseTypeName }} struct {
+	{{ .RepositoryVariableName }} repositories.{{ .RepositoryTypeName }}
 	logger                           log.Logger
 }
 
-func New{{ .Model }}UseCase(
-	{{ .Model | ToLower }}Repository repositories.{{ .Model }}Repository,
+func New{{ .UseCaseTypeName }}(
+	{{ .RepositoryVariableName }} repositories.{{ .RepositoryTypeName }},
 	logger log.Logger,
-) usecases.{{ .Model }}UseCase {
-	return &{{ .Model }}UseCase{
-        {{ .Model | ToLower }}Repository: {{ .Model | ToLower }}Repository,
+) usecases.{{ .UseCaseTypeName }} {
+	return &{{ .UseCaseTypeName }}{
+        {{ .RepositoryVariableName }}: {{ .RepositoryVariableName }},
 		logger:                           logger,
 	}
 }
 
-func (u *{{ .Model }}UseCase) Get(ctx context.Context, id string) (*models.{{ .Model }}, error) {
-	{{ .Model | ToLower }}, err := u.{{ .Model | ToLower }}Repository.Get(ctx, id)
+func (u *{{ .UseCaseTypeName }}) Get(ctx context.Context, id string) (*models.{{ .ModelName }}, error) {
+	{{ .Variable }}, err := u.{{ .RepositoryVariableName }}.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return {{ .Model | ToLower }}, nil
+	return {{ .Variable }}, nil
 }
 
-func (u *{{ .Model }}UseCase) List(
+func (u *{{ .UseCaseTypeName }}) List(
 	ctx context.Context,
-	filter *models.{{ .Model }}Filter,
-) ([]*models.{{ .Model }}, uint64, error) {
-	{{ .Model | ToLower }}s, err := u.{{ .Model | ToLower }}Repository.List(ctx, filter)
+	filter *models.{{ .FilterTypeName }},
+) ([]*models.{{ .ModelName }}, uint64, error) {
+	{{ .ListVariable }}, err := u.{{ .RepositoryVariableName }}.List(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}
-	count, err := u.{{ .Model | ToLower }}Repository.Count(ctx, filter)
+	count, err := u.{{ .RepositoryVariableName }}.Count(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}
-	return {{ .Model | ToLower }}s, count, nil
+	return {{ .ListVariable }}, count, nil
 }
 
-func (u *{{ .Model }}UseCase) Create(ctx context.Context, create *models.{{ .Model }}Create) (*models.{{ .Model }}, error) {
+func (u *{{ .UseCaseTypeName }}) Create(ctx context.Context, create *models.{{ .ModelName }}Create) (*models.{{ .ModelName }}, error) {
 	if err := create.Validate(); err != nil {
 		return nil, err
 	}
-    {{ .Model | ToLower }} := &models.{{ .Model }}{
+    {{ .Variable }} := &models.{{ .ModelName }}{
 		ID: "",
 	}
-	if err := u.{{ .Model | ToLower }}Repository.Create(ctx, {{ .Model | ToLower }}); err != nil {
+	if err := u.{{ .RepositoryVariableName }}.Create(ctx, {{ .Variable }}); err != nil {
 		return nil, err
 	}
-	return {{ .Model | ToLower }}, nil
+	return {{ .Variable }}, nil
 }
 
-func (u *{{ .Model }}UseCase) Update(ctx context.Context, update *models.{{ .Model }}Update) (*models.{{ .Model }}, error) {
+func (u *{{ .UseCaseTypeName }}) Update(ctx context.Context, update *models.{{ .ModelName }}Update) (*models.{{ .ModelName }}, error) {
 	if err := update.Validate(); err != nil {
 		return nil, err
 	}
-    {{ .Model | ToLower }}, err := u.{{ .Model | ToLower }}Repository.Get(ctx, update.ID)
+    {{ .Variable }}, err := u.{{ .RepositoryVariableName }}.Get(ctx, update.ID)
 	if err != nil {
 		return nil, err
 	}
-	if err := u.{{ .Model | ToLower }}Repository.Update(ctx, {{ .Model | ToLower }}); err != nil {
+	if err := u.{{ .RepositoryVariableName }}.Update(ctx, {{ .Variable }}); err != nil {
 		return nil, err
 	}
-	return {{ .Model | ToLower }}, nil
+	return {{ .Variable }}, nil
 }
 
-func (u *{{ .Model }}UseCase) Delete(ctx context.Context, id string) error {
-	if err := u.{{ .Model | ToLower }}Repository.Delete(ctx, id); err != nil {
+func (u *{{ .UseCaseTypeName }}) Delete(ctx context.Context, id string) error {
+	if err := u.{{ .RepositoryVariableName }}.Delete(ctx, id); err != nil {
 		return err
 	}
 	return nil

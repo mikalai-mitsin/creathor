@@ -160,7 +160,7 @@ func TestUserInterceptor_Get(t *testing.T) {
 			wantErr: errs.NewPermissionDeniedError(),
 		},
 		{
-			name: "user not found",
+			name: "User not found",
 			setup: func() {
 				authUseCase.EXPECT().
 					HasPermission(ctx, requestUser, models.PermissionIDUserDetail).
@@ -573,7 +573,7 @@ func TestUserInterceptor_Delete(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "user not found",
+			name: "User not found",
 			setup: func() {
 				authUseCase.EXPECT().
 					HasPermission(ctx, requestUser, models.PermissionIDUserDelete).

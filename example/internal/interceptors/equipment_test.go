@@ -160,7 +160,7 @@ func TestEquipmentInterceptor_Get(t *testing.T) {
 			wantErr: errs.NewPermissionDeniedError(),
 		},
 		{
-			name: "equipment not found",
+			name: "Equipment not found",
 			setup: func() {
 				authUseCase.EXPECT().
 					HasPermission(ctx, requestUser, models.PermissionIDEquipmentDetail).
@@ -573,7 +573,7 @@ func TestEquipmentInterceptor_Delete(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "equipment not found",
+			name: "Equipment not found",
 			setup: func() {
 				authUseCase.EXPECT().
 					HasPermission(ctx, requestUser, models.PermissionIDEquipmentDelete).
@@ -692,9 +692,9 @@ func TestEquipmentInterceptor_List(t *testing.T) {
 	ctx := context.Background()
 	filter := mock_models.NewEquipmentFilter(t)
 	count := uint64(faker.Number().NumberInt64(2))
-	equipments := make([]*models.Equipment, 0, count)
+	equipment := make([]*models.Equipment, 0, count)
 	for i := uint64(0); i < count; i++ {
-		equipments = append(equipments, mock_models.NewEquipment(t))
+		equipment = append(equipment, mock_models.NewEquipment(t))
 	}
 	type fields struct {
 		equipmentUseCase usecases.EquipmentUseCase
@@ -726,7 +726,7 @@ func TestEquipmentInterceptor_List(t *testing.T) {
 					Return(nil)
 				equipmentUseCase.EXPECT().
 					List(ctx, filter).
-					Return(equipments, count, nil)
+					Return(equipment, count, nil)
 			},
 			fields: fields{
 				equipmentUseCase: equipmentUseCase,
@@ -738,7 +738,7 @@ func TestEquipmentInterceptor_List(t *testing.T) {
 				filter:      filter,
 				requestUser: requestUser,
 			},
-			want:    equipments,
+			want:    equipment,
 			want1:   count,
 			wantErr: nil,
 		},

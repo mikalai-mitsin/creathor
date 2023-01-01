@@ -7,7 +7,7 @@ import (
 )
 
 //nolint: lll
-//go:generate mockgen -destination mock/user_mock.go github.com/018bf/example/internal/domain/repositories UserRepository
+//go:generate mockgen -build_flags=-mod=mod -destination mock/user_mock.go github.com/018bf/example/internal/domain/repositories UserRepository
 
 type UserRepository interface {
 	Get(ctx context.Context, id string) (*models.User, error)

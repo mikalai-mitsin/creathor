@@ -7,13 +7,13 @@ import (
 )
 
 //nolint: lll
-//go:generate mockgen -destination mock/{{ .Model | ToLower }}_mock.go {{ .Module }}/internal/domain/repositories {{ .Model }}Repository
+//go:generate mockgen -build_flags=-mod=mod -destination mock/{{ .MockFileName }} {{ .Module }}/internal/domain/repositories {{ .RepositoryTypeName }}
 
-type {{ .Model }}Repository interface {
-	Get(ctx context.Context, id string) (*models.{{ .Model }}, error)
-	List(ctx context.Context, filter *models.{{ .Model }}Filter) ([]*models.{{ .Model }}, error)
-	Count(ctx context.Context, filter *models.{{ .Model }}Filter) (uint64, error)
-	Create(ctx context.Context, {{ .Model | ToLower }} *models.{{ .Model }}) error
-	Update(ctx context.Context, {{ .Model | ToLower }} *models.{{ .Model }}) error
+type {{ .RepositoryTypeName }} interface {
+	Get(ctx context.Context, id string) (*models.{{ .ModelName }}, error)
+	List(ctx context.Context, filter *models.{{ .FilterTypeName }}) ([]*models.{{ .ModelName }}, error)
+	Count(ctx context.Context, filter *models.{{ .FilterTypeName }}) (uint64, error)
+	Create(ctx context.Context, {{ .Variable }} *models.{{ .ModelName }}) error
+	Update(ctx context.Context, {{ .Variable  }} *models.{{ .ModelName }}) error
 	Delete(ctx context.Context, id string) error
 }

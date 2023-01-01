@@ -126,7 +126,7 @@ func initProject(ctx *cli.Context) error {
 		return err
 	}
 	for _, model := range models.Value() {
-		if err := CreateCRUD(model, moduleName, authEnabled); err != nil {
+		if err := CreateCRUD(Model{Model: model, Module: moduleName, Auth: authEnabled}); err != nil {
 			return err
 		}
 	}
@@ -136,7 +136,7 @@ func initProject(ctx *cli.Context) error {
 
 func initModels(ctx *cli.Context) error {
 	for _, model := range models.Value() {
-		if err := CreateCRUD(model, moduleName, authEnabled); err != nil {
+		if err := CreateCRUD(Model{Model: model, Module: moduleName, Auth: authEnabled}); err != nil {
 			return err
 		}
 	}

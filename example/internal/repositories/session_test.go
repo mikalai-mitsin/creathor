@@ -20,7 +20,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func TestNewPostgresSessionRepository(t *testing.T) {
+func TestNewSessionRepository(t *testing.T) {
 	mockDB, _, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -43,7 +43,7 @@ func TestNewPostgresSessionRepository(t *testing.T) {
 			args: args{
 				database: mockDB,
 			},
-			want: &PostgresSessionRepository{
+			want: &SessionRepository{
 				database: mockDB,
 			},
 		},
@@ -51,14 +51,14 @@ func TestNewPostgresSessionRepository(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewPostgresSessionRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewPostgresSessionRepository() = %v, want %v", got, tt.want)
+			if got := NewSessionRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewSessionRepository() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestPostgresSessionRepository_Create(t *testing.T) {
+func TestSessionRepository_Create(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -127,18 +127,18 @@ func TestPostgresSessionRepository_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresSessionRepository{
+			r := &SessionRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			if err := r.Create(tt.args.ctx, tt.args.card); !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresSessionRepository.Create() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("SessionRepository.Create() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestPostgresSessionRepository_Get(t *testing.T) {
+func TestSessionRepository_Get(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -221,23 +221,23 @@ func TestPostgresSessionRepository_Get(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresSessionRepository{
+			r := &SessionRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			got, err := r.Get(tt.args.ctx, tt.args.id)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresSessionRepository.Get() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("SessionRepository.Get() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PostgresSessionRepository.Get() = %v, want %v", got, tt.want)
+				t.Errorf("SessionRepository.Get() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestPostgresSessionRepository_List(t *testing.T) {
+func TestSessionRepository_List(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -330,23 +330,23 @@ func TestPostgresSessionRepository_List(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresSessionRepository{
+			r := &SessionRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			got, err := r.List(tt.args.ctx, tt.args.filter)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresSessionRepository.List() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("SessionRepository.List() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PostgresSessionRepository.List() = %v, want %v", got, tt.want)
+				t.Errorf("SessionRepository.List() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestPostgresSessionRepository_Update(t *testing.T) {
+func TestSessionRepository_Update(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -463,18 +463,18 @@ func TestPostgresSessionRepository_Update(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresSessionRepository{
+			r := &SessionRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			if err := r.Update(tt.args.ctx, tt.args.card); !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresSessionRepository.Update() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("SessionRepository.Update() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestPostgresSessionRepository_Delete(t *testing.T) {
+func TestSessionRepository_Delete(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -572,18 +572,18 @@ func TestPostgresSessionRepository_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresSessionRepository{
+			r := &SessionRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			if err := r.Delete(tt.args.ctx, tt.args.id); !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresSessionRepository.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("SessionRepository.Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestPostgresSessionRepository_Count(t *testing.T) {
+func TestSessionRepository_Count(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -669,7 +669,7 @@ func TestPostgresSessionRepository_Count(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresSessionRepository{
+			r := &SessionRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}

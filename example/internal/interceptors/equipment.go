@@ -58,11 +58,11 @@ func (i *EquipmentInterceptor) List(
 	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDEquipmentList, filter); err != nil {
 		return nil, 0, err
 	}
-	equipments, count, err := i.equipmentUseCase.List(ctx, filter)
+	equipment, count, err := i.equipmentUseCase.List(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}
-	return equipments, count, nil
+	return equipment, count, nil
 }
 
 func (i *EquipmentInterceptor) Create(

@@ -18,7 +18,6 @@ func CreateLayout(data *Project) error {
 		path.Join(destinationPath, "cmd"),
 		path.Join(destinationPath, "cmd", data.Name),
 		path.Join(destinationPath, "configs"),
-		path.Join(destinationPath, "deployments"),
 		path.Join(destinationPath, "dist"),
 		path.Join(destinationPath, "docs"),
 		path.Join(destinationPath, "docs", ".chglog"),

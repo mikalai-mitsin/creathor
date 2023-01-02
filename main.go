@@ -135,6 +135,9 @@ func initProject(ctx *cli.Context) error {
 	if err := CreateBuild(data); err != nil {
 		return err
 	}
+	if err := CreateDeployment(data); err != nil {
+		return err
+	}
 	for _, model := range models.Value() {
 		if err := CreateCRUD(Model{Model: model, Module: moduleName, Auth: authEnabled}); err != nil {
 			return err

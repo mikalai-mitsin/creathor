@@ -85,10 +85,18 @@ func NewUnexpectedBehaviorError(details string) *Error {
 func NewDirectoryNotExistsError(filePath string) *Error {
 	return &Error{
 		Code:    ErrorCodeInternal,
-		Message: "The directory does not exist and it would be better if you create it. Mraz.",
+		Message: "The directory does not exist and it would be better if you create it. Kurwa.",
 		Params: map[string]string{
 			"path": path.Dir(filePath),
 		},
+	}
+}
+
+func NewUserModelNotExistError() *Error {
+	return &Error{
+		Code:    ErrorCodeInternal,
+		Message: "User model not exist. Cant enable auth.",
+		Params:  map[string]string{},
 	}
 }
 

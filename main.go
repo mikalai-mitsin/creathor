@@ -1,15 +1,22 @@
 package main
 
 import (
+	"bytes"
 	"embed"
 	_ "embed"
 	"fmt"
 	"github.com/urfave/cli/v2"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"golang.org/x/mod/modfile"
+	"io/fs"
 	"log"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
+	"strings"
 )
 
 const version = "0.1.5"
@@ -112,6 +119,9 @@ func main() {
 }
 
 func initProject(ctx *cli.Context) error {
+	if err := beforeInit(); err != nil {
+		return err
+	}
 	data := &Project{Name: serviceName, Module: moduleName, GoVersion: goVersion, Auth: authEnabled}
 	if err := CreateLayout(data); err != nil {
 		return err
@@ -130,17 +140,24 @@ func initProject(ctx *cli.Context) error {
 			return err
 		}
 	}
-	postInit()
+	if err := postInit(); err != nil {
+		return err
+	}
 	return nil
 }
 
 func initModels(ctx *cli.Context) error {
+	if err := beforeInit(); err != nil {
+		return err
+	}
 	for _, model := range models.Value() {
 		if err := CreateCRUD(Model{Model: model, Module: moduleName, Auth: authEnabled}); err != nil {
 			return err
 		}
 	}
-	postInit()
+	if err := postInit(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -152,20 +169,63 @@ func getModuleName() string {
 	return modfile.ModulePath(gomod)
 }
 
-func postInit() {
-	fmt.Println("post init...")
-	tidy := exec.Command("go", "mod", "tidy")
-	tidy.Dir = destinationPath
-	if err := tidy.Run(); err != nil {
-		fmt.Println(err.Error())
+func beforeInit() error {
+	if authEnabled && !hasUserModel() {
+		return NewUserModelNotExistError()
 	}
+	return nil
+}
+
+func postInit() error {
+	fmt.Println("post init...")
+	var errb bytes.Buffer
 	generate := exec.Command("go", "generate", "./...")
 	generate.Dir = destinationPath
+	generate.Stderr = &errb
 	if err := generate.Run(); err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(strings.Join(generate.Args, " "))
+		fmt.Println(errb.String())
 	}
-
+	tidy := exec.Command("go", "mod", "tidy")
+	tidy.Dir = destinationPath
+	tidy.Stderr = &errb
+	if err := tidy.Run(); err != nil {
+		fmt.Println(strings.Join(tidy.Args, " "))
+		fmt.Println(errb.String())
+	}
 	clean := exec.Command("golangci-lint", "run", "./...", "--fix")
 	clean.Dir = destinationPath
 	_ = clean.Run()
+	return nil
+}
+
+func hasUserModel() bool {
+	for _, model := range models.Value() {
+		if strings.ToLower(model) == "user" {
+			return true
+		}
+	}
+	modelsPath := filepath.Join(destinationPath, "internal", "domain", "models")
+	tree, err := parser.ParseDir(token.NewFileSet(), modelsPath, func(info fs.FileInfo) bool {
+		return true
+	}, parser.SkipObjectResolution)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for _, p := range tree {
+		for _, file := range p.Files {
+			for _, decl := range file.Decls {
+				genDecl, ok := decl.(*ast.GenDecl)
+				if ok {
+					for _, spec := range genDecl.Specs {
+						typeSpec, ok := spec.(*ast.TypeSpec)
+						if ok && typeSpec.Name.Name == "User" {
+							return true
+						}
+					}
+				}
+			}
+		}
+	}
+	return false
 }

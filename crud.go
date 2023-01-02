@@ -5,7 +5,6 @@ import (
 )
 
 func CreateCRUD(data Model) error {
-
 	files := []*Template{
 		{
 			SourcePath:      "templates/domain/model.go.tmpl",

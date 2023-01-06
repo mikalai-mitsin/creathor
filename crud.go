@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 )
 
@@ -66,6 +67,15 @@ func CreateCRUD(data Model) error {
 		if err := tmpl.renderToFile(data); err != nil {
 			return err
 		}
+	}
+	if err := addToDI("usecases", fmt.Sprintf("New%s", data.UseCaseTypeName())); err != nil {
+		return err
+	}
+	if err := addToDI("interceptors", fmt.Sprintf("New%s", data.InterceptorTypeName())); err != nil {
+		return err
+	}
+	if err := addToDI("repositories", fmt.Sprintf("New%s", data.RepositoryTypeName())); err != nil {
+		return err
 	}
 	return nil
 }

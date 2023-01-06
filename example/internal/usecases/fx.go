@@ -5,5 +5,5 @@ import (
 )
 
 var FXModule = fx.Options(
-	fx.Provide(),
+	fx.Provide(NewUserUseCase, NewUserSessionUseCase, NewEquipmentUseCase, NewSessionUseCase, NewApproachUseCase),
 )

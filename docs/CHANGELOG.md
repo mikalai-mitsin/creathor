@@ -2,8 +2,18 @@
 ## [Unreleased]
 
 
-<a name="0.1.6"></a>
-## [0.1.6] - 2022-12-31
+<a name="0.1.7"></a>
+## [0.1.7] - 2023-01-06
+### Feat
+- build variables
+- **auth:** check user model
+- **deployments:** generate helm chart
+- **di:** add implementation to DI
+- **interceptor:** add tests
+
+
+<a name="v0.1.6"></a>
+## [v0.1.6] - 2022-12-31
 ### Docs
 - cleanup readme
 
@@ -55,8 +65,9 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/018bf/creathor/compare/0.1.6...HEAD
-[0.1.6]: https://github.com/018bf/creathor/compare/v0.1.5...0.1.6
+[Unreleased]: https://github.com/018bf/creathor/compare/0.1.7...HEAD
+[0.1.7]: https://github.com/018bf/creathor/compare/v0.1.6...0.1.7
+[v0.1.6]: https://github.com/018bf/creathor/compare/v0.1.5...v0.1.6
 [v0.1.5]: https://github.com/018bf/creathor/compare/v0.1.3...v0.1.5
 [v0.1.3]: https://github.com/018bf/creathor/compare/v0.1.4...v0.1.3
 [v0.1.4]: https://github.com/018bf/creathor/compare/v0.1.1...v0.1.4

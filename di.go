@@ -89,7 +89,7 @@ func addToDI(packageName, constructor string) error {
 													}
 												}
 											}
-											openFile, err := os.OpenFile(filePath, os.O_WRONLY, 777)
+											openFile, err := os.OpenFile(filePath, os.O_WRONLY, 0777)
 											if err != nil {
 												return err
 											}

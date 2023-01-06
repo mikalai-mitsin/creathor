@@ -7,6 +7,7 @@ import (
 	"go.uber.org/fx/fxevent"
 
 	"github.com/018bf/example/internal/interceptors"
+	"github.com/018bf/example/internal/interfaces/postgres"
 	"github.com/018bf/example/internal/repositories"
 	"github.com/018bf/example/internal/usecases"
 
@@ -28,6 +29,7 @@ var appModule = fx.Options(
 	repositories.FXModule,
 	usecases.FXModule,
 	interceptors.FXModule,
+	postgres.FXModule,
 )
 
 func NewExample(config string) *fx.App {

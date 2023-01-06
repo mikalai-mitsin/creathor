@@ -10,6 +10,7 @@ import (
 	"{{ .Module }}/internal/interceptors"
 	"{{ .Module }}/internal/repositories"
 	"{{ .Module }}/internal/usecases"
+	"{{ .Module }}/internal/interfaces/postgres"
 
 	"{{ .Module }}/pkg/clock"
 
@@ -30,6 +31,7 @@ var appModule = fx.Options(
 	repositories.FXModule,
 	usecases.FXModule,
 	interceptors.FXModule,
+	postgres.FXModule,
 )
 
 func New{{ .Name | Title }}(config string) *fx.App {

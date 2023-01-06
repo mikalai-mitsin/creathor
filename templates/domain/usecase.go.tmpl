@@ -7,12 +7,12 @@ import (
 )
 
 //nolint: lll
-//go:generate mockgen -destination mock/{{ .Model | ToLower }}_mock.go {{ .Module }}/internal/domain/usecases {{ .Model }}UseCase
+//go:generate mockgen -build_flags=-mod=mod -destination mock/{{ .MockFileName }} {{ .Module }}/internal/domain/usecases {{ .UseCaseTypeName }}
 
-type {{ .Model }}UseCase interface {
-	Get(ctx context.Context, id string) (*models.{{ .Model }}, error)
-	List(ctx context.Context, filter *models.{{ .Model }}Filter) ([]*models.{{ .Model }}, uint64, error)
-	Create(ctx context.Context, create *models.{{ .Model }}Create) (*models.{{ .Model }}, error)
-	Update(ctx context.Context, update *models.{{ .Model }}Update) (*models.{{ .Model }}, error)
+type {{ .UseCaseTypeName }} interface {
+	Get(ctx context.Context, id string) (*models.{{ .ModelName }}, error)
+	List(ctx context.Context, filter *models.{{ .FilterTypeName }}) ([]*models.{{ .ModelName }}, uint64, error)
+	Create(ctx context.Context, create *models.{{ .CreateTypeName }}) (*models.{{ .ModelName }}, error)
+	Update(ctx context.Context, update *models.{{ .UpdateTypeName }}) (*models.{{ .ModelName }}, error)
 	Delete(ctx context.Context, id string) error
 }

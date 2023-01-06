@@ -7,7 +7,7 @@ import (
 )
 
 //nolint: lll
-//go:generate mockgen -destination mock/user_mock.go github.com/018bf/example/internal/domain/usecases UserUseCase
+//go:generate mockgen -build_flags=-mod=mod -destination mock/user_mock.go github.com/018bf/example/internal/domain/usecases UserUseCase
 
 type UserUseCase interface {
 	Get(ctx context.Context, id string) (*models.User, error)

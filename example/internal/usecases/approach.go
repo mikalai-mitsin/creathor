@@ -37,7 +37,7 @@ func (u *ApproachUseCase) List(
 	ctx context.Context,
 	filter *models.ApproachFilter,
 ) ([]*models.Approach, uint64, error) {
-	approachs, err := u.approachRepository.List(ctx, filter)
+	approaches, err := u.approachRepository.List(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -45,7 +45,7 @@ func (u *ApproachUseCase) List(
 	if err != nil {
 		return nil, 0, err
 	}
-	return approachs, count, nil
+	return approaches, count, nil
 }
 
 func (u *ApproachUseCase) Create(ctx context.Context, create *models.ApproachCreate) (*models.Approach, error) {

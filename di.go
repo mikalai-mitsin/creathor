@@ -1,8 +1,14 @@
 package main
 
 import (
+	"go/ast"
+	"go/parser"
+	"go/printer"
+	"go/token"
+	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 func CreateDI(data *Project) error {
@@ -45,6 +51,60 @@ func CreateDI(data *Project) error {
 	for _, tmpl := range files {
 		if err := tmpl.renderToFile(data); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+func addToDI(packageName, constructor string) error {
+	packagePath := filepath.Join(destinationPath, "internal", packageName)
+	fileset := token.NewFileSet()
+	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
+		return true
+	}, parser.SkipObjectResolution)
+	if err != nil {
+		return err
+	}
+	for _, p := range tree {
+		for filePath, file := range p.Files {
+			for _, decl := range file.Decls {
+				genDecl, ok := decl.(*ast.GenDecl)
+				if ok {
+					for _, spec := range genDecl.Specs {
+						variable, ok := spec.(*ast.ValueSpec)
+						if ok {
+							for _, name := range variable.Names {
+								if name.Name == "FXModule" {
+									for _, values := range variable.Values {
+										optionsFunc, ok := values.(*ast.CallExpr)
+										if ok {
+											for _, arg := range optionsFunc.Args {
+												provideFunc, ok := arg.(*ast.CallExpr)
+												if ok {
+													fun, ok := provideFunc.Fun.(*ast.SelectorExpr)
+													if ok && fun.Sel.Name == "Provide" {
+														provideFunc.Args = append(provideFunc.Args, &ast.Ident{
+															Name: constructor,
+														})
+													}
+												}
+											}
+											openFile, err := os.OpenFile(filePath, os.O_WRONLY, 0777)
+											if err != nil {
+												return err
+											}
+											if err := printer.Fprint(openFile, fileset, file); err != nil {
+												return err
+											}
+										}
+									}
+
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 	return nil

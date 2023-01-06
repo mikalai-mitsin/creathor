@@ -97,7 +97,7 @@ func TestUserUseCase_Get(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "user not found",
+			name: "User not found",
 			setup: func() {
 				userRepository.EXPECT().Get(ctx, user.ID).Return(nil, errs.NewEntityNotFound())
 			},
@@ -397,7 +397,7 @@ func TestUserUseCase_Update(t *testing.T) {
 			wantErr: errs.NewUnexpectedBehaviorError("test error"),
 		},
 		{
-			name: "user not found",
+			name: "User not found",
 			setup: func() {
 				userRepository.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFound())
 			},
@@ -489,7 +489,7 @@ func TestUserUseCase_Delete(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "user not found",
+			name: "User not found",
 			setup: func() {
 				userRepository.EXPECT().
 					Delete(ctx, user.ID).

@@ -15,16 +15,16 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type PostgresUserRepository struct {
+type UserRepository struct {
 	database *sqlx.DB
 	logger   log.Logger
 }
 
-func NewPostgresUserRepository(database *sqlx.DB, logger log.Logger) repositories.UserRepository {
-	return &PostgresUserRepository{database: database, logger: logger}
+func NewUserRepository(database *sqlx.DB, logger log.Logger) repositories.UserRepository {
+	return &UserRepository{database: database, logger: logger}
 }
 
-func (r *PostgresUserRepository) Create(ctx context.Context, user *models.User) error {
+func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Insert("public.users").
@@ -39,7 +39,7 @@ func (r *PostgresUserRepository) Create(ctx context.Context, user *models.User) 
 	return nil
 }
 
-func (r *PostgresUserRepository) Get(ctx context.Context, id string) (*models.User, error) {
+func (r *UserRepository) Get(ctx context.Context, id string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	user := &models.User{}
@@ -56,7 +56,7 @@ func (r *PostgresUserRepository) Get(ctx context.Context, id string) (*models.Us
 	return user, nil
 }
 
-func (r *PostgresUserRepository) List(ctx context.Context, filter *models.UserFilter) ([]*models.User, error) {
+func (r *UserRepository) List(ctx context.Context, filter *models.UserFilter) ([]*models.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	var users []*models.User
@@ -82,7 +82,7 @@ func (r *PostgresUserRepository) List(ctx context.Context, filter *models.UserFi
 	return users, nil
 }
 
-func (r *PostgresUserRepository) Update(ctx context.Context, user *models.User) error {
+func (r *UserRepository) Update(ctx context.Context, user *models.User) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Update("public.users").Where(sq.Eq{"id": user.ID}).Set("", "") // TODO: set values
@@ -106,7 +106,7 @@ func (r *PostgresUserRepository) Update(ctx context.Context, user *models.User) 
 	return nil
 }
 
-func (r *PostgresUserRepository) Delete(ctx context.Context, id string) error {
+func (r *UserRepository) Delete(ctx context.Context, id string) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Delete("public.users").Where(sq.Eq{"id": id})
@@ -131,7 +131,7 @@ func (r *PostgresUserRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *PostgresUserRepository) Count(ctx context.Context, filter *models.UserFilter) (uint64, error) {
+func (r *UserRepository) Count(ctx context.Context, filter *models.UserFilter) (uint64, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Select("count(id)").From("public.users")

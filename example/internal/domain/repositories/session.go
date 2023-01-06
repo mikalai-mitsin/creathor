@@ -7,7 +7,7 @@ import (
 )
 
 //nolint: lll
-//go:generate mockgen -destination mock/session_mock.go github.com/018bf/example/internal/domain/repositories SessionRepository
+//go:generate mockgen -build_flags=-mod=mod -destination mock/session_mock.go github.com/018bf/example/internal/domain/repositories SessionRepository
 
 type SessionRepository interface {
 	Get(ctx context.Context, id string) (*models.Session, error)

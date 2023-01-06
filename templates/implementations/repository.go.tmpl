@@ -15,54 +15,54 @@ import (
 	"{{ .Module }}/internal/domain/errs"
 )
 
-type Postgres{{ .Model }}Repository struct {
+type {{ .RepositoryTypeName }} struct {
 	database *sqlx.DB
 	logger   log.Logger
 }
 
-func NewPostgres{{ .Model }}Repository(database *sqlx.DB, logger log.Logger) repositories.{{ .Model }}Repository {
-	return &Postgres{{ .Model }}Repository{database: database, logger: logger}
+func New{{ .RepositoryTypeName }}(database *sqlx.DB, logger log.Logger) repositories.{{ .RepositoryTypeName }} {
+	return &{{ .RepositoryTypeName }}{database: database, logger: logger}
 }
 
-func (r *Postgres{{ .Model }}Repository) Create(ctx context.Context, {{ .Model | ToLower }} *models.{{ .Model }}) error {
+func (r *{{ .RepositoryTypeName }}) Create(ctx context.Context, {{ .Variable }} *models.{{ .ModelName }}) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Insert("public.{{ .Model | ToLower }}s").
+	q := sq.Insert("public.{{ .TableName }}").
 		Columns(). // TODO: add columns
 		Values().  // TODO: add values
 		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.QueryRowxContext(ctx, query, args...).StructScan({{ .Model | ToLower }}); err != nil {
+	if err := r.database.QueryRowxContext(ctx, query, args...).StructScan({{ .Variable }}); err != nil {
 		e := errs.FromPostgresError(err)
 		return e
 	}
 	return nil
 }
 
-func (r *Postgres{{ .Model }}Repository) Get(ctx context.Context, id string) (*models.{{ .Model }}, error) {
+func (r *{{ .RepositoryTypeName }}) Get(ctx context.Context, id string) (*models.{{ .ModelName }}, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	{{ .Model | ToLower }} := &models.{{ .Model }}{}
-	q := sq.Select("{{ .Model | ToLower }}s.id", "{{ .Model | ToLower }}s.updated_at", "{{ .Model | ToLower }}s.created_at").
-		From("public.{{ .Model | ToLower }}s").
+	{{ .Variable }} := &models.{{ .ModelName }}{}
+	q := sq.Select("{{ .TableName }}.id", "{{ .TableName }}.updated_at", "{{ .TableName }}.created_at").
+		From("public.{{ .TableName }}").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.GetContext(ctx, {{ .Model | ToLower }}, query, args...); err != nil {
+	if err := r.database.GetContext(ctx, {{ .Variable }}, query, args...); err != nil {
 		e := errs.FromPostgresError(err).
-			WithParam("{{ .Model | ToLower }}_id", id)
+			WithParam("{{ .KeyName }}_id", id)
 		return nil, e
 	}
-	return {{ .Model | ToLower }}, nil
+	return {{ .Variable }}, nil
 }
 
-func (r *Postgres{{ .Model }}Repository) List(ctx context.Context, filter *models.{{ .Model }}Filter) ([]*models.{{ .Model }}, error) {
+func (r *{{ .RepositoryTypeName }}) List(ctx context.Context, filter *models.{{ .FilterTypeName }}) ([]*models.{{ .ModelName }}, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	var {{ .Model | ToLower }}s []*models.{{ .Model }}
+	var {{ .ListVariable }} []*models.{{ .ModelName }}
 	const pageSize = 10
-	q := sq.Select("{{ .Model | ToLower }}s.id", "{{ .Model | ToLower }}s.updated_at", "{{ .Model | ToLower }}s.created_at").
-		From("public.{{ .Model | ToLower }}s").
+	q := sq.Select("{{ .TableName }}.id", "{{ .TableName }}.updated_at", "{{ .TableName }}.created_at").
+		From("public.{{ .TableName }}").
 		Limit(pageSize)
 	// TODO: add filtering
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
@@ -75,66 +75,66 @@ func (r *Postgres{{ .Model }}Repository) List(ctx context.Context, filter *model
 		q = q.OrderBy(filter.OrderBy...)
 	}
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.SelectContext(ctx, &{{ .Model | ToLower }}s, query, args...); err != nil {
+	if err := r.database.SelectContext(ctx, &{{ .ListVariable }}, query, args...); err != nil {
 		e := errs.FromPostgresError(err)
 		return nil, e
 	}
-	return {{ .Model | ToLower }}s, nil
+	return {{ .ListVariable }}, nil
 }
 
-func (r *Postgres{{ .Model }}Repository) Update(ctx context.Context, {{ .Model | ToLower }} *models.{{ .Model }}) error {
+func (r *{{ .RepositoryTypeName }}) Update(ctx context.Context, {{ .Variable }} *models.{{ .ModelName }}) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Update("public.{{ .Model | ToLower }}s").Where(sq.Eq{"id": {{ .Model | ToLower }}.ID}).Set("", "") // TODO: set values
+	q := sq.Update("public.{{ .TableName }}").Where(sq.Eq{"id": {{ .Variable }}.ID}).Set("", "") // TODO: set values
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
 		e := errs.FromPostgresError(err).
-			WithParam("{{ .Model | ToLower }}_id", fmt.Sprint({{ .Model | ToLower }}.ID))
+			WithParam("{{ .KeyName }}_id", fmt.Sprint({{ .Variable }}.ID))
 		return e
 	}
 	affected, err := result.RowsAffected()
 	if err != nil {
 		return errs.FromPostgresError(err).
-			WithParam("{{ .Model | ToLower }}_id", fmt.Sprint({{ .Model | ToLower }}.ID))
+			WithParam("{{ .KeyName }}_id", fmt.Sprint({{ .Variable }}.ID))
 	}
 	if affected == 0 {
 		e := errs.NewEntityNotFound().
-			WithParam("{{ .Model | ToLower }}_id", fmt.Sprint({{ .Model | ToLower }}.ID))
+			WithParam("{{ .KeyName }}_id", fmt.Sprint({{ .Variable }}.ID))
 		return e
 	}
 	return nil
 }
 
-func (r *Postgres{{ .Model }}Repository) Delete(ctx context.Context, id string) error {
+func (r *{{ .RepositoryTypeName }}) Delete(ctx context.Context, id string) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Delete("public.{{ .Model | ToLower }}s").Where(sq.Eq{"id": id})
+	q := sq.Delete("public.{{ .TableName }}").Where(sq.Eq{"id": id})
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
 		e := errs.FromPostgresError(err).
-			WithParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
+			WithParam("{{ .KeyName }}_id", fmt.Sprint(id))
 		return e
 	}
 	affected, err := result.RowsAffected()
 	if err != nil {
 		e := errs.FromPostgresError(err).
-			WithParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
+			WithParam("{{ .KeyName }}_id", fmt.Sprint(id))
 		return e
 	}
 	if affected == 0 {
 		e := errs.NewEntityNotFound().
-			WithParam("{{ .Model | ToLower }}_id", fmt.Sprint(id))
+			WithParam("{{ .KeyName }}_id", fmt.Sprint(id))
 		return e
 	}
 	return nil
 }
 
-func (r *Postgres{{ .Model }}Repository) Count(ctx context.Context, filter *models.{{ .Model }}Filter) (uint64, error) {
+func (r *{{ .RepositoryTypeName }}) Count(ctx context.Context, filter *models.{{ .FilterTypeName }}) (uint64, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Select("count(id)").From("public.{{ .Model | ToLower }}s")
+	q := sq.Select("count(id)").From("public.{{ .TableName }}")
 	// TODO: add filtering
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result := r.database.QueryRowxContext(ctx, query, args...)

@@ -8,28 +8,28 @@ import (
 	"testing"
 )
 
-func New{{ .Model }}(t *testing.T) *models.{{ .Model }} {
+func New{{ .ModelName }}(t *testing.T) *models.{{ .ModelName }} {
 	t.Helper()
-	return &models.{{ .Model }}{
+	return &models.{{ .ModelName }}{
 		ID:         uuid.New().String(),
 	}
 }
 
-func New{{ .Model }}Create(t *testing.T) *models.{{ .Model }}Create {
+func New{{ .CreateTypeName }}(t *testing.T) *models.{{ .CreateTypeName }} {
 	t.Helper()
-	return &models.{{ .Model }}Create{}
+	return &models.{{ .CreateTypeName }}{}
 }
 
-func New{{ .Model }}Update(t *testing.T) *models.{{ .Model }}Update {
+func New{{ .UpdateTypeName }}(t *testing.T) *models.{{ .UpdateTypeName }} {
 	t.Helper()
-	return &models.{{ .Model }}Update{
+	return &models.{{ .UpdateTypeName }}{
 		ID: uuid.New().String(),
 	}
 }
 
-func New{{ .Model }}Filter(t *testing.T) *models.{{ .Model }}Filter {
+func New{{ .FilterTypeName }}(t *testing.T) *models.{{ .FilterTypeName }} {
 	t.Helper()
-	return &models.{{ .Model }}Filter{
+	return &models.{{ .FilterTypeName }}{
 		PageSize:   utils.Pointer(uint64(faker.RandomInt64(2, 100))),
 		PageNumber: utils.Pointer(uint64(faker.RandomInt64(2, 100))),
 		OrderBy:    faker.Lorem().Words(5),

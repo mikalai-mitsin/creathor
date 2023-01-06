@@ -37,7 +37,7 @@ func (u *EquipmentUseCase) List(
 	ctx context.Context,
 	filter *models.EquipmentFilter,
 ) ([]*models.Equipment, uint64, error) {
-	equipments, err := u.equipmentRepository.List(ctx, filter)
+	equipment, err := u.equipmentRepository.List(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -45,7 +45,7 @@ func (u *EquipmentUseCase) List(
 	if err != nil {
 		return nil, 0, err
 	}
-	return equipments, count, nil
+	return equipment, count, nil
 }
 
 func (u *EquipmentUseCase) Create(ctx context.Context, create *models.EquipmentCreate) (*models.Equipment, error) {

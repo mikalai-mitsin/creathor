@@ -20,7 +20,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func TestNewPostgresEquipmentRepository(t *testing.T) {
+func TestNewEquipmentRepository(t *testing.T) {
 	mockDB, _, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -43,7 +43,7 @@ func TestNewPostgresEquipmentRepository(t *testing.T) {
 			args: args{
 				database: mockDB,
 			},
-			want: &PostgresEquipmentRepository{
+			want: &EquipmentRepository{
 				database: mockDB,
 			},
 		},
@@ -51,14 +51,14 @@ func TestNewPostgresEquipmentRepository(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewPostgresEquipmentRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewPostgresEquipmentRepository() = %v, want %v", got, tt.want)
+			if got := NewEquipmentRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewEquipmentRepository() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestPostgresEquipmentRepository_Create(t *testing.T) {
+func TestEquipmentRepository_Create(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -68,7 +68,7 @@ func TestPostgresEquipmentRepository_Create(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	query := "INSERT INTO public.equipments"
+	query := "INSERT INTO public.equipment"
 	equipment := mock_models.NewEquipment(t)
 	ctx := context.Background()
 	type fields struct {
@@ -127,18 +127,18 @@ func TestPostgresEquipmentRepository_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresEquipmentRepository{
+			r := &EquipmentRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			if err := r.Create(tt.args.ctx, tt.args.card); !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresEquipmentRepository.Create() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("EquipmentRepository.Create() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestPostgresEquipmentRepository_Get(t *testing.T) {
+func TestEquipmentRepository_Get(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -148,7 +148,7 @@ func TestPostgresEquipmentRepository_Get(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	query := "SELECT equipments.id, equipments.updated_at, equipments.created_at FROM public.equipments WHERE id = \\$1 LIMIT 1"
+	query := "SELECT equipment.id, equipment.updated_at, equipment.created_at FROM public.equipment WHERE id = \\$1 LIMIT 1"
 	equipment := mock_models.NewEquipment(t)
 	ctx := context.Background()
 	type fields struct {
@@ -221,23 +221,23 @@ func TestPostgresEquipmentRepository_Get(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresEquipmentRepository{
+			r := &EquipmentRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			got, err := r.Get(tt.args.ctx, tt.args.id)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresEquipmentRepository.Get() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("EquipmentRepository.Get() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PostgresEquipmentRepository.Get() = %v, want %v", got, tt.want)
+				t.Errorf("EquipmentRepository.Get() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestPostgresEquipmentRepository_List(t *testing.T) {
+func TestEquipmentRepository_List(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -248,12 +248,12 @@ func TestPostgresEquipmentRepository_List(t *testing.T) {
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
-	var equipments []*models.Equipment
+	var equipment []*models.Equipment
 	for i := 0; i < faker.RandomInt(1, 20); i++ {
-		equipments = append(equipments, mock_models.NewEquipment(t))
+		equipment = append(equipment, mock_models.NewEquipment(t))
 	}
 	filter := mock_models.NewEquipmentFilter(t)
-	query := "SELECT equipments.id, equipments.updated_at, equipments.created_at FROM public.equipments"
+	query := "SELECT equipment.id, equipment.updated_at, equipment.created_at FROM public.equipment"
 	type fields struct {
 		database *sqlx.DB
 		logger   log.Logger
@@ -274,7 +274,7 @@ func TestPostgresEquipmentRepository_List(t *testing.T) {
 			name: "ok",
 			setup: func() {
 				mock.ExpectQuery(query).
-					WillReturnRows(newEquipmentRows(t, equipments))
+					WillReturnRows(newEquipmentRows(t, equipment))
 			},
 			fields: fields{
 				database: db,
@@ -284,7 +284,7 @@ func TestPostgresEquipmentRepository_List(t *testing.T) {
 				ctx:    ctx,
 				filter: filter,
 			},
-			want:    equipments,
+			want:    equipment,
 			wantErr: nil,
 		},
 		{
@@ -330,23 +330,23 @@ func TestPostgresEquipmentRepository_List(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresEquipmentRepository{
+			r := &EquipmentRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			got, err := r.List(tt.args.ctx, tt.args.filter)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresEquipmentRepository.List() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("EquipmentRepository.List() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PostgresEquipmentRepository.List() = %v, want %v", got, tt.want)
+				t.Errorf("EquipmentRepository.List() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestPostgresEquipmentRepository_Update(t *testing.T) {
+func TestEquipmentRepository_Update(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -357,7 +357,7 @@ func TestPostgresEquipmentRepository_Update(t *testing.T) {
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
 	equipment := mock_models.NewEquipment(t)
-	query := `UPDATE public.equipments`
+	query := `UPDATE public.equipment`
 	ctx := context.Background()
 	type fields struct {
 		database *sqlx.DB
@@ -463,18 +463,18 @@ func TestPostgresEquipmentRepository_Update(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresEquipmentRepository{
+			r := &EquipmentRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			if err := r.Update(tt.args.ctx, tt.args.card); !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresEquipmentRepository.Update() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("EquipmentRepository.Update() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestPostgresEquipmentRepository_Delete(t *testing.T) {
+func TestEquipmentRepository_Delete(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -507,7 +507,7 @@ func TestPostgresEquipmentRepository_Delete(t *testing.T) {
 				logger:   logger,
 			},
 			setup: func() {
-				mock.ExpectExec("DELETE FROM public.equipments WHERE id = \\$1").
+				mock.ExpectExec("DELETE FROM public.equipment WHERE id = \\$1").
 					WithArgs(equipment.ID).
 					WillReturnResult(sqlmock.NewResult(0, 1))
 			},
@@ -520,7 +520,7 @@ func TestPostgresEquipmentRepository_Delete(t *testing.T) {
 		{
 			name: "article card not found",
 			setup: func() {
-				mock.ExpectExec("DELETE FROM public.equipments WHERE id = \\$1").
+				mock.ExpectExec("DELETE FROM public.equipment WHERE id = \\$1").
 					WithArgs(equipment.ID).
 					WillReturnResult(sqlmock.NewResult(0, 0))
 			},
@@ -537,7 +537,7 @@ func TestPostgresEquipmentRepository_Delete(t *testing.T) {
 		{
 			name: "database error",
 			setup: func() {
-				mock.ExpectExec("DELETE FROM public.equipments WHERE id = \\$1").
+				mock.ExpectExec("DELETE FROM public.equipment WHERE id = \\$1").
 					WithArgs(equipment.ID).
 					WillReturnError(errors.New("test error"))
 			},
@@ -554,7 +554,7 @@ func TestPostgresEquipmentRepository_Delete(t *testing.T) {
 		{
 			name: "result error",
 			setup: func() {
-				mock.ExpectExec("DELETE FROM public.equipments WHERE id = \\$1").
+				mock.ExpectExec("DELETE FROM public.equipment WHERE id = \\$1").
 					WithArgs(equipment.ID).
 					WillReturnResult(sqlmock.NewErrorResult(errors.New("test error")))
 			},
@@ -572,25 +572,25 @@ func TestPostgresEquipmentRepository_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresEquipmentRepository{
+			r := &EquipmentRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			if err := r.Delete(tt.args.ctx, tt.args.id); !errors.Is(err, tt.wantErr) {
-				t.Errorf("PostgresEquipmentRepository.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("EquipmentRepository.Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestPostgresEquipmentRepository_Count(t *testing.T) {
+func TestEquipmentRepository_Count(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
 	defer db.Close()
-	query := `SELECT count\(id\) FROM public.equipments`
+	query := `SELECT count\(id\) FROM public.equipment`
 	ctx := context.Background()
 	filter := mock_models.NewEquipmentFilter(t)
 	type fields struct {
@@ -669,7 +669,7 @@ func TestPostgresEquipmentRepository_Count(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &PostgresEquipmentRepository{
+			r := &EquipmentRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
@@ -685,14 +685,14 @@ func TestPostgresEquipmentRepository_Count(t *testing.T) {
 	}
 }
 
-func newEquipmentRows(t *testing.T, equipments []*models.Equipment) *sqlmock.Rows {
+func newEquipmentRows(t *testing.T, equipment []*models.Equipment) *sqlmock.Rows {
 	t.Helper()
 	rows := sqlmock.NewRows([]string{
 		"id",
 		"updated_at",
 		"created_at",
 	})
-	for _, equipment := range equipments {
+	for _, equipment := range equipment {
 		rows.AddRow(
 			equipment.ID,
 			equipment.UpdatedAt,

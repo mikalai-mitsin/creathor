@@ -162,3 +162,11 @@ func NewEntityNotFound() *Error {
 		Params:  map[string]string{},
 	}
 }
+
+func NewPermissionDeniedError() *Error {
+	return &Error{
+		Code:    ErrorCodePermissionDenied,
+		Message: "Permission denied.",
+		Params:  map[string]string{},
+	}
+}

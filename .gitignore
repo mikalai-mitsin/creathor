@@ -48,7 +48,7 @@ Temporary Items
 ### Example user template
 dist
 
-# IntelliJ project files
+# IntelliJ project domain
 .idea
 *.iml
 out

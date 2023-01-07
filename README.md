@@ -21,6 +21,11 @@ To initialize a project in the current directory, use the command `init`
 creathor init --name tracker --module github.com/018bf/tracker --model user --model token --model equipment --model session --model approach
 ```
 
+To add auth and permission checks add `-a` or `--auth` flag
+```
+creathor -a init --name tracker --module github.com/018bf/tracker --model user --model token --model equipment --model session --model approach
+```
+
 You can override the project path with the `-d` or `--destination` flag
 ```
 creathor -d /Users/me/Projects/mysimpletracker init --name tracker --module github.com/018bf/tracker --model user --model token --model equipment --model session --model approach

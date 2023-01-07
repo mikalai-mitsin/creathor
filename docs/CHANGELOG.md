@@ -2,8 +2,15 @@
 ## [Unreleased]
 
 
-<a name="0.1.7"></a>
-## [0.1.7] - 2023-01-06
+<a name="0.2.0"></a>
+## [0.2.0] - 2023-01-07
+### Feat
+- **auth:** generate auth as part of layout
+- **di:** add postgres module to container
+
+
+<a name="v0.1.7"></a>
+## [v0.1.7] - 2023-01-06
 ### Feat
 - build variables
 - **auth:** check user model
@@ -65,8 +72,9 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/018bf/creathor/compare/0.1.7...HEAD
-[0.1.7]: https://github.com/018bf/creathor/compare/v0.1.6...0.1.7
+[Unreleased]: https://github.com/018bf/creathor/compare/0.2.0...HEAD
+[0.2.0]: https://github.com/018bf/creathor/compare/v0.1.7...0.2.0
+[v0.1.7]: https://github.com/018bf/creathor/compare/v0.1.6...v0.1.7
 [v0.1.6]: https://github.com/018bf/creathor/compare/v0.1.5...v0.1.6
 [v0.1.5]: https://github.com/018bf/creathor/compare/v0.1.3...v0.1.5
 [v0.1.3]: https://github.com/018bf/creathor/compare/v0.1.4...v0.1.3

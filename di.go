@@ -58,12 +58,6 @@ func CreateDI(data *Project) error {
 func addToDI(packageName string, constructors ...string) error {
 	packagePath := filepath.Join(destinationPath, "internal", packageName)
 	fileset := token.NewFileSet()
-	astConstructors := []*ast.Ident{}
-	for _, constructor := range constructors {
-		astConstructors = append(astConstructors, &ast.Ident{
-			Name: constructor,
-		})
-	}
 	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
 		return true
 	}, parser.SkipObjectResolution)

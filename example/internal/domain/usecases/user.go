@@ -11,6 +11,7 @@ import (
 
 type UserUseCase interface {
 	Get(ctx context.Context, id string) (*models.User, error)
+	GetByEmail(ctx context.Context, email string) (*models.User, error)
 	List(ctx context.Context, filter *models.UserFilter) ([]*models.User, uint64, error)
 	Create(ctx context.Context, create *models.UserCreate) (*models.User, error)
 	Update(ctx context.Context, update *models.UserUpdate) (*models.User, error)

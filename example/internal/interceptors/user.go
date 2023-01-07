@@ -28,11 +28,7 @@ func NewUserInterceptor(
 	}
 }
 
-func (i *UserInterceptor) Get(
-	ctx context.Context,
-	id string,
-	requestUser *models.User,
-) (*models.User, error) {
+func (i *UserInterceptor) Get(ctx context.Context, id string, requestUser *models.User) (*models.User, error) {
 	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDUserDetail); err != nil {
 		return nil, err
 	}
@@ -55,9 +51,6 @@ func (i *UserInterceptor) List(
 	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDUserList); err != nil {
 		return nil, 0, err
 	}
-	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDUserList, filter); err != nil {
-		return nil, 0, err
-	}
 	users, count, err := i.userUseCase.List(ctx, filter)
 	if err != nil {
 		return nil, 0, err
@@ -71,9 +64,6 @@ func (i *UserInterceptor) Create(
 	requestUser *models.User,
 ) (*models.User, error) {
 	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDUserCreate); err != nil {
-		return nil, err
-	}
-	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDUserCreate, create); err != nil {
 		return nil, err
 	}
 	user, err := i.userUseCase.Create(ctx, create)
@@ -95,21 +85,18 @@ func (i *UserInterceptor) Update(
 	if err != nil {
 		return nil, err
 	}
-	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDUserUpdate, user); err != nil {
-		return nil, err
-	}
-	updatedUser, err := i.userUseCase.Update(ctx, update)
+	err = i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDUserUpdate, user)
 	if err != nil {
 		return nil, err
 	}
-	return updatedUser, nil
+	user, err = i.userUseCase.Update(ctx, update)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
-func (i *UserInterceptor) Delete(
-	ctx context.Context,
-	id string,
-	requestUser *models.User,
-) error {
+func (i *UserInterceptor) Delete(ctx context.Context, id string, requestUser *models.User) error {
 	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDUserDelete); err != nil {
 		return err
 	}

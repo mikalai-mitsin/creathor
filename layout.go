@@ -39,6 +39,7 @@ func CreateLayout(data *Project) error {
 		path.Join(destinationPath, "pkg", "clock"),
 		path.Join(destinationPath, "pkg", "log"),
 		path.Join(destinationPath, "pkg", "utils"),
+		path.Join(destinationPath, "pkg", "postgresql"),
 	}
 	for _, directory := range directories {
 		if err := os.MkdirAll(directory, 0777); err != nil {
@@ -72,6 +73,11 @@ func CreateLayout(data *Project) error {
 			Name:            "config struct",
 		},
 		{
+			SourcePath:      "templates/configs/testing.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "configs", "testing.go"),
+			Name:            "config testing",
+		},
+		{
 			SourcePath:      "templates/configs/config_test.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "configs", "config_test.go"),
 			Name:            "config tests",
@@ -90,6 +96,11 @@ func CreateLayout(data *Project) error {
 			SourcePath:      "templates/clock/clock.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "pkg", "clock", "clock.go"),
 			Name:            "clock",
+		},
+		{
+			SourcePath:      "templates/postgresql/search.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "pkg", "postgresql", "search.go"),
+			Name:            "search",
 		},
 		{
 			SourcePath:      "templates/log/logger.go.tmpl",
@@ -161,9 +172,124 @@ func CreateLayout(data *Project) error {
 				Name:            "auth models",
 			},
 			&Template{
+				SourcePath:      "templates/domain/model_auth_mock.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "domain", "models", "mock", "auth.go"),
+				Name:            "auth mock models",
+			},
+			&Template{
 				SourcePath:      "templates/domain/model_permission.go.tmpl",
 				DestinationPath: path.Join(destinationPath, "internal", "domain", "models", "permission.go"),
 				Name:            "auth permission",
+			},
+			&Template{
+				SourcePath:      "templates/domain/model_user.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "domain", "models", "user.go"),
+				Name:            "user model",
+			},
+			&Template{
+				SourcePath:      "templates/domain/model_user_mock.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "domain", "models", "mock", "user.go"),
+				Name:            "user mock model",
+			},
+			&Template{
+				SourcePath:      "templates/domain/repository_user.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "domain", "repositories", "user.go"),
+				Name:            "user repository",
+			},
+			&Template{
+				SourcePath:      "templates/domain/usecase_user.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "domain", "usecases", "user.go"),
+				Name:            "user usecase",
+			},
+			&Template{
+				SourcePath:      "templates/domain/interceptor_user.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "domain", "interceptors", "user.go"),
+				Name:            "user interceptor",
+			},
+			&Template{
+				SourcePath:      "templates/domain/interceptor_auth.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "domain", "interceptors", "auth.go"),
+				Name:            "auth interceptor",
+			},
+			&Template{
+				SourcePath:      "templates/domain/repository_permission.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "domain", "repositories", "permission.go"),
+				Name:            "auth permission repository",
+			},
+			&Template{
+				SourcePath:      "templates/domain/repository_auth.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "domain", "repositories", "auth.go"),
+				Name:            "auth repository",
+			},
+			&Template{
+				SourcePath:      "templates/implementations/usecase_auth.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "usecases", "auth.go"),
+				Name:            "auth usecase implementation",
+			},
+			&Template{
+				SourcePath:      "templates/implementations/usecase_auth_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "usecases", "auth_test.go"),
+				Name:            "test auth usecase implementation",
+			},
+			&Template{
+				SourcePath:      "templates/implementations/usecase_user.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "usecases", "user.go"),
+				Name:            "user usecase implementation",
+			},
+			&Template{
+				SourcePath:      "templates/implementations/usecase_user_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "usecases", "user_test.go"),
+				Name:            "test user usecase implementation",
+			},
+			&Template{
+				SourcePath:      "templates/implementations/interceptor_user.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interceptors", "user.go"),
+				Name:            "user interceptor implementation",
+			},
+			&Template{
+				SourcePath:      "templates/implementations/interceptor_user_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interceptors", "user_test.go"),
+				Name:            "test user interceptor implementation",
+			},
+			&Template{
+				SourcePath:      "templates/implementations/interceptor_auth.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interceptors", "auth.go"),
+				Name:            "auth interceptor implementation",
+			},
+			&Template{
+				SourcePath:      "templates/implementations/interceptor_auth_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interceptors", "auth_test.go"),
+				Name:            "test auth interceptor implementation",
+			},
+			&Template{
+				SourcePath:      "templates/implementations/repository_user.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "repositories", "user.go"),
+				Name:            "user repository implementation",
+			},
+			&Template{
+				SourcePath:      "templates/implementations/repository_user_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "repositories", "user_test.go"),
+				Name:            "test user repository implementation",
+			},
+			&Template{
+				SourcePath:      "templates/implementations/repository_permission.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "repositories", "permission.go"),
+				Name:            "user repository implementation",
+			},
+			&Template{
+				SourcePath:      "templates/implementations/repository_permission_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "repositories", "permission_test.go"),
+				Name:            "test permission repository implementation",
+			},
+			&Template{
+				SourcePath:      "templates/implementations/repository_jwt.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "repositories", "auth.go"),
+				Name:            "user repository implementation",
+			},
+			&Template{
+				SourcePath:      "templates/implementations/repository_jwt_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "repositories", "auth_test.go"),
+				Name:            "test auth repository implementation",
 			},
 		)
 	}

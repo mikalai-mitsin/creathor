@@ -47,7 +47,6 @@ func CreateDI(data *Project) error {
 			Name:            "Interceptors FX module",
 		},
 	}
-
 	for _, tmpl := range files {
 		if err := tmpl.renderToFile(data); err != nil {
 			return err
@@ -56,7 +55,7 @@ func CreateDI(data *Project) error {
 	return nil
 }
 
-func addToDI(packageName, constructor string) error {
+func addToDI(packageName string, constructors ...string) error {
 	packagePath := filepath.Join(destinationPath, "internal", packageName)
 	fileset := token.NewFileSet()
 	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
@@ -83,9 +82,11 @@ func addToDI(packageName, constructor string) error {
 												if ok {
 													fun, ok := provideFunc.Fun.(*ast.SelectorExpr)
 													if ok && fun.Sel.Name == "Provide" {
-														provideFunc.Args = append(provideFunc.Args, &ast.Ident{
-															Name: constructor,
-														})
+														for _, constructor := range constructors {
+															provideFunc.Args = append(provideFunc.Args, &ast.Ident{
+																Name: constructor,
+															})
+														}
 													}
 												}
 											}

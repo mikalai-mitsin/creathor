@@ -3,19 +3,22 @@ package usecases
 import (
 	"context"
 	"errors"
-	"reflect"
-	"testing"
-
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
 	"github.com/018bf/example/internal/domain/repositories"
 	mock_repositories "github.com/018bf/example/internal/domain/repositories/mock"
 	"github.com/018bf/example/internal/domain/usecases"
+	"github.com/018bf/example/pkg/clock"
+	mock_clock "github.com/018bf/example/pkg/clock/mock"
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
+	"github.com/018bf/example/pkg/utils"
 	"github.com/golang/mock/gomock"
+	"reflect"
+	"strings"
 	"syreclabs.com/go/faker"
+	"testing"
 )
 
 func TestNewUserUseCase(t *testing.T) {
@@ -23,8 +26,10 @@ func TestNewUserUseCase(t *testing.T) {
 	defer ctrl.Finish()
 	userRepository := mock_repositories.NewMockUserRepository(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
+	mockClock := mock_clock.NewMockClock(ctrl)
 	type args struct {
 		userRepository repositories.UserRepository
+		clock          clock.Clock
 		logger         log.Logger
 	}
 	tests := []struct {
@@ -34,15 +39,16 @@ func TestNewUserUseCase(t *testing.T) {
 		want  usecases.UserUseCase
 	}{
 		{
-			name: "ok",
-			setup: func() {
-			},
+			name:  "ok",
+			setup: func() {},
 			args: args{
 				userRepository: userRepository,
+				clock:          mockClock,
 				logger:         logger,
 			},
 			want: &UserUseCase{
 				userRepository: userRepository,
+				clock:          mockClock,
 				logger:         logger,
 			},
 		},
@@ -50,7 +56,7 @@ func TestNewUserUseCase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewUserUseCase(tt.args.userRepository, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewUserUseCase(tt.args.userRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewUserUseCase() = %v, want %v", got, tt.want)
 			}
 		})
@@ -97,7 +103,7 @@ func TestUserUseCase_Get(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "User not found",
+			name: "user not found",
 			setup: func() {
 				userRepository.EXPECT().Get(ctx, user.ID).Return(nil, errs.NewEntityNotFound())
 			},
@@ -132,87 +138,60 @@ func TestUserUseCase_Get(t *testing.T) {
 	}
 }
 
-func TestUserUseCase_List(t *testing.T) {
+func TestUserUseCase_GetByEmail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	userRepository := mock_repositories.NewMockUserRepository(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
-	var users []*models.User
-	count := uint64(faker.Number().NumberInt(2))
-	for i := uint64(0); i < count; i++ {
-		users = append(users, mock_models.NewUser(t))
-	}
-	filter := mock_models.NewUserFilter(t)
+	user := mock_models.NewUser(t)
 	type fields struct {
 		userRepository repositories.UserRepository
 		logger         log.Logger
 	}
 	type args struct {
-		ctx    context.Context
-		filter *models.UserFilter
+		ctx   context.Context
+		email string
 	}
 	tests := []struct {
 		name    string
 		setup   func()
 		fields  fields
 		args    args
-		want    []*models.User
-		want1   uint64
+		want    *models.User
 		wantErr error
 	}{
 		{
 			name: "ok",
 			setup: func() {
-				userRepository.EXPECT().List(ctx, filter).Return(users, nil)
-				userRepository.EXPECT().Count(ctx, filter).Return(count, nil)
+				userRepository.EXPECT().GetByEmail(ctx, strings.ToLower(user.Email)).Return(user, nil)
 			},
 			fields: fields{
 				userRepository: userRepository,
 				logger:         logger,
 			},
 			args: args{
-				ctx:    ctx,
-				filter: filter,
+				ctx:   ctx,
+				email: user.Email,
 			},
-			want:    users,
-			want1:   count,
+			want:    user,
 			wantErr: nil,
 		},
 		{
-			name: "list error",
+			name: "user not found",
 			setup: func() {
-				userRepository.EXPECT().List(ctx, filter).Return(nil, errs.NewUnexpectedBehaviorError("test error"))
+				userRepository.EXPECT().GetByEmail(ctx, strings.ToLower(user.Email)).Return(nil, errs.NewEntityNotFound())
 			},
 			fields: fields{
 				userRepository: userRepository,
 				logger:         logger,
 			},
 			args: args{
-				ctx:    ctx,
-				filter: filter,
+				ctx:   ctx,
+				email: user.Email,
 			},
 			want:    nil,
-			want1:   0,
-			wantErr: errs.NewUnexpectedBehaviorError("test error"),
-		},
-		{
-			name: "count error",
-			setup: func() {
-				userRepository.EXPECT().List(ctx, filter).Return(users, nil)
-				userRepository.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
-			},
-			fields: fields{
-				userRepository: userRepository,
-				logger:         logger,
-			},
-			args: args{
-				ctx:    ctx,
-				filter: filter,
-			},
-			want:    nil,
-			want1:   0,
-			wantErr: errs.NewUnexpectedBehaviorError("test error"),
+			wantErr: errs.NewEntityNotFound(),
 		},
 	}
 	for _, tt := range tests {
@@ -222,16 +201,13 @@ func TestUserUseCase_List(t *testing.T) {
 				userRepository: tt.fields.userRepository,
 				logger:         tt.fields.logger,
 			}
-			got, got1, err := u.List(tt.args.ctx, tt.args.filter)
+			got, err := u.GetByEmail(tt.args.ctx, tt.args.email)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("UserUseCase.List() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("UserUseCase.GetByEmail() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("UserUseCase.List() = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("UserUseCase.List() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("UserUseCase.GetByEmail() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -243,7 +219,7 @@ func TestUserUseCase_Create(t *testing.T) {
 	userRepository := mock_repositories.NewMockUserRepository(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
-	create := mock_models.NewUserCreate(t)
+	userCreate := mock_models.NewUserCreate(t)
 	type fields struct {
 		userRepository repositories.UserRepository
 		logger         log.Logger
@@ -264,7 +240,7 @@ func TestUserUseCase_Create(t *testing.T) {
 			name: "ok",
 			setup: func() {
 				userRepository.EXPECT().
-					Create(ctx, &models.User{}).
+					Create(ctx, gomock.Any()).
 					Return(nil)
 			},
 			fields: fields{
@@ -273,17 +249,17 @@ func TestUserUseCase_Create(t *testing.T) {
 			},
 			args: args{
 				ctx:    ctx,
-				create: create,
+				create: userCreate,
 			},
-			want:    &models.User{},
+			want:    &models.User{Email: userCreate.Email, GroupID: models.GroupIDUser},
 			wantErr: nil,
 		},
 		{
 			name: "unexpected behavior",
 			setup: func() {
 				userRepository.EXPECT().
-					Create(ctx, &models.User{}).
-					Return(errs.NewUnexpectedBehaviorError("test error"))
+					Create(ctx, gomock.Any()).
+					Return(errs.NewUnexpectedBehaviorError("asd"))
 			},
 			fields: fields{
 				userRepository: userRepository,
@@ -291,27 +267,32 @@ func TestUserUseCase_Create(t *testing.T) {
 			},
 			args: args{
 				ctx:    ctx,
-				create: create,
+				create: userCreate,
 			},
 			want:    nil,
-			wantErr: errs.NewUnexpectedBehaviorError("test error"),
+			wantErr: errs.NewUnexpectedBehaviorError("asd"),
 		},
-		// TODO: Add validation rules or delete this case
-		//{
-		//	name: "invalid",
-		//	setup: func() {
-		//	},
-		//	fields: fields{
-		//		userRepository: userRepository,
-		//		logger:           logger,
-		//	},
-		//	args: args{
-		//		ctx: ctx,
-		//		create: &models.UserCreate{},
-		//	},
-		//	want: nil,
-		//	wantErr: errs.NewInvalidFormError().WithParam("set", "it"),
-		//},
+		{
+			name: "invalid",
+			setup: func() {
+			},
+			fields: fields{
+				userRepository: userRepository,
+				logger:         logger,
+			},
+			args: args{
+				ctx: ctx,
+				create: &models.UserCreate{
+					Email: "user.Addres",
+				},
+			},
+			want: nil,
+			wantErr: &errs.Error{
+				Code:    errs.ErrorCodeInvalidArgument,
+				Message: "The form sent is not valid, please correct the errors below.",
+				Params:  map[string]string{"email": "must be a valid email address", "password": "cannot be blank"},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -337,11 +318,13 @@ func TestUserUseCase_Update(t *testing.T) {
 	defer ctrl.Finish()
 	userRepository := mock_repositories.NewMockUserRepository(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
+	clockMock := mock_clock.NewMockClock(ctrl)
 	ctx := context.Background()
 	user := mock_models.NewUser(t)
 	update := mock_models.NewUserUpdate(t)
 	type fields struct {
 		userRepository repositories.UserRepository
+		clock          clock.Clock
 		logger         log.Logger
 	}
 	type args struct {
@@ -359,13 +342,12 @@ func TestUserUseCase_Update(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				userRepository.EXPECT().
-					Get(ctx, update.ID).Return(user, nil)
-				userRepository.EXPECT().
-					Update(ctx, user).Return(nil)
+				userRepository.EXPECT().Get(ctx, update.ID).Return(user, nil)
+				userRepository.EXPECT().Update(ctx, user).Return(nil)
 			},
 			fields: fields{
 				userRepository: userRepository,
+				clock:          clockMock,
 				logger:         logger,
 			},
 			args: args{
@@ -378,15 +360,12 @@ func TestUserUseCase_Update(t *testing.T) {
 		{
 			name: "update error",
 			setup: func() {
-				userRepository.EXPECT().
-					Get(ctx, update.ID).
-					Return(user, nil)
-				userRepository.EXPECT().
-					Update(ctx, user).
-					Return(errs.NewUnexpectedBehaviorError("test error"))
+				userRepository.EXPECT().Get(ctx, update.ID).Return(user, nil)
+				userRepository.EXPECT().Update(ctx, user).Return(errs.NewUnexpectedBehaviorError("asdqw1"))
 			},
 			fields: fields{
 				userRepository: userRepository,
+				clock:          clockMock,
 				logger:         logger,
 			},
 			args: args{
@@ -394,10 +373,10 @@ func TestUserUseCase_Update(t *testing.T) {
 				update: update,
 			},
 			want:    nil,
-			wantErr: errs.NewUnexpectedBehaviorError("test error"),
+			wantErr: errs.NewUnexpectedBehaviorError("asdqw1"),
 		},
 		{
-			name: "User not found",
+			name: "user not found",
 			setup: func() {
 				userRepository.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFound())
 			},
@@ -423,11 +402,19 @@ func TestUserUseCase_Update(t *testing.T) {
 			args: args{
 				ctx: ctx,
 				update: &models.UserUpdate{
-					ID: faker.Number().Number(1),
+					ID:        user.ID,
+					FirstName: utils.Pointer(user.FirstName),
+					LastName:  utils.Pointer(user.LastName),
+					Password:  utils.Pointer(user.Password),
+					Email:     utils.Pointer("user.Addres"),
 				},
 			},
-			want:    nil,
-			wantErr: errs.NewInvalidFormError().WithParam("id", "must be a valid UUID"),
+			want: nil,
+			wantErr: &errs.Error{
+				Code:    errs.ErrorCodeInvalidArgument,
+				Message: "The form sent is not valid, please correct the errors below.",
+				Params:  map[string]string{"email": "must be a valid email address"},
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -435,6 +422,7 @@ func TestUserUseCase_Update(t *testing.T) {
 			tt.setup()
 			u := &UserUseCase{
 				userRepository: tt.fields.userRepository,
+				clock:          tt.fields.clock,
 				logger:         tt.fields.logger,
 			}
 			got, err := u.Update(tt.args.ctx, tt.args.update)
@@ -474,9 +462,7 @@ func TestUserUseCase_Delete(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				userRepository.EXPECT().
-					Delete(ctx, user.ID).
-					Return(nil)
+				userRepository.EXPECT().Delete(ctx, user.ID).Return(nil)
 			},
 			fields: fields{
 				userRepository: userRepository,
@@ -489,11 +475,9 @@ func TestUserUseCase_Delete(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "User not found",
+			name: "user not found",
 			setup: func() {
-				userRepository.EXPECT().
-					Delete(ctx, user.ID).
-					Return(errs.NewEntityNotFound())
+				userRepository.EXPECT().Delete(ctx, user.ID).Return(errs.NewEntityNotFound())
 			},
 			fields: fields{
 				userRepository: userRepository,
@@ -515,6 +499,116 @@ func TestUserUseCase_Delete(t *testing.T) {
 			}
 			if err := u.Delete(tt.args.ctx, tt.args.id); !errors.Is(err, tt.wantErr) {
 				t.Errorf("UserUseCase.Delete() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestUserUseCase_List(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	userRepository := mock_repositories.NewMockUserRepository(ctrl)
+	logger := mock_log.NewMockLogger(ctrl)
+	ctx := context.Background()
+	var users []*models.User
+	count := uint64(faker.Number().NumberInt(2))
+	for i := uint64(0); i < count; i++ {
+		users = append(users, mock_models.NewUser(t))
+	}
+	filter := &models.UserFilter{
+		PageSize:   nil,
+		PageNumber: nil,
+		Search:     nil,
+		OrderBy:    nil,
+	}
+	type fields struct {
+		userRepository repositories.UserRepository
+		logger         log.Logger
+	}
+	type args struct {
+		ctx    context.Context
+		filter *models.UserFilter
+	}
+	tests := []struct {
+		name    string
+		setup   func()
+		fields  fields
+		args    args
+		want    []*models.User
+		want1   uint64
+		wantErr error
+	}{
+		{
+			name: "ok",
+			setup: func() {
+				userRepository.EXPECT().List(ctx, filter).Return(users, nil)
+				userRepository.EXPECT().Count(ctx, filter).Return(count, nil)
+			},
+			fields: fields{
+				userRepository: userRepository,
+				logger:         logger,
+			},
+			args: args{
+				ctx:    ctx,
+				filter: filter,
+			},
+			want:    users,
+			want1:   count,
+			wantErr: nil,
+		},
+		{
+			name: "list error",
+			setup: func() {
+				userRepository.EXPECT().List(ctx, filter).Return(nil, errs.NewUnexpectedBehaviorError("bad"))
+			},
+			fields: fields{
+				userRepository: userRepository,
+				logger:         logger,
+			},
+			args: args{
+				ctx:    ctx,
+				filter: filter,
+			},
+			want:    nil,
+			want1:   0,
+			wantErr: errs.NewUnexpectedBehaviorError("bad"),
+		},
+		{
+			name: "count error",
+			setup: func() {
+				userRepository.EXPECT().List(ctx, filter).Return(users, nil)
+				userRepository.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("bad"))
+			},
+			fields: fields{
+				userRepository: userRepository,
+				logger:         logger,
+			},
+			args: args{
+				ctx:    ctx,
+				filter: filter,
+			},
+			want:    nil,
+			want1:   0,
+			wantErr: errs.NewUnexpectedBehaviorError("bad"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setup()
+			u := &UserUseCase{
+				userRepository: tt.fields.userRepository,
+				logger:         tt.fields.logger,
+			}
+			got, got1, err := u.List(tt.args.ctx, tt.args.filter)
+			if !errors.Is(err, tt.wantErr) {
+				t.Errorf("UserUseCase.List() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("UserUseCase.List() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("UserUseCase.List() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

@@ -170,3 +170,19 @@ func NewPermissionDeniedError() *Error {
 		Params:  map[string]string{},
 	}
 }
+
+func NewBadToken() *Error {
+	return &Error{
+		Code:    ErrorCodeUnauthenticated,
+		Message: "Bad token.",
+		Params:  map[string]string{},
+	}
+}
+
+func NewPermissionDenied() *Error {
+	return &Error{
+		Code:    ErrorCodePermissionDenied,
+		Message: "Permission denied.",
+		Params:  map[string]string{},
+	}
+}

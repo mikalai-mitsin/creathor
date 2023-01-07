@@ -3,8 +3,9 @@ package repositories
 import (
 	"context"
 	"fmt"
-	sq "github.com/Masterminds/squirrel"
 	"time"
+
+	sq "github.com/Masterminds/squirrel"
 
 	"github.com/018bf/example/pkg/log"
 
@@ -20,11 +21,20 @@ type ApproachRepository struct {
 	logger   log.Logger
 }
 
-func NewApproachRepository(database *sqlx.DB, logger log.Logger) repositories.ApproachRepository {
-	return &ApproachRepository{database: database, logger: logger}
+func NewApproachRepository(
+	database *sqlx.DB,
+	logger log.Logger,
+) repositories.ApproachRepository {
+	return &ApproachRepository{
+		database: database,
+		logger:   logger,
+	}
 }
 
-func (r *ApproachRepository) Create(ctx context.Context, approach *models.Approach) error {
+func (r *ApproachRepository) Create(
+	ctx context.Context,
+	approach *models.Approach,
+) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Insert("public.approaches").
@@ -39,11 +49,18 @@ func (r *ApproachRepository) Create(ctx context.Context, approach *models.Approa
 	return nil
 }
 
-func (r *ApproachRepository) Get(ctx context.Context, id string) (*models.Approach, error) {
+func (r *ApproachRepository) Get(
+	ctx context.Context,
+	id string,
+) (*models.Approach, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	approach := &models.Approach{}
-	q := sq.Select("approaches.id", "approaches.updated_at", "approaches.created_at").
+	q := sq.Select(
+		"approaches.id",
+		"approaches.updated_at",
+		"approaches.created_at",
+	).
 		From("public.approaches").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
@@ -56,12 +73,19 @@ func (r *ApproachRepository) Get(ctx context.Context, id string) (*models.Approa
 	return approach, nil
 }
 
-func (r *ApproachRepository) List(ctx context.Context, filter *models.ApproachFilter) ([]*models.Approach, error) {
+func (r *ApproachRepository) List(
+	ctx context.Context,
+	filter *models.ApproachFilter,
+) ([]*models.Approach, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	var approaches []*models.Approach
 	const pageSize = 10
-	q := sq.Select("approaches.id", "approaches.updated_at", "approaches.created_at").
+	q := sq.Select(
+		"approaches.id",
+		"approaches.updated_at",
+		"approaches.created_at",
+	).
 		From("public.approaches").
 		Limit(pageSize)
 	// TODO: add filtering
@@ -82,10 +106,15 @@ func (r *ApproachRepository) List(ctx context.Context, filter *models.ApproachFi
 	return approaches, nil
 }
 
-func (r *ApproachRepository) Update(ctx context.Context, approach *models.Approach) error {
+func (r *ApproachRepository) Update(
+	ctx context.Context,
+	approach *models.Approach,
+) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Update("public.approaches").Where(sq.Eq{"id": approach.ID}).Set("", "") // TODO: set values
+	q := sq.Update("public.approaches").
+		Where(sq.Eq{"id": approach.ID}).
+		Set("", "") // TODO: set values
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
@@ -106,7 +135,10 @@ func (r *ApproachRepository) Update(ctx context.Context, approach *models.Approa
 	return nil
 }
 
-func (r *ApproachRepository) Delete(ctx context.Context, id string) error {
+func (r *ApproachRepository) Delete(
+	ctx context.Context,
+	id string,
+) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Delete("public.approaches").Where(sq.Eq{"id": id})
@@ -131,7 +163,10 @@ func (r *ApproachRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *ApproachRepository) Count(ctx context.Context, filter *models.ApproachFilter) (uint64, error) {
+func (r *ApproachRepository) Count(
+	ctx context.Context,
+	filter *models.ApproachFilter,
+) (uint64, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Select("count(id)").From("public.approaches")

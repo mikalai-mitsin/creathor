@@ -3,8 +3,9 @@ package repositories
 import (
 	"context"
 	"fmt"
-	sq "github.com/Masterminds/squirrel"
 	"time"
+
+	sq "github.com/Masterminds/squirrel"
 
 	"github.com/018bf/example/pkg/log"
 
@@ -20,11 +21,20 @@ type SessionRepository struct {
 	logger   log.Logger
 }
 
-func NewSessionRepository(database *sqlx.DB, logger log.Logger) repositories.SessionRepository {
-	return &SessionRepository{database: database, logger: logger}
+func NewSessionRepository(
+	database *sqlx.DB,
+	logger log.Logger,
+) repositories.SessionRepository {
+	return &SessionRepository{
+		database: database,
+		logger:   logger,
+	}
 }
 
-func (r *SessionRepository) Create(ctx context.Context, session *models.Session) error {
+func (r *SessionRepository) Create(
+	ctx context.Context,
+	session *models.Session,
+) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Insert("public.sessions").
@@ -39,11 +49,18 @@ func (r *SessionRepository) Create(ctx context.Context, session *models.Session)
 	return nil
 }
 
-func (r *SessionRepository) Get(ctx context.Context, id string) (*models.Session, error) {
+func (r *SessionRepository) Get(
+	ctx context.Context,
+	id string,
+) (*models.Session, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	session := &models.Session{}
-	q := sq.Select("sessions.id", "sessions.updated_at", "sessions.created_at").
+	q := sq.Select(
+		"sessions.id",
+		"sessions.updated_at",
+		"sessions.created_at",
+	).
 		From("public.sessions").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
@@ -56,12 +73,19 @@ func (r *SessionRepository) Get(ctx context.Context, id string) (*models.Session
 	return session, nil
 }
 
-func (r *SessionRepository) List(ctx context.Context, filter *models.SessionFilter) ([]*models.Session, error) {
+func (r *SessionRepository) List(
+	ctx context.Context,
+	filter *models.SessionFilter,
+) ([]*models.Session, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	var sessions []*models.Session
 	const pageSize = 10
-	q := sq.Select("sessions.id", "sessions.updated_at", "sessions.created_at").
+	q := sq.Select(
+		"sessions.id",
+		"sessions.updated_at",
+		"sessions.created_at",
+	).
 		From("public.sessions").
 		Limit(pageSize)
 	// TODO: add filtering
@@ -82,10 +106,15 @@ func (r *SessionRepository) List(ctx context.Context, filter *models.SessionFilt
 	return sessions, nil
 }
 
-func (r *SessionRepository) Update(ctx context.Context, session *models.Session) error {
+func (r *SessionRepository) Update(
+	ctx context.Context,
+	session *models.Session,
+) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Update("public.sessions").Where(sq.Eq{"id": session.ID}).Set("", "") // TODO: set values
+	q := sq.Update("public.sessions").
+		Where(sq.Eq{"id": session.ID}).
+		Set("", "") // TODO: set values
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
@@ -106,7 +135,10 @@ func (r *SessionRepository) Update(ctx context.Context, session *models.Session)
 	return nil
 }
 
-func (r *SessionRepository) Delete(ctx context.Context, id string) error {
+func (r *SessionRepository) Delete(
+	ctx context.Context,
+	id string,
+) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Delete("public.sessions").Where(sq.Eq{"id": id})
@@ -131,7 +163,10 @@ func (r *SessionRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *SessionRepository) Count(ctx context.Context, filter *models.SessionFilter) (uint64, error) {
+func (r *SessionRepository) Count(
+	ctx context.Context,
+	filter *models.SessionFilter,
+) (uint64, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Select("count(id)").From("public.sessions")

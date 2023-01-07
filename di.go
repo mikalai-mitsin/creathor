@@ -22,27 +22,27 @@ func CreateDI(data *Project) error {
 	}
 	files := []*Template{
 		{
-			SourcePath:      "templates/containers/fx.go.tmpl",
+			SourcePath:      "templates/internal/containers/fx.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "containers", "fx.go"),
 			Name:            "Uber FX DI container",
 		},
 		{
-			SourcePath:      "templates/containers/configs.go.tmpl",
+			SourcePath:      "templates/internal/containers/configs.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "configs", "fx.go"),
 			Name:            "Configs FX module",
 		},
 		{
-			SourcePath:      "templates/containers/repositories.go.tmpl",
+			SourcePath:      "templates/internal/containers/repositories.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "repositories", "fx.go"),
 			Name:            "Repositories FX module",
 		},
 		{
-			SourcePath:      "templates/containers/usecases.go.tmpl",
+			SourcePath:      "templates/internal/containers/usecases.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "usecases", "fx.go"),
 			Name:            "Use Cases FX module",
 		},
 		{
-			SourcePath:      "templates/containers/interceptors.go.tmpl",
+			SourcePath:      "templates/internal/containers/interceptors.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "interceptors", "fx.go"),
 			Name:            "Interceptors FX module",
 		},

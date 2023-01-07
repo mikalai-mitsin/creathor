@@ -3,6 +3,10 @@ package usecases
 import (
 	"context"
 	"errors"
+	"reflect"
+	"strings"
+	"testing"
+
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
@@ -15,10 +19,7 @@ import (
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/018bf/example/pkg/utils"
 	"github.com/golang/mock/gomock"
-	"reflect"
-	"strings"
 	"syreclabs.com/go/faker"
-	"testing"
 )
 
 func TestNewUserUseCase(t *testing.T) {
@@ -89,7 +90,9 @@ func TestUserUseCase_Get(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				userRepository.EXPECT().Get(ctx, user.ID).Return(user, nil)
+				userRepository.EXPECT().
+					Get(ctx, user.ID).
+					Return(user, nil)
 			},
 			fields: fields{
 				userRepository: userRepository,
@@ -105,7 +108,9 @@ func TestUserUseCase_Get(t *testing.T) {
 		{
 			name: "user not found",
 			setup: func() {
-				userRepository.EXPECT().Get(ctx, user.ID).Return(nil, errs.NewEntityNotFound())
+				userRepository.EXPECT().
+					Get(ctx, user.ID).
+					Return(nil, errs.NewEntityNotFound())
 			},
 			fields: fields{
 				userRepository: userRepository,
@@ -164,7 +169,9 @@ func TestUserUseCase_GetByEmail(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				userRepository.EXPECT().GetByEmail(ctx, strings.ToLower(user.Email)).Return(user, nil)
+				userRepository.EXPECT().
+					GetByEmail(ctx, strings.ToLower(user.Email)).
+					Return(user, nil)
 			},
 			fields: fields{
 				userRepository: userRepository,
@@ -180,7 +187,9 @@ func TestUserUseCase_GetByEmail(t *testing.T) {
 		{
 			name: "user not found",
 			setup: func() {
-				userRepository.EXPECT().GetByEmail(ctx, strings.ToLower(user.Email)).Return(nil, errs.NewEntityNotFound())
+				userRepository.EXPECT().
+					GetByEmail(ctx, strings.ToLower(user.Email)).
+					Return(nil, errs.NewEntityNotFound())
 			},
 			fields: fields{
 				userRepository: userRepository,
@@ -342,8 +351,12 @@ func TestUserUseCase_Update(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				userRepository.EXPECT().Get(ctx, update.ID).Return(user, nil)
-				userRepository.EXPECT().Update(ctx, user).Return(nil)
+				userRepository.EXPECT().
+					Get(ctx, update.ID).
+					Return(user, nil)
+				userRepository.EXPECT().
+					Update(ctx, user).
+					Return(nil)
 			},
 			fields: fields{
 				userRepository: userRepository,
@@ -360,8 +373,12 @@ func TestUserUseCase_Update(t *testing.T) {
 		{
 			name: "update error",
 			setup: func() {
-				userRepository.EXPECT().Get(ctx, update.ID).Return(user, nil)
-				userRepository.EXPECT().Update(ctx, user).Return(errs.NewUnexpectedBehaviorError("asdqw1"))
+				userRepository.EXPECT().
+					Get(ctx, update.ID).
+					Return(user, nil)
+				userRepository.EXPECT().
+					Update(ctx, user).
+					Return(errs.NewUnexpectedBehaviorError("asdqw1"))
 			},
 			fields: fields{
 				userRepository: userRepository,
@@ -378,7 +395,9 @@ func TestUserUseCase_Update(t *testing.T) {
 		{
 			name: "user not found",
 			setup: func() {
-				userRepository.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFound())
+				userRepository.EXPECT().
+					Get(ctx, update.ID).
+					Return(nil, errs.NewEntityNotFound())
 			},
 			fields: fields{
 				userRepository: userRepository,
@@ -462,7 +481,9 @@ func TestUserUseCase_Delete(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				userRepository.EXPECT().Delete(ctx, user.ID).Return(nil)
+				userRepository.EXPECT().
+					Delete(ctx, user.ID).
+					Return(nil)
 			},
 			fields: fields{
 				userRepository: userRepository,
@@ -477,7 +498,9 @@ func TestUserUseCase_Delete(t *testing.T) {
 		{
 			name: "user not found",
 			setup: func() {
-				userRepository.EXPECT().Delete(ctx, user.ID).Return(errs.NewEntityNotFound())
+				userRepository.EXPECT().
+					Delete(ctx, user.ID).
+					Return(errs.NewEntityNotFound())
 			},
 			fields: fields{
 				userRepository: userRepository,
@@ -541,8 +564,12 @@ func TestUserUseCase_List(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				userRepository.EXPECT().List(ctx, filter).Return(users, nil)
-				userRepository.EXPECT().Count(ctx, filter).Return(count, nil)
+				userRepository.EXPECT().
+					List(ctx, filter).
+					Return(users, nil)
+				userRepository.EXPECT().
+					Count(ctx, filter).
+					Return(count, nil)
 			},
 			fields: fields{
 				userRepository: userRepository,
@@ -559,7 +586,9 @@ func TestUserUseCase_List(t *testing.T) {
 		{
 			name: "list error",
 			setup: func() {
-				userRepository.EXPECT().List(ctx, filter).Return(nil, errs.NewUnexpectedBehaviorError("bad"))
+				userRepository.EXPECT().
+					List(ctx, filter).
+					Return(nil, errs.NewUnexpectedBehaviorError("bad"))
 			},
 			fields: fields{
 				userRepository: userRepository,
@@ -576,8 +605,12 @@ func TestUserUseCase_List(t *testing.T) {
 		{
 			name: "count error",
 			setup: func() {
-				userRepository.EXPECT().List(ctx, filter).Return(users, nil)
-				userRepository.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("bad"))
+				userRepository.EXPECT().
+					List(ctx, filter).
+					Return(users, nil)
+				userRepository.EXPECT().
+					Count(ctx, filter).
+					Return(uint64(0), errs.NewUnexpectedBehaviorError("bad"))
 			},
 			fields: fields{
 				userRepository: userRepository,

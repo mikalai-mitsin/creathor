@@ -11,9 +11,9 @@ import (
 )
 
 type UserInterceptor struct {
-	userUseCase                usecases.UserUseCase
-	authUseCase                usecases.AuthUseCase
-	logger                     log.Logger
+	userUseCase usecases.UserUseCase
+	authUseCase usecases.AuthUseCase
+	logger      log.Logger
 }
 
 func NewUserInterceptor(
@@ -28,7 +28,11 @@ func NewUserInterceptor(
 	}
 }
 
-func (i *UserInterceptor) Get(ctx context.Context, id string, requestUser *models.User) (*models.User, error) {
+func (i *UserInterceptor) Get(
+	ctx context.Context,
+	id string,
+	requestUser *models.User,
+) (*models.User, error) {
 	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDUserDetail); err != nil {
 		return nil, err
 	}
@@ -96,7 +100,11 @@ func (i *UserInterceptor) Update(
 	return user, nil
 }
 
-func (i *UserInterceptor) Delete(ctx context.Context, id string, requestUser *models.User) error {
+func (i *UserInterceptor) Delete(
+	ctx context.Context,
+	id string,
+	requestUser *models.User,
+) error {
 	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDUserDelete); err != nil {
 		return err
 	}

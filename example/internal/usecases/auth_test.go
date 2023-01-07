@@ -3,6 +3,9 @@ package usecases
 import (
 	"context"
 	"errors"
+	"reflect"
+	"testing"
+
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
@@ -11,8 +14,6 @@ import (
 	"github.com/018bf/example/internal/domain/usecases"
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
-	"reflect"
-	"testing"
 
 	"github.com/golang/mock/gomock"
 )
@@ -153,7 +154,6 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
 			setup: func() {
 				userRepository.EXPECT().GetByEmail(ctx, user.Email).Return(user, nil).Times(1)
 				authRepository.EXPECT().Create(ctx, user).Return(pair, nil).Times(1)
-
 			},
 			fields: fields{
 				authRepository: authRepository,
@@ -361,7 +361,6 @@ func TestAuthUseCase_ValidateToken(t *testing.T) {
 			name: "ok",
 			setup: func() {
 				authRepository.EXPECT().Validate(ctx, models.Token("my_token")).Return(nil).Times(1)
-
 			},
 			fields: fields{
 				authRepository: authRepository,

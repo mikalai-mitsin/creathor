@@ -25,7 +25,10 @@ func NewEquipmentUseCase(
 	}
 }
 
-func (u *EquipmentUseCase) Get(ctx context.Context, id string) (*models.Equipment, error) {
+func (u *EquipmentUseCase) Get(
+	ctx context.Context,
+	id string,
+) (*models.Equipment, error) {
 	equipment, err := u.equipmentRepository.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -48,7 +51,10 @@ func (u *EquipmentUseCase) List(
 	return equipment, count, nil
 }
 
-func (u *EquipmentUseCase) Create(ctx context.Context, create *models.EquipmentCreate) (*models.Equipment, error) {
+func (u *EquipmentUseCase) Create(
+	ctx context.Context,
+	create *models.EquipmentCreate,
+) (*models.Equipment, error) {
 	if err := create.Validate(); err != nil {
 		return nil, err
 	}
@@ -61,7 +67,10 @@ func (u *EquipmentUseCase) Create(ctx context.Context, create *models.EquipmentC
 	return equipment, nil
 }
 
-func (u *EquipmentUseCase) Update(ctx context.Context, update *models.EquipmentUpdate) (*models.Equipment, error) {
+func (u *EquipmentUseCase) Update(
+	ctx context.Context,
+	update *models.EquipmentUpdate,
+) (*models.Equipment, error) {
 	if err := update.Validate(); err != nil {
 		return nil, err
 	}

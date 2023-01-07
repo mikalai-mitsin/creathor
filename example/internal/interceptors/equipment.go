@@ -33,14 +33,23 @@ func (i *EquipmentInterceptor) Get(
 	id string,
 	requestUser *models.User,
 ) (*models.Equipment, error) {
-	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDEquipmentDetail); err != nil {
+	if err := i.authUseCase.HasPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDEquipmentDetail,
+	); err != nil {
 		return nil, err
 	}
 	equipment, err := i.equipmentUseCase.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	err = i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDEquipmentDetail, equipment)
+	err = i.authUseCase.HasObjectPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDEquipmentDetail,
+		equipment,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -52,10 +61,19 @@ func (i *EquipmentInterceptor) List(
 	filter *models.EquipmentFilter,
 	requestUser *models.User,
 ) ([]*models.Equipment, uint64, error) {
-	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDEquipmentList); err != nil {
+	if err := i.authUseCase.HasPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDEquipmentList,
+	); err != nil {
 		return nil, 0, err
 	}
-	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDEquipmentList, filter); err != nil {
+	if err := i.authUseCase.HasObjectPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDEquipmentList,
+		filter,
+	); err != nil {
 		return nil, 0, err
 	}
 	equipment, count, err := i.equipmentUseCase.List(ctx, filter)
@@ -70,10 +88,19 @@ func (i *EquipmentInterceptor) Create(
 	create *models.EquipmentCreate,
 	requestUser *models.User,
 ) (*models.Equipment, error) {
-	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDEquipmentCreate); err != nil {
+	if err := i.authUseCase.HasPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDEquipmentCreate,
+	); err != nil {
 		return nil, err
 	}
-	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDEquipmentCreate, create); err != nil {
+	if err := i.authUseCase.HasObjectPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDEquipmentCreate,
+		create,
+	); err != nil {
 		return nil, err
 	}
 	equipment, err := i.equipmentUseCase.Create(ctx, create)
@@ -88,14 +115,23 @@ func (i *EquipmentInterceptor) Update(
 	update *models.EquipmentUpdate,
 	requestUser *models.User,
 ) (*models.Equipment, error) {
-	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDEquipmentUpdate); err != nil {
+	if err := i.authUseCase.HasPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDEquipmentUpdate,
+	); err != nil {
 		return nil, err
 	}
 	equipment, err := i.equipmentUseCase.Get(ctx, update.ID)
 	if err != nil {
 		return nil, err
 	}
-	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDEquipmentUpdate, equipment); err != nil {
+	if err := i.authUseCase.HasObjectPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDEquipmentUpdate,
+		equipment,
+	); err != nil {
 		return nil, err
 	}
 	updatedEquipment, err := i.equipmentUseCase.Update(ctx, update)
@@ -110,14 +146,23 @@ func (i *EquipmentInterceptor) Delete(
 	id string,
 	requestUser *models.User,
 ) error {
-	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDEquipmentDelete); err != nil {
+	if err := i.authUseCase.HasPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDEquipmentDelete,
+	); err != nil {
 		return err
 	}
 	equipment, err := i.equipmentUseCase.Get(ctx, id)
 	if err != nil {
 		return err
 	}
-	err = i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDEquipmentDelete, equipment)
+	err = i.authUseCase.HasObjectPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDEquipmentDelete,
+		equipment,
+	)
 	if err != nil {
 		return err
 	}

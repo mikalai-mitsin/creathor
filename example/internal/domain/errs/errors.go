@@ -6,9 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/lib/pq"
 	"reflect"
 	"text/template"
+
+	"github.com/lib/pq"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )

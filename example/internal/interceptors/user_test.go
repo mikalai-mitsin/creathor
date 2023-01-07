@@ -3,6 +3,9 @@ package interceptors
 import (
 	"context"
 	"errors"
+	"reflect"
+	"testing"
+
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
@@ -12,9 +15,7 @@ import (
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/golang/mock/gomock"
-	"reflect"
 	"syreclabs.com/go/faker"
-	"testing"
 )
 
 func TestNewUserInterceptor(t *testing.T) {
@@ -94,7 +95,6 @@ func TestUserInterceptor_Get(t *testing.T) {
 				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserDetail).Return(nil)
 				userUseCase.EXPECT().Get(ctx, user.ID).Return(user, nil)
 				authUseCase.EXPECT().HasObjectPermission(ctx, user, models.PermissionIDUserDetail, user).Return(nil)
-
 			},
 			fields: fields{
 				userUseCase: userUseCase,
@@ -132,7 +132,6 @@ func TestUserInterceptor_Get(t *testing.T) {
 			setup: func() {
 				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserDetail).Return(nil)
 				userUseCase.EXPECT().Get(ctx, user.ID).Return(nil, errs.NewEntityNotFound())
-
 			},
 			fields: fields{
 				userUseCase: userUseCase,
@@ -153,7 +152,6 @@ func TestUserInterceptor_Get(t *testing.T) {
 				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserDetail).Return(nil)
 				userUseCase.EXPECT().Get(ctx, user.ID).Return(user, nil)
 				authUseCase.EXPECT().HasObjectPermission(ctx, user, models.PermissionIDUserDetail, user).Return(errs.NewPermissionDeniedError())
-
 			},
 			fields: fields{
 				userUseCase: userUseCase,
@@ -384,7 +382,6 @@ func TestUserInterceptor_Update(t *testing.T) {
 			setup: func() {
 				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserUpdate).Return(nil)
 				userUseCase.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFound())
-
 			},
 			fields: fields{
 				userUseCase: userUseCase,

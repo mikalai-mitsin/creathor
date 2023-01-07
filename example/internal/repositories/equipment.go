@@ -3,8 +3,9 @@ package repositories
 import (
 	"context"
 	"fmt"
-	sq "github.com/Masterminds/squirrel"
 	"time"
+
+	sq "github.com/Masterminds/squirrel"
 
 	"github.com/018bf/example/pkg/log"
 
@@ -20,11 +21,20 @@ type EquipmentRepository struct {
 	logger   log.Logger
 }
 
-func NewEquipmentRepository(database *sqlx.DB, logger log.Logger) repositories.EquipmentRepository {
-	return &EquipmentRepository{database: database, logger: logger}
+func NewEquipmentRepository(
+	database *sqlx.DB,
+	logger log.Logger,
+) repositories.EquipmentRepository {
+	return &EquipmentRepository{
+		database: database,
+		logger:   logger,
+	}
 }
 
-func (r *EquipmentRepository) Create(ctx context.Context, equipment *models.Equipment) error {
+func (r *EquipmentRepository) Create(
+	ctx context.Context,
+	equipment *models.Equipment,
+) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Insert("public.equipment").
@@ -39,11 +49,18 @@ func (r *EquipmentRepository) Create(ctx context.Context, equipment *models.Equi
 	return nil
 }
 
-func (r *EquipmentRepository) Get(ctx context.Context, id string) (*models.Equipment, error) {
+func (r *EquipmentRepository) Get(
+	ctx context.Context,
+	id string,
+) (*models.Equipment, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	equipment := &models.Equipment{}
-	q := sq.Select("equipment.id", "equipment.updated_at", "equipment.created_at").
+	q := sq.Select(
+		"equipment.id",
+		"equipment.updated_at",
+		"equipment.created_at",
+	).
 		From("public.equipment").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
@@ -56,12 +73,19 @@ func (r *EquipmentRepository) Get(ctx context.Context, id string) (*models.Equip
 	return equipment, nil
 }
 
-func (r *EquipmentRepository) List(ctx context.Context, filter *models.EquipmentFilter) ([]*models.Equipment, error) {
+func (r *EquipmentRepository) List(
+	ctx context.Context,
+	filter *models.EquipmentFilter,
+) ([]*models.Equipment, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	var equipment []*models.Equipment
 	const pageSize = 10
-	q := sq.Select("equipment.id", "equipment.updated_at", "equipment.created_at").
+	q := sq.Select(
+		"equipment.id",
+		"equipment.updated_at",
+		"equipment.created_at",
+	).
 		From("public.equipment").
 		Limit(pageSize)
 	// TODO: add filtering
@@ -82,10 +106,15 @@ func (r *EquipmentRepository) List(ctx context.Context, filter *models.Equipment
 	return equipment, nil
 }
 
-func (r *EquipmentRepository) Update(ctx context.Context, equipment *models.Equipment) error {
+func (r *EquipmentRepository) Update(
+	ctx context.Context,
+	equipment *models.Equipment,
+) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Update("public.equipment").Where(sq.Eq{"id": equipment.ID}).Set("", "") // TODO: set values
+	q := sq.Update("public.equipment").
+		Where(sq.Eq{"id": equipment.ID}).
+		Set("", "") // TODO: set values
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
@@ -106,7 +135,10 @@ func (r *EquipmentRepository) Update(ctx context.Context, equipment *models.Equi
 	return nil
 }
 
-func (r *EquipmentRepository) Delete(ctx context.Context, id string) error {
+func (r *EquipmentRepository) Delete(
+	ctx context.Context,
+	id string,
+) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Delete("public.equipment").Where(sq.Eq{"id": id})
@@ -131,7 +163,10 @@ func (r *EquipmentRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *EquipmentRepository) Count(ctx context.Context, filter *models.EquipmentFilter) (uint64, error) {
+func (r *EquipmentRepository) Count(
+	ctx context.Context,
+	filter *models.EquipmentFilter,
+) (uint64, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Select("count(id)").From("public.equipment")

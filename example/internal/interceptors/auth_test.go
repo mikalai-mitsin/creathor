@@ -3,6 +3,9 @@ package interceptors
 import (
 	"context"
 	"errors"
+	"reflect"
+	"testing"
+
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
@@ -14,8 +17,6 @@ import (
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/golang/mock/gomock"
-	"reflect"
-	"testing"
 )
 
 func TestAuthInterceptor_Auth(t *testing.T) {
@@ -150,7 +151,6 @@ func TestAuthInterceptor_CreateToken(t *testing.T) {
 					CreateToken(ctx, login).
 					Return(nil, errs.NewInvalidParameter("email or password")).
 					Times(1)
-
 			},
 			fields: fields{
 				authUseCase: authUseCase,

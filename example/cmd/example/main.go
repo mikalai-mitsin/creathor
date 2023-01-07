@@ -1,9 +1,10 @@
 package main
 
 import (
+	"os"
+
 	"github.com/018bf/example/internal/containers"
 	"github.com/urfave/cli/v2"
-	"os"
 )
 
 const version = "0.1.0"

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+
 	"github.com/018bf/example/internal/configs"
 
 	"go.uber.org/fx"

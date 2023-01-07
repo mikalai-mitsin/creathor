@@ -1,10 +1,11 @@
 package models
 
 import (
+	"time"
+
 	"github.com/018bf/example/internal/domain/errs"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
-	"time"
 )
 
 type UserSession struct {

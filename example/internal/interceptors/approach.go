@@ -33,14 +33,23 @@ func (i *ApproachInterceptor) Get(
 	id string,
 	requestUser *models.User,
 ) (*models.Approach, error) {
-	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDApproachDetail); err != nil {
+	if err := i.authUseCase.HasPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDApproachDetail,
+	); err != nil {
 		return nil, err
 	}
 	approach, err := i.approachUseCase.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	err = i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDApproachDetail, approach)
+	err = i.authUseCase.HasObjectPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDApproachDetail,
+		approach,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -52,10 +61,19 @@ func (i *ApproachInterceptor) List(
 	filter *models.ApproachFilter,
 	requestUser *models.User,
 ) ([]*models.Approach, uint64, error) {
-	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDApproachList); err != nil {
+	if err := i.authUseCase.HasPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDApproachList,
+	); err != nil {
 		return nil, 0, err
 	}
-	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDApproachList, filter); err != nil {
+	if err := i.authUseCase.HasObjectPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDApproachList,
+		filter,
+	); err != nil {
 		return nil, 0, err
 	}
 	approaches, count, err := i.approachUseCase.List(ctx, filter)
@@ -70,10 +88,19 @@ func (i *ApproachInterceptor) Create(
 	create *models.ApproachCreate,
 	requestUser *models.User,
 ) (*models.Approach, error) {
-	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDApproachCreate); err != nil {
+	if err := i.authUseCase.HasPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDApproachCreate,
+	); err != nil {
 		return nil, err
 	}
-	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDApproachCreate, create); err != nil {
+	if err := i.authUseCase.HasObjectPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDApproachCreate,
+		create,
+	); err != nil {
 		return nil, err
 	}
 	approach, err := i.approachUseCase.Create(ctx, create)
@@ -88,14 +115,23 @@ func (i *ApproachInterceptor) Update(
 	update *models.ApproachUpdate,
 	requestUser *models.User,
 ) (*models.Approach, error) {
-	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDApproachUpdate); err != nil {
+	if err := i.authUseCase.HasPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDApproachUpdate,
+	); err != nil {
 		return nil, err
 	}
 	approach, err := i.approachUseCase.Get(ctx, update.ID)
 	if err != nil {
 		return nil, err
 	}
-	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDApproachUpdate, approach); err != nil {
+	if err := i.authUseCase.HasObjectPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDApproachUpdate,
+		approach,
+	); err != nil {
 		return nil, err
 	}
 	updatedApproach, err := i.approachUseCase.Update(ctx, update)
@@ -110,14 +146,23 @@ func (i *ApproachInterceptor) Delete(
 	id string,
 	requestUser *models.User,
 ) error {
-	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDApproachDelete); err != nil {
+	if err := i.authUseCase.HasPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDApproachDelete,
+	); err != nil {
 		return err
 	}
 	approach, err := i.approachUseCase.Get(ctx, id)
 	if err != nil {
 		return err
 	}
-	err = i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDApproachDelete, approach)
+	err = i.authUseCase.HasObjectPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDApproachDelete,
+		approach,
+	)
 	if err != nil {
 		return err
 	}

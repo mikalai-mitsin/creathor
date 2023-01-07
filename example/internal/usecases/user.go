@@ -2,12 +2,13 @@ package usecases
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
 	"github.com/018bf/example/internal/domain/usecases"
 	"github.com/018bf/example/pkg/clock"
-	"strings"
-	"time"
 
 	"github.com/018bf/example/pkg/log"
 )
@@ -30,7 +31,10 @@ func NewUserUseCase(
 	}
 }
 
-func (u *UserUseCase) Get(ctx context.Context, id string) (*models.User, error) {
+func (u *UserUseCase) Get(
+	ctx context.Context,
+	id string,
+) (*models.User, error) {
 	user, err := u.userRepository.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -38,7 +42,10 @@ func (u *UserUseCase) Get(ctx context.Context, id string) (*models.User, error) 
 	return user, nil
 }
 
-func (u *UserUseCase) GetByEmail(ctx context.Context, email string) (*models.User, error) {
+func (u *UserUseCase) GetByEmail(
+	ctx context.Context,
+	email string,
+) (*models.User, error) {
 	user, err := u.userRepository.GetByEmail(ctx, strings.ToLower(email))
 	if err != nil {
 		return nil, err
@@ -46,7 +53,10 @@ func (u *UserUseCase) GetByEmail(ctx context.Context, email string) (*models.Use
 	return user, nil
 }
 
-func (u *UserUseCase) List(ctx context.Context, filter *models.UserFilter) ([]*models.User, uint64, error) {
+func (u *UserUseCase) List(
+	ctx context.Context,
+	filter *models.UserFilter,
+) ([]*models.User, uint64, error) {
 	users, err := u.userRepository.List(ctx, filter)
 	if err != nil {
 		return nil, 0, err
@@ -58,7 +68,10 @@ func (u *UserUseCase) List(ctx context.Context, filter *models.UserFilter) ([]*m
 	return users, count, nil
 }
 
-func (u *UserUseCase) Create(ctx context.Context, create *models.UserCreate) (*models.User, error) {
+func (u *UserUseCase) Create(
+	ctx context.Context,
+	create *models.UserCreate,
+) (*models.User, error) {
 	if err := create.Validate(); err != nil {
 		return nil, err
 	}
@@ -78,7 +91,10 @@ func (u *UserUseCase) Create(ctx context.Context, create *models.UserCreate) (*m
 	return user, nil
 }
 
-func (u *UserUseCase) Update(ctx context.Context, update *models.UserUpdate) (*models.User, error) {
+func (u *UserUseCase) Update(
+	ctx context.Context,
+	update *models.UserUpdate,
+) (*models.User, error) {
 	if err := update.Validate(); err != nil {
 		return nil, err
 	}
@@ -104,7 +120,10 @@ func (u *UserUseCase) Update(ctx context.Context, update *models.UserUpdate) (*m
 	return user, nil
 }
 
-func (u *UserUseCase) Delete(ctx context.Context, id string) error {
+func (u *UserUseCase) Delete(
+	ctx context.Context,
+	id string,
+) error {
 	if err := u.userRepository.Delete(ctx, id); err != nil {
 		return err
 	}

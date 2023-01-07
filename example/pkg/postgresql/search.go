@@ -11,6 +11,7 @@ type Search struct {
 	Query  string
 }
 
+// nolint:stylecheck
 func (s Search) ToSql() (sql string, args []interface{}, err error) {
 	if s.Lang == "" {
 		s.Lang = "russian"

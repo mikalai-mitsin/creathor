@@ -25,7 +25,10 @@ func NewApproachUseCase(
 	}
 }
 
-func (u *ApproachUseCase) Get(ctx context.Context, id string) (*models.Approach, error) {
+func (u *ApproachUseCase) Get(
+	ctx context.Context,
+	id string,
+) (*models.Approach, error) {
 	approach, err := u.approachRepository.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -48,7 +51,10 @@ func (u *ApproachUseCase) List(
 	return approaches, count, nil
 }
 
-func (u *ApproachUseCase) Create(ctx context.Context, create *models.ApproachCreate) (*models.Approach, error) {
+func (u *ApproachUseCase) Create(
+	ctx context.Context,
+	create *models.ApproachCreate,
+) (*models.Approach, error) {
 	if err := create.Validate(); err != nil {
 		return nil, err
 	}
@@ -61,7 +67,10 @@ func (u *ApproachUseCase) Create(ctx context.Context, create *models.ApproachCre
 	return approach, nil
 }
 
-func (u *ApproachUseCase) Update(ctx context.Context, update *models.ApproachUpdate) (*models.Approach, error) {
+func (u *ApproachUseCase) Update(
+	ctx context.Context,
+	update *models.ApproachUpdate,
+) (*models.Approach, error) {
 	if err := update.Validate(); err != nil {
 		return nil, err
 	}

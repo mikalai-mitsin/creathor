@@ -29,7 +29,10 @@ func NewAuthUseCase(
 	}
 }
 
-func (u AuthUseCase) CreateToken(ctx context.Context, login *models.Login) (*models.TokenPair, error) {
+func (u AuthUseCase) CreateToken(
+	ctx context.Context,
+	login *models.Login,
+) (*models.TokenPair, error) {
 	user, err := u.userRepository.GetByEmail(ctx, login.Email)
 	if err != nil {
 		return nil, err
@@ -44,7 +47,10 @@ func (u AuthUseCase) CreateToken(ctx context.Context, login *models.Login) (*mod
 	return tokenPair, nil
 }
 
-func (u AuthUseCase) CreateTokenByUser(ctx context.Context, user *models.User) (*models.TokenPair, error) {
+func (u AuthUseCase) CreateTokenByUser(
+	ctx context.Context,
+	user *models.User,
+) (*models.TokenPair, error) {
 	tokenPair, err := u.authRepository.Create(ctx, user)
 	if err != nil {
 		return nil, err
@@ -52,7 +58,10 @@ func (u AuthUseCase) CreateTokenByUser(ctx context.Context, user *models.User) (
 	return tokenPair, nil
 }
 
-func (u AuthUseCase) RefreshToken(ctx context.Context, refresh models.Token) (*models.TokenPair, error) {
+func (u AuthUseCase) RefreshToken(
+	ctx context.Context,
+	refresh models.Token,
+) (*models.TokenPair, error) {
 	pair, err := u.authRepository.RefreshToken(ctx, refresh)
 	if err != nil {
 		return nil, err
@@ -60,14 +69,20 @@ func (u AuthUseCase) RefreshToken(ctx context.Context, refresh models.Token) (*m
 	return pair, nil
 }
 
-func (u AuthUseCase) ValidateToken(ctx context.Context, access models.Token) error {
+func (u AuthUseCase) ValidateToken(
+	ctx context.Context,
+	access models.Token,
+) error {
 	if err := u.authRepository.Validate(ctx, access); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u AuthUseCase) Auth(ctx context.Context, access models.Token) (*models.User, error) {
+func (u AuthUseCase) Auth(
+	ctx context.Context,
+	access models.Token,
+) (*models.User, error) {
 	userID, err := u.authRepository.GetSubject(ctx, access)
 	if err != nil {
 		return nil, err
@@ -79,7 +94,11 @@ func (u AuthUseCase) Auth(ctx context.Context, access models.Token) (*models.Use
 	return user, nil
 }
 
-func (u AuthUseCase) HasPermission(ctx context.Context, user *models.User, permission models.PermissionID) error {
+func (u AuthUseCase) HasPermission(
+	ctx context.Context,
+	user *models.User,
+	permission models.PermissionID,
+) error {
 	if err := u.permissionRepository.HasPermission(ctx, permission, user); err != nil {
 		return err
 	}
@@ -87,7 +106,12 @@ func (u AuthUseCase) HasPermission(ctx context.Context, user *models.User, permi
 }
 
 // HasObjectPermission - Check user permissions for object
-func (u AuthUseCase) HasObjectPermission(ctx context.Context, user *models.User, permission models.PermissionID, object any) error {
+func (u AuthUseCase) HasObjectPermission(
+	ctx context.Context,
+	user *models.User,
+	permission models.PermissionID,
+	object any,
+) error {
 	if err := u.permissionRepository.HasObjectPermission(ctx, permission, user, object); err != nil {
 		return err
 	}

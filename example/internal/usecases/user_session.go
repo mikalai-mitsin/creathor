@@ -25,7 +25,10 @@ func NewUserSessionUseCase(
 	}
 }
 
-func (u *UserSessionUseCase) Get(ctx context.Context, id string) (*models.UserSession, error) {
+func (u *UserSessionUseCase) Get(
+	ctx context.Context,
+	id string,
+) (*models.UserSession, error) {
 	userSession, err := u.userSessionRepository.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -48,7 +51,10 @@ func (u *UserSessionUseCase) List(
 	return userSessions, count, nil
 }
 
-func (u *UserSessionUseCase) Create(ctx context.Context, create *models.UserSessionCreate) (*models.UserSession, error) {
+func (u *UserSessionUseCase) Create(
+	ctx context.Context,
+	create *models.UserSessionCreate,
+) (*models.UserSession, error) {
 	if err := create.Validate(); err != nil {
 		return nil, err
 	}
@@ -61,7 +67,10 @@ func (u *UserSessionUseCase) Create(ctx context.Context, create *models.UserSess
 	return userSession, nil
 }
 
-func (u *UserSessionUseCase) Update(ctx context.Context, update *models.UserSessionUpdate) (*models.UserSession, error) {
+func (u *UserSessionUseCase) Update(
+	ctx context.Context,
+	update *models.UserSessionUpdate,
+) (*models.UserSession, error) {
 	if err := update.Validate(); err != nil {
 		return nil, err
 	}

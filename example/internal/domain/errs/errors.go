@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/lib/pq"
+	"go.uber.org/zap/zapcore"
 	"reflect"
 	"text/template"
 
@@ -14,6 +15,15 @@ import (
 )
 
 type ErrorCode uint
+
+type Params map[string]string
+
+func (p Params) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
+	for key, value := range p {
+		encoder.AddString(key, value)
+	}
+	return nil
+}
 
 const (
 	ErrorCodeOK ErrorCode = iota
@@ -36,9 +46,9 @@ const (
 )
 
 type Error struct {
-	Code    ErrorCode         `json:"code"`
-	Message string            `json:"message"`
-	Params  map[string]string `json:"params"`
+	Code    ErrorCode `json:"code"`
+	Message string    `json:"message"`
+	Params  Params    `json:"params"`
 }
 
 func (e *Error) WithParam(key, value string) *Error {

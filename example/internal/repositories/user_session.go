@@ -20,11 +20,20 @@ type UserSessionRepository struct {
 	logger   log.Logger
 }
 
-func NewUserSessionRepository(database *sqlx.DB, logger log.Logger) repositories.UserSessionRepository {
-	return &UserSessionRepository{database: database, logger: logger}
+func NewUserSessionRepository(
+	database *sqlx.DB,
+	logger log.Logger,
+) repositories.UserSessionRepository {
+	return &UserSessionRepository{
+		database: database,
+		logger:   logger,
+	}
 }
 
-func (r *UserSessionRepository) Create(ctx context.Context, userSession *models.UserSession) error {
+func (r *UserSessionRepository) Create(
+	ctx context.Context,
+	userSession *models.UserSession,
+) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Insert("public.user_sessions").
@@ -39,11 +48,18 @@ func (r *UserSessionRepository) Create(ctx context.Context, userSession *models.
 	return nil
 }
 
-func (r *UserSessionRepository) Get(ctx context.Context, id string) (*models.UserSession, error) {
+func (r *UserSessionRepository) Get(
+	ctx context.Context,
+	id string,
+) (*models.UserSession, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	userSession := &models.UserSession{}
-	q := sq.Select("user_sessions.id", "user_sessions.updated_at", "user_sessions.created_at").
+	q := sq.Select(
+		"user_sessions.id",
+		"user_sessions.updated_at",
+		"user_sessions.created_at",
+	).
 		From("public.user_sessions").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
@@ -56,12 +72,19 @@ func (r *UserSessionRepository) Get(ctx context.Context, id string) (*models.Use
 	return userSession, nil
 }
 
-func (r *UserSessionRepository) List(ctx context.Context, filter *models.UserSessionFilter) ([]*models.UserSession, error) {
+func (r *UserSessionRepository) List(
+	ctx context.Context,
+	filter *models.UserSessionFilter,
+) ([]*models.UserSession, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	var userSessions []*models.UserSession
 	const pageSize = 10
-	q := sq.Select("user_sessions.id", "user_sessions.updated_at", "user_sessions.created_at").
+	q := sq.Select(
+		"user_sessions.id",
+		"user_sessions.updated_at",
+		"user_sessions.created_at",
+	).
 		From("public.user_sessions").
 		Limit(pageSize)
 	// TODO: add filtering
@@ -82,10 +105,15 @@ func (r *UserSessionRepository) List(ctx context.Context, filter *models.UserSes
 	return userSessions, nil
 }
 
-func (r *UserSessionRepository) Update(ctx context.Context, userSession *models.UserSession) error {
+func (r *UserSessionRepository) Update(
+	ctx context.Context,
+	userSession *models.UserSession,
+) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Update("public.user_sessions").Where(sq.Eq{"id": userSession.ID}).Set("", "") // TODO: set values
+	q := sq.Update("public.user_sessions").
+		Where(sq.Eq{"id": userSession.ID}).
+		Set("", "") // TODO: set values
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
@@ -106,7 +134,10 @@ func (r *UserSessionRepository) Update(ctx context.Context, userSession *models.
 	return nil
 }
 
-func (r *UserSessionRepository) Delete(ctx context.Context, id string) error {
+func (r *UserSessionRepository) Delete(
+	ctx context.Context,
+	id string,
+) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Delete("public.user_sessions").Where(sq.Eq{"id": id})
@@ -131,7 +162,10 @@ func (r *UserSessionRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *UserSessionRepository) Count(ctx context.Context, filter *models.UserSessionFilter) (uint64, error) {
+func (r *UserSessionRepository) Count(
+	ctx context.Context,
+	filter *models.UserSessionFilter,
+) (uint64, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Select("count(id)").From("public.user_sessions")

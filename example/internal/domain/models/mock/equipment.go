@@ -1,4 +1,4 @@
-package mock_models
+package mock_models // nolint:stylecheck
 
 import (
 	"github.com/018bf/example/internal/domain/models"

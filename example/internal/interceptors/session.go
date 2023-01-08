@@ -33,14 +33,23 @@ func (i *SessionInterceptor) Get(
 	id string,
 	requestUser *models.User,
 ) (*models.Session, error) {
-	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDSessionDetail); err != nil {
+	if err := i.authUseCase.HasPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDSessionDetail,
+	); err != nil {
 		return nil, err
 	}
 	session, err := i.sessionUseCase.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	err = i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDSessionDetail, session)
+	err = i.authUseCase.HasObjectPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDSessionDetail,
+		session,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -52,10 +61,19 @@ func (i *SessionInterceptor) List(
 	filter *models.SessionFilter,
 	requestUser *models.User,
 ) ([]*models.Session, uint64, error) {
-	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDSessionList); err != nil {
+	if err := i.authUseCase.HasPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDSessionList,
+	); err != nil {
 		return nil, 0, err
 	}
-	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDSessionList, filter); err != nil {
+	if err := i.authUseCase.HasObjectPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDSessionList,
+		filter,
+	); err != nil {
 		return nil, 0, err
 	}
 	sessions, count, err := i.sessionUseCase.List(ctx, filter)
@@ -70,10 +88,19 @@ func (i *SessionInterceptor) Create(
 	create *models.SessionCreate,
 	requestUser *models.User,
 ) (*models.Session, error) {
-	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDSessionCreate); err != nil {
+	if err := i.authUseCase.HasPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDSessionCreate,
+	); err != nil {
 		return nil, err
 	}
-	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDSessionCreate, create); err != nil {
+	if err := i.authUseCase.HasObjectPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDSessionCreate,
+		create,
+	); err != nil {
 		return nil, err
 	}
 	session, err := i.sessionUseCase.Create(ctx, create)
@@ -88,14 +115,23 @@ func (i *SessionInterceptor) Update(
 	update *models.SessionUpdate,
 	requestUser *models.User,
 ) (*models.Session, error) {
-	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDSessionUpdate); err != nil {
+	if err := i.authUseCase.HasPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDSessionUpdate,
+	); err != nil {
 		return nil, err
 	}
 	session, err := i.sessionUseCase.Get(ctx, update.ID)
 	if err != nil {
 		return nil, err
 	}
-	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDSessionUpdate, session); err != nil {
+	if err := i.authUseCase.HasObjectPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDSessionUpdate,
+		session,
+	); err != nil {
 		return nil, err
 	}
 	updatedSession, err := i.sessionUseCase.Update(ctx, update)
@@ -110,14 +146,23 @@ func (i *SessionInterceptor) Delete(
 	id string,
 	requestUser *models.User,
 ) error {
-	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDSessionDelete); err != nil {
+	if err := i.authUseCase.HasPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDSessionDelete,
+	); err != nil {
 		return err
 	}
 	session, err := i.sessionUseCase.Get(ctx, id)
 	if err != nil {
 		return err
 	}
-	err = i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDSessionDelete, session)
+	err = i.authUseCase.HasObjectPermission(
+		ctx,
+		requestUser,
+		models.PermissionIDSessionDelete,
+		session,
+	)
 	if err != nil {
 		return err
 	}

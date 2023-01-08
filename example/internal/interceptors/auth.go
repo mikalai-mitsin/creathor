@@ -30,7 +30,10 @@ func NewAuthInterceptor(
 	}
 }
 
-func (i AuthInterceptor) CreateToken(ctx context.Context, login *models.Login) (*models.TokenPair, error) {
+func (i *AuthInterceptor) CreateToken(
+	ctx context.Context,
+	login *models.Login,
+) (*models.TokenPair, error) {
 	pair, err := i.authUseCase.CreateToken(ctx, login)
 	if err != nil {
 		return nil, err
@@ -38,14 +41,20 @@ func (i AuthInterceptor) CreateToken(ctx context.Context, login *models.Login) (
 	return pair, nil
 }
 
-func (i AuthInterceptor) ValidateToken(ctx context.Context, token models.Token) error {
+func (i *AuthInterceptor) ValidateToken(
+	ctx context.Context,
+	token models.Token,
+) error {
 	if err := i.authUseCase.ValidateToken(ctx, token); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i AuthInterceptor) RefreshToken(ctx context.Context, refresh models.Token) (*models.TokenPair, error) {
+func (i *AuthInterceptor) RefreshToken(
+	ctx context.Context,
+	refresh models.Token,
+) (*models.TokenPair, error) {
 	pair, err := i.authUseCase.RefreshToken(ctx, refresh)
 	if err != nil {
 		return nil, err
@@ -53,7 +62,10 @@ func (i AuthInterceptor) RefreshToken(ctx context.Context, refresh models.Token)
 	return pair, nil
 }
 
-func (i AuthInterceptor) Auth(ctx context.Context, access models.Token) (*models.User, error) {
+func (i *AuthInterceptor) Auth(
+	ctx context.Context,
+	access models.Token,
+) (*models.User, error) {
 	user, err := i.authUseCase.Auth(ctx, access)
 	if err != nil {
 		return nil, err

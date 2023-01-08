@@ -2,8 +2,23 @@
 ## [Unreleased]
 
 
-<a name="0.2.0"></a>
-## [0.2.0] - 2023-01-07
+<a name="0.2.1"></a>
+## [0.2.1] - 2023-01-08
+### Build
+- add regex to makefile
+
+### Docs
+- add auth flag to readme
+
+### Feat
+- add grpc
+
+### Refactor
+- range files
+
+
+<a name="v0.2.0"></a>
+## [v0.2.0] - 2023-01-07
 ### Feat
 - **auth:** generate auth as part of layout
 - **di:** add postgres module to container
@@ -72,8 +87,9 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/018bf/creathor/compare/0.2.0...HEAD
-[0.2.0]: https://github.com/018bf/creathor/compare/v0.1.7...0.2.0
+[Unreleased]: https://github.com/018bf/creathor/compare/0.2.1...HEAD
+[0.2.1]: https://github.com/018bf/creathor/compare/v0.2.0...0.2.1
+[v0.2.0]: https://github.com/018bf/creathor/compare/v0.1.7...v0.2.0
 [v0.1.7]: https://github.com/018bf/creathor/compare/v0.1.6...v0.1.7
 [v0.1.6]: https://github.com/018bf/creathor/compare/v0.1.5...v0.1.6
 [v0.1.5]: https://github.com/018bf/creathor/compare/v0.1.3...v0.1.5

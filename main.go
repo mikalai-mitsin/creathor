@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-const version = "0.2.0"
+const version = "0.2.1"
 
 var (
 	serviceName     string

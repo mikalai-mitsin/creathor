@@ -37,8 +37,14 @@ func (r *SessionRepository) Create(
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Insert("public.sessions").
-		Columns(). // TODO: add columns
-		Values().  // TODO: add values
+		Columns(
+			"updated_at",
+			"created_at",
+		).
+		Values(
+			session.UpdatedAt,
+			session.CreatedAt,
+		).
 		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.QueryRowxContext(ctx, query, args...).StructScan(session); err != nil {
@@ -113,7 +119,7 @@ func (r *SessionRepository) Update(
 	defer cancel()
 	q := sq.Update("public.sessions").
 		Where(sq.Eq{"id": session.ID}).
-		Set("", "") // TODO: set values
+		Set("updated_at", session.UpdatedAt)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {

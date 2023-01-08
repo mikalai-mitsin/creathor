@@ -7,20 +7,24 @@ import (
 	"github.com/018bf/example/internal/domain/repositories"
 	"github.com/018bf/example/internal/domain/usecases"
 
+	"github.com/018bf/example/pkg/clock"
 	"github.com/018bf/example/pkg/log"
 )
 
 type ApproachUseCase struct {
 	approachRepository repositories.ApproachRepository
+	clock              clock.Clock
 	logger             log.Logger
 }
 
 func NewApproachUseCase(
 	approachRepository repositories.ApproachRepository,
+	clock clock.Clock,
 	logger log.Logger,
 ) usecases.ApproachUseCase {
 	return &ApproachUseCase{
 		approachRepository: approachRepository,
+		clock:              clock,
 		logger:             logger,
 	}
 }
@@ -58,8 +62,11 @@ func (u *ApproachUseCase) Create(
 	if err := create.Validate(); err != nil {
 		return nil, err
 	}
+	now := u.clock.Now().UTC()
 	approach := &models.Approach{
-		ID: "",
+		ID:        "",
+		UpdatedAt: now,
+		CreatedAt: now,
 	}
 	if err := u.approachRepository.Create(ctx, approach); err != nil {
 		return nil, err
@@ -78,6 +85,7 @@ func (u *ApproachUseCase) Update(
 	if err != nil {
 		return nil, err
 	}
+	approach.UpdatedAt = u.clock.Now()
 	if err := u.approachRepository.Update(ctx, approach); err != nil {
 		return nil, err
 	}

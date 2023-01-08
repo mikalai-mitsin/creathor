@@ -20,7 +20,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func TestNewEquipmentRepository(t *testing.T) {
+func TestNewMarkRepository(t *testing.T) {
 	mockDB, _, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -35,7 +35,7 @@ func TestNewEquipmentRepository(t *testing.T) {
 		name  string
 		setup func()
 		args  args
-		want  repositories.EquipmentRepository
+		want  repositories.MarkRepository
 	}{
 		{
 			name:  "ok",
@@ -43,7 +43,7 @@ func TestNewEquipmentRepository(t *testing.T) {
 			args: args{
 				database: mockDB,
 			},
-			want: &EquipmentRepository{
+			want: &MarkRepository{
 				database: mockDB,
 			},
 		},
@@ -51,14 +51,14 @@ func TestNewEquipmentRepository(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewEquipmentRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewEquipmentRepository() = %v, want %v", got, tt.want)
+			if got := NewMarkRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewMarkRepository() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestEquipmentRepository_Create(t *testing.T) {
+func TestMarkRepository_Create(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -68,8 +68,8 @@ func TestEquipmentRepository_Create(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	query := "INSERT INTO public.equipment"
-	equipment := mock_models.NewEquipment(t)
+	query := "INSERT INTO public.marks"
+	mark := mock_models.NewMark(t)
 	ctx := context.Background()
 	type fields struct {
 		database *sqlx.DB
@@ -77,7 +77,7 @@ func TestEquipmentRepository_Create(t *testing.T) {
 	}
 	type args struct {
 		ctx  context.Context
-		card *models.Equipment
+		card *models.Mark
 	}
 	tests := []struct {
 		name    string
@@ -93,7 +93,7 @@ func TestEquipmentRepository_Create(t *testing.T) {
 				mock.ExpectQuery(query).
 					WithArgs().
 					WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).
-						AddRow(equipment.ID, equipment.CreatedAt))
+						AddRow(mark.ID, mark.CreatedAt))
 			},
 			fields: fields{
 				database: db,
@@ -101,7 +101,7 @@ func TestEquipmentRepository_Create(t *testing.T) {
 			},
 			args: args{
 				ctx:  ctx,
-				card: equipment,
+				card: mark,
 			},
 			wantErr: nil,
 		},
@@ -119,7 +119,7 @@ func TestEquipmentRepository_Create(t *testing.T) {
 			},
 			args: args{
 				ctx:  ctx,
-				card: equipment,
+				card: mark,
 			},
 			wantErr: errs.FromPostgresError(errors.New("test error")),
 		},
@@ -127,18 +127,18 @@ func TestEquipmentRepository_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &EquipmentRepository{
+			r := &MarkRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			if err := r.Create(tt.args.ctx, tt.args.card); !errors.Is(err, tt.wantErr) {
-				t.Errorf("EquipmentRepository.Create() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("MarkRepository.Create() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestEquipmentRepository_Get(t *testing.T) {
+func TestMarkRepository_Get(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -148,8 +148,8 @@ func TestEquipmentRepository_Get(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	query := "SELECT equipment.id, equipment.updated_at, equipment.created_at FROM public.equipment WHERE id = \\$1 LIMIT 1"
-	equipment := mock_models.NewEquipment(t)
+	query := "SELECT marks.id, marks.name, marks.title, marks.weight, marks.updated_at, marks.created_at FROM public.marks WHERE id = \\$1 LIMIT 1"
+	mark := mock_models.NewMark(t)
 	ctx := context.Background()
 	type fields struct {
 		database *sqlx.DB
@@ -164,14 +164,14 @@ func TestEquipmentRepository_Get(t *testing.T) {
 		setup   func()
 		fields  fields
 		args    args
-		want    *models.Equipment
+		want    *models.Mark
 		wantErr error
 	}{
 		{
 			name: "ok",
 			setup: func() {
-				rows := newEquipmentRows(t, []*models.Equipment{equipment})
-				mock.ExpectQuery(query).WithArgs(equipment.ID).WillReturnRows(rows)
+				rows := newMarkRows(t, []*models.Mark{mark})
+				mock.ExpectQuery(query).WithArgs(mark.ID).WillReturnRows(rows)
 			},
 			fields: fields{
 				database: db,
@@ -179,15 +179,15 @@ func TestEquipmentRepository_Get(t *testing.T) {
 			},
 			args: args{
 				ctx: ctx,
-				id:  equipment.ID,
+				id:  mark.ID,
 			},
-			want:    equipment,
+			want:    mark,
 			wantErr: nil,
 		},
 		{
 			name: "unexpected behavior",
 			setup: func() {
-				mock.ExpectQuery(query).WithArgs(equipment.ID).WillReturnError(errors.New("test error"))
+				mock.ExpectQuery(query).WithArgs(mark.ID).WillReturnError(errors.New("test error"))
 			},
 			fields: fields{
 				database: db,
@@ -195,16 +195,16 @@ func TestEquipmentRepository_Get(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				id:  equipment.ID,
+				id:  mark.ID,
 			},
 			want: nil,
 			wantErr: errs.FromPostgresError(errors.New("test error")).
-				WithParam("equipment_id", equipment.ID),
+				WithParam("mark_id", mark.ID),
 		},
 		{
 			name: "not found",
 			setup: func() {
-				mock.ExpectQuery(query).WithArgs(equipment.ID).WillReturnError(sql.ErrNoRows)
+				mock.ExpectQuery(query).WithArgs(mark.ID).WillReturnError(sql.ErrNoRows)
 			},
 			fields: fields{
 				database: db,
@@ -212,32 +212,32 @@ func TestEquipmentRepository_Get(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				id:  equipment.ID,
+				id:  mark.ID,
 			},
 			want:    nil,
-			wantErr: errs.NewEntityNotFound().WithParam("equipment_id", equipment.ID),
+			wantErr: errs.NewEntityNotFound().WithParam("mark_id", mark.ID),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &EquipmentRepository{
+			r := &MarkRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			got, err := r.Get(tt.args.ctx, tt.args.id)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("EquipmentRepository.Get() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("MarkRepository.Get() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("EquipmentRepository.Get() = %v, want %v", got, tt.want)
+				t.Errorf("MarkRepository.Get() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestEquipmentRepository_List(t *testing.T) {
+func TestMarkRepository_List(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -248,33 +248,33 @@ func TestEquipmentRepository_List(t *testing.T) {
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
-	var equipment []*models.Equipment
+	var marks []*models.Mark
 	for i := 0; i < faker.RandomInt(1, 20); i++ {
-		equipment = append(equipment, mock_models.NewEquipment(t))
+		marks = append(marks, mock_models.NewMark(t))
 	}
-	filter := mock_models.NewEquipmentFilter(t)
-	query := "SELECT equipment.id, equipment.updated_at, equipment.created_at FROM public.equipment"
+	filter := mock_models.NewMarkFilter(t)
+	query := "SELECT marks.id, marks.name, marks.title, marks.weight, marks.updated_at, marks.created_at FROM public.marks"
 	type fields struct {
 		database *sqlx.DB
 		logger   log.Logger
 	}
 	type args struct {
 		ctx    context.Context
-		filter *models.EquipmentFilter
+		filter *models.MarkFilter
 	}
 	tests := []struct {
 		name    string
 		setup   func()
 		fields  fields
 		args    args
-		want    []*models.Equipment
+		want    []*models.Mark
 		wantErr error
 	}{
 		{
 			name: "ok",
 			setup: func() {
 				mock.ExpectQuery(query).
-					WillReturnRows(newEquipmentRows(t, equipment))
+					WillReturnRows(newMarkRows(t, marks))
 			},
 			fields: fields{
 				database: db,
@@ -284,7 +284,7 @@ func TestEquipmentRepository_List(t *testing.T) {
 				ctx:    ctx,
 				filter: filter,
 			},
-			want:    equipment,
+			want:    marks,
 			wantErr: nil,
 		},
 		{
@@ -330,23 +330,23 @@ func TestEquipmentRepository_List(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &EquipmentRepository{
+			r := &MarkRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			got, err := r.List(tt.args.ctx, tt.args.filter)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("EquipmentRepository.List() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("MarkRepository.List() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("EquipmentRepository.List() = %v, want %v", got, tt.want)
+				t.Errorf("MarkRepository.List() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestEquipmentRepository_Update(t *testing.T) {
+func TestMarkRepository_Update(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -356,8 +356,8 @@ func TestEquipmentRepository_Update(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	equipment := mock_models.NewEquipment(t)
-	query := `UPDATE public.equipment`
+	mark := mock_models.NewMark(t)
+	query := `UPDATE public.marks`
 	ctx := context.Background()
 	type fields struct {
 		database *sqlx.DB
@@ -365,7 +365,7 @@ func TestEquipmentRepository_Update(t *testing.T) {
 	}
 	type args struct {
 		ctx  context.Context
-		card *models.Equipment
+		card *models.Mark
 	}
 	tests := []struct {
 		name    string
@@ -387,7 +387,7 @@ func TestEquipmentRepository_Update(t *testing.T) {
 			},
 			args: args{
 				ctx:  ctx,
-				card: equipment,
+				card: mark,
 			},
 			wantErr: nil,
 		},
@@ -404,9 +404,9 @@ func TestEquipmentRepository_Update(t *testing.T) {
 			},
 			args: args{
 				ctx:  ctx,
-				card: equipment,
+				card: mark,
 			},
-			wantErr: errs.NewEntityNotFound().WithParam("equipment_id", equipment.ID),
+			wantErr: errs.NewEntityNotFound().WithParam("mark_id", mark.ID),
 		},
 		{
 			name: "database error",
@@ -421,9 +421,9 @@ func TestEquipmentRepository_Update(t *testing.T) {
 			},
 			args: args{
 				ctx:  ctx,
-				card: equipment,
+				card: mark,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", equipment.ID),
+			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("mark_id", mark.ID),
 		},
 		{
 			name: "unexpected error",
@@ -438,9 +438,9 @@ func TestEquipmentRepository_Update(t *testing.T) {
 			},
 			args: args{
 				ctx:  ctx,
-				card: equipment,
+				card: mark,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", equipment.ID),
+			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("mark_id", mark.ID),
 		},
 		{
 			name: "result error",
@@ -455,26 +455,26 @@ func TestEquipmentRepository_Update(t *testing.T) {
 			},
 			args: args{
 				ctx:  ctx,
-				card: equipment,
+				card: mark,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", equipment.ID),
+			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("mark_id", mark.ID),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &EquipmentRepository{
+			r := &MarkRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			if err := r.Update(tt.args.ctx, tt.args.card); !errors.Is(err, tt.wantErr) {
-				t.Errorf("EquipmentRepository.Update() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("MarkRepository.Update() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestEquipmentRepository_Delete(t *testing.T) {
+func TestMarkRepository_Delete(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
@@ -484,7 +484,7 @@ func TestEquipmentRepository_Delete(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	equipment := mock_models.NewEquipment(t)
+	mark := mock_models.NewMark(t)
 	type fields struct {
 		database *sqlx.DB
 		logger   log.Logger
@@ -507,21 +507,21 @@ func TestEquipmentRepository_Delete(t *testing.T) {
 				logger:   logger,
 			},
 			setup: func() {
-				mock.ExpectExec("DELETE FROM public.equipment WHERE id = \\$1").
-					WithArgs(equipment.ID).
+				mock.ExpectExec("DELETE FROM public.marks WHERE id = \\$1").
+					WithArgs(mark.ID).
 					WillReturnResult(sqlmock.NewResult(0, 1))
 			},
 			args: args{
 				ctx: context.Background(),
-				id:  equipment.ID,
+				id:  mark.ID,
 			},
 			wantErr: nil,
 		},
 		{
 			name: "article card not found",
 			setup: func() {
-				mock.ExpectExec("DELETE FROM public.equipment WHERE id = \\$1").
-					WithArgs(equipment.ID).
+				mock.ExpectExec("DELETE FROM public.marks WHERE id = \\$1").
+					WithArgs(mark.ID).
 					WillReturnResult(sqlmock.NewResult(0, 0))
 			},
 			fields: fields{
@@ -530,15 +530,15 @@ func TestEquipmentRepository_Delete(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				id:  equipment.ID,
+				id:  mark.ID,
 			},
-			wantErr: errs.NewEntityNotFound().WithParam("equipment_id", equipment.ID),
+			wantErr: errs.NewEntityNotFound().WithParam("mark_id", mark.ID),
 		},
 		{
 			name: "database error",
 			setup: func() {
-				mock.ExpectExec("DELETE FROM public.equipment WHERE id = \\$1").
-					WithArgs(equipment.ID).
+				mock.ExpectExec("DELETE FROM public.marks WHERE id = \\$1").
+					WithArgs(mark.ID).
 					WillReturnError(errors.New("test error"))
 			},
 			fields: fields{
@@ -547,15 +547,15 @@ func TestEquipmentRepository_Delete(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				id:  equipment.ID,
+				id:  mark.ID,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", equipment.ID),
+			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("mark_id", mark.ID),
 		},
 		{
 			name: "result error",
 			setup: func() {
-				mock.ExpectExec("DELETE FROM public.equipment WHERE id = \\$1").
-					WithArgs(equipment.ID).
+				mock.ExpectExec("DELETE FROM public.marks WHERE id = \\$1").
+					WithArgs(mark.ID).
 					WillReturnResult(sqlmock.NewErrorResult(errors.New("test error")))
 			},
 			fields: fields{
@@ -564,42 +564,42 @@ func TestEquipmentRepository_Delete(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				id:  equipment.ID,
+				id:  mark.ID,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", equipment.ID),
+			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("mark_id", mark.ID),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &EquipmentRepository{
+			r := &MarkRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
 			if err := r.Delete(tt.args.ctx, tt.args.id); !errors.Is(err, tt.wantErr) {
-				t.Errorf("EquipmentRepository.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("MarkRepository.Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestEquipmentRepository_Count(t *testing.T) {
+func TestMarkRepository_Count(t *testing.T) {
 	db, mock, err := postgres.NewMockPostgreSQL(t)
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
 	defer db.Close()
-	query := `SELECT count\(id\) FROM public.equipment`
+	query := `SELECT count\(id\) FROM public.marks`
 	ctx := context.Background()
-	filter := mock_models.NewEquipmentFilter(t)
+	filter := mock_models.NewMarkFilter(t)
 	type fields struct {
 		database *sqlx.DB
 		logger   log.Logger
 	}
 	type args struct {
 		ctx    context.Context
-		filter *models.EquipmentFilter
+		filter *models.MarkFilter
 	}
 	tests := []struct {
 		name    string
@@ -669,7 +669,7 @@ func TestEquipmentRepository_Count(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			r := &EquipmentRepository{
+			r := &MarkRepository{
 				database: tt.fields.database,
 				logger:   tt.fields.logger,
 			}
@@ -685,20 +685,24 @@ func TestEquipmentRepository_Count(t *testing.T) {
 	}
 }
 
-func newEquipmentRows(t *testing.T, equipment []*models.Equipment) *sqlmock.Rows {
+func newMarkRows(t *testing.T, marks []*models.Mark) *sqlmock.Rows {
 	t.Helper()
 	rows := sqlmock.NewRows([]string{
 		"id",
-		// TODO: add columns
+		"name",
+		"title",
+		"weight",
 		"updated_at",
 		"created_at",
 	})
-	for _, equipment := range equipment {
+	for _, mark := range marks {
 		rows.AddRow(
-			equipment.ID,
-			// TODO: add values
-			equipment.UpdatedAt,
-			equipment.CreatedAt,
+			mark.ID,
+			mark.Name,
+			mark.Title,
+			mark.Weight,
+			mark.UpdatedAt,
+			mark.CreatedAt,
 		)
 	}
 	return rows

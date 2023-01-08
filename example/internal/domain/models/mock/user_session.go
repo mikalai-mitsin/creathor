@@ -6,12 +6,15 @@ import (
 	"github.com/google/uuid"
 	"syreclabs.com/go/faker"
 	"testing"
+	"time"
 )
 
 func NewUserSession(t *testing.T) *models.UserSession {
 	t.Helper()
 	return &models.UserSession{
-		ID: uuid.New().String(),
+		ID:        uuid.New().String(),
+		UpdatedAt: faker.Time().Backward(40 * time.Hour).UTC(),
+		CreatedAt: faker.Time().Backward(40 * time.Hour).UTC(),
 	}
 }
 

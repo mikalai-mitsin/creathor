@@ -14,6 +14,9 @@ var funcMap = template.FuncMap{
 	"ToUpper": strings.ToUpper,
 	"ToLower": strings.ToLower,
 	"Title":   func(value string) string { return cases.Title(language.English).String(value) },
+	"inc": func(i int) int {
+		return i + 1
+	},
 }
 
 type Template struct {

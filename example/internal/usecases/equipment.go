@@ -7,20 +7,24 @@ import (
 	"github.com/018bf/example/internal/domain/repositories"
 	"github.com/018bf/example/internal/domain/usecases"
 
+	"github.com/018bf/example/pkg/clock"
 	"github.com/018bf/example/pkg/log"
 )
 
 type EquipmentUseCase struct {
 	equipmentRepository repositories.EquipmentRepository
+	clock               clock.Clock
 	logger              log.Logger
 }
 
 func NewEquipmentUseCase(
 	equipmentRepository repositories.EquipmentRepository,
+	clock clock.Clock,
 	logger log.Logger,
 ) usecases.EquipmentUseCase {
 	return &EquipmentUseCase{
 		equipmentRepository: equipmentRepository,
+		clock:               clock,
 		logger:              logger,
 	}
 }
@@ -58,8 +62,11 @@ func (u *EquipmentUseCase) Create(
 	if err := create.Validate(); err != nil {
 		return nil, err
 	}
+	now := u.clock.Now().UTC()
 	equipment := &models.Equipment{
-		ID: "",
+		ID:        "",
+		UpdatedAt: now,
+		CreatedAt: now,
 	}
 	if err := u.equipmentRepository.Create(ctx, equipment); err != nil {
 		return nil, err
@@ -78,6 +85,7 @@ func (u *EquipmentUseCase) Update(
 	if err != nil {
 		return nil, err
 	}
+	equipment.UpdatedAt = u.clock.Now()
 	if err := u.equipmentRepository.Update(ctx, equipment); err != nil {
 		return nil, err
 	}

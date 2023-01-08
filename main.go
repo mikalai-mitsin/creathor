@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-const version = "0.2.1"
+const version = "0.3.0"
 
 var (
 	serviceName     string
@@ -131,7 +131,7 @@ func initProject(ctx *cli.Context) error {
 		return err
 	}
 	for _, model := range models.Value() {
-		if err := CreateCRUD(Model{Model: model, Module: moduleName, Auth: authEnabled}); err != nil {
+		if err := CreateCRUD(ParseModel(model)); err != nil {
 			return err
 		}
 	}
@@ -143,7 +143,7 @@ func initProject(ctx *cli.Context) error {
 
 func initModels(ctx *cli.Context) error {
 	for _, model := range models.Value() {
-		if err := CreateCRUD(Model{Model: model, Module: moduleName, Auth: authEnabled}); err != nil {
+		if err := CreateCRUD(ParseModel(model)); err != nil {
 			return err
 		}
 	}

@@ -8,20 +8,24 @@ import (
 	"{{ .Module }}/internal/domain/usecases"
 
 	"{{ .Module }}/pkg/log"
+	"{{ .Module }}/pkg/clock"
 )
 
 type {{ .UseCaseTypeName }} struct {
 	{{ .RepositoryVariableName }} repositories.{{ .RepositoryTypeName }}
-	logger                           log.Logger
+	clock clock.Clock
+	logger log.Logger
 }
 
 func New{{ .UseCaseTypeName }}(
 	{{ .RepositoryVariableName }} repositories.{{ .RepositoryTypeName }},
+	clock clock.Clock,
 	logger log.Logger,
 ) usecases.{{ .UseCaseTypeName }} {
 	return &{{ .UseCaseTypeName }}{
         {{ .RepositoryVariableName }}: {{ .RepositoryVariableName }},
-		logger:                           logger,
+		clock:  clock,
+		logger: logger,
 	}
 }
 
@@ -58,8 +62,14 @@ func (u *{{ .UseCaseTypeName }}) Create(
 	if err := create.Validate(); err != nil {
 		return nil, err
 	}
+	now := u.clock.Now().UTC()
     {{ .Variable }} := &models.{{ .ModelName }}{
 		ID: "",
+{{- range $key, $value := .Params }}
+		{{ $key.Name }}: create.{{ $key.Name }},
+{{- end }}
+		UpdatedAt: now,
+		CreatedAt: now,
 	}
 	if err := u.{{ .RepositoryVariableName }}.Create(ctx, {{ .Variable }}); err != nil {
 		return nil, err
@@ -78,6 +88,12 @@ func (u *{{ .UseCaseTypeName }}) Update(
 	if err != nil {
 		return nil, err
 	}
+{{- range $key, $value := .Params }}
+	if update.{{ $key.Name }} != nil {
+		{{ $.Variable }}.{{ $key.Name }} = *update.{{ $key.Name }}
+	}
+{{- end }}
+	{{ .Variable }}.UpdatedAt = u.clock.Now()
 	if err := u.{{ .RepositoryVariableName }}.Update(ctx, {{ .Variable }}); err != nil {
 		return nil, err
 	}

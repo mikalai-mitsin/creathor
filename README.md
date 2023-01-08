@@ -18,7 +18,7 @@ go install github.com/018bf/creathor@latest
 
 To initialize a project in the current directory, use the command `init`
 ```
-creathor init --name tracker --module github.com/018bf/tracker --model user --model token --model equipment --model session --model approach
+creathor init --name tracker --module github.com/018bf/tracker --model user --model token --model equipment --model session --model approach --model '{"model":"mark", "params": {"name": "string", "title": "string", "weight": "int"}}'
 ```
 
 To add auth and permission checks add `-a` or `--auth` flag

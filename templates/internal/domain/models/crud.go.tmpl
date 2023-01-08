@@ -9,6 +9,9 @@ import (
 
 type {{ .ModelName }} struct {
 	ID        string `json:"id" db:"id,omitempty"`
+{{- range $key, $value := .Params }}
+	{{ $key.Name }} {{ $value }} `json:"{{ $key.Tag }}" db:"{{ $key.Tag }}"`
+{{- end }}
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at,omitempty"`
 	CreatedAt time.Time `json:"created_at" db:"created_at,omitempty"`
 }
@@ -17,6 +20,9 @@ func (c *{{ .ModelName }}) Validate() error {
     err := validation.ValidateStruct(
         c,
         validation.Field(&c.ID, is.UUID),
+{{- range $key, $value := .Params }}
+		validation.Field(&c.{{ $key.Name }}),
+{{- end }}
     )
     if err != nil {
         return errs.FromValidationError(err)
@@ -46,11 +52,17 @@ func (c *{{ .FilterTypeName }}) Validate() error {
 }
 
 type {{ .CreateTypeName }} struct {
+{{- range $key, $value := .Params }}
+	{{ $key.Name }} {{ $value }} `json:"{{ $key.Tag }}"`
+{{- end }}
 }
 
 func (c *{{ .CreateTypeName }}) Validate() error {
 	err := validation.ValidateStruct(
 		c,
+{{- range $key, $value := .Params }}
+		validation.Field(&c.{{ $key.Name }}),
+{{- end }}
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -60,12 +72,18 @@ func (c *{{ .CreateTypeName }}) Validate() error {
 
 type {{ .UpdateTypeName }} struct {
 	ID string `json:"id"`
+{{- range $key, $value := .Params }}
+	{{ $key.Name }} *{{ $value }} `json:"{{ $key.Tag }}"`
+{{- end }}
 }
 
 func (c *{{ .UpdateTypeName }}) Validate() error {
     err := validation.ValidateStruct(
         c,
         validation.Field(&c.ID, validation.Required, is.UUID),
+{{- range $key, $value := .Params }}
+		validation.Field(&c.{{ $key.Name }}),
+{{- end }}
     )
     if err != nil {
         return errs.FromValidationError(err)

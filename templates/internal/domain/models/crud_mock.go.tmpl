@@ -6,24 +6,37 @@ import (
 	"syreclabs.com/go/faker"
 	"github.com/google/uuid"
 	"testing"
+	"time"
 )
 
 func New{{ .ModelName }}(t *testing.T) *models.{{ .ModelName }} {
 	t.Helper()
 	return &models.{{ .ModelName }}{
 		ID:         uuid.New().String(),
+{{- range $key, $value := .Params }}
+		{{ $key.Name }}: {{ $value.Fake }},
+{{- end }}
+		UpdatedAt:  faker.Time().Backward(40 * time.Hour).UTC(),
+		CreatedAt:  faker.Time().Backward(40 * time.Hour).UTC(),
 	}
 }
 
 func New{{ .CreateTypeName }}(t *testing.T) *models.{{ .CreateTypeName }} {
 	t.Helper()
-	return &models.{{ .CreateTypeName }}{}
+	return &models.{{ .CreateTypeName }}{
+{{- range $key, $value := .Params }}
+		{{ $key.Name }}: {{ $value.Fake }},
+{{- end }}
+	}
 }
 
 func New{{ .UpdateTypeName }}(t *testing.T) *models.{{ .UpdateTypeName }} {
 	t.Helper()
 	return &models.{{ .UpdateTypeName }}{
 		ID: uuid.New().String(),
+{{- range $key, $value := .Params }}
+		{{ $key.Name }}:  utils.Pointer({{ $value.Fake }}),
+{{- end }}
 	}
 }
 

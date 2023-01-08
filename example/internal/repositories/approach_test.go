@@ -689,12 +689,14 @@ func newApproachRows(t *testing.T, approaches []*models.Approach) *sqlmock.Rows 
 	t.Helper()
 	rows := sqlmock.NewRows([]string{
 		"id",
+		// TODO: add columns
 		"updated_at",
 		"created_at",
 	})
 	for _, approach := range approaches {
 		rows.AddRow(
 			approach.ID,
+			// TODO: add values
 			approach.UpdatedAt,
 			approach.CreatedAt,
 		)

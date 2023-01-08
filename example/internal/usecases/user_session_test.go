@@ -5,6 +5,7 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
@@ -12,6 +13,8 @@ import (
 	"github.com/018bf/example/internal/domain/repositories"
 	mock_repositories "github.com/018bf/example/internal/domain/repositories/mock"
 	"github.com/018bf/example/internal/domain/usecases"
+	"github.com/018bf/example/pkg/clock"
+	mock_clock "github.com/018bf/example/pkg/clock/mock"
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/golang/mock/gomock"
@@ -22,9 +25,11 @@ func TestNewUserSessionUseCase(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	userSessionRepository := mock_repositories.NewMockUserSessionRepository(ctrl)
+	clockMock := mock_clock.NewMockClock(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
 	type args struct {
 		userSessionRepository repositories.UserSessionRepository
+		clock                 clock.Clock
 		logger                log.Logger
 	}
 	tests := []struct {
@@ -39,10 +44,12 @@ func TestNewUserSessionUseCase(t *testing.T) {
 			},
 			args: args{
 				userSessionRepository: userSessionRepository,
+				clock:                 clockMock,
 				logger:                logger,
 			},
 			want: &UserSessionUseCase{
 				userSessionRepository: userSessionRepository,
+				clock:                 clockMock,
 				logger:                logger,
 			},
 		},
@@ -50,7 +57,7 @@ func TestNewUserSessionUseCase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewUserSessionUseCase(tt.args.userSessionRepository, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewUserSessionUseCase(tt.args.userSessionRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewUserSessionUseCase() = %v, want %v", got, tt.want)
 			}
 		})
@@ -242,10 +249,13 @@ func TestUserSessionUseCase_Create(t *testing.T) {
 	defer ctrl.Finish()
 	userSessionRepository := mock_repositories.NewMockUserSessionRepository(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
+	clockMock := mock_clock.NewMockClock(ctrl)
 	ctx := context.Background()
 	create := mock_models.NewUserSessionCreate(t)
+	now := time.Now().UTC()
 	type fields struct {
 		userSessionRepository repositories.UserSessionRepository
+		clock                 clock.Clock
 		logger                log.Logger
 	}
 	type args struct {
@@ -263,30 +273,51 @@ func TestUserSessionUseCase_Create(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
+				clockMock.EXPECT().Now().Return(now)
 				userSessionRepository.EXPECT().
-					Create(ctx, &models.UserSession{}).
+					Create(
+						ctx,
+						&models.UserSession{
+							UpdatedAt: now,
+							CreatedAt: now,
+						},
+					).
 					Return(nil)
 			},
 			fields: fields{
 				userSessionRepository: userSessionRepository,
+				clock:                 clockMock,
 				logger:                logger,
 			},
 			args: args{
 				ctx:    ctx,
 				create: create,
 			},
-			want:    &models.UserSession{},
+			want: &models.UserSession{
+				ID:        "",
+				UpdatedAt: now,
+				CreatedAt: now,
+			},
 			wantErr: nil,
 		},
 		{
 			name: "unexpected behavior",
 			setup: func() {
+				clockMock.EXPECT().Now().Return(now)
 				userSessionRepository.EXPECT().
-					Create(ctx, &models.UserSession{}).
+					Create(
+						ctx,
+						&models.UserSession{
+							ID:        "",
+							UpdatedAt: now,
+							CreatedAt: now,
+						},
+					).
 					Return(errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
 				userSessionRepository: userSessionRepository,
+				clock:                 clockMock,
 				logger:                logger,
 			},
 			args: args{
@@ -318,6 +349,7 @@ func TestUserSessionUseCase_Create(t *testing.T) {
 			tt.setup()
 			u := &UserSessionUseCase{
 				userSessionRepository: tt.fields.userSessionRepository,
+				clock:                 tt.fields.clock,
 				logger:                tt.fields.logger,
 			}
 			got, err := u.Create(tt.args.ctx, tt.args.create)
@@ -339,9 +371,12 @@ func TestUserSessionUseCase_Update(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	userSession := mock_models.NewUserSession(t)
+	clockMock := mock_clock.NewMockClock(ctrl)
 	update := mock_models.NewUserSessionUpdate(t)
+	now := userSession.UpdatedAt
 	type fields struct {
 		userSessionRepository repositories.UserSessionRepository
+		clock                 clock.Clock
 		logger                log.Logger
 	}
 	type args struct {
@@ -359,6 +394,7 @@ func TestUserSessionUseCase_Update(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
+				clockMock.EXPECT().Now().Return(now)
 				userSessionRepository.EXPECT().
 					Get(ctx, update.ID).Return(userSession, nil)
 				userSessionRepository.EXPECT().
@@ -366,6 +402,7 @@ func TestUserSessionUseCase_Update(t *testing.T) {
 			},
 			fields: fields{
 				userSessionRepository: userSessionRepository,
+				clock:                 clockMock,
 				logger:                logger,
 			},
 			args: args{
@@ -378,6 +415,7 @@ func TestUserSessionUseCase_Update(t *testing.T) {
 		{
 			name: "update error",
 			setup: func() {
+				clockMock.EXPECT().Now().Return(now)
 				userSessionRepository.EXPECT().
 					Get(ctx, update.ID).
 					Return(userSession, nil)
@@ -387,6 +425,7 @@ func TestUserSessionUseCase_Update(t *testing.T) {
 			},
 			fields: fields{
 				userSessionRepository: userSessionRepository,
+				clock:                 clockMock,
 				logger:                logger,
 			},
 			args: args{
@@ -403,6 +442,7 @@ func TestUserSessionUseCase_Update(t *testing.T) {
 			},
 			fields: fields{
 				userSessionRepository: userSessionRepository,
+				clock:                 clockMock,
 				logger:                logger,
 			},
 			args: args{
@@ -418,6 +458,7 @@ func TestUserSessionUseCase_Update(t *testing.T) {
 			},
 			fields: fields{
 				userSessionRepository: userSessionRepository,
+				clock:                 clockMock,
 				logger:                logger,
 			},
 			args: args{
@@ -435,6 +476,7 @@ func TestUserSessionUseCase_Update(t *testing.T) {
 			tt.setup()
 			u := &UserSessionUseCase{
 				userSessionRepository: tt.fields.userSessionRepository,
+				clock:                 tt.fields.clock,
 				logger:                tt.fields.logger,
 			}
 			got, err := u.Update(tt.args.ctx, tt.args.update)

@@ -37,8 +37,14 @@ func (r *ApproachRepository) Create(
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Insert("public.approaches").
-		Columns(). // TODO: add columns
-		Values().  // TODO: add values
+		Columns(
+			"updated_at",
+			"created_at",
+		).
+		Values(
+			approach.UpdatedAt,
+			approach.CreatedAt,
+		).
 		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.QueryRowxContext(ctx, query, args...).StructScan(approach); err != nil {
@@ -113,7 +119,7 @@ func (r *ApproachRepository) Update(
 	defer cancel()
 	q := sq.Update("public.approaches").
 		Where(sq.Eq{"id": approach.ID}).
-		Set("", "") // TODO: set values
+		Set("updated_at", approach.UpdatedAt)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {

@@ -689,12 +689,14 @@ func newSessionRows(t *testing.T, sessions []*models.Session) *sqlmock.Rows {
 	t.Helper()
 	rows := sqlmock.NewRows([]string{
 		"id",
+		// TODO: add columns
 		"updated_at",
 		"created_at",
 	})
 	for _, session := range sessions {
 		rows.AddRow(
 			session.ID,
+			// TODO: add values
 			session.UpdatedAt,
 			session.CreatedAt,
 		)

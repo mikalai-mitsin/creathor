@@ -21,59 +21,59 @@ import (
 	"syreclabs.com/go/faker"
 )
 
-func TestNewSessionUseCase(t *testing.T) {
+func TestNewMarkUseCase(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	sessionRepository := mock_repositories.NewMockSessionRepository(ctrl)
+	markRepository := mock_repositories.NewMockMarkRepository(ctrl)
 	clockMock := mock_clock.NewMockClock(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
 	type args struct {
-		sessionRepository repositories.SessionRepository
-		clock             clock.Clock
-		logger            log.Logger
+		markRepository repositories.MarkRepository
+		clock          clock.Clock
+		logger         log.Logger
 	}
 	tests := []struct {
 		name  string
 		setup func()
 		args  args
-		want  usecases.SessionUseCase
+		want  usecases.MarkUseCase
 	}{
 		{
 			name: "ok",
 			setup: func() {
 			},
 			args: args{
-				sessionRepository: sessionRepository,
-				clock:             clockMock,
-				logger:            logger,
+				markRepository: markRepository,
+				clock:          clockMock,
+				logger:         logger,
 			},
-			want: &SessionUseCase{
-				sessionRepository: sessionRepository,
-				clock:             clockMock,
-				logger:            logger,
+			want: &MarkUseCase{
+				markRepository: markRepository,
+				clock:          clockMock,
+				logger:         logger,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewSessionUseCase(tt.args.sessionRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewSessionUseCase() = %v, want %v", got, tt.want)
+			if got := NewMarkUseCase(tt.args.markRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewMarkUseCase() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestSessionUseCase_Get(t *testing.T) {
+func TestMarkUseCase_Get(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	sessionRepository := mock_repositories.NewMockSessionRepository(ctrl)
+	markRepository := mock_repositories.NewMockMarkRepository(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
-	session := mock_models.NewSession(t)
+	mark := mock_models.NewMark(t)
 	type fields struct {
-		sessionRepository repositories.SessionRepository
-		logger            log.Logger
+		markRepository repositories.MarkRepository
+		logger         log.Logger
 	}
 	type args struct {
 		ctx context.Context
@@ -84,37 +84,37 @@ func TestSessionUseCase_Get(t *testing.T) {
 		setup   func()
 		fields  fields
 		args    args
-		want    *models.Session
+		want    *models.Mark
 		wantErr error
 	}{
 		{
 			name: "ok",
 			setup: func() {
-				sessionRepository.EXPECT().Get(ctx, session.ID).Return(session, nil)
+				markRepository.EXPECT().Get(ctx, mark.ID).Return(mark, nil)
 			},
 			fields: fields{
-				sessionRepository: sessionRepository,
-				logger:            logger,
+				markRepository: markRepository,
+				logger:         logger,
 			},
 			args: args{
 				ctx: ctx,
-				id:  session.ID,
+				id:  mark.ID,
 			},
-			want:    session,
+			want:    mark,
 			wantErr: nil,
 		},
 		{
-			name: "Session not found",
+			name: "Mark not found",
 			setup: func() {
-				sessionRepository.EXPECT().Get(ctx, session.ID).Return(nil, errs.NewEntityNotFound())
+				markRepository.EXPECT().Get(ctx, mark.ID).Return(nil, errs.NewEntityNotFound())
 			},
 			fields: fields{
-				sessionRepository: sessionRepository,
-				logger:            logger,
+				markRepository: markRepository,
+				logger:         logger,
 			},
 			args: args{
 				ctx: ctx,
-				id:  session.ID,
+				id:  mark.ID,
 			},
 			want:    nil,
 			wantErr: errs.NewEntityNotFound(),
@@ -123,77 +123,77 @@ func TestSessionUseCase_Get(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			u := &SessionUseCase{
-				sessionRepository: tt.fields.sessionRepository,
-				logger:            tt.fields.logger,
+			u := &MarkUseCase{
+				markRepository: tt.fields.markRepository,
+				logger:         tt.fields.logger,
 			}
 			got, err := u.Get(tt.args.ctx, tt.args.id)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("SessionUseCase.Get() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("MarkUseCase.Get() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SessionUseCase.Get() = %v, want %v", got, tt.want)
+				t.Errorf("MarkUseCase.Get() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestSessionUseCase_List(t *testing.T) {
+func TestMarkUseCase_List(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	sessionRepository := mock_repositories.NewMockSessionRepository(ctrl)
+	markRepository := mock_repositories.NewMockMarkRepository(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
-	var sessions []*models.Session
+	var marks []*models.Mark
 	count := uint64(faker.Number().NumberInt(2))
 	for i := uint64(0); i < count; i++ {
-		sessions = append(sessions, mock_models.NewSession(t))
+		marks = append(marks, mock_models.NewMark(t))
 	}
-	filter := mock_models.NewSessionFilter(t)
+	filter := mock_models.NewMarkFilter(t)
 	type fields struct {
-		sessionRepository repositories.SessionRepository
-		logger            log.Logger
+		markRepository repositories.MarkRepository
+		logger         log.Logger
 	}
 	type args struct {
 		ctx    context.Context
-		filter *models.SessionFilter
+		filter *models.MarkFilter
 	}
 	tests := []struct {
 		name    string
 		setup   func()
 		fields  fields
 		args    args
-		want    []*models.Session
+		want    []*models.Mark
 		want1   uint64
 		wantErr error
 	}{
 		{
 			name: "ok",
 			setup: func() {
-				sessionRepository.EXPECT().List(ctx, filter).Return(sessions, nil)
-				sessionRepository.EXPECT().Count(ctx, filter).Return(count, nil)
+				markRepository.EXPECT().List(ctx, filter).Return(marks, nil)
+				markRepository.EXPECT().Count(ctx, filter).Return(count, nil)
 			},
 			fields: fields{
-				sessionRepository: sessionRepository,
-				logger:            logger,
+				markRepository: markRepository,
+				logger:         logger,
 			},
 			args: args{
 				ctx:    ctx,
 				filter: filter,
 			},
-			want:    sessions,
+			want:    marks,
 			want1:   count,
 			wantErr: nil,
 		},
 		{
 			name: "list error",
 			setup: func() {
-				sessionRepository.EXPECT().List(ctx, filter).Return(nil, errs.NewUnexpectedBehaviorError("test error"))
+				markRepository.EXPECT().List(ctx, filter).Return(nil, errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
-				sessionRepository: sessionRepository,
-				logger:            logger,
+				markRepository: markRepository,
+				logger:         logger,
 			},
 			args: args{
 				ctx:    ctx,
@@ -206,12 +206,12 @@ func TestSessionUseCase_List(t *testing.T) {
 		{
 			name: "count error",
 			setup: func() {
-				sessionRepository.EXPECT().List(ctx, filter).Return(sessions, nil)
-				sessionRepository.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
+				markRepository.EXPECT().List(ctx, filter).Return(marks, nil)
+				markRepository.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
-				sessionRepository: sessionRepository,
-				logger:            logger,
+				markRepository: markRepository,
+				logger:         logger,
 			},
 			args: args{
 				ctx:    ctx,
@@ -225,59 +225,62 @@ func TestSessionUseCase_List(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			u := &SessionUseCase{
-				sessionRepository: tt.fields.sessionRepository,
-				logger:            tt.fields.logger,
+			u := &MarkUseCase{
+				markRepository: tt.fields.markRepository,
+				logger:         tt.fields.logger,
 			}
 			got, got1, err := u.List(tt.args.ctx, tt.args.filter)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("SessionUseCase.List() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("MarkUseCase.List() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SessionUseCase.List() = %v, want %v", got, tt.want)
+				t.Errorf("MarkUseCase.List() = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("SessionUseCase.List() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("MarkUseCase.List() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
 }
 
-func TestSessionUseCase_Create(t *testing.T) {
+func TestMarkUseCase_Create(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	sessionRepository := mock_repositories.NewMockSessionRepository(ctrl)
+	markRepository := mock_repositories.NewMockMarkRepository(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
 	clockMock := mock_clock.NewMockClock(ctrl)
 	ctx := context.Background()
-	create := mock_models.NewSessionCreate(t)
+	create := mock_models.NewMarkCreate(t)
 	now := time.Now().UTC()
 	type fields struct {
-		sessionRepository repositories.SessionRepository
-		clock             clock.Clock
-		logger            log.Logger
+		markRepository repositories.MarkRepository
+		clock          clock.Clock
+		logger         log.Logger
 	}
 	type args struct {
 		ctx    context.Context
-		create *models.SessionCreate
+		create *models.MarkCreate
 	}
 	tests := []struct {
 		name    string
 		setup   func()
 		fields  fields
 		args    args
-		want    *models.Session
+		want    *models.Mark
 		wantErr error
 	}{
 		{
 			name: "ok",
 			setup: func() {
 				clockMock.EXPECT().Now().Return(now)
-				sessionRepository.EXPECT().
+				markRepository.EXPECT().
 					Create(
 						ctx,
-						&models.Session{
+						&models.Mark{
+							Name:      create.Name,
+							Title:     create.Title,
+							Weight:    create.Weight,
 							UpdatedAt: now,
 							CreatedAt: now,
 						},
@@ -285,16 +288,19 @@ func TestSessionUseCase_Create(t *testing.T) {
 					Return(nil)
 			},
 			fields: fields{
-				sessionRepository: sessionRepository,
-				clock:             clockMock,
-				logger:            logger,
+				markRepository: markRepository,
+				clock:          clockMock,
+				logger:         logger,
 			},
 			args: args{
 				ctx:    ctx,
 				create: create,
 			},
-			want: &models.Session{
+			want: &models.Mark{
 				ID:        "",
+				Name:      create.Name,
+				Title:     create.Title,
+				Weight:    create.Weight,
 				UpdatedAt: now,
 				CreatedAt: now,
 			},
@@ -304,11 +310,14 @@ func TestSessionUseCase_Create(t *testing.T) {
 			name: "unexpected behavior",
 			setup: func() {
 				clockMock.EXPECT().Now().Return(now)
-				sessionRepository.EXPECT().
+				markRepository.EXPECT().
 					Create(
 						ctx,
-						&models.Session{
+						&models.Mark{
 							ID:        "",
+							Name:      create.Name,
+							Title:     create.Title,
+							Weight:    create.Weight,
 							UpdatedAt: now,
 							CreatedAt: now,
 						},
@@ -316,9 +325,9 @@ func TestSessionUseCase_Create(t *testing.T) {
 					Return(errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
-				sessionRepository: sessionRepository,
-				clock:             clockMock,
-				logger:            logger,
+				markRepository: markRepository,
+				clock:          clockMock,
+				logger:         logger,
 			},
 			args: args{
 				ctx:    ctx,
@@ -333,12 +342,12 @@ func TestSessionUseCase_Create(t *testing.T) {
 		//	setup: func() {
 		//	},
 		//	fields: fields{
-		//		sessionRepository: sessionRepository,
+		//		markRepository: markRepository,
 		//		logger:           logger,
 		//	},
 		//	args: args{
 		//		ctx: ctx,
-		//		create: &models.SessionCreate{},
+		//		create: &models.MarkCreate{},
 		//	},
 		//	want: nil,
 		//	wantErr: errs.NewInvalidFormError().WithParam("set", "it"),
@@ -347,86 +356,86 @@ func TestSessionUseCase_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			u := &SessionUseCase{
-				sessionRepository: tt.fields.sessionRepository,
-				clock:             tt.fields.clock,
-				logger:            tt.fields.logger,
+			u := &MarkUseCase{
+				markRepository: tt.fields.markRepository,
+				clock:          tt.fields.clock,
+				logger:         tt.fields.logger,
 			}
 			got, err := u.Create(tt.args.ctx, tt.args.create)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("SessionUseCase.Create() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("MarkUseCase.Create() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SessionUseCase.Create() = %v, want %v", got, tt.want)
+				t.Errorf("MarkUseCase.Create() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestSessionUseCase_Update(t *testing.T) {
+func TestMarkUseCase_Update(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	sessionRepository := mock_repositories.NewMockSessionRepository(ctrl)
+	markRepository := mock_repositories.NewMockMarkRepository(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
-	session := mock_models.NewSession(t)
+	mark := mock_models.NewMark(t)
 	clockMock := mock_clock.NewMockClock(ctrl)
-	update := mock_models.NewSessionUpdate(t)
-	now := session.UpdatedAt
+	update := mock_models.NewMarkUpdate(t)
+	now := mark.UpdatedAt
 	type fields struct {
-		sessionRepository repositories.SessionRepository
-		clock             clock.Clock
-		logger            log.Logger
+		markRepository repositories.MarkRepository
+		clock          clock.Clock
+		logger         log.Logger
 	}
 	type args struct {
 		ctx    context.Context
-		update *models.SessionUpdate
+		update *models.MarkUpdate
 	}
 	tests := []struct {
 		name    string
 		setup   func()
 		fields  fields
 		args    args
-		want    *models.Session
+		want    *models.Mark
 		wantErr error
 	}{
 		{
 			name: "ok",
 			setup: func() {
 				clockMock.EXPECT().Now().Return(now)
-				sessionRepository.EXPECT().
-					Get(ctx, update.ID).Return(session, nil)
-				sessionRepository.EXPECT().
-					Update(ctx, session).Return(nil)
+				markRepository.EXPECT().
+					Get(ctx, update.ID).Return(mark, nil)
+				markRepository.EXPECT().
+					Update(ctx, mark).Return(nil)
 			},
 			fields: fields{
-				sessionRepository: sessionRepository,
-				clock:             clockMock,
-				logger:            logger,
+				markRepository: markRepository,
+				clock:          clockMock,
+				logger:         logger,
 			},
 			args: args{
 				ctx:    ctx,
 				update: update,
 			},
-			want:    session,
+			want:    mark,
 			wantErr: nil,
 		},
 		{
 			name: "update error",
 			setup: func() {
 				clockMock.EXPECT().Now().Return(now)
-				sessionRepository.EXPECT().
+				markRepository.EXPECT().
 					Get(ctx, update.ID).
-					Return(session, nil)
-				sessionRepository.EXPECT().
-					Update(ctx, session).
+					Return(mark, nil)
+				markRepository.EXPECT().
+					Update(ctx, mark).
 					Return(errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
-				sessionRepository: sessionRepository,
-				clock:             clockMock,
-				logger:            logger,
+				markRepository: markRepository,
+				clock:          clockMock,
+				logger:         logger,
 			},
 			args: args{
 				ctx:    ctx,
@@ -436,14 +445,14 @@ func TestSessionUseCase_Update(t *testing.T) {
 			wantErr: errs.NewUnexpectedBehaviorError("test error"),
 		},
 		{
-			name: "Session not found",
+			name: "Mark not found",
 			setup: func() {
-				sessionRepository.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFound())
+				markRepository.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFound())
 			},
 			fields: fields{
-				sessionRepository: sessionRepository,
-				clock:             clockMock,
-				logger:            logger,
+				markRepository: markRepository,
+				clock:          clockMock,
+				logger:         logger,
 			},
 			args: args{
 				ctx:    ctx,
@@ -457,13 +466,13 @@ func TestSessionUseCase_Update(t *testing.T) {
 			setup: func() {
 			},
 			fields: fields{
-				sessionRepository: sessionRepository,
-				clock:             clockMock,
-				logger:            logger,
+				markRepository: markRepository,
+				clock:          clockMock,
+				logger:         logger,
 			},
 			args: args{
 				ctx: ctx,
-				update: &models.SessionUpdate{
+				update: &models.MarkUpdate{
 					ID: faker.Number().Number(1),
 				},
 			},
@@ -474,33 +483,33 @@ func TestSessionUseCase_Update(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			u := &SessionUseCase{
-				sessionRepository: tt.fields.sessionRepository,
-				clock:             tt.fields.clock,
-				logger:            tt.fields.logger,
+			u := &MarkUseCase{
+				markRepository: tt.fields.markRepository,
+				clock:          tt.fields.clock,
+				logger:         tt.fields.logger,
 			}
 			got, err := u.Update(tt.args.ctx, tt.args.update)
 			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("SessionUseCase.Update() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("MarkUseCase.Update() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SessionUseCase.Update() = %v, want %v", got, tt.want)
+				t.Errorf("MarkUseCase.Update() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestSessionUseCase_Delete(t *testing.T) {
+func TestMarkUseCase_Delete(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	sessionRepository := mock_repositories.NewMockSessionRepository(ctrl)
+	markRepository := mock_repositories.NewMockMarkRepository(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
-	session := mock_models.NewSession(t)
+	mark := mock_models.NewMark(t)
 	type fields struct {
-		sessionRepository repositories.SessionRepository
-		logger            log.Logger
+		markRepository repositories.MarkRepository
+		logger         log.Logger
 	}
 	type args struct {
 		ctx context.Context
@@ -516,34 +525,34 @@ func TestSessionUseCase_Delete(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				sessionRepository.EXPECT().
-					Delete(ctx, session.ID).
+				markRepository.EXPECT().
+					Delete(ctx, mark.ID).
 					Return(nil)
 			},
 			fields: fields{
-				sessionRepository: sessionRepository,
-				logger:            logger,
+				markRepository: markRepository,
+				logger:         logger,
 			},
 			args: args{
 				ctx: ctx,
-				id:  session.ID,
+				id:  mark.ID,
 			},
 			wantErr: nil,
 		},
 		{
-			name: "Session not found",
+			name: "Mark not found",
 			setup: func() {
-				sessionRepository.EXPECT().
-					Delete(ctx, session.ID).
+				markRepository.EXPECT().
+					Delete(ctx, mark.ID).
 					Return(errs.NewEntityNotFound())
 			},
 			fields: fields{
-				sessionRepository: sessionRepository,
-				logger:            logger,
+				markRepository: markRepository,
+				logger:         logger,
 			},
 			args: args{
 				ctx: ctx,
-				id:  session.ID,
+				id:  mark.ID,
 			},
 			wantErr: errs.NewEntityNotFound(),
 		},
@@ -551,12 +560,12 @@ func TestSessionUseCase_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			u := &SessionUseCase{
-				sessionRepository: tt.fields.sessionRepository,
-				logger:            tt.fields.logger,
+			u := &MarkUseCase{
+				markRepository: tt.fields.markRepository,
+				logger:         tt.fields.logger,
 			}
 			if err := u.Delete(tt.args.ctx, tt.args.id); !errors.Is(err, tt.wantErr) {
-				t.Errorf("SessionUseCase.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("MarkUseCase.Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

@@ -6,104 +6,104 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"time"
 
-	"{{ .Module }}/pkg/log"
+	"github.com/018bf/example/pkg/log"
 
-	"{{ .Module }}/internal/domain/models"
-	"{{ .Module }}/internal/domain/repositories"
+	"github.com/018bf/example/internal/domain/models"
+	"github.com/018bf/example/internal/domain/repositories"
 
+	"github.com/018bf/example/internal/domain/errs"
 	"github.com/jmoiron/sqlx"
-	"{{ .Module }}/internal/domain/errs"
 )
 
-type {{ .RepositoryTypeName }} struct {
+type MarkRepository struct {
 	database *sqlx.DB
 	logger   log.Logger
 }
 
-func New{{ .RepositoryTypeName }}(
+func NewMarkRepository(
 	database *sqlx.DB,
 	logger log.Logger,
-) repositories.{{ .RepositoryTypeName }} {
-	return &{{ .RepositoryTypeName }}{
+) repositories.MarkRepository {
+	return &MarkRepository{
 		database: database,
-		logger: logger,
+		logger:   logger,
 	}
 }
 
-func (r *{{ .RepositoryTypeName }}) Create(
+func (r *MarkRepository) Create(
 	ctx context.Context,
-	{{ .Variable }} *models.{{ .ModelName }},
+	mark *models.Mark,
 ) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Insert("public.{{ .TableName }}").
+	q := sq.Insert("public.marks").
 		Columns(
-{{- range $key, $value := .Params }}
-			"{{ $key.Tag }}",
-{{- end }}
+			"name",
+			"title",
+			"weight",
 			"updated_at",
 			"created_at",
 		).
 		Values(
-{{- range $key, $value := .Params }}
-			{{ $.Variable }}.{{ $key.Name }},
-{{- end }}
-			{{ .Variable }}.UpdatedAt,
-			{{ .Variable }}.CreatedAt,
+			mark.Name,
+			mark.Title,
+			mark.Weight,
+			mark.UpdatedAt,
+			mark.CreatedAt,
 		).
 		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.QueryRowxContext(ctx, query, args...).StructScan({{ .Variable }}); err != nil {
+	if err := r.database.QueryRowxContext(ctx, query, args...).StructScan(mark); err != nil {
 		e := errs.FromPostgresError(err)
 		return e
 	}
 	return nil
 }
 
-func (r *{{ .RepositoryTypeName }}) Get(
+func (r *MarkRepository) Get(
 	ctx context.Context,
 	id string,
-) (*models.{{ .ModelName }}, error) {
+) (*models.Mark, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	{{ .Variable }} := &models.{{ .ModelName }}{}
+	mark := &models.Mark{}
 	q := sq.Select(
-			"{{ .TableName }}.id",
-{{- range $key, $value := .Params }}
-			"{{ $.TableName }}.{{ $key.Tag }}",
-{{- end }}
-			"{{ .TableName }}.updated_at",
-			"{{ .TableName }}.created_at",
-		).
-		From("public.{{ .TableName }}").
+		"marks.id",
+		"marks.name",
+		"marks.title",
+		"marks.weight",
+		"marks.updated_at",
+		"marks.created_at",
+	).
+		From("public.marks").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.GetContext(ctx, {{ .Variable }}, query, args...); err != nil {
+	if err := r.database.GetContext(ctx, mark, query, args...); err != nil {
 		e := errs.FromPostgresError(err).
-			WithParam("{{ .KeyName }}_id", id)
+			WithParam("mark_id", id)
 		return nil, e
 	}
-	return {{ .Variable }}, nil
+	return mark, nil
 }
 
-func (r *{{ .RepositoryTypeName }}) List(
+func (r *MarkRepository) List(
 	ctx context.Context,
-	filter *models.{{ .FilterTypeName }},
-) ([]*models.{{ .ModelName }}, error) {
+	filter *models.MarkFilter,
+) ([]*models.Mark, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	var {{ .ListVariable }} []*models.{{ .ModelName }}
+	var marks []*models.Mark
 	const pageSize = 10
 	q := sq.Select(
-			"{{ .TableName }}.id",
-{{- range $key, $value := .Params }}
-			"{{ $.TableName }}.{{ $key.Tag }}",
-{{- end }}
-			"{{ .TableName }}.updated_at",
-			"{{ .TableName }}.created_at",
-		).
-		From("public.{{ .TableName }}").
+		"marks.id",
+		"marks.name",
+		"marks.title",
+		"marks.weight",
+		"marks.updated_at",
+		"marks.created_at",
+	).
+		From("public.marks").
 		Limit(pageSize)
 	// TODO: add filtering
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
@@ -116,80 +116,80 @@ func (r *{{ .RepositoryTypeName }}) List(
 		q = q.OrderBy(filter.OrderBy...)
 	}
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.SelectContext(ctx, &{{ .ListVariable }}, query, args...); err != nil {
+	if err := r.database.SelectContext(ctx, &marks, query, args...); err != nil {
 		e := errs.FromPostgresError(err)
 		return nil, e
 	}
-	return {{ .ListVariable }}, nil
+	return marks, nil
 }
 
-func (r *{{ .RepositoryTypeName }}) Update(
+func (r *MarkRepository) Update(
 	ctx context.Context,
-	{{ .Variable }} *models.{{ .ModelName }},
+	mark *models.Mark,
 ) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Update("public.{{ .TableName }}").
-		Where(sq.Eq{"id": {{ .Variable }}.ID}).
-	{{- range $key, $value := .Params }}
-		Set("{{ $.TableName }}.{{ $key.Tag }}", {{ $.Variable }}.{{ $key.Name }}).
-	{{- end }}
-		Set("updated_at", {{ .Variable }}.UpdatedAt)
+	q := sq.Update("public.marks").
+		Where(sq.Eq{"id": mark.ID}).
+		Set("marks.name", mark.Name).
+		Set("marks.title", mark.Title).
+		Set("marks.weight", mark.Weight).
+		Set("updated_at", mark.UpdatedAt)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
 		e := errs.FromPostgresError(err).
-			WithParam("{{ .KeyName }}_id", fmt.Sprint({{ .Variable }}.ID))
+			WithParam("mark_id", fmt.Sprint(mark.ID))
 		return e
 	}
 	affected, err := result.RowsAffected()
 	if err != nil {
 		return errs.FromPostgresError(err).
-			WithParam("{{ .KeyName }}_id", fmt.Sprint({{ .Variable }}.ID))
+			WithParam("mark_id", fmt.Sprint(mark.ID))
 	}
 	if affected == 0 {
 		e := errs.NewEntityNotFound().
-			WithParam("{{ .KeyName }}_id", fmt.Sprint({{ .Variable }}.ID))
+			WithParam("mark_id", fmt.Sprint(mark.ID))
 		return e
 	}
 	return nil
 }
 
-func (r *{{ .RepositoryTypeName }}) Delete(
+func (r *MarkRepository) Delete(
 	ctx context.Context,
 	id string,
 ) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Delete("public.{{ .TableName }}").Where(sq.Eq{"id": id})
+	q := sq.Delete("public.marks").Where(sq.Eq{"id": id})
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
 	if err != nil {
 		e := errs.FromPostgresError(err).
-			WithParam("{{ .KeyName }}_id", fmt.Sprint(id))
+			WithParam("mark_id", fmt.Sprint(id))
 		return e
 	}
 	affected, err := result.RowsAffected()
 	if err != nil {
 		e := errs.FromPostgresError(err).
-			WithParam("{{ .KeyName }}_id", fmt.Sprint(id))
+			WithParam("mark_id", fmt.Sprint(id))
 		return e
 	}
 	if affected == 0 {
 		e := errs.NewEntityNotFound().
-			WithParam("{{ .KeyName }}_id", fmt.Sprint(id))
+			WithParam("mark_id", fmt.Sprint(id))
 		return e
 	}
 	return nil
 }
 
-func (r *{{ .RepositoryTypeName }}) Count(
+func (r *MarkRepository) Count(
 	ctx context.Context,
-	filter *models.{{ .FilterTypeName }},
+	filter *models.MarkFilter,
 ) (uint64, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	q := sq.Select("count(id)").From("public.{{ .TableName }}")
+	q := sq.Select("count(id)").From("public.marks")
 	// TODO: add filtering
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result := r.database.QueryRowxContext(ctx, query, args...)

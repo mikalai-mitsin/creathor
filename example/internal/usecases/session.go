@@ -7,20 +7,24 @@ import (
 	"github.com/018bf/example/internal/domain/repositories"
 	"github.com/018bf/example/internal/domain/usecases"
 
+	"github.com/018bf/example/pkg/clock"
 	"github.com/018bf/example/pkg/log"
 )
 
 type SessionUseCase struct {
 	sessionRepository repositories.SessionRepository
+	clock             clock.Clock
 	logger            log.Logger
 }
 
 func NewSessionUseCase(
 	sessionRepository repositories.SessionRepository,
+	clock clock.Clock,
 	logger log.Logger,
 ) usecases.SessionUseCase {
 	return &SessionUseCase{
 		sessionRepository: sessionRepository,
+		clock:             clock,
 		logger:            logger,
 	}
 }
@@ -58,8 +62,11 @@ func (u *SessionUseCase) Create(
 	if err := create.Validate(); err != nil {
 		return nil, err
 	}
+	now := u.clock.Now().UTC()
 	session := &models.Session{
-		ID: "",
+		ID:        "",
+		UpdatedAt: now,
+		CreatedAt: now,
 	}
 	if err := u.sessionRepository.Create(ctx, session); err != nil {
 		return nil, err
@@ -78,6 +85,7 @@ func (u *SessionUseCase) Update(
 	if err != nil {
 		return nil, err
 	}
+	session.UpdatedAt = u.clock.Now()
 	if err := u.sessionRepository.Update(ctx, session); err != nil {
 		return nil, err
 	}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
@@ -12,6 +13,8 @@ import (
 	"github.com/018bf/example/internal/domain/repositories"
 	mock_repositories "github.com/018bf/example/internal/domain/repositories/mock"
 	"github.com/018bf/example/internal/domain/usecases"
+	"github.com/018bf/example/pkg/clock"
+	mock_clock "github.com/018bf/example/pkg/clock/mock"
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/golang/mock/gomock"
@@ -22,9 +25,11 @@ func TestNewEquipmentUseCase(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	equipmentRepository := mock_repositories.NewMockEquipmentRepository(ctrl)
+	clockMock := mock_clock.NewMockClock(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
 	type args struct {
 		equipmentRepository repositories.EquipmentRepository
+		clock               clock.Clock
 		logger              log.Logger
 	}
 	tests := []struct {
@@ -39,10 +44,12 @@ func TestNewEquipmentUseCase(t *testing.T) {
 			},
 			args: args{
 				equipmentRepository: equipmentRepository,
+				clock:               clockMock,
 				logger:              logger,
 			},
 			want: &EquipmentUseCase{
 				equipmentRepository: equipmentRepository,
+				clock:               clockMock,
 				logger:              logger,
 			},
 		},
@@ -50,7 +57,7 @@ func TestNewEquipmentUseCase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewEquipmentUseCase(tt.args.equipmentRepository, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewEquipmentUseCase(tt.args.equipmentRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewEquipmentUseCase() = %v, want %v", got, tt.want)
 			}
 		})
@@ -242,10 +249,13 @@ func TestEquipmentUseCase_Create(t *testing.T) {
 	defer ctrl.Finish()
 	equipmentRepository := mock_repositories.NewMockEquipmentRepository(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
+	clockMock := mock_clock.NewMockClock(ctrl)
 	ctx := context.Background()
 	create := mock_models.NewEquipmentCreate(t)
+	now := time.Now().UTC()
 	type fields struct {
 		equipmentRepository repositories.EquipmentRepository
+		clock               clock.Clock
 		logger              log.Logger
 	}
 	type args struct {
@@ -263,30 +273,51 @@ func TestEquipmentUseCase_Create(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
+				clockMock.EXPECT().Now().Return(now)
 				equipmentRepository.EXPECT().
-					Create(ctx, &models.Equipment{}).
+					Create(
+						ctx,
+						&models.Equipment{
+							UpdatedAt: now,
+							CreatedAt: now,
+						},
+					).
 					Return(nil)
 			},
 			fields: fields{
 				equipmentRepository: equipmentRepository,
+				clock:               clockMock,
 				logger:              logger,
 			},
 			args: args{
 				ctx:    ctx,
 				create: create,
 			},
-			want:    &models.Equipment{},
+			want: &models.Equipment{
+				ID:        "",
+				UpdatedAt: now,
+				CreatedAt: now,
+			},
 			wantErr: nil,
 		},
 		{
 			name: "unexpected behavior",
 			setup: func() {
+				clockMock.EXPECT().Now().Return(now)
 				equipmentRepository.EXPECT().
-					Create(ctx, &models.Equipment{}).
+					Create(
+						ctx,
+						&models.Equipment{
+							ID:        "",
+							UpdatedAt: now,
+							CreatedAt: now,
+						},
+					).
 					Return(errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
 				equipmentRepository: equipmentRepository,
+				clock:               clockMock,
 				logger:              logger,
 			},
 			args: args{
@@ -318,6 +349,7 @@ func TestEquipmentUseCase_Create(t *testing.T) {
 			tt.setup()
 			u := &EquipmentUseCase{
 				equipmentRepository: tt.fields.equipmentRepository,
+				clock:               tt.fields.clock,
 				logger:              tt.fields.logger,
 			}
 			got, err := u.Create(tt.args.ctx, tt.args.create)
@@ -339,9 +371,12 @@ func TestEquipmentUseCase_Update(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	equipment := mock_models.NewEquipment(t)
+	clockMock := mock_clock.NewMockClock(ctrl)
 	update := mock_models.NewEquipmentUpdate(t)
+	now := equipment.UpdatedAt
 	type fields struct {
 		equipmentRepository repositories.EquipmentRepository
+		clock               clock.Clock
 		logger              log.Logger
 	}
 	type args struct {
@@ -359,6 +394,7 @@ func TestEquipmentUseCase_Update(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
+				clockMock.EXPECT().Now().Return(now)
 				equipmentRepository.EXPECT().
 					Get(ctx, update.ID).Return(equipment, nil)
 				equipmentRepository.EXPECT().
@@ -366,6 +402,7 @@ func TestEquipmentUseCase_Update(t *testing.T) {
 			},
 			fields: fields{
 				equipmentRepository: equipmentRepository,
+				clock:               clockMock,
 				logger:              logger,
 			},
 			args: args{
@@ -378,6 +415,7 @@ func TestEquipmentUseCase_Update(t *testing.T) {
 		{
 			name: "update error",
 			setup: func() {
+				clockMock.EXPECT().Now().Return(now)
 				equipmentRepository.EXPECT().
 					Get(ctx, update.ID).
 					Return(equipment, nil)
@@ -387,6 +425,7 @@ func TestEquipmentUseCase_Update(t *testing.T) {
 			},
 			fields: fields{
 				equipmentRepository: equipmentRepository,
+				clock:               clockMock,
 				logger:              logger,
 			},
 			args: args{
@@ -403,6 +442,7 @@ func TestEquipmentUseCase_Update(t *testing.T) {
 			},
 			fields: fields{
 				equipmentRepository: equipmentRepository,
+				clock:               clockMock,
 				logger:              logger,
 			},
 			args: args{
@@ -418,6 +458,7 @@ func TestEquipmentUseCase_Update(t *testing.T) {
 			},
 			fields: fields{
 				equipmentRepository: equipmentRepository,
+				clock:               clockMock,
 				logger:              logger,
 			},
 			args: args{
@@ -435,6 +476,7 @@ func TestEquipmentUseCase_Update(t *testing.T) {
 			tt.setup()
 			u := &EquipmentUseCase{
 				equipmentRepository: tt.fields.equipmentRepository,
+				clock:               tt.fields.clock,
 				logger:              tt.fields.logger,
 			}
 			got, err := u.Update(tt.args.ctx, tt.args.update)

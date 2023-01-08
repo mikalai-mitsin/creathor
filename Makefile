@@ -1,5 +1,6 @@
 .PHONY: build
 .DEFAULT_GOAL := build
+SEMVER_REGEX := \([0-9]*\.[0-9]*\.[0-9]*\)
 
 build:
 	CGO_ENABLED=0 go build -v -o ./dist/creathor

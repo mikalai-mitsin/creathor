@@ -2,8 +2,14 @@
 ## [Unreleased]
 
 
-<a name="0.2.1"></a>
-## [0.2.1] - 2023-01-08
+<a name="0.3.0"></a>
+## [0.3.0] - 2023-01-08
+### Feat
+- add reach model flag
+
+
+<a name="v0.2.1"></a>
+## [v0.2.1] - 2023-01-08
 ### Build
 - add regex to makefile
 
@@ -87,8 +93,9 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/018bf/creathor/compare/0.2.1...HEAD
-[0.2.1]: https://github.com/018bf/creathor/compare/v0.2.0...0.2.1
+[Unreleased]: https://github.com/018bf/creathor/compare/0.3.0...HEAD
+[0.3.0]: https://github.com/018bf/creathor/compare/v0.2.1...0.3.0
+[v0.2.1]: https://github.com/018bf/creathor/compare/v0.2.0...v0.2.1
 [v0.2.0]: https://github.com/018bf/creathor/compare/v0.1.7...v0.2.0
 [v0.1.7]: https://github.com/018bf/creathor/compare/v0.1.6...v0.1.7
 [v0.1.6]: https://github.com/018bf/creathor/compare/v0.1.5...v0.1.6

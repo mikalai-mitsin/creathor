@@ -4,9 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
-
 	"github.com/018bf/example/pkg/postgresql"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 

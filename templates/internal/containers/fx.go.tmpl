@@ -2,7 +2,7 @@ package containers
 
 import (
 	"context"
-
+	"{{ .Module }}/internal/interfaces/grpc"
 
 	"{{ .Module }}/pkg/log"
 	"go.uber.org/fx/fxevent"
@@ -43,6 +43,7 @@ func New{{ .Name | Title }}(config string) *fx.App {
 				return logger
 			},
 		),
+		grpc.FXModule,
 	)
 	return app
 }

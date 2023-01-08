@@ -31,6 +31,7 @@ func CreateLayout(data *Project) error {
 		path.Join(destinationPath, "internal", "domain", "usecases"),
 		path.Join(destinationPath, "internal", "interceptors"),
 		path.Join(destinationPath, "internal", "interfaces"),
+		path.Join(destinationPath, "internal", "interfaces", "grpc"),
 		path.Join(destinationPath, "internal", "interfaces", "postgres"),
 		path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations"),
 		path.Join(destinationPath, "internal", "usecases"),
@@ -156,6 +157,26 @@ func CreateLayout(data *Project) error {
 			SourcePath:      "templates/internal/interfaces/postgres/migrations/init.sql.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "init.sql"),
 			Name:            "postgres init migration",
+		},
+		{
+			SourcePath:      "templates/internal/interfaces/grpc/fx.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "fx.go"),
+			Name:            "grpc fx",
+		},
+		{
+			SourcePath:      "templates/internal/interfaces/grpc/middleware.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "middleware.go"),
+			Name:            "grpc middleware",
+		},
+		{
+			SourcePath:      "templates/internal/interfaces/grpc/middleware_test.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "middleware_test.go"),
+			Name:            "grpc middleware test",
+		},
+		{
+			SourcePath:      "templates/internal/interfaces/grpc/server.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "server.go"),
+			Name:            "grpc server",
 		},
 	}
 	if authEnabled {

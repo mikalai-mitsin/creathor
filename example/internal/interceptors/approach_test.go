@@ -3,15 +3,14 @@ package interceptors
 import (
 	"context"
 	"errors"
-	"reflect"
-	"testing"
-
 	"github.com/018bf/example/internal/domain/errs"
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
 	mock_usecases "github.com/018bf/example/internal/domain/usecases/mock"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/golang/mock/gomock"
+	"reflect"
 	"syreclabs.com/go/faker"
+	"testing"
 
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"

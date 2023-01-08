@@ -2,7 +2,6 @@ package interceptors
 
 import (
 	"context"
-
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/usecases"

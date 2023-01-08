@@ -3,9 +3,6 @@ package repositories
 import (
 	"context"
 	"errors"
-	"reflect"
-	"testing"
-
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
@@ -14,6 +11,8 @@ import (
 	"github.com/018bf/example/pkg/utils"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/jmoiron/sqlx"
+	"reflect"
+	"testing"
 )
 
 func TestPermissionRepository_objectAnybody(t *testing.T) {

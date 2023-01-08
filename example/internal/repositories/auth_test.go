@@ -5,10 +5,6 @@ import (
 	"crypto"
 	"crypto/rsa"
 	"errors"
-	"reflect"
-	"testing"
-	"time"
-
 	"github.com/018bf/example/internal/configs"
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
@@ -18,6 +14,9 @@ import (
 	mock_clock "github.com/018bf/example/pkg/clock/mock"
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
+	"reflect"
+	"testing"
+	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/golang/mock/gomock"

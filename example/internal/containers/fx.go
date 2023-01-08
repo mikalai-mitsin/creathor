@@ -2,6 +2,7 @@ package containers
 
 import (
 	"context"
+	"github.com/018bf/example/internal/interfaces/grpc"
 
 	"github.com/018bf/example/pkg/log"
 	"go.uber.org/fx/fxevent"
@@ -41,6 +42,7 @@ func NewExample(config string) *fx.App {
 				return logger
 			},
 		),
+		grpc.FXModule,
 	)
 	return app
 }

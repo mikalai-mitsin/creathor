@@ -3,13 +3,12 @@ package repositories
 import (
 	"context"
 	"fmt"
-	"reflect"
-
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
+	"reflect"
 )
 
 type objectPermissionChecker func(model any, user *models.User) error

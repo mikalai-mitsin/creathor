@@ -5,10 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/lib/pq"
 	"reflect"
 	"testing"
-
-	"github.com/lib/pq"
 
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
@@ -105,6 +104,7 @@ func TestPostgresRepository_Create(t *testing.T) {
 		{
 			name: "database error",
 			setup: func() {
+
 				mock.ExpectQuery(query).WithArgs(
 					user.FirstName,
 					user.LastName,
@@ -410,6 +410,7 @@ func TestPostgresRepository_GetByEmail(t *testing.T) {
 			name: "not found",
 			setup: func() {
 				mock.ExpectQuery(query).WithArgs(user.Email).WillReturnError(sql.ErrNoRows)
+
 			},
 			fields: fields{
 				database: db,
@@ -612,6 +613,7 @@ func TestPostgresRepository_Update(t *testing.T) {
 		{
 			name: "duplicate error",
 			setup: func() {
+
 				mock.ExpectExec(query).WithArgs(
 					user.FirstName,
 					user.LastName,

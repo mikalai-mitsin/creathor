@@ -4,6 +4,7 @@ import (
 	"github.com/018bf/example/internal/domain/errs"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
+	"time"
 )
 
 type Token string
@@ -44,4 +45,15 @@ func (c *Login) Validate() error {
 		return errs.FromValidationError(err)
 	}
 	return nil
+}
+
+var Guest = &User{
+	ID:        "",
+	FirstName: "",
+	LastName:  "",
+	Password:  "",
+	Email:     "",
+	CreatedAt: time.Time{},
+	UpdatedAt: time.Time{},
+	GroupID:   GroupIDGuest,
 }

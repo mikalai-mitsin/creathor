@@ -1,9 +1,8 @@
 package mock_models // nolint:stylecheck
 
 import (
-	"testing"
-
 	"github.com/018bf/example/internal/domain/models"
+	"testing"
 
 	"syreclabs.com/go/faker"
 )

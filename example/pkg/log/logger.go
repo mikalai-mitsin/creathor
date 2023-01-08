@@ -12,6 +12,12 @@ import (
 //nolint: lll
 //go:generate mockgen -build_flags=-mod=mod -destination mock/log_mock.go github.com/018bf/example/pkg/log Logger
 
+type ctxKey int
+
+const (
+	RequestIDKey ctxKey = iota + 1
+)
+
 type Field zapcore.Field
 
 func String(key, value string) Field {

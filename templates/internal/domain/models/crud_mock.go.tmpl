@@ -1,51 +1,52 @@
 package mock_models // nolint:stylecheck
 
 import (
-	"{{ .Module }}/internal/domain/models"
-	"{{ .Module }}/pkg/utils"
-	"syreclabs.com/go/faker"
-	"github.com/google/uuid"
-	"testing"
-	"time"
+    "testing"
+    "time"
+
+    "{{ .Module }}/internal/domain/models"
+    "{{ .Module }}/pkg/utils"
+    "github.com/google/uuid"
+    "syreclabs.com/go/faker"
 )
 
 func New{{ .ModelName }}(t *testing.T) *models.{{ .ModelName }} {
-	t.Helper()
-	return &models.{{ .ModelName }}{
-		ID:         uuid.New().String(),
+    t.Helper()
+    return &models.{{ .ModelName }}{
+        ID:         uuid.New().String(),
 {{- range $key, $value := .Params }}
-		{{ $key.Name }}: {{ $value.Fake }},
+        {{ $key.Name }}: {{ $value.Fake }},
 {{- end }}
-		UpdatedAt:  faker.Time().Backward(40 * time.Hour).UTC(),
-		CreatedAt:  faker.Time().Backward(40 * time.Hour).UTC(),
-	}
+        UpdatedAt:  faker.Time().Backward(40 * time.Hour).UTC(),
+        CreatedAt:  faker.Time().Backward(40 * time.Hour).UTC(),
+    }
 }
 
 func New{{ .CreateTypeName }}(t *testing.T) *models.{{ .CreateTypeName }} {
-	t.Helper()
-	return &models.{{ .CreateTypeName }}{
+    t.Helper()
+    return &models.{{ .CreateTypeName }}{
 {{- range $key, $value := .Params }}
-		{{ $key.Name }}: {{ $value.Fake }},
+        {{ $key.Name }}: {{ $value.Fake }},
 {{- end }}
-	}
+    }
 }
 
 func New{{ .UpdateTypeName }}(t *testing.T) *models.{{ .UpdateTypeName }} {
-	t.Helper()
-	return &models.{{ .UpdateTypeName }}{
-		ID: uuid.New().String(),
+    t.Helper()
+    return &models.{{ .UpdateTypeName }}{
+        ID: uuid.New().String(),
 {{- range $key, $value := .Params }}
-		{{ $key.Name }}:  utils.Pointer({{ $value.Fake }}),
+        {{ $key.Name }}:  utils.Pointer({{ $value.Fake }}),
 {{- end }}
-	}
+    }
 }
 
 func New{{ .FilterTypeName }}(t *testing.T) *models.{{ .FilterTypeName }} {
-	t.Helper()
-	return &models.{{ .FilterTypeName }}{
-		PageSize:   utils.Pointer(uint64(faker.RandomInt64(2, 100))),
-		PageNumber: utils.Pointer(uint64(faker.RandomInt64(2, 100))),
-		OrderBy:    faker.Lorem().Words(5),
-		IDs:        []string{uuid.New().String(), uuid.New().String(), uuid.New().String()},
-	}
+    t.Helper()
+    return &models.{{ .FilterTypeName }}{
+        PageSize:   utils.Pointer(uint64(faker.RandomInt64(2, 100))),
+        PageNumber: utils.Pointer(uint64(faker.RandomInt64(2, 100))),
+        OrderBy:    faker.Lorem().Words(5),
+        IDs:        []string{uuid.New().String(), uuid.New().String(), uuid.New().String()},
+    }
 }

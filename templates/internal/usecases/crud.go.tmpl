@@ -1,108 +1,108 @@
 package usecases
 
 import (
-	"context"
+    "context"
 
-	"{{ .Module }}/internal/domain/models"
-	"{{ .Module }}/internal/domain/repositories"
-	"{{ .Module }}/internal/domain/usecases"
+    "{{ .Module }}/internal/domain/models"
+    "{{ .Module }}/internal/domain/repositories"
+    "{{ .Module }}/internal/domain/usecases"
 
-	"{{ .Module }}/pkg/log"
-	"{{ .Module }}/pkg/clock"
+    "{{ .Module }}/pkg/clock"
+    "{{ .Module }}/pkg/log"
 )
 
 type {{ .UseCaseTypeName }} struct {
-	{{ .RepositoryVariableName }} repositories.{{ .RepositoryTypeName }}
-	clock clock.Clock
-	logger log.Logger
+    {{ .RepositoryVariableName }} repositories.{{ .RepositoryTypeName }}
+    clock clock.Clock
+    logger log.Logger
 }
 
 func New{{ .UseCaseTypeName }}(
-	{{ .RepositoryVariableName }} repositories.{{ .RepositoryTypeName }},
-	clock clock.Clock,
-	logger log.Logger,
+    {{ .RepositoryVariableName }} repositories.{{ .RepositoryTypeName }},
+    clock clock.Clock,
+    logger log.Logger,
 ) usecases.{{ .UseCaseTypeName }} {
-	return &{{ .UseCaseTypeName }}{
+    return &{{ .UseCaseTypeName }}{
         {{ .RepositoryVariableName }}: {{ .RepositoryVariableName }},
-		clock:  clock,
-		logger: logger,
-	}
+        clock:  clock,
+        logger: logger,
+    }
 }
 
 func (u *{{ .UseCaseTypeName }}) Get(
-	ctx context.Context,
-	id string,
+    ctx context.Context,
+    id string,
 ) (*models.{{ .ModelName }}, error) {
-	{{ .Variable }}, err := u.{{ .RepositoryVariableName }}.Get(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return {{ .Variable }}, nil
+    {{ .Variable }}, err := u.{{ .RepositoryVariableName }}.Get(ctx, id)
+    if err != nil {
+        return nil, err
+    }
+    return {{ .Variable }}, nil
 }
 
 func (u *{{ .UseCaseTypeName }}) List(
-	ctx context.Context,
-	filter *models.{{ .FilterTypeName }},
+    ctx context.Context,
+    filter *models.{{ .FilterTypeName }},
 ) ([]*models.{{ .ModelName }}, uint64, error) {
-	{{ .ListVariable }}, err := u.{{ .RepositoryVariableName }}.List(ctx, filter)
-	if err != nil {
-		return nil, 0, err
-	}
-	count, err := u.{{ .RepositoryVariableName }}.Count(ctx, filter)
-	if err != nil {
-		return nil, 0, err
-	}
-	return {{ .ListVariable }}, count, nil
+    {{ .ListVariable }}, err := u.{{ .RepositoryVariableName }}.List(ctx, filter)
+    if err != nil {
+        return nil, 0, err
+    }
+    count, err := u.{{ .RepositoryVariableName }}.Count(ctx, filter)
+    if err != nil {
+        return nil, 0, err
+    }
+    return {{ .ListVariable }}, count, nil
 }
 
 func (u *{{ .UseCaseTypeName }}) Create(
-	ctx context.Context,
-	create *models.{{ .ModelName }}Create,
+    ctx context.Context,
+    create *models.{{ .ModelName }}Create,
 ) (*models.{{ .ModelName }}, error) {
-	if err := create.Validate(); err != nil {
-		return nil, err
-	}
-	now := u.clock.Now().UTC()
+    if err := create.Validate(); err != nil {
+        return nil, err
+    }
+    now := u.clock.Now().UTC()
     {{ .Variable }} := &models.{{ .ModelName }}{
-		ID: "",
+        ID: "",
 {{- range $key, $value := .Params }}
-		{{ $key.Name }}: create.{{ $key.Name }},
+        {{ $key.Name }}: create.{{ $key.Name }},
 {{- end }}
-		UpdatedAt: now,
-		CreatedAt: now,
-	}
-	if err := u.{{ .RepositoryVariableName }}.Create(ctx, {{ .Variable }}); err != nil {
-		return nil, err
-	}
-	return {{ .Variable }}, nil
+        UpdatedAt: now,
+        CreatedAt: now,
+    }
+    if err := u.{{ .RepositoryVariableName }}.Create(ctx, {{ .Variable }}); err != nil {
+        return nil, err
+    }
+    return {{ .Variable }}, nil
 }
 
 func (u *{{ .UseCaseTypeName }}) Update(
-	ctx context.Context,
-	update *models.{{ .ModelName }}Update,
+    ctx context.Context,
+    update *models.{{ .ModelName }}Update,
 ) (*models.{{ .ModelName }}, error) {
-	if err := update.Validate(); err != nil {
-		return nil, err
-	}
+    if err := update.Validate(); err != nil {
+        return nil, err
+    }
     {{ .Variable }}, err := u.{{ .RepositoryVariableName }}.Get(ctx, update.ID)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 {{- range $key, $value := .Params }}
-	if update.{{ $key.Name }} != nil {
-		{{ $.Variable }}.{{ $key.Name }} = *update.{{ $key.Name }}
-	}
+    if update.{{ $key.Name }} != nil {
+        {{ $.Variable }}.{{ $key.Name }} = *update.{{ $key.Name }}
+    }
 {{- end }}
-	{{ .Variable }}.UpdatedAt = u.clock.Now()
-	if err := u.{{ .RepositoryVariableName }}.Update(ctx, {{ .Variable }}); err != nil {
-		return nil, err
-	}
-	return {{ .Variable }}, nil
+    {{ .Variable }}.UpdatedAt = u.clock.Now()
+    if err := u.{{ .RepositoryVariableName }}.Update(ctx, {{ .Variable }}); err != nil {
+        return nil, err
+    }
+    return {{ .Variable }}, nil
 }
 
 func (u *{{ .UseCaseTypeName }}) Delete(ctx context.Context, id string) error {
-	if err := u.{{ .RepositoryVariableName }}.Delete(ctx, id); err != nil {
-		return err
-	}
-	return nil
+    if err := u.{{ .RepositoryVariableName }}.Delete(ctx, id); err != nil {
+        return err
+    }
+    return nil
 }

@@ -1,199 +1,199 @@
 package interceptors
 
 import (
-	"context"
+    "context"
 
-	"{{ .Module }}/internal/domain/interceptors"
-	"{{ .Module }}/internal/domain/models"
-	"{{ .Module }}/internal/domain/usecases"
+    "{{ .Module }}/internal/domain/interceptors"
+    "{{ .Module }}/internal/domain/models"
+    "{{ .Module }}/internal/domain/usecases"
 
-	"{{ .Module }}/pkg/log"
+    "{{ .Module }}/pkg/log"
 )
 
 type {{ .InterceptorTypeName }} struct {
-	{{ .UseCaseVariableName }} usecases.{{ .UseCaseTypeName }}
+    {{ .UseCaseVariableName }} usecases.{{ .UseCaseTypeName }}
 {{- if .Auth}}
-	authUseCase usecases.AuthUseCase
+    authUseCase usecases.AuthUseCase
 {{- end}}
-	logger log.Logger
+    logger log.Logger
 }
 
 func New{{ .InterceptorTypeName }}(
-	{{ .UseCaseVariableName }} usecases.{{ .UseCaseTypeName }},
+    {{ .UseCaseVariableName }} usecases.{{ .UseCaseTypeName }},
 {{- if .Auth}}
-	authUseCase usecases.AuthUseCase,
+    authUseCase usecases.AuthUseCase,
 {{- end}}
-	logger log.Logger,
+    logger log.Logger,
 ) interceptors.{{ .InterceptorTypeName }} {
-	return &{{ .InterceptorTypeName }}{
-		{{ .UseCaseVariableName }}: {{ .UseCaseVariableName }},
+    return &{{ .InterceptorTypeName }}{
+        {{ .UseCaseVariableName }}: {{ .UseCaseVariableName }},
 {{- if .Auth}}
-		authUseCase:   authUseCase,
+        authUseCase:   authUseCase,
 {{- end}}
-		logger:                        logger,
-	}
+        logger:                        logger,
+    }
 }
 
 func (i *{{ .InterceptorTypeName }}) Get(
-	ctx context.Context,
-	id string,{{if .Auth}}
-	requestUser *models.User,
+    ctx context.Context,
+    id string,{{if .Auth}}
+    requestUser *models.User,
 {{- end}}
 ) (*models.{{ .ModelName }}, error) {
-	{{- if .Auth }}
-	if err := i.authUseCase.HasPermission(
-		ctx,
-		requestUser,
-		models.PermissionID{{ .ModelName }}Detail,
-	); err != nil {
-		return nil, err
-	}
-	{{- end }}
-	{{ .Variable }}, err := i.{{ .UseCaseVariableName }}.Get(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	{{- if .Auth }}
-	err = i.authUseCase.HasObjectPermission(
-		ctx,
-		requestUser,
-		models.PermissionID{{ .ModelName }}Detail,
-		{{ .Variable }},
-	)
-	if err != nil {
-		return nil, err
-	}
-	{{- end }}
-	return {{ .Variable }}, nil
+    {{- if .Auth }}
+    if err := i.authUseCase.HasPermission(
+        ctx,
+        requestUser,
+        models.PermissionID{{ .ModelName }}Detail,
+    ); err != nil {
+        return nil, err
+    }
+    {{- end }}
+    {{ .Variable }}, err := i.{{ .UseCaseVariableName }}.Get(ctx, id)
+    if err != nil {
+        return nil, err
+    }
+    {{- if .Auth }}
+    err = i.authUseCase.HasObjectPermission(
+        ctx,
+        requestUser,
+        models.PermissionID{{ .ModelName }}Detail,
+        {{ .Variable }},
+    )
+    if err != nil {
+        return nil, err
+    }
+    {{- end }}
+    return {{ .Variable }}, nil
 }
 
 func (i *{{ .InterceptorTypeName }}) List(
-	ctx context.Context,
-	filter *models.{{ .FilterTypeName }},
+    ctx context.Context,
+    filter *models.{{ .FilterTypeName }},
 {{- if .Auth}}
-	requestUser *models.User,
+    requestUser *models.User,
 {{- end}}
 ) ([]*models.{{ .ModelName }}, uint64, error) {
-	{{- if .Auth }}
-	if err := i.authUseCase.HasPermission(
-		ctx,
-		requestUser,
-		models.PermissionID{{ .ModelName }}List,
-	); err != nil {
-		return nil, 0, err
-	}
-	if err := i.authUseCase.HasObjectPermission(
-		ctx,
-		requestUser,
-		models.PermissionID{{ .ModelName }}List,
-		filter,
-	); err != nil {
-		return nil, 0, err
-	}
-	{{- end }}
-	{{ .ListVariable }}, count, err := i.{{ .UseCaseVariableName }}.List(ctx, filter)
-	if err != nil {
-		return nil, 0, err
-	}
-	return {{ .ListVariable }}, count, nil
+    {{- if .Auth }}
+    if err := i.authUseCase.HasPermission(
+        ctx,
+        requestUser,
+        models.PermissionID{{ .ModelName }}List,
+    ); err != nil {
+        return nil, 0, err
+    }
+    if err := i.authUseCase.HasObjectPermission(
+        ctx,
+        requestUser,
+        models.PermissionID{{ .ModelName }}List,
+        filter,
+    ); err != nil {
+        return nil, 0, err
+    }
+    {{- end }}
+    {{ .ListVariable }}, count, err := i.{{ .UseCaseVariableName }}.List(ctx, filter)
+    if err != nil {
+        return nil, 0, err
+    }
+    return {{ .ListVariable }}, count, nil
 }
 
 func (i *{{ .InterceptorTypeName }}) Create(
-	ctx context.Context,
-	create *models.{{ .CreateTypeName }},
+    ctx context.Context,
+    create *models.{{ .CreateTypeName }},
 {{- if .Auth}}
-	requestUser *models.User,
+    requestUser *models.User,
 {{- end}}
 ) (*models.{{ .ModelName }}, error) {
 {{- if .Auth }}
-	if err := i.authUseCase.HasPermission(
-		ctx,
-		requestUser,
-		models.PermissionID{{ .ModelName }}Create,
-	); err != nil {
-		return nil, err
-	}
-	if err := i.authUseCase.HasObjectPermission(
-		ctx,
-		requestUser,
-		models.PermissionID{{ .ModelName }}Create,
-		create,
-	); err != nil {
-		return nil, err
-	}
+    if err := i.authUseCase.HasPermission(
+        ctx,
+        requestUser,
+        models.PermissionID{{ .ModelName }}Create,
+    ); err != nil {
+        return nil, err
+    }
+    if err := i.authUseCase.HasObjectPermission(
+        ctx,
+        requestUser,
+        models.PermissionID{{ .ModelName }}Create,
+        create,
+    ); err != nil {
+        return nil, err
+    }
 {{- end }}
-	{{ .Variable }}, err := i.{{ .UseCaseVariableName }}.Create(ctx, create)
-	if err != nil {
-		return nil, err
-	}
-	return {{ .Variable }}, nil
+    {{ .Variable }}, err := i.{{ .UseCaseVariableName }}.Create(ctx, create)
+    if err != nil {
+        return nil, err
+    }
+    return {{ .Variable }}, nil
 }
 
 func (i *{{ .InterceptorTypeName }}) Update(
-	ctx context.Context,
-	update *models.{{ .UpdateTypeName }},
+    ctx context.Context,
+    update *models.{{ .UpdateTypeName }},
 {{- if .Auth}}
-	requestUser *models.User,
+    requestUser *models.User,
 {{- end }}
 ) (*models.{{ .ModelName }}, error) {
-	{{- if .Auth }}
-	if err := i.authUseCase.HasPermission(
-		ctx,
-		requestUser,
-		models.PermissionID{{ .ModelName }}Update,
-	); err != nil {
-		return nil, err
-	}
-	{{ .Variable }}, err := i.{{ .UseCaseVariableName }}.Get(ctx, update.ID)
-	if err != nil {
-		return nil, err
-	}
-	if err := i.authUseCase.HasObjectPermission(
-		ctx,
-		requestUser,
-		models.PermissionID{{ .ModelName }}Update,
-		{{ .Variable }},
-	); err != nil {
-		return nil, err
-	}
-	{{- end }}
-	updated{{ .ModelName }}, err := i.{{ .UseCaseVariableName }}.Update(ctx, update)
-	if err != nil {
-		return nil, err
-	}
-	return updated{{ .ModelName }}, nil
+    {{- if .Auth }}
+    if err := i.authUseCase.HasPermission(
+        ctx,
+        requestUser,
+        models.PermissionID{{ .ModelName }}Update,
+    ); err != nil {
+        return nil, err
+    }
+    {{ .Variable }}, err := i.{{ .UseCaseVariableName }}.Get(ctx, update.ID)
+    if err != nil {
+        return nil, err
+    }
+    if err := i.authUseCase.HasObjectPermission(
+        ctx,
+        requestUser,
+        models.PermissionID{{ .ModelName }}Update,
+        {{ .Variable }},
+    ); err != nil {
+        return nil, err
+    }
+    {{- end }}
+    updated{{ .ModelName }}, err := i.{{ .UseCaseVariableName }}.Update(ctx, update)
+    if err != nil {
+        return nil, err
+    }
+    return updated{{ .ModelName }}, nil
 }
 
 func (i *{{ .InterceptorTypeName }}) Delete(
-	ctx context.Context,
-	id string,{{if .Auth}}
-	requestUser *models.User,
+    ctx context.Context,
+    id string,{{if .Auth}}
+    requestUser *models.User,
 {{- end}}
 ) error {
 {{- if .Auth }}
-	if err := i.authUseCase.HasPermission(
-		ctx,
-		requestUser,
-		models.PermissionID{{ .ModelName }}Delete,
-	); err != nil {
-		return err
-	}
-	{{ .Variable }}, err := i.{{ .UseCaseVariableName }}.Get(ctx, id)
-	if err != nil {
-		return err
-	}
-	err = i.authUseCase.HasObjectPermission(
-		ctx,
-		requestUser,
-		models.PermissionID{{ .ModelName }}Delete,
-		{{ .Variable }},
-	)
-	if err != nil {
-		return err
-	}
+    if err := i.authUseCase.HasPermission(
+        ctx,
+        requestUser,
+        models.PermissionID{{ .ModelName }}Delete,
+    ); err != nil {
+        return err
+    }
+    {{ .Variable }}, err := i.{{ .UseCaseVariableName }}.Get(ctx, id)
+    if err != nil {
+        return err
+    }
+    err = i.authUseCase.HasObjectPermission(
+        ctx,
+        requestUser,
+        models.PermissionID{{ .ModelName }}Delete,
+        {{ .Variable }},
+    )
+    if err != nil {
+        return err
+    }
 {{- end }}
-	if err := i.{{ .UseCaseVariableName }}.Delete(ctx, id); err != nil {
-		return err
-	}
-	return nil
+    if err := i.{{ .UseCaseVariableName }}.Delete(ctx, id); err != nil {
+        return err
+    }
+    return nil
 }

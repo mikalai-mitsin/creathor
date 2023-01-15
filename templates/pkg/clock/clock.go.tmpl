@@ -6,16 +6,16 @@ import "time"
 //go:generate mockgen -destination mock/clock_mock.go {{ .Module }}/pkg/clock Clock
 
 type Clock interface {
-	Now() time.Time
+    Now() time.Time
 }
 
 type RealClock struct {
 }
 
 func NewRealClock() Clock {
-	return &RealClock{}
+    return &RealClock{}
 }
 
 func (c RealClock) Now() time.Time {
-	return time.Now()
+    return time.Now()
 }

@@ -125,7 +125,7 @@ func initProject(ctx *cli.Context) error {
 	if err := CreateLayout(data); err != nil {
 		return err
 	}
-	if err := CreateCI(); err != nil {
+	if err := CreateCI(data); err != nil {
 		return err
 	}
 	if err := CreateDI(data); err != nil {

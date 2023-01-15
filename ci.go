@@ -7,11 +7,6 @@ import (
 func CreateCI() error {
 	files := []*Template{
 		{
-			SourcePath:      "templates/ci/gitlab-ci.yml.tmpl",
-			DestinationPath: filepath.Join(destinationPath, ".gitlab-ci.yml"),
-			Name:            "gitlab-ci",
-		},
-		{
 			SourcePath:      "templates/ci/golangci.yml.tmpl",
 			DestinationPath: filepath.Join(destinationPath, ".golangci.yml"),
 			Name:            "golangci-lint",
@@ -22,7 +17,14 @@ func CreateCI() error {
 			Name:            "pre-commit",
 		},
 	}
-
+	switch ci {
+	case "gitlab":
+		files = append(files, &Template{
+			SourcePath:      "templates/ci/gitlab-ci.yml.tmpl",
+			DestinationPath: filepath.Join(destinationPath, ".gitlab-ci.yml"),
+			Name:            "gitlab-ci",
+		})
+	}
 	for _, tmpl := range files {
 		if err := tmpl.renderToFile(nil); err != nil {
 			return err

@@ -1,0 +1,55 @@
+stages:
+  - test
+  - analysis
+  - release
+
+.test:
+  stage: test
+  image: golang:1.18
+  script:
+    - go test -cover ./... -coverprofile ./coverage.out -coverpkg ./...
+  after_script:
+    - go tool cover -func ./coverage.out
+  except:
+    - master
+
+.lint:
+  stage: test
+  image: golangci/golangci-lint:latest-alpine
+  script:
+    - golangci-lint run ./... --timeout 5m0s
+  except:
+    - master
+
+.release:
+  image: docker:latest
+  stage: release
+  variables:
+    DOCKER_DRIVER: overlay2
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker build -f ./build/Dockerfile . -t $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG -t $CI_REGISTRY_IMAGE:latest
+  after_script:
+    - docker push --all-tags $CI_REGISTRY_IMAGE
+  tags:
+    - docker
+
+release:development:
+  extends:
+    - .release
+  script:
+    - docker build -f ./build/Dockerfile . -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  only:
+    - develop
+  except:
+    - master
+    - tag
+
+release:production:
+  extends:
+    - .release
+  only:
+    - tag

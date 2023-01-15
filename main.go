@@ -23,6 +23,7 @@ var (
 	destinationPath = "."
 	models          cli.StringSlice
 	authEnabled     bool
+	ci              string
 )
 
 //go:embed templates/*
@@ -46,6 +47,12 @@ func main() {
 				Aliases:     []string{"a"},
 				Usage:       "enable auth",
 				Destination: &authEnabled,
+				Required:    false,
+			},
+			&cli.StringFlag{
+				Name:        "ci",
+				Usage:       "CI/CD",
+				Destination: &ci,
 				Required:    false,
 			},
 		},

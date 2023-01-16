@@ -1,206 +1,208 @@
 package repositories
 
 import (
-	"context"
-	"fmt"
-	sq "github.com/Masterminds/squirrel"
-	"time"
+    "context"
+    "fmt"
+    "time"
 
-	"{{ .Module }}/pkg/log"
+    sq "github.com/Masterminds/squirrel"
 
-	"{{ .Module }}/internal/domain/models"
-	"{{ .Module }}/internal/domain/repositories"
+    "{{ .Module }}/pkg/log"
 
-	"github.com/jmoiron/sqlx"
-	"{{ .Module }}/internal/domain/errs"
+    "{{ .Module }}/internal/domain/models"
+    "{{ .Module }}/internal/domain/repositories"
+
+    "{{ .Module }}/internal/domain/errs"
+    "github.com/jmoiron/sqlx"
 )
 
 type {{ .RepositoryTypeName }} struct {
-	database *sqlx.DB
-	logger   log.Logger
+    database *sqlx.DB
+    logger   log.Logger
 }
 
 func New{{ .RepositoryTypeName }}(
-	database *sqlx.DB,
-	logger log.Logger,
+    database *sqlx.DB,
+    logger log.Logger,
 ) repositories.{{ .RepositoryTypeName }} {
-	return &{{ .RepositoryTypeName }}{
-		database: database,
-		logger: logger,
-	}
+    return &{{ .RepositoryTypeName }}{
+        database: database,
+        logger:   logger,
+    }
 }
 
 func (r *{{ .RepositoryTypeName }}) Create(
-	ctx context.Context,
-	{{ .Variable }} *models.{{ .ModelName }},
+    ctx context.Context,
+    {{ .Variable }} *models.{{ .ModelName }},
 ) error {
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
-	defer cancel()
-	q := sq.Insert("public.{{ .TableName }}").
-		Columns(
+    ctx, cancel := context.WithTimeout(ctx, time.Second)
+    defer cancel()
+    q := sq.Insert("public.{{ .TableName }}").
+        Columns(
 {{- range $key, $value := .Params }}
-			"{{ $key.Tag }}",
+            "{{ $key.Tag }}",
 {{- end }}
-			"updated_at",
-			"created_at",
-		).
-		Values(
+            "updated_at",
+            "created_at",
+        ).
+        Values(
 {{- range $key, $value := .Params }}
-			{{ $.Variable }}.{{ $key.Name }},
+            {{ $.Variable }}.{{ $key.Name }},
 {{- end }}
-			{{ .Variable }}.UpdatedAt,
-			{{ .Variable }}.CreatedAt,
-		).
-		Suffix("RETURNING id")
-	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.QueryRowxContext(ctx, query, args...).StructScan({{ .Variable }}); err != nil {
-		e := errs.FromPostgresError(err)
-		return e
-	}
-	return nil
+            {{ .Variable }}.UpdatedAt,
+            {{ .Variable }}.CreatedAt,
+        ).
+        Suffix("RETURNING id")
+    query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
+    if err := r.database.QueryRowxContext(ctx, query, args...).StructScan({{ .Variable }}); err != nil {
+        e := errs.FromPostgresError(err)
+        return e
+    }
+    return nil
 }
 
 func (r *{{ .RepositoryTypeName }}) Get(
-	ctx context.Context,
-	id string,
+    ctx context.Context,
+    id string,
 ) (*models.{{ .ModelName }}, error) {
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
-	defer cancel()
-	{{ .Variable }} := &models.{{ .ModelName }}{}
-	q := sq.Select(
-			"{{ .TableName }}.id",
+    ctx, cancel := context.WithTimeout(ctx, time.Second)
+    defer cancel()
+    {{ .Variable }} := &models.{{ .ModelName }}{}
+    q := sq.Select(
+        "{{ .TableName }}.id",
 {{- range $key, $value := .Params }}
-			"{{ $.TableName }}.{{ $key.Tag }}",
+        "{{ $.TableName }}.{{ $key.Tag }}",
 {{- end }}
-			"{{ .TableName }}.updated_at",
-			"{{ .TableName }}.created_at",
-		).
-		From("public.{{ .TableName }}").
-		Where(sq.Eq{"id": id}).
-		Limit(1)
-	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.GetContext(ctx, {{ .Variable }}, query, args...); err != nil {
-		e := errs.FromPostgresError(err).
-			WithParam("{{ .KeyName }}_id", id)
-		return nil, e
-	}
-	return {{ .Variable }}, nil
+        "{{ .TableName }}.updated_at",
+        "{{ .TableName }}.created_at",
+    ).
+        From("public.{{ .TableName }}").
+        Where(sq.Eq{"id": id}).
+        Limit(1)
+    query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
+    if err := r.database.GetContext(ctx, {{ .Variable }}, query, args...); err != nil {
+        e := errs.FromPostgresError(err).
+            WithParam("{{ .KeyName }}_id", id)
+        return nil, e
+    }
+    return {{ .Variable }}, nil
 }
 
 func (r *{{ .RepositoryTypeName }}) List(
-	ctx context.Context,
-	filter *models.{{ .FilterTypeName }},
+    ctx context.Context,
+    filter *models.{{ .FilterTypeName }},
 ) ([]*models.{{ .ModelName }}, error) {
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
-	defer cancel()
-	var {{ .ListVariable }} []*models.{{ .ModelName }}
-	const pageSize = 10
-	q := sq.Select(
-			"{{ .TableName }}.id",
+    ctx, cancel := context.WithTimeout(ctx, time.Second)
+    defer cancel()
+    var {{ .ListVariable }} []*models.{{ .ModelName }}
+	const pageSize = uint64(10)
+	if filter.PageSize == nil {
+		filter.PageSize = utils.Pointer(pageSize)
+	}
+    q := sq.Select(
+        "{{ .TableName }}.id",
 {{- range $key, $value := .Params }}
-			"{{ $.TableName }}.{{ $key.Tag }}",
+        "{{ $.TableName }}.{{ $key.Tag }}",
 {{- end }}
-			"{{ .TableName }}.updated_at",
-			"{{ .TableName }}.created_at",
-		).
-		From("public.{{ .TableName }}").
-		Limit(pageSize)
-	// TODO: add filtering
-	if filter.PageNumber != nil && *filter.PageNumber > 1 {
-		q = q.Offset((*filter.PageNumber - 1) * *filter.PageSize)
-	}
-	if filter.PageSize != nil {
-		q = q.Limit(*filter.PageSize)
-	}
-	if len(filter.OrderBy) > 0 {
-		q = q.OrderBy(filter.OrderBy...)
-	}
-	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.SelectContext(ctx, &{{ .ListVariable }}, query, args...); err != nil {
-		e := errs.FromPostgresError(err)
-		return nil, e
-	}
-	return {{ .ListVariable }}, nil
+        "{{ .TableName }}.updated_at",
+        "{{ .TableName }}.created_at",
+    ).
+        From("public.{{ .TableName }}").
+        Limit(pageSize)
+    // TODO: add filtering
+    if filter.PageNumber != nil && *filter.PageNumber > 1 {
+        q = q.Offset((*filter.PageNumber - 1) * *filter.PageSize)
+    }
+    q = q.Limit(*filter.PageSize)
+    if len(filter.OrderBy) > 0 {
+        q = q.OrderBy(filter.OrderBy...)
+    }
+    query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
+    if err := r.database.SelectContext(ctx, &{{ .ListVariable }}, query, args...); err != nil {
+        e := errs.FromPostgresError(err)
+        return nil, e
+    }
+    return {{ .ListVariable }}, nil
 }
 
 func (r *{{ .RepositoryTypeName }}) Update(
-	ctx context.Context,
-	{{ .Variable }} *models.{{ .ModelName }},
+    ctx context.Context,
+    {{ .Variable }} *models.{{ .ModelName }},
 ) error {
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
-	defer cancel()
-	q := sq.Update("public.{{ .TableName }}").
-		Where(sq.Eq{"id": {{ .Variable }}.ID}).
-	{{- range $key, $value := .Params }}
-		Set("{{ $.TableName }}.{{ $key.Tag }}", {{ $.Variable }}.{{ $key.Name }}).
-	{{- end }}
-		Set("updated_at", {{ .Variable }}.UpdatedAt)
-	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	result, err := r.database.ExecContext(ctx, query, args...)
-	if err != nil {
-		e := errs.FromPostgresError(err).
-			WithParam("{{ .KeyName }}_id", fmt.Sprint({{ .Variable }}.ID))
-		return e
-	}
-	affected, err := result.RowsAffected()
-	if err != nil {
-		return errs.FromPostgresError(err).
-			WithParam("{{ .KeyName }}_id", fmt.Sprint({{ .Variable }}.ID))
-	}
-	if affected == 0 {
-		e := errs.NewEntityNotFound().
-			WithParam("{{ .KeyName }}_id", fmt.Sprint({{ .Variable }}.ID))
-		return e
-	}
-	return nil
+    ctx, cancel := context.WithTimeout(ctx, time.Second)
+    defer cancel()
+    q := sq.Update("public.{{ .TableName }}").
+        Where(sq.Eq{"id": {{ .Variable }}.ID}).
+    {{- range $key, $value := .Params }}
+        Set("{{ $.TableName }}.{{ $key.Tag }}", {{ $.Variable }}.{{ $key.Name }}).
+    {{- end }}
+        Set("updated_at", {{ .Variable }}.UpdatedAt)
+    query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
+    result, err := r.database.ExecContext(ctx, query, args...)
+    if err != nil {
+        e := errs.FromPostgresError(err).
+            WithParam("{{ .KeyName }}_id", fmt.Sprint({{ .Variable }}.ID))
+        return e
+    }
+    affected, err := result.RowsAffected()
+    if err != nil {
+        return errs.FromPostgresError(err).
+            WithParam("{{ .KeyName }}_id", fmt.Sprint({{ .Variable }}.ID))
+    }
+    if affected == 0 {
+        e := errs.NewEntityNotFound().
+            WithParam("{{ .KeyName }}_id", fmt.Sprint({{ .Variable }}.ID))
+        return e
+    }
+    return nil
 }
 
 func (r *{{ .RepositoryTypeName }}) Delete(
-	ctx context.Context,
-	id string,
+    ctx context.Context,
+    id string,
 ) error {
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
-	defer cancel()
-	q := sq.Delete("public.{{ .TableName }}").Where(sq.Eq{"id": id})
-	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	result, err := r.database.ExecContext(ctx, query, args...)
-	if err != nil {
-		e := errs.FromPostgresError(err).
-			WithParam("{{ .KeyName }}_id", fmt.Sprint(id))
-		return e
-	}
-	affected, err := result.RowsAffected()
-	if err != nil {
-		e := errs.FromPostgresError(err).
-			WithParam("{{ .KeyName }}_id", fmt.Sprint(id))
-		return e
-	}
-	if affected == 0 {
-		e := errs.NewEntityNotFound().
-			WithParam("{{ .KeyName }}_id", fmt.Sprint(id))
-		return e
-	}
-	return nil
+    ctx, cancel := context.WithTimeout(ctx, time.Second)
+    defer cancel()
+    q := sq.Delete("public.{{ .TableName }}").Where(sq.Eq{"id": id})
+    query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
+    result, err := r.database.ExecContext(ctx, query, args...)
+    if err != nil {
+        e := errs.FromPostgresError(err).
+            WithParam("{{ .KeyName }}_id", fmt.Sprint(id))
+        return e
+    }
+    affected, err := result.RowsAffected()
+    if err != nil {
+        e := errs.FromPostgresError(err).
+            WithParam("{{ .KeyName }}_id", fmt.Sprint(id))
+        return e
+    }
+    if affected == 0 {
+        e := errs.NewEntityNotFound().
+            WithParam("{{ .KeyName }}_id", fmt.Sprint(id))
+        return e
+    }
+    return nil
 }
 
 func (r *{{ .RepositoryTypeName }}) Count(
-	ctx context.Context,
-	filter *models.{{ .FilterTypeName }},
+    ctx context.Context,
+    filter *models.{{ .FilterTypeName }},
 ) (uint64, error) {
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
-	defer cancel()
-	q := sq.Select("count(id)").From("public.{{ .TableName }}")
-	// TODO: add filtering
-	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	result := r.database.QueryRowxContext(ctx, query, args...)
-	if err := result.Err(); err != nil {
-		e := errs.FromPostgresError(err)
-		return 0, e
-	}
-	var count uint64
-	if err := result.Scan(&count); err != nil {
-		e := errs.FromPostgresError(err)
-		return 0, e
-	}
-	return count, nil
+    ctx, cancel := context.WithTimeout(ctx, time.Second)
+    defer cancel()
+    q := sq.Select("count(id)").From("public.{{ .TableName }}")
+    // TODO: add filtering
+    query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
+    result := r.database.QueryRowxContext(ctx, query, args...)
+    if err := result.Err(); err != nil {
+        e := errs.FromPostgresError(err)
+        return 0, e
+    }
+    var count uint64
+    if err := result.Scan(&count); err != nil {
+        e := errs.FromPostgresError(err)
+        return 0, e
+    }
+    return count, nil
 }

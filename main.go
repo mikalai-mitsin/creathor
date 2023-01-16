@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-const version = "0.3.0"
+const version = "0.3.1"
 
 var (
 	serviceName     string
@@ -23,6 +23,7 @@ var (
 	destinationPath = "."
 	models          cli.StringSlice
 	authEnabled     bool
+	ci              string
 )
 
 //go:embed templates/*
@@ -46,6 +47,12 @@ func main() {
 				Aliases:     []string{"a"},
 				Usage:       "enable auth",
 				Destination: &authEnabled,
+				Required:    false,
+			},
+			&cli.StringFlag{
+				Name:        "ci",
+				Usage:       "CI/CD",
+				Destination: &ci,
 				Required:    false,
 			},
 		},
@@ -118,7 +125,7 @@ func initProject(ctx *cli.Context) error {
 	if err := CreateLayout(data); err != nil {
 		return err
 	}
-	if err := CreateCI(); err != nil {
+	if err := CreateCI(data); err != nil {
 		return err
 	}
 	if err := CreateDI(data); err != nil {

@@ -1,19 +1,20 @@
 package models
 
 import (
-	"{{ .Module }}/internal/domain/errs"
-	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/go-ozzo/ozzo-validation/v4/is"
-	"time"
+    "time"
+
+    "{{ .Module }}/internal/domain/errs"
+    validation "github.com/go-ozzo/ozzo-validation/v4"
+    "github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
 type {{ .ModelName }} struct {
-	ID        string `json:"id" db:"id,omitempty"`
+    ID        string `json:"id" db:"id,omitempty"`
 {{- range $key, $value := .Params }}
-	{{ $key.Name }} {{ $value }} `json:"{{ $key.Tag }}" db:"{{ $key.Tag }}"`
+    {{ $key.Name }} {{ $value }} `json:"{{ $key.Tag }}" db:"{{ $key.Tag }}"`
 {{- end }}
-	UpdatedAt time.Time `json:"updated_at" db:"updated_at,omitempty"`
-	CreatedAt time.Time `json:"created_at" db:"created_at,omitempty"`
+    UpdatedAt time.Time `json:"updated_at" db:"updated_at,omitempty"`
+    CreatedAt time.Time `json:"created_at" db:"created_at,omitempty"`
 }
 
 func (c *{{ .ModelName }}) Validate() error {
@@ -21,7 +22,7 @@ func (c *{{ .ModelName }}) Validate() error {
         c,
         validation.Field(&c.ID, is.UUID),
 {{- range $key, $value := .Params }}
-		validation.Field(&c.{{ $key.Name }}),
+        validation.Field(&c.{{ $key.Name }}),
 {{- end }}
     )
     if err != nil {
@@ -38,42 +39,42 @@ type {{ .FilterTypeName }} struct {
 }
 
 func (c *{{ .FilterTypeName }}) Validate() error {
-	err := validation.ValidateStruct(
-		c,
-		validation.Field(&c.IDs),
-		validation.Field(&c.PageSize),
-		validation.Field(&c.PageNumber),
-		validation.Field(&c.OrderBy),
-	)
-	if err != nil {
-		return errs.FromValidationError(err)
-	}
-	return nil
+    err := validation.ValidateStruct(
+        c,
+        validation.Field(&c.IDs),
+        validation.Field(&c.PageSize),
+        validation.Field(&c.PageNumber),
+        validation.Field(&c.OrderBy),
+    )
+    if err != nil {
+        return errs.FromValidationError(err)
+    }
+    return nil
 }
 
 type {{ .CreateTypeName }} struct {
 {{- range $key, $value := .Params }}
-	{{ $key.Name }} {{ $value }} `json:"{{ $key.Tag }}"`
+    {{ $key.Name }} {{ $value }} `json:"{{ $key.Tag }}"`
 {{- end }}
 }
 
 func (c *{{ .CreateTypeName }}) Validate() error {
-	err := validation.ValidateStruct(
-		c,
+    err := validation.ValidateStruct(
+        c,
 {{- range $key, $value := .Params }}
-		validation.Field(&c.{{ $key.Name }}),
+        validation.Field(&c.{{ $key.Name }}),
 {{- end }}
-	)
-	if err != nil {
-		return errs.FromValidationError(err)
-	}
-	return nil
+    )
+    if err != nil {
+        return errs.FromValidationError(err)
+    }
+    return nil
 }
 
 type {{ .UpdateTypeName }} struct {
-	ID string `json:"id"`
+    ID string `json:"id"`
 {{- range $key, $value := .Params }}
-	{{ $key.Name }} *{{ $value }} `json:"{{ $key.Tag }}"`
+    {{ $key.Name }} *{{ $value }} `json:"{{ $key.Tag }}"`
 {{- end }}
 }
 
@@ -82,7 +83,7 @@ func (c *{{ .UpdateTypeName }}) Validate() error {
         c,
         validation.Field(&c.ID, validation.Required, is.UUID),
 {{- range $key, $value := .Params }}
-		validation.Field(&c.{{ $key.Name }}),
+        validation.Field(&c.{{ $key.Name }}),
 {{- end }}
     )
     if err != nil {
@@ -92,10 +93,10 @@ func (c *{{ .UpdateTypeName }}) Validate() error {
 }
 {{ if .Auth }}
 const (
-	PermissionID{{ .ModelName }}List   PermissionID = "{{ .KeyName }}_list"
-	PermissionID{{ .ModelName }}Detail PermissionID = "{{ .KeyName }}_detail"
-	PermissionID{{ .ModelName }}Create PermissionID = "{{ .KeyName }}_create"
-	PermissionID{{ .ModelName }}Update PermissionID = "{{ .KeyName }}_update"
-	PermissionID{{ .ModelName }}Delete PermissionID = "{{ .KeyName }}_delete"
+    PermissionID{{ .ModelName }}List   PermissionID = "{{ .KeyName }}_list"
+    PermissionID{{ .ModelName }}Detail PermissionID = "{{ .KeyName }}_detail"
+    PermissionID{{ .ModelName }}Create PermissionID = "{{ .KeyName }}_create"
+    PermissionID{{ .ModelName }}Update PermissionID = "{{ .KeyName }}_update"
+    PermissionID{{ .ModelName }}Delete PermissionID = "{{ .KeyName }}_delete"
 )
 {{ end }}

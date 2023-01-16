@@ -1,16 +1,13 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 )
 
-func CreateCI() error {
+func CreateCI(project *Project) error {
+	var directories []string
 	files := []*Template{
-		{
-			SourcePath:      "templates/ci/gitlab-ci.yml.tmpl",
-			DestinationPath: filepath.Join(destinationPath, ".gitlab-ci.yml"),
-			Name:            "gitlab-ci",
-		},
 		{
 			SourcePath:      "templates/ci/golangci.yml.tmpl",
 			DestinationPath: filepath.Join(destinationPath, ".golangci.yml"),
@@ -22,9 +19,28 @@ func CreateCI() error {
 			Name:            "pre-commit",
 		},
 	}
-
+	switch ci {
+	case "gitlab":
+		files = append(files, &Template{
+			SourcePath:      "templates/ci/gitlab/gitlab-ci.yml.tmpl",
+			DestinationPath: filepath.Join(destinationPath, ".gitlab-ci.yml"),
+			Name:            "gitlab-ci",
+		})
+	case "github":
+		files = append(files, &Template{
+			SourcePath:      "templates/ci/github/workflows/tests.yaml.tmpl",
+			DestinationPath: filepath.Join(destinationPath, ".github", "workflows", "tests.yaml"),
+			Name:            "gitlab-ci",
+		})
+		directories = append(directories, filepath.Join(destinationPath, ".github", "workflows"))
+	}
+	for _, directory := range directories {
+		if err := os.MkdirAll(directory, 0777); err != nil {
+			return NewUnexpectedBehaviorError(err.Error())
+		}
+	}
 	for _, tmpl := range files {
-		if err := tmpl.renderToFile(nil); err != nil {
+		if err := tmpl.renderToFile(project); err != nil {
 			return err
 		}
 	}

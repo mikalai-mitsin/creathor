@@ -21,9 +21,13 @@ type ParamType string
 
 func (n ParamType) Fake() string {
 	switch n {
-	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64":
+	case "int":
+		return "faker.RandomInt(2, 100)"
+	case "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64":
 		return fmt.Sprintf("%s(faker.RandomInt(2, 100))", n)
-	case "[]int", "[]int8", "[]int16", "[]int32", "[]int64", "[]uint", "[]uint8", "[]uint16", "[]uint32", "[]uint64":
+	case "[]int":
+		return fmt.Sprintf("[]%s{faker.RandomInt(2, 100), %s(faker.RandomInt(2, 100))}", n, n)
+	case "[]int8", "[]int16", "[]int32", "[]int64", "[]uint", "[]uint8", "[]uint16", "[]uint32", "[]uint64":
 		return fmt.Sprintf("[]%s{%s(faker.RandomInt(2, 100)), %s(faker.RandomInt(2, 100))}", n, n, n)
 	case "string":
 		return "faker.Lorem().String()"

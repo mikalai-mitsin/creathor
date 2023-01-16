@@ -1,49 +1,48 @@
 package interceptors
 
 import (
-	"context"
+    "context"
 
-	"{{ .Module }}/internal/domain/models"
+    "{{ .Module }}/internal/domain/models"
 )
 
 //nolint: lll
 //go:generate mockgen -build_flags=-mod=mod -destination mock/{{ .MockFileName }} {{ .Module }}/internal/domain/interceptors {{ .InterceptorTypeName }}
 
-
 type {{ .InterceptorTypeName }} interface {
-	Get(
-		ctx context.Context,
-		id string,
+    Get(
+        ctx context.Context,
+        id string,
 {{- if .Auth }}
-		requestUser *models.User,
+        requestUser *models.User,
 {{- end }}
-	) (*models.{{ .ModelName }}, error)
-	List(
-		ctx context.Context,
-		filter *models.{{ .FilterTypeName }},
+    ) (*models.{{ .ModelName }}, error)
+    List(
+        ctx context.Context,
+        filter *models.{{ .FilterTypeName }},
 {{- if .Auth }}
-		requestUser *models.User,
+        requestUser *models.User,
 {{- end }}
-	) ([]*models.{{ .ModelName }}, uint64, error)
-	Create(
-		ctx context.Context,
-		create *models.{{ .CreateTypeName }},
+    ) ([]*models.{{ .ModelName }}, uint64, error)
+    Create(
+        ctx context.Context,
+        create *models.{{ .CreateTypeName }},
 {{- if .Auth }}
-		requestUser *models.User,
+        requestUser *models.User,
 {{- end }}
-	) (*models.{{ .ModelName }}, error)
-	Update(
-		ctx context.Context,
-		update *models.{{ .UpdateTypeName }},
-	{{- if .Auth }}
-		requestUser *models.User,
-	{{- end }}
-	) (*models.{{ .ModelName }}, error)
-	Delete(
-		ctx context.Context,
-		id string,
+    ) (*models.{{ .ModelName }}, error)
+    Update(
+        ctx context.Context,
+        update *models.{{ .UpdateTypeName }},
+    {{- if .Auth }}
+        requestUser *models.User,
+    {{- end }}
+    ) (*models.{{ .ModelName }}, error)
+    Delete(
+        ctx context.Context,
+        id string,
 {{- if .Auth }}
-		requestUser *models.User,
+        requestUser *models.User,
 {{- end }}
-	) error
+    ) error
 }

@@ -1,49 +1,49 @@
 package containers
 
 import (
-	"context"
-	"{{ .Module }}/internal/interfaces/grpc"
+    "context"
 
-	"{{ .Module }}/pkg/log"
-	"go.uber.org/fx/fxevent"
+    "{{ .Module }}/internal/interfaces/grpc"
 
-	"{{ .Module }}/internal/interceptors"
-	"{{ .Module }}/internal/repositories"
-	"{{ .Module }}/internal/usecases"
-	"{{ .Module }}/internal/interfaces/postgres"
+    "{{ .Module }}/pkg/log"
+    "go.uber.org/fx/fxevent"
 
-	"{{ .Module }}/pkg/clock"
+    "{{ .Module }}/internal/interceptors"
+    "{{ .Module }}/internal/interfaces/postgres"
+    "{{ .Module }}/internal/repositories"
+    "{{ .Module }}/internal/usecases"
 
+    "{{ .Module }}/pkg/clock"
 
-	"{{ .Module }}/internal/configs"
-	"go.uber.org/fx"
+    "{{ .Module }}/internal/configs"
+    "go.uber.org/fx"
 )
 
 var appModule = fx.Options(
-	fx.Provide(
-		context.Background,
-		clock.NewRealClock,
-		func(config *configs.Config) (log.Logger, error) {
-			return log.NewLog(config.LogLevel)
-		},
-	),
-	configs.FXModule,
-	repositories.FXModule,
-	usecases.FXModule,
-	interceptors.FXModule,
-	postgres.FXModule,
+    fx.Provide(
+        context.Background,
+        clock.NewRealClock,
+        func(config *configs.Config) (log.Logger, error) {
+            return log.NewLog(config.LogLevel)
+        },
+    ),
+    configs.FXModule,
+    repositories.FXModule,
+    usecases.FXModule,
+    interceptors.FXModule,
+    postgres.FXModule,
 )
 
 func New{{ .Name | Title }}(config string) *fx.App {
-	app := fx.New(
-		fx.Provide(func() string { return config }),
-		appModule,
-		fx.WithLogger(
-			func(logger log.Logger) fxevent.Logger {
-				return logger
-			},
-		),
-		grpc.FXModule,
-	)
-	return app
+    app := fx.New(
+        fx.Provide(func() string { return config }),
+        appModule,
+        fx.WithLogger(
+            func(logger log.Logger) fxevent.Logger {
+                return logger
+            },
+        ),
+        grpc.FXModule,
+    )
+    return app
 }

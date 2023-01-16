@@ -8,7 +8,7 @@ import (
 
 const version = "0.1.0"
 
-const configPath = "configs/config.toml"
+const configPath = ""
 
 func main() {
 	app := &cli.App{

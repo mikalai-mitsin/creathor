@@ -2,8 +2,25 @@
 ## [Unreleased]
 
 
-<a name="0.3.0"></a>
-## [0.3.0] - 2023-01-08
+<a name="0.3.1"></a>
+## [0.3.1] - 2023-01-16
+### Ci
+- add release action
+
+### Feat
+- setup build scripts
+- **ci:** add github action
+- **ci:** add gitlab
+
+### Fix
+- **repositories:** set default page size
+
+### Style
+- cleanup templates
+
+
+<a name="v0.3.0"></a>
+## [v0.3.0] - 2023-01-08
 ### Feat
 - add reach model flag
 
@@ -93,8 +110,9 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/018bf/creathor/compare/0.3.0...HEAD
-[0.3.0]: https://github.com/018bf/creathor/compare/v0.2.1...0.3.0
+[Unreleased]: https://github.com/018bf/creathor/compare/0.3.1...HEAD
+[0.3.1]: https://github.com/018bf/creathor/compare/v0.3.0...0.3.1
+[v0.3.0]: https://github.com/018bf/creathor/compare/v0.2.1...v0.3.0
 [v0.2.1]: https://github.com/018bf/creathor/compare/v0.2.0...v0.2.1
 [v0.2.0]: https://github.com/018bf/creathor/compare/v0.1.7...v0.2.0
 [v0.1.7]: https://github.com/018bf/creathor/compare/v0.1.6...v0.1.7

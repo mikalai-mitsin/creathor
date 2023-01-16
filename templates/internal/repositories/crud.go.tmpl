@@ -95,7 +95,10 @@ func (r *{{ .RepositoryTypeName }}) List(
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     var {{ .ListVariable }} []*models.{{ .ModelName }}
-    const pageSize = 10
+	const pageSize = uint64(10)
+	if filter.PageSize == nil {
+		filter.PageSize = utils.Pointer(pageSize)
+	}
     q := sq.Select(
         "{{ .TableName }}.id",
 {{- range $key, $value := .Params }}
@@ -110,9 +113,7 @@ func (r *{{ .RepositoryTypeName }}) List(
     if filter.PageNumber != nil && *filter.PageNumber > 1 {
         q = q.Offset((*filter.PageNumber - 1) * *filter.PageSize)
     }
-    if filter.PageSize != nil {
-        q = q.Limit(*filter.PageSize)
-    }
+    q = q.Limit(*filter.PageSize)
     if len(filter.OrderBy) > 0 {
         q = q.OrderBy(filter.OrderBy...)
     }

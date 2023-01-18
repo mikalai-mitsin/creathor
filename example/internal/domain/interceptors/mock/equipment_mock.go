@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	errs "github.com/018bf/example/internal/domain/errs"
 	models "github.com/018bf/example/internal/domain/models"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -36,76 +37,76 @@ func (m *MockEquipmentInterceptor) EXPECT() *MockEquipmentInterceptorMockRecorde
 }
 
 // Create mocks base method.
-func (m *MockEquipmentInterceptor) Create(arg0 context.Context, arg1 *models.EquipmentCreate, arg2 *models.User) (*models.Equipment, error) {
+func (m *MockEquipmentInterceptor) Create(arg0 context.Context, arg1 *models.EquipmentCreate) (*models.Equipment, *errs.Error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Create", arg0, arg1)
 	ret0, _ := ret[0].(*models.Equipment)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*errs.Error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockEquipmentInterceptorMockRecorder) Create(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockEquipmentInterceptorMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEquipmentInterceptor)(nil).Create), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEquipmentInterceptor)(nil).Create), arg0, arg1)
 }
 
 // Delete mocks base method.
-func (m *MockEquipmentInterceptor) Delete(arg0 context.Context, arg1 string, arg2 *models.User) error {
+func (m *MockEquipmentInterceptor) Delete(arg0 context.Context, arg1 string) *errs.Error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
+	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
+	ret0, _ := ret[0].(*errs.Error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockEquipmentInterceptorMockRecorder) Delete(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockEquipmentInterceptorMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockEquipmentInterceptor)(nil).Delete), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockEquipmentInterceptor)(nil).Delete), arg0, arg1)
 }
 
 // Get mocks base method.
-func (m *MockEquipmentInterceptor) Get(arg0 context.Context, arg1 string, arg2 *models.User) (*models.Equipment, error) {
+func (m *MockEquipmentInterceptor) Get(arg0 context.Context, arg1 string) (*models.Equipment, *errs.Error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(*models.Equipment)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*errs.Error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockEquipmentInterceptorMockRecorder) Get(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockEquipmentInterceptorMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockEquipmentInterceptor)(nil).Get), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockEquipmentInterceptor)(nil).Get), arg0, arg1)
 }
 
 // List mocks base method.
-func (m *MockEquipmentInterceptor) List(arg0 context.Context, arg1 *models.EquipmentFilter, arg2 *models.User) ([]*models.Equipment, uint64, error) {
+func (m *MockEquipmentInterceptor) List(arg0 context.Context, arg1 *models.EquipmentFilter) ([]*models.Equipment, uint64, *errs.Error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "List", arg0, arg1)
 	ret0, _ := ret[0].([]*models.Equipment)
 	ret1, _ := ret[1].(uint64)
-	ret2, _ := ret[2].(error)
+	ret2, _ := ret[2].(*errs.Error)
 	return ret0, ret1, ret2
 }
 
 // List indicates an expected call of List.
-func (mr *MockEquipmentInterceptorMockRecorder) List(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockEquipmentInterceptorMockRecorder) List(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockEquipmentInterceptor)(nil).List), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockEquipmentInterceptor)(nil).List), arg0, arg1)
 }
 
 // Update mocks base method.
-func (m *MockEquipmentInterceptor) Update(arg0 context.Context, arg1 *models.EquipmentUpdate, arg2 *models.User) (*models.Equipment, error) {
+func (m *MockEquipmentInterceptor) Update(arg0 context.Context, arg1 *models.EquipmentUpdate) (*models.Equipment, *errs.Error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Update", arg0, arg1)
 	ret0, _ := ret[0].(*models.Equipment)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*errs.Error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockEquipmentInterceptorMockRecorder) Update(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockEquipmentInterceptorMockRecorder) Update(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockEquipmentInterceptor)(nil).Update), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockEquipmentInterceptor)(nil).Update), arg0, arg1)
 }

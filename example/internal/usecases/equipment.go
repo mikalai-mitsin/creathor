@@ -3,6 +3,7 @@ package usecases
 import (
 	"context"
 
+	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
 	"github.com/018bf/example/internal/domain/usecases"
@@ -32,7 +33,7 @@ func NewEquipmentUseCase(
 func (u *EquipmentUseCase) Get(
 	ctx context.Context,
 	id string,
-) (*models.Equipment, error) {
+) (*models.Equipment, *errs.Error) {
 	equipment, err := u.equipmentRepository.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -43,7 +44,7 @@ func (u *EquipmentUseCase) Get(
 func (u *EquipmentUseCase) List(
 	ctx context.Context,
 	filter *models.EquipmentFilter,
-) ([]*models.Equipment, uint64, error) {
+) ([]*models.Equipment, uint64, *errs.Error) {
 	equipment, err := u.equipmentRepository.List(ctx, filter)
 	if err != nil {
 		return nil, 0, err
@@ -58,7 +59,7 @@ func (u *EquipmentUseCase) List(
 func (u *EquipmentUseCase) Create(
 	ctx context.Context,
 	create *models.EquipmentCreate,
-) (*models.Equipment, error) {
+) (*models.Equipment, *errs.Error) {
 	if err := create.Validate(); err != nil {
 		return nil, err
 	}
@@ -77,7 +78,7 @@ func (u *EquipmentUseCase) Create(
 func (u *EquipmentUseCase) Update(
 	ctx context.Context,
 	update *models.EquipmentUpdate,
-) (*models.Equipment, error) {
+) (*models.Equipment, *errs.Error) {
 	if err := update.Validate(); err != nil {
 		return nil, err
 	}
@@ -92,7 +93,7 @@ func (u *EquipmentUseCase) Update(
 	return equipment, nil
 }
 
-func (u *EquipmentUseCase) Delete(ctx context.Context, id string) error {
+func (u *EquipmentUseCase) Delete(ctx context.Context, id string) *errs.Error {
 	if err := u.equipmentRepository.Delete(ctx, id); err != nil {
 		return err
 	}

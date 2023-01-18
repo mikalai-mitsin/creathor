@@ -328,21 +328,21 @@ func TestEquipmentUseCase_Create(t *testing.T) {
 			wantErr: errs.NewUnexpectedBehaviorError("test error"),
 		},
 		// TODO: Add validation rules or delete this case
-		//{
-		//	name: "invalid",
-		//	setup: func() {
-		//	},
-		//	fields: fields{
-		//		equipmentRepository: equipmentRepository,
-		//		logger:           logger,
-		//	},
-		//	args: args{
-		//		ctx: ctx,
-		//		create: &models.EquipmentCreate{},
-		//	},
-		//	want: nil,
-		//	wantErr: errs.NewInvalidFormError().WithParam("set", "it"),
-		//},
+		// {
+		//     name: "invalid",
+		//     setup: func() {
+		//     },
+		//     fields: fields{
+		//         equipmentRepository: equipmentRepository,
+		//         logger:           logger,
+		//     },
+		//     args: args{
+		//         ctx: ctx,
+		//         create: &models.EquipmentCreate{},
+		//     },
+		//     want: nil,
+		//     wantErr: errs.NewInvalidFormError().WithParam("set", "it"),
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

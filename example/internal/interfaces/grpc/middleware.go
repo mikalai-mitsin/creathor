@@ -2,13 +2,14 @@ package grpc
 
 import (
 	"context"
+	"strings"
+
 	"github.com/018bf/example/internal/configs"
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/pkg/log"
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	"google.golang.org/grpc/codes"
-	"strings"
 
 	"github.com/google/uuid"
 
@@ -64,7 +65,12 @@ func (m *AuthMiddleware) UnaryServerInterceptorAuth(
 	return handler(newCtx, req)
 }
 
-func RequestIDUnaryServerInterceptor(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+func RequestIDUnaryServerInterceptor(
+	ctx context.Context,
+	req interface{},
+	_ *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler,
+) (interface{}, error) {
 	newCtx := context.WithValue(ctx, log.RequestIDKey, uuid.New().String())
 	return handler(newCtx, req)
 }

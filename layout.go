@@ -32,6 +32,7 @@ func CreateLayout(data *Project) error {
 		path.Join(destinationPath, "internal", "interceptors"),
 		path.Join(destinationPath, "internal", "interfaces"),
 		path.Join(destinationPath, "internal", "interfaces", "grpc"),
+		path.Join(destinationPath, "internal", "interfaces", "rest"),
 		path.Join(destinationPath, "internal", "interfaces", "postgres"),
 		path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations"),
 		path.Join(destinationPath, "internal", "usecases"),
@@ -177,6 +178,21 @@ func CreateLayout(data *Project) error {
 			SourcePath:      "templates/internal/interfaces/grpc/server.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "server.go"),
 			Name:            "grpc server",
+		},
+		{
+			SourcePath:      "templates/internal/interfaces/rest/fx.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "fx.go"),
+			Name:            "rest fx",
+		},
+		{
+			SourcePath:      "templates/internal/interfaces/rest/middleware.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "middleware.go"),
+			Name:            "rest middlewares",
+		},
+		{
+			SourcePath:      "templates/internal/interfaces/rest/server.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "server.go"),
+			Name:            "rest server",
 		},
 	}
 	if authEnabled {

@@ -3,8 +3,9 @@ package repositories
 import (
 	"context"
 	"fmt"
-	sq "github.com/Masterminds/squirrel"
 	"time"
+
+	sq "github.com/Masterminds/squirrel"
 
 	"github.com/018bf/example/pkg/log"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/018bf/example/internal/domain/repositories"
 
 	"github.com/018bf/example/internal/domain/errs"
+	"github.com/018bf/example/pkg/utils"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -33,7 +35,7 @@ func NewSessionRepository(
 func (r *SessionRepository) Create(
 	ctx context.Context,
 	session *models.Session,
-) error {
+) *errs.Error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Insert("public.sessions").
@@ -57,7 +59,7 @@ func (r *SessionRepository) Create(
 func (r *SessionRepository) Get(
 	ctx context.Context,
 	id string,
-) (*models.Session, error) {
+) (*models.Session, *errs.Error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	session := &models.Session{}
@@ -81,11 +83,14 @@ func (r *SessionRepository) Get(
 func (r *SessionRepository) List(
 	ctx context.Context,
 	filter *models.SessionFilter,
-) ([]*models.Session, error) {
+) ([]*models.Session, *errs.Error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	var sessions []*models.Session
-	const pageSize = 10
+	const pageSize = uint64(10)
+	if filter.PageSize == nil {
+		filter.PageSize = utils.Pointer(pageSize)
+	}
 	q := sq.Select(
 		"sessions.id",
 		"sessions.updated_at",
@@ -97,9 +102,7 @@ func (r *SessionRepository) List(
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
 		q = q.Offset((*filter.PageNumber - 1) * *filter.PageSize)
 	}
-	if filter.PageSize != nil {
-		q = q.Limit(*filter.PageSize)
-	}
+	q = q.Limit(*filter.PageSize)
 	if len(filter.OrderBy) > 0 {
 		q = q.OrderBy(filter.OrderBy...)
 	}
@@ -114,7 +117,7 @@ func (r *SessionRepository) List(
 func (r *SessionRepository) Update(
 	ctx context.Context,
 	session *models.Session,
-) error {
+) *errs.Error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Update("public.sessions").
@@ -143,7 +146,7 @@ func (r *SessionRepository) Update(
 func (r *SessionRepository) Delete(
 	ctx context.Context,
 	id string,
-) error {
+) *errs.Error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Delete("public.sessions").Where(sq.Eq{"id": id})
@@ -171,7 +174,7 @@ func (r *SessionRepository) Delete(
 func (r *SessionRepository) Count(
 	ctx context.Context,
 	filter *models.SessionFilter,
-) (uint64, error) {
+) (uint64, *errs.Error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Select("count(id)").From("public.sessions")

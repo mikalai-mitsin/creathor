@@ -3,6 +3,7 @@ package usecases
 import (
 	"context"
 
+	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
 	"github.com/018bf/example/internal/domain/usecases"
@@ -32,7 +33,7 @@ func NewSessionUseCase(
 func (u *SessionUseCase) Get(
 	ctx context.Context,
 	id string,
-) (*models.Session, error) {
+) (*models.Session, *errs.Error) {
 	session, err := u.sessionRepository.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -43,7 +44,7 @@ func (u *SessionUseCase) Get(
 func (u *SessionUseCase) List(
 	ctx context.Context,
 	filter *models.SessionFilter,
-) ([]*models.Session, uint64, error) {
+) ([]*models.Session, uint64, *errs.Error) {
 	sessions, err := u.sessionRepository.List(ctx, filter)
 	if err != nil {
 		return nil, 0, err
@@ -58,7 +59,7 @@ func (u *SessionUseCase) List(
 func (u *SessionUseCase) Create(
 	ctx context.Context,
 	create *models.SessionCreate,
-) (*models.Session, error) {
+) (*models.Session, *errs.Error) {
 	if err := create.Validate(); err != nil {
 		return nil, err
 	}
@@ -77,7 +78,7 @@ func (u *SessionUseCase) Create(
 func (u *SessionUseCase) Update(
 	ctx context.Context,
 	update *models.SessionUpdate,
-) (*models.Session, error) {
+) (*models.Session, *errs.Error) {
 	if err := update.Validate(); err != nil {
 		return nil, err
 	}
@@ -92,7 +93,7 @@ func (u *SessionUseCase) Update(
 	return session, nil
 }
 
-func (u *SessionUseCase) Delete(ctx context.Context, id string) error {
+func (u *SessionUseCase) Delete(ctx context.Context, id string) *errs.Error {
 	if err := u.sessionRepository.Delete(ctx, id); err != nil {
 		return err
 	}

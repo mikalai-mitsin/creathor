@@ -2,7 +2,9 @@ package containers
 
 import (
 	"context"
+
 	"github.com/018bf/example/internal/interfaces/grpc"
+	"github.com/018bf/example/internal/interfaces/rest"
 
 	"github.com/018bf/example/pkg/log"
 	"go.uber.org/fx/fxevent"
@@ -33,7 +35,7 @@ var appModule = fx.Options(
 	postgres.FXModule,
 )
 
-func NewExample(config string) *fx.App {
+func NewGRPCExample(config string) *fx.App {
 	app := fx.New(
 		fx.Provide(func() string { return config }),
 		appModule,
@@ -43,6 +45,20 @@ func NewExample(config string) *fx.App {
 			},
 		),
 		grpc.FXModule,
+	)
+	return app
+}
+
+func NewRESTExample(config string) *fx.App {
+	app := fx.New(
+		fx.Provide(func() string { return config }),
+		appModule,
+		fx.WithLogger(
+			func(logger log.Logger) fxevent.Logger {
+				return logger
+			},
+		),
+		rest.FXModule,
 	)
 	return app
 }

@@ -80,6 +80,18 @@ func (m Model) UseCaseTypeName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Model))
 }
 
+func (m Model) RESTHandlerTypeName() string {
+	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Model))
+}
+
+func (m Model) RESTHandlerPath() string {
+	return strcase.ToSnake(inflection.Plural(m.Model))
+}
+
+func (m Model) RESTHandlerVariableName() string {
+	return fmt.Sprintf("%sHandler", strcase.ToLowerCamel(m.Model))
+}
+
 func (m Model) UseCaseVariableName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToLowerCamel(m.Model))
 }

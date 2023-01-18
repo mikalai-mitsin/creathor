@@ -1,0 +1,103 @@
+package rest
+
+import (
+	"fmt"
+	"net/http"
+
+	"{{ .Module }}/internal/domain/interceptors"
+	"{{ .Module }}/internal/domain/models"
+	"{{ .Module }}/pkg/log"
+	"github.com/gin-gonic/gin"
+)
+
+type {{ .RESTHandlerTypeName }} struct {
+	{{ .InterceptorVariableName }} interceptors.{{ .InterceptorTypeName }}
+	logger          log.Logger
+}
+
+func New{{ .RESTHandlerTypeName }}({{ .InterceptorVariableName }} interceptors.{{ .InterceptorTypeName }}, logger log.Logger) *{{ .RESTHandlerTypeName }} {
+	return &{{ .RESTHandlerTypeName }}{ {{- .InterceptorVariableName -}}: {{ .InterceptorVariableName }}, logger: logger}
+}
+
+func (h *{{ .RESTHandlerTypeName }}) Register(router *gin.Engine) {
+	group := router.Group("/{{ .RESTHandlerPath }}")
+	group.POST("/", h.Create)
+	group.GET("/", h.List)
+	group.GET("/:id", h.Get)
+	group.PATCH("/:id", h.Update)
+	group.DELETE("/:id", h.Delete)
+}
+
+func (h *{{ .RESTHandlerTypeName }}) Create(ctx *gin.Context) {
+{{- if .Auth }}
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
+{{- end }}
+	create := &models.{{ .CreateTypeName }}{}
+	if err := ctx.Bind(create); err != nil {
+		return
+	}
+	marks, err := h.{{ .InterceptorVariableName }}.Create(ctx.Request.Context(), create{{- if .Auth -}}, requestUser{{- end -}})
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, marks)
+}
+
+func (h *{{ .RESTHandlerTypeName }}) List(ctx *gin.Context) {
+{{- if .Auth }}
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
+{{- end }}
+	filter := &models.{{ .FilterTypeName }}{}
+	if err := ctx.Bind(filter); err != nil {
+		return
+	}
+	marks, count, err := h.{{ .InterceptorVariableName }}.List(ctx.Request.Context(), filter{{- if .Auth -}}, requestUser{{- end -}})
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err)
+		return
+	}
+	ctx.Header("count", fmt.Sprint(count))
+	ctx.JSON(http.StatusOK, marks)
+}
+
+func (h *{{ .RESTHandlerTypeName }}) Get(c *gin.Context) {
+{{- if .Auth }}
+	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+{{- end }}
+	marks, err := h.{{ .InterceptorVariableName }}.Get(c.Request.Context(), c.Param("id"){{- if .Auth -}}, requestUser{{- end -}})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, marks)
+}
+
+func (h *{{ .RESTHandlerTypeName }}) Update(c *gin.Context) {
+{{- if .Auth }}
+	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+{{- end }}
+	update := &models.{{ .UpdateTypeName }}{}
+	if err := c.Bind(update); err != nil {
+		return
+	}
+	update.ID = c.Param("id")
+	marks, err := h.{{ .InterceptorVariableName }}.Update(c.Request.Context(), update{{- if .Auth -}}, requestUser{{- end -}})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, marks)
+}
+
+func (h *{{ .RESTHandlerTypeName }}) Delete(c *gin.Context) {
+{{- if .Auth }}
+	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+{{- end }}
+	err := h.{{ .InterceptorVariableName }}.Delete(c.Request.Context(), c.Param("id"){{- if .Auth -}}, requestUser{{- end -}})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}

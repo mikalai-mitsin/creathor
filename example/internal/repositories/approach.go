@@ -3,8 +3,9 @@ package repositories
 import (
 	"context"
 	"fmt"
-	sq "github.com/Masterminds/squirrel"
 	"time"
+
+	sq "github.com/Masterminds/squirrel"
 
 	"github.com/018bf/example/pkg/log"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/018bf/example/internal/domain/repositories"
 
 	"github.com/018bf/example/internal/domain/errs"
+	"github.com/018bf/example/pkg/utils"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -33,7 +35,7 @@ func NewApproachRepository(
 func (r *ApproachRepository) Create(
 	ctx context.Context,
 	approach *models.Approach,
-) error {
+) *errs.Error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Insert("public.approaches").
@@ -57,7 +59,7 @@ func (r *ApproachRepository) Create(
 func (r *ApproachRepository) Get(
 	ctx context.Context,
 	id string,
-) (*models.Approach, error) {
+) (*models.Approach, *errs.Error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	approach := &models.Approach{}
@@ -81,11 +83,14 @@ func (r *ApproachRepository) Get(
 func (r *ApproachRepository) List(
 	ctx context.Context,
 	filter *models.ApproachFilter,
-) ([]*models.Approach, error) {
+) ([]*models.Approach, *errs.Error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	var approaches []*models.Approach
-	const pageSize = 10
+	const pageSize = uint64(10)
+	if filter.PageSize == nil {
+		filter.PageSize = utils.Pointer(pageSize)
+	}
 	q := sq.Select(
 		"approaches.id",
 		"approaches.updated_at",
@@ -97,9 +102,7 @@ func (r *ApproachRepository) List(
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
 		q = q.Offset((*filter.PageNumber - 1) * *filter.PageSize)
 	}
-	if filter.PageSize != nil {
-		q = q.Limit(*filter.PageSize)
-	}
+	q = q.Limit(*filter.PageSize)
 	if len(filter.OrderBy) > 0 {
 		q = q.OrderBy(filter.OrderBy...)
 	}
@@ -114,7 +117,7 @@ func (r *ApproachRepository) List(
 func (r *ApproachRepository) Update(
 	ctx context.Context,
 	approach *models.Approach,
-) error {
+) *errs.Error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Update("public.approaches").
@@ -143,7 +146,7 @@ func (r *ApproachRepository) Update(
 func (r *ApproachRepository) Delete(
 	ctx context.Context,
 	id string,
-) error {
+) *errs.Error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Delete("public.approaches").Where(sq.Eq{"id": id})
@@ -171,7 +174,7 @@ func (r *ApproachRepository) Delete(
 func (r *ApproachRepository) Count(
 	ctx context.Context,
 	filter *models.ApproachFilter,
-) (uint64, error) {
+) (uint64, *errs.Error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Select("count(id)").From("public.approaches")

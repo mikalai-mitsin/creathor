@@ -3,6 +3,7 @@ package interceptors
 import (
 	"context"
 
+	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
 )
 
@@ -13,26 +14,21 @@ type SessionInterceptor interface {
 	Get(
 		ctx context.Context,
 		id string,
-		requestUser *models.User,
-	) (*models.Session, error)
+	) (*models.Session, *errs.Error)
 	List(
 		ctx context.Context,
 		filter *models.SessionFilter,
-		requestUser *models.User,
-	) ([]*models.Session, uint64, error)
+	) ([]*models.Session, uint64, *errs.Error)
 	Create(
 		ctx context.Context,
 		create *models.SessionCreate,
-		requestUser *models.User,
-	) (*models.Session, error)
+	) (*models.Session, *errs.Error)
 	Update(
 		ctx context.Context,
 		update *models.SessionUpdate,
-		requestUser *models.User,
-	) (*models.Session, error)
+	) (*models.Session, *errs.Error)
 	Delete(
 		ctx context.Context,
 		id string,
-		requestUser *models.User,
-	) error
+	) *errs.Error
 }

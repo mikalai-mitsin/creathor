@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	errs "github.com/018bf/example/internal/domain/errs"
 	models "github.com/018bf/example/internal/domain/models"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -36,11 +37,11 @@ func (m *MockApproachRepository) EXPECT() *MockApproachRepositoryMockRecorder {
 }
 
 // Count mocks base method.
-func (m *MockApproachRepository) Count(arg0 context.Context, arg1 *models.ApproachFilter) (uint64, error) {
+func (m *MockApproachRepository) Count(arg0 context.Context, arg1 *models.ApproachFilter) (uint64, *errs.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Count", arg0, arg1)
 	ret0, _ := ret[0].(uint64)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*errs.Error)
 	return ret0, ret1
 }
 
@@ -51,10 +52,10 @@ func (mr *MockApproachRepositoryMockRecorder) Count(arg0, arg1 interface{}) *gom
 }
 
 // Create mocks base method.
-func (m *MockApproachRepository) Create(arg0 context.Context, arg1 *models.Approach) error {
+func (m *MockApproachRepository) Create(arg0 context.Context, arg1 *models.Approach) *errs.Error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0, arg1)
-	ret0, _ := ret[0].(error)
+	ret0, _ := ret[0].(*errs.Error)
 	return ret0
 }
 
@@ -65,10 +66,10 @@ func (mr *MockApproachRepositoryMockRecorder) Create(arg0, arg1 interface{}) *go
 }
 
 // Delete mocks base method.
-func (m *MockApproachRepository) Delete(arg0 context.Context, arg1 string) error {
+func (m *MockApproachRepository) Delete(arg0 context.Context, arg1 string) *errs.Error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
-	ret0, _ := ret[0].(error)
+	ret0, _ := ret[0].(*errs.Error)
 	return ret0
 }
 
@@ -79,11 +80,11 @@ func (mr *MockApproachRepositoryMockRecorder) Delete(arg0, arg1 interface{}) *go
 }
 
 // Get mocks base method.
-func (m *MockApproachRepository) Get(arg0 context.Context, arg1 string) (*models.Approach, error) {
+func (m *MockApproachRepository) Get(arg0 context.Context, arg1 string) (*models.Approach, *errs.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(*models.Approach)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*errs.Error)
 	return ret0, ret1
 }
 
@@ -94,11 +95,11 @@ func (mr *MockApproachRepositoryMockRecorder) Get(arg0, arg1 interface{}) *gomoc
 }
 
 // List mocks base method.
-func (m *MockApproachRepository) List(arg0 context.Context, arg1 *models.ApproachFilter) ([]*models.Approach, error) {
+func (m *MockApproachRepository) List(arg0 context.Context, arg1 *models.ApproachFilter) ([]*models.Approach, *errs.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", arg0, arg1)
 	ret0, _ := ret[0].([]*models.Approach)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*errs.Error)
 	return ret0, ret1
 }
 
@@ -109,10 +110,10 @@ func (mr *MockApproachRepositoryMockRecorder) List(arg0, arg1 interface{}) *gomo
 }
 
 // Update mocks base method.
-func (m *MockApproachRepository) Update(arg0 context.Context, arg1 *models.Approach) error {
+func (m *MockApproachRepository) Update(arg0 context.Context, arg1 *models.Approach) *errs.Error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0, arg1)
-	ret0, _ := ret[0].(error)
+	ret0, _ := ret[0].(*errs.Error)
 	return ret0
 }
 

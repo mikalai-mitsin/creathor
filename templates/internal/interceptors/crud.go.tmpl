@@ -3,6 +3,7 @@ package interceptors
 import (
     "context"
 
+    "{{ .Module }}/internal/domain/errs"
     "{{ .Module }}/internal/domain/interceptors"
     "{{ .Module }}/internal/domain/models"
     "{{ .Module }}/internal/domain/usecases"
@@ -39,7 +40,7 @@ func (i *{{ .InterceptorTypeName }}) Get(
     id string,{{if .Auth}}
     requestUser *models.User,
 {{- end}}
-) (*models.{{ .ModelName }}, error) {
+) (*models.{{ .ModelName }}, *errs.Error) {
     {{- if .Auth }}
     if err := i.authUseCase.HasPermission(
         ctx,
@@ -73,7 +74,7 @@ func (i *{{ .InterceptorTypeName }}) List(
 {{- if .Auth}}
     requestUser *models.User,
 {{- end}}
-) ([]*models.{{ .ModelName }}, uint64, error) {
+) ([]*models.{{ .ModelName }}, uint64, *errs.Error) {
     {{- if .Auth }}
     if err := i.authUseCase.HasPermission(
         ctx,
@@ -104,7 +105,7 @@ func (i *{{ .InterceptorTypeName }}) Create(
 {{- if .Auth}}
     requestUser *models.User,
 {{- end}}
-) (*models.{{ .ModelName }}, error) {
+) (*models.{{ .ModelName }}, *errs.Error) {
 {{- if .Auth }}
     if err := i.authUseCase.HasPermission(
         ctx,
@@ -135,7 +136,7 @@ func (i *{{ .InterceptorTypeName }}) Update(
 {{- if .Auth}}
     requestUser *models.User,
 {{- end }}
-) (*models.{{ .ModelName }}, error) {
+) (*models.{{ .ModelName }}, *errs.Error) {
     {{- if .Auth }}
     if err := i.authUseCase.HasPermission(
         ctx,
@@ -169,7 +170,7 @@ func (i *{{ .InterceptorTypeName }}) Delete(
     id string,{{if .Auth}}
     requestUser *models.User,
 {{- end}}
-) error {
+) *errs.Error {
 {{- if .Auth }}
     if err := i.authUseCase.HasPermission(
         ctx,

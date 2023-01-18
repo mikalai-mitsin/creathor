@@ -2,10 +2,11 @@ package grpc
 
 import (
 	"context"
+	"net"
+
 	"github.com/018bf/example/internal/configs"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
-	"net"
 )
 
 var FXModule = fx.Options(

@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	errs "github.com/018bf/example/internal/domain/errs"
 	models "github.com/018bf/example/internal/domain/models"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -36,11 +37,11 @@ func (m *MockSessionUseCase) EXPECT() *MockSessionUseCaseMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockSessionUseCase) Create(arg0 context.Context, arg1 *models.SessionCreate) (*models.Session, error) {
+func (m *MockSessionUseCase) Create(arg0 context.Context, arg1 *models.SessionCreate) (*models.Session, *errs.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0, arg1)
 	ret0, _ := ret[0].(*models.Session)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*errs.Error)
 	return ret0, ret1
 }
 
@@ -51,10 +52,10 @@ func (mr *MockSessionUseCaseMockRecorder) Create(arg0, arg1 interface{}) *gomock
 }
 
 // Delete mocks base method.
-func (m *MockSessionUseCase) Delete(arg0 context.Context, arg1 string) error {
+func (m *MockSessionUseCase) Delete(arg0 context.Context, arg1 string) *errs.Error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
-	ret0, _ := ret[0].(error)
+	ret0, _ := ret[0].(*errs.Error)
 	return ret0
 }
 
@@ -65,11 +66,11 @@ func (mr *MockSessionUseCaseMockRecorder) Delete(arg0, arg1 interface{}) *gomock
 }
 
 // Get mocks base method.
-func (m *MockSessionUseCase) Get(arg0 context.Context, arg1 string) (*models.Session, error) {
+func (m *MockSessionUseCase) Get(arg0 context.Context, arg1 string) (*models.Session, *errs.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(*models.Session)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*errs.Error)
 	return ret0, ret1
 }
 
@@ -80,12 +81,12 @@ func (mr *MockSessionUseCaseMockRecorder) Get(arg0, arg1 interface{}) *gomock.Ca
 }
 
 // List mocks base method.
-func (m *MockSessionUseCase) List(arg0 context.Context, arg1 *models.SessionFilter) ([]*models.Session, uint64, error) {
+func (m *MockSessionUseCase) List(arg0 context.Context, arg1 *models.SessionFilter) ([]*models.Session, uint64, *errs.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", arg0, arg1)
 	ret0, _ := ret[0].([]*models.Session)
 	ret1, _ := ret[1].(uint64)
-	ret2, _ := ret[2].(error)
+	ret2, _ := ret[2].(*errs.Error)
 	return ret0, ret1, ret2
 }
 
@@ -96,11 +97,11 @@ func (mr *MockSessionUseCaseMockRecorder) List(arg0, arg1 interface{}) *gomock.C
 }
 
 // Update mocks base method.
-func (m *MockSessionUseCase) Update(arg0 context.Context, arg1 *models.SessionUpdate) (*models.Session, error) {
+func (m *MockSessionUseCase) Update(arg0 context.Context, arg1 *models.SessionUpdate) (*models.Session, *errs.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0, arg1)
 	ret0, _ := ret[0].(*models.Session)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*errs.Error)
 	return ret0, ret1
 }
 

@@ -3,6 +3,7 @@ package interceptors
 import (
     "context"
 
+    "{{ .Module }}/internal/domain/errs"
     "{{ .Module }}/internal/domain/interceptors"
     "{{ .Module }}/internal/domain/models"
     "{{ .Module }}/internal/domain/usecases"
@@ -32,7 +33,7 @@ func (i *UserInterceptor) Get(
     ctx context.Context,
     id string,
     requestUser *models.User,
-) (*models.User, error) {
+) (*models.User, *errs.Error) {
     if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDUserDetail); err != nil {
         return nil, err
     }
@@ -51,7 +52,7 @@ func (i *UserInterceptor) List(
     ctx context.Context,
     filter *models.UserFilter,
     requestUser *models.User,
-) ([]*models.User, uint64, error) {
+) ([]*models.User, uint64, *errs.Error) {
     if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDUserList); err != nil {
         return nil, 0, err
     }
@@ -66,7 +67,7 @@ func (i *UserInterceptor) Create(
     ctx context.Context,
     create *models.UserCreate,
     requestUser *models.User,
-) (*models.User, error) {
+) (*models.User, *errs.Error) {
     if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDUserCreate); err != nil {
         return nil, err
     }
@@ -81,7 +82,7 @@ func (i *UserInterceptor) Update(
     ctx context.Context,
     update *models.UserUpdate,
     requestUser *models.User,
-) (*models.User, error) {
+) (*models.User, *errs.Error) {
     if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDUserUpdate); err != nil {
         return nil, err
     }
@@ -104,7 +105,7 @@ func (i *UserInterceptor) Delete(
     ctx context.Context,
     id string,
     requestUser *models.User,
-) error {
+) *errs.Error {
     if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDUserDelete); err != nil {
         return err
     }

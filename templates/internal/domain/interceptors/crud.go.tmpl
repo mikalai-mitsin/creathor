@@ -3,6 +3,7 @@ package interceptors
 import (
     "context"
 
+    "{{ .Module }}/internal/domain/errs"
     "{{ .Module }}/internal/domain/models"
 )
 
@@ -16,33 +17,33 @@ type {{ .InterceptorTypeName }} interface {
 {{- if .Auth }}
         requestUser *models.User,
 {{- end }}
-    ) (*models.{{ .ModelName }}, error)
+    ) (*models.{{ .ModelName }}, *errs.Error)
     List(
         ctx context.Context,
         filter *models.{{ .FilterTypeName }},
 {{- if .Auth }}
         requestUser *models.User,
 {{- end }}
-    ) ([]*models.{{ .ModelName }}, uint64, error)
+    ) ([]*models.{{ .ModelName }}, uint64, *errs.Error)
     Create(
         ctx context.Context,
         create *models.{{ .CreateTypeName }},
 {{- if .Auth }}
         requestUser *models.User,
 {{- end }}
-    ) (*models.{{ .ModelName }}, error)
+    ) (*models.{{ .ModelName }}, *errs.Error)
     Update(
         ctx context.Context,
         update *models.{{ .UpdateTypeName }},
     {{- if .Auth }}
         requestUser *models.User,
     {{- end }}
-    ) (*models.{{ .ModelName }}, error)
+    ) (*models.{{ .ModelName }}, *errs.Error)
     Delete(
         ctx context.Context,
         id string,
 {{- if .Auth }}
         requestUser *models.User,
 {{- end }}
-    ) error
+    ) *errs.Error
 }

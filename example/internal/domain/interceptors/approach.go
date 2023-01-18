@@ -3,6 +3,7 @@ package interceptors
 import (
 	"context"
 
+	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
 )
 
@@ -13,26 +14,21 @@ type ApproachInterceptor interface {
 	Get(
 		ctx context.Context,
 		id string,
-		requestUser *models.User,
-	) (*models.Approach, error)
+	) (*models.Approach, *errs.Error)
 	List(
 		ctx context.Context,
 		filter *models.ApproachFilter,
-		requestUser *models.User,
-	) ([]*models.Approach, uint64, error)
+	) ([]*models.Approach, uint64, *errs.Error)
 	Create(
 		ctx context.Context,
 		create *models.ApproachCreate,
-		requestUser *models.User,
-	) (*models.Approach, error)
+	) (*models.Approach, *errs.Error)
 	Update(
 		ctx context.Context,
 		update *models.ApproachUpdate,
-		requestUser *models.User,
-	) (*models.Approach, error)
+	) (*models.Approach, *errs.Error)
 	Delete(
 		ctx context.Context,
 		id string,
-		requestUser *models.User,
-	) error
+	) *errs.Error
 }

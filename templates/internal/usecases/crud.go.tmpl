@@ -3,6 +3,7 @@ package usecases
 import (
     "context"
 
+    "{{ .Module }}/internal/domain/errs"
     "{{ .Module }}/internal/domain/models"
     "{{ .Module }}/internal/domain/repositories"
     "{{ .Module }}/internal/domain/usecases"
@@ -32,7 +33,7 @@ func New{{ .UseCaseTypeName }}(
 func (u *{{ .UseCaseTypeName }}) Get(
     ctx context.Context,
     id string,
-) (*models.{{ .ModelName }}, error) {
+) (*models.{{ .ModelName }}, *errs.Error ) {
     {{ .Variable }}, err := u.{{ .RepositoryVariableName }}.Get(ctx, id)
     if err != nil {
         return nil, err
@@ -43,7 +44,7 @@ func (u *{{ .UseCaseTypeName }}) Get(
 func (u *{{ .UseCaseTypeName }}) List(
     ctx context.Context,
     filter *models.{{ .FilterTypeName }},
-) ([]*models.{{ .ModelName }}, uint64, error) {
+) ([]*models.{{ .ModelName }}, uint64, *errs.Error ) {
     {{ .ListVariable }}, err := u.{{ .RepositoryVariableName }}.List(ctx, filter)
     if err != nil {
         return nil, 0, err
@@ -58,7 +59,7 @@ func (u *{{ .UseCaseTypeName }}) List(
 func (u *{{ .UseCaseTypeName }}) Create(
     ctx context.Context,
     create *models.{{ .ModelName }}Create,
-) (*models.{{ .ModelName }}, error) {
+) (*models.{{ .ModelName }}, *errs.Error ) {
     if err := create.Validate(); err != nil {
         return nil, err
     }
@@ -80,7 +81,7 @@ func (u *{{ .UseCaseTypeName }}) Create(
 func (u *{{ .UseCaseTypeName }}) Update(
     ctx context.Context,
     update *models.{{ .ModelName }}Update,
-) (*models.{{ .ModelName }}, error) {
+) (*models.{{ .ModelName }}, *errs.Error ) {
     if err := update.Validate(); err != nil {
         return nil, err
     }
@@ -100,7 +101,7 @@ func (u *{{ .UseCaseTypeName }}) Update(
     return {{ .Variable }}, nil
 }
 
-func (u *{{ .UseCaseTypeName }}) Delete(ctx context.Context, id string) error {
+func (u *{{ .UseCaseTypeName }}) Delete(ctx context.Context, id string) *errs.Error {
     if err := u.{{ .RepositoryVariableName }}.Delete(ctx, id); err != nil {
         return err
     }

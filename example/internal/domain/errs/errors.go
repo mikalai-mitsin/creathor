@@ -6,10 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/lib/pq"
-	"go.uber.org/zap/zapcore"
 	"reflect"
 	"text/template"
+
+	"github.com/lib/pq"
+	"go.uber.org/zap/zapcore"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
@@ -169,30 +170,6 @@ func NewEntityNotFound() *Error {
 	return &Error{
 		Code:    ErrorCodeNotFound,
 		Message: "Entity not found.",
-		Params:  map[string]string{},
-	}
-}
-
-func NewPermissionDeniedError() *Error {
-	return &Error{
-		Code:    ErrorCodePermissionDenied,
-		Message: "Permission denied.",
-		Params:  map[string]string{},
-	}
-}
-
-func NewBadToken() *Error {
-	return &Error{
-		Code:    ErrorCodeUnauthenticated,
-		Message: "Bad token.",
-		Params:  map[string]string{},
-	}
-}
-
-func NewPermissionDenied() *Error {
-	return &Error{
-		Code:    ErrorCodePermissionDenied,
-		Message: "Permission denied.",
 		Params:  map[string]string{},
 	}
 }

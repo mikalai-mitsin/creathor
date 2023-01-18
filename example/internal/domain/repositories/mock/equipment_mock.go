@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	errs "github.com/018bf/example/internal/domain/errs"
 	models "github.com/018bf/example/internal/domain/models"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -36,11 +37,11 @@ func (m *MockEquipmentRepository) EXPECT() *MockEquipmentRepositoryMockRecorder 
 }
 
 // Count mocks base method.
-func (m *MockEquipmentRepository) Count(arg0 context.Context, arg1 *models.EquipmentFilter) (uint64, error) {
+func (m *MockEquipmentRepository) Count(arg0 context.Context, arg1 *models.EquipmentFilter) (uint64, *errs.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Count", arg0, arg1)
 	ret0, _ := ret[0].(uint64)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*errs.Error)
 	return ret0, ret1
 }
 
@@ -51,10 +52,10 @@ func (mr *MockEquipmentRepositoryMockRecorder) Count(arg0, arg1 interface{}) *go
 }
 
 // Create mocks base method.
-func (m *MockEquipmentRepository) Create(arg0 context.Context, arg1 *models.Equipment) error {
+func (m *MockEquipmentRepository) Create(arg0 context.Context, arg1 *models.Equipment) *errs.Error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0, arg1)
-	ret0, _ := ret[0].(error)
+	ret0, _ := ret[0].(*errs.Error)
 	return ret0
 }
 
@@ -65,10 +66,10 @@ func (mr *MockEquipmentRepositoryMockRecorder) Create(arg0, arg1 interface{}) *g
 }
 
 // Delete mocks base method.
-func (m *MockEquipmentRepository) Delete(arg0 context.Context, arg1 string) error {
+func (m *MockEquipmentRepository) Delete(arg0 context.Context, arg1 string) *errs.Error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
-	ret0, _ := ret[0].(error)
+	ret0, _ := ret[0].(*errs.Error)
 	return ret0
 }
 
@@ -79,11 +80,11 @@ func (mr *MockEquipmentRepositoryMockRecorder) Delete(arg0, arg1 interface{}) *g
 }
 
 // Get mocks base method.
-func (m *MockEquipmentRepository) Get(arg0 context.Context, arg1 string) (*models.Equipment, error) {
+func (m *MockEquipmentRepository) Get(arg0 context.Context, arg1 string) (*models.Equipment, *errs.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(*models.Equipment)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*errs.Error)
 	return ret0, ret1
 }
 
@@ -94,11 +95,11 @@ func (mr *MockEquipmentRepositoryMockRecorder) Get(arg0, arg1 interface{}) *gomo
 }
 
 // List mocks base method.
-func (m *MockEquipmentRepository) List(arg0 context.Context, arg1 *models.EquipmentFilter) ([]*models.Equipment, error) {
+func (m *MockEquipmentRepository) List(arg0 context.Context, arg1 *models.EquipmentFilter) ([]*models.Equipment, *errs.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", arg0, arg1)
 	ret0, _ := ret[0].([]*models.Equipment)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*errs.Error)
 	return ret0, ret1
 }
 
@@ -109,10 +110,10 @@ func (mr *MockEquipmentRepositoryMockRecorder) List(arg0, arg1 interface{}) *gom
 }
 
 // Update mocks base method.
-func (m *MockEquipmentRepository) Update(arg0 context.Context, arg1 *models.Equipment) error {
+func (m *MockEquipmentRepository) Update(arg0 context.Context, arg1 *models.Equipment) *errs.Error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0, arg1)
-	ret0, _ := ret[0].(error)
+	ret0, _ := ret[0].(*errs.Error)
 	return ret0
 }
 

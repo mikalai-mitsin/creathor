@@ -52,7 +52,7 @@ func NewJWTAuthRepository(
     }
 }
 
-func (r *JWTAuthRepository) Create(_ context.Context, user *models.User) (*models.TokenPair, error) {
+func (r *JWTAuthRepository) Create(_ context.Context, user *models.User) (*models.TokenPair, *errs.Error) {
     pair := r.createPair(user.ID)
     return pair, nil
 }
@@ -94,7 +94,7 @@ func (r *JWTAuthRepository) createPair(subject string) *models.TokenPair {
     }
 }
 
-func (r *JWTAuthRepository) Validate(_ context.Context, token models.Token) error {
+func (r *JWTAuthRepository) Validate(_ context.Context, token models.Token) *errs.Error {
     jwtToken, err := r.validate(token)
     if err != nil {
         return err
@@ -106,7 +106,7 @@ func (r *JWTAuthRepository) Validate(_ context.Context, token models.Token) erro
     return nil
 }
 
-func (r *JWTAuthRepository) RefreshToken(_ context.Context, token models.Token) (*models.TokenPair, error) {
+func (r *JWTAuthRepository) RefreshToken(_ context.Context, token models.Token) (*models.TokenPair, *errs.Error) {
     jwtToken, err := r.validate(token)
     if err != nil {
         return nil, err
@@ -119,7 +119,7 @@ func (r *JWTAuthRepository) RefreshToken(_ context.Context, token models.Token) 
     return pair, nil
 }
 
-func (r *JWTAuthRepository) validate(token models.Token) (*jwt.Token, error) {
+func (r *JWTAuthRepository) validate(token models.Token) (*jwt.Token, *errs.Error) {
     jwtToken, err := jwt.Parse(token.String(), r.keyFunc)
     if err != nil {
         e := errs.NewBadToken()
@@ -128,7 +128,7 @@ func (r *JWTAuthRepository) validate(token models.Token) (*jwt.Token, error) {
     return jwtToken, nil
 }
 
-func (r *JWTAuthRepository) GetSubject(_ context.Context, token models.Token) (string, error) {
+func (r *JWTAuthRepository) GetSubject(_ context.Context, token models.Token) (string, *errs.Error) {
     jwtToken, err := jwt.Parse(token.String(), r.keyFunc)
     if err != nil {
         e := errs.NewError(errs.ErrorCodeUnauthenticated, "Invalid token.")

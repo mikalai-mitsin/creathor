@@ -16,6 +16,7 @@ import (
     "{{ .Module }}/internal/domain/repositories"
 
     "{{ .Module }}/internal/domain/errs"
+    "{{ .Module }}/pkg/utils"
     "github.com/jmoiron/sqlx"
     "github.com/lib/pq"
 )
@@ -29,7 +30,7 @@ func NewPostgresUserRepository(database *sqlx.DB, logger log.Logger) repositorie
     return &PostgresUserRepository{database: database, logger: logger}
 }
 
-func (r *PostgresUserRepository) Count(ctx context.Context, filter *models.UserFilter) (uint64, error) {
+func (r *PostgresUserRepository) Count(ctx context.Context, filter *models.UserFilter) (uint64, *errs.Error) {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     q := sq.Select("count(id)").From("public.users")
@@ -54,7 +55,7 @@ func (r *PostgresUserRepository) Count(ctx context.Context, filter *models.UserF
     return count, nil
 }
 
-func (r *PostgresUserRepository) Create(ctx context.Context, user *models.User) error {
+func (r *PostgresUserRepository) Create(ctx context.Context, user *models.User) *errs.Error {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     q := sq.Insert("public.users").
@@ -85,7 +86,7 @@ func (r *PostgresUserRepository) Create(ctx context.Context, user *models.User) 
     return nil
 }
 
-func (r *PostgresUserRepository) Get(ctx context.Context, id string) (*models.User, error) {
+func (r *PostgresUserRepository) Get(ctx context.Context, id string) (*models.User, *errs.Error) {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     user := &models.User{}
@@ -111,7 +112,7 @@ func (r *PostgresUserRepository) Get(ctx context.Context, id string) (*models.Us
     return user, nil
 }
 
-func (r *PostgresUserRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
+func (r *PostgresUserRepository) GetByEmail(ctx context.Context, email string) (*models.User, *errs.Error) {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     raw := &models.User{}
@@ -137,7 +138,7 @@ func (r *PostgresUserRepository) GetByEmail(ctx context.Context, email string) (
     return raw, nil
 }
 
-func (r *PostgresUserRepository) List(ctx context.Context, filter *models.UserFilter) ([]*models.User, error) {
+func (r *PostgresUserRepository) List(ctx context.Context, filter *models.UserFilter) ([]*models.User, *errs.Error) {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     var users []*models.User
@@ -179,7 +180,7 @@ func (r *PostgresUserRepository) List(ctx context.Context, filter *models.UserFi
     return users, nil
 }
 
-func (r *PostgresUserRepository) Update(ctx context.Context, user *models.User) error {
+func (r *PostgresUserRepository) Update(ctx context.Context, user *models.User) *errs.Error {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     q := sq.Update("public.users").
@@ -213,7 +214,7 @@ func (r *PostgresUserRepository) Update(ctx context.Context, user *models.User) 
     return nil
 }
 
-func (r *PostgresUserRepository) Delete(ctx context.Context, id string) error {
+func (r *PostgresUserRepository) Delete(ctx context.Context, id string) *errs.Error {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     q := sq.Delete("public.users").Where(sq.Eq{"id": id})

@@ -3,6 +3,7 @@ package usecases
 import (
     "context"
 
+    "{{ .Module }}/internal/domain/errs"
     "{{ .Module }}/internal/domain/models"
     "{{ .Module }}/internal/domain/repositories"
     "{{ .Module }}/internal/domain/usecases"
@@ -33,7 +34,7 @@ func NewAuthUseCase(
 func (u AuthUseCase) CreateToken(
     ctx context.Context,
     login *models.Login,
-) (*models.TokenPair, error) {
+) (*models.TokenPair, *errs.Error ) {
     user, err := u.userRepository.GetByEmail(ctx, login.Email)
     if err != nil {
         return nil, err
@@ -51,7 +52,7 @@ func (u AuthUseCase) CreateToken(
 func (u AuthUseCase) CreateTokenByUser(
     ctx context.Context,
     user *models.User,
-) (*models.TokenPair, error) {
+) (*models.TokenPair, *errs.Error ) {
     tokenPair, err := u.authRepository.Create(ctx, user)
     if err != nil {
         return nil, err
@@ -62,7 +63,7 @@ func (u AuthUseCase) CreateTokenByUser(
 func (u AuthUseCase) RefreshToken(
     ctx context.Context,
     refresh models.Token,
-) (*models.TokenPair, error) {
+) (*models.TokenPair, *errs.Error ) {
     pair, err := u.authRepository.RefreshToken(ctx, refresh)
     if err != nil {
         return nil, err
@@ -73,7 +74,7 @@ func (u AuthUseCase) RefreshToken(
 func (u AuthUseCase) ValidateToken(
     ctx context.Context,
     access models.Token,
-) error {
+) *errs.Error {
     if err := u.authRepository.Validate(ctx, access); err != nil {
         return err
     }
@@ -83,7 +84,7 @@ func (u AuthUseCase) ValidateToken(
 func (u AuthUseCase) Auth(
     ctx context.Context,
     access models.Token,
-) (*models.User, error) {
+) (*models.User, *errs.Error ) {
     userID, err := u.authRepository.GetSubject(ctx, access)
     if err != nil {
         return nil, err
@@ -99,7 +100,7 @@ func (u AuthUseCase) HasPermission(
     ctx context.Context,
     user *models.User,
     permission models.PermissionID,
-) error {
+) *errs.Error {
     if err := u.permissionRepository.HasPermission(ctx, permission, user); err != nil {
         return err
     }
@@ -112,7 +113,7 @@ func (u AuthUseCase) HasObjectPermission(
     user *models.User,
     permission models.PermissionID,
     object any,
-) error {
+) *errs.Error {
     if err := u.permissionRepository.HasObjectPermission(ctx, permission, user, object); err != nil {
         return err
     }

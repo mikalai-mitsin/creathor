@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	errs "github.com/018bf/example/internal/domain/errs"
 	models "github.com/018bf/example/internal/domain/models"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -36,11 +37,11 @@ func (m *MockUserUseCase) EXPECT() *MockUserUseCaseMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockUserUseCase) Create(arg0 context.Context, arg1 *models.UserCreate) (*models.User, error) {
+func (m *MockUserUseCase) Create(arg0 context.Context, arg1 *models.UserCreate) (*models.User, *errs.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0, arg1)
 	ret0, _ := ret[0].(*models.User)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*errs.Error)
 	return ret0, ret1
 }
 
@@ -51,10 +52,10 @@ func (mr *MockUserUseCaseMockRecorder) Create(arg0, arg1 interface{}) *gomock.Ca
 }
 
 // Delete mocks base method.
-func (m *MockUserUseCase) Delete(arg0 context.Context, arg1 string) error {
+func (m *MockUserUseCase) Delete(arg0 context.Context, arg1 string) *errs.Error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
-	ret0, _ := ret[0].(error)
+	ret0, _ := ret[0].(*errs.Error)
 	return ret0
 }
 
@@ -65,11 +66,11 @@ func (mr *MockUserUseCaseMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Ca
 }
 
 // Get mocks base method.
-func (m *MockUserUseCase) Get(arg0 context.Context, arg1 string) (*models.User, error) {
+func (m *MockUserUseCase) Get(arg0 context.Context, arg1 string) (*models.User, *errs.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(*models.User)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*errs.Error)
 	return ret0, ret1
 }
 
@@ -79,28 +80,13 @@ func (mr *MockUserUseCaseMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockUserUseCase)(nil).Get), arg0, arg1)
 }
 
-// GetByEmail mocks base method.
-func (m *MockUserUseCase) GetByEmail(arg0 context.Context, arg1 string) (*models.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByEmail", arg0, arg1)
-	ret0, _ := ret[0].(*models.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByEmail indicates an expected call of GetByEmail.
-func (mr *MockUserUseCaseMockRecorder) GetByEmail(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEmail", reflect.TypeOf((*MockUserUseCase)(nil).GetByEmail), arg0, arg1)
-}
-
 // List mocks base method.
-func (m *MockUserUseCase) List(arg0 context.Context, arg1 *models.UserFilter) ([]*models.User, uint64, error) {
+func (m *MockUserUseCase) List(arg0 context.Context, arg1 *models.UserFilter) ([]*models.User, uint64, *errs.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", arg0, arg1)
 	ret0, _ := ret[0].([]*models.User)
 	ret1, _ := ret[1].(uint64)
-	ret2, _ := ret[2].(error)
+	ret2, _ := ret[2].(*errs.Error)
 	return ret0, ret1, ret2
 }
 
@@ -111,11 +97,11 @@ func (mr *MockUserUseCaseMockRecorder) List(arg0, arg1 interface{}) *gomock.Call
 }
 
 // Update mocks base method.
-func (m *MockUserUseCase) Update(arg0 context.Context, arg1 *models.UserUpdate) (*models.User, error) {
+func (m *MockUserUseCase) Update(arg0 context.Context, arg1 *models.UserUpdate) (*models.User, *errs.Error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0, arg1)
 	ret0, _ := ret[0].(*models.User)
-	ret1, _ := ret[1].(error)
+	ret1, _ := ret[1].(*errs.Error)
 	return ret0, ret1
 }
 

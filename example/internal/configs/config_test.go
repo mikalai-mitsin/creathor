@@ -15,11 +15,11 @@ func TestParseConfig(t *testing.T) {
 bind_addr = ":8005"
 log_level = "debug"
 
-	`
+    `
 	badFile := `
 bind_addr = ":8003"
 log_level = 2
-	`
+    `
 	configPath := path.Join(os.TempDir(), "config.toml")
 	badConfigPath := path.Join(os.TempDir(), "bad-config.toml")
 	if err := os.WriteFile(configPath, []byte(file), 0600); err != nil {

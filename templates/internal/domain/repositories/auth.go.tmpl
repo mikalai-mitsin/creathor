@@ -3,6 +3,7 @@ package repositories
 import (
     "context"
 
+    "{{ .Module }}/internal/domain/errs"
     "{{ .Module }}/internal/domain/models"
 )
 
@@ -13,17 +14,17 @@ type AuthRepository interface {
     Create(
         ctx context.Context,
         user *models.User,
-    ) (*models.TokenPair, error)
+    ) (*models.TokenPair, *errs.Error)
     Validate(
         ctx context.Context,
         token models.Token,
-    ) error
+    ) *errs.Error
     RefreshToken(
         ctx context.Context,
         token models.Token,
-    ) (*models.TokenPair, error)
+    ) (*models.TokenPair, *errs.Error)
     GetSubject(
         ctx context.Context,
         token models.Token,
-    ) (string, error)
+    ) (string, *errs.Error)
 }

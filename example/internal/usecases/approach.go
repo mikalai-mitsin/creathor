@@ -3,6 +3,7 @@ package usecases
 import (
 	"context"
 
+	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
 	"github.com/018bf/example/internal/domain/usecases"
@@ -32,7 +33,7 @@ func NewApproachUseCase(
 func (u *ApproachUseCase) Get(
 	ctx context.Context,
 	id string,
-) (*models.Approach, error) {
+) (*models.Approach, *errs.Error) {
 	approach, err := u.approachRepository.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -43,7 +44,7 @@ func (u *ApproachUseCase) Get(
 func (u *ApproachUseCase) List(
 	ctx context.Context,
 	filter *models.ApproachFilter,
-) ([]*models.Approach, uint64, error) {
+) ([]*models.Approach, uint64, *errs.Error) {
 	approaches, err := u.approachRepository.List(ctx, filter)
 	if err != nil {
 		return nil, 0, err
@@ -58,7 +59,7 @@ func (u *ApproachUseCase) List(
 func (u *ApproachUseCase) Create(
 	ctx context.Context,
 	create *models.ApproachCreate,
-) (*models.Approach, error) {
+) (*models.Approach, *errs.Error) {
 	if err := create.Validate(); err != nil {
 		return nil, err
 	}
@@ -77,7 +78,7 @@ func (u *ApproachUseCase) Create(
 func (u *ApproachUseCase) Update(
 	ctx context.Context,
 	update *models.ApproachUpdate,
-) (*models.Approach, error) {
+) (*models.Approach, *errs.Error) {
 	if err := update.Validate(); err != nil {
 		return nil, err
 	}
@@ -92,7 +93,7 @@ func (u *ApproachUseCase) Update(
 	return approach, nil
 }
 
-func (u *ApproachUseCase) Delete(ctx context.Context, id string) error {
+func (u *ApproachUseCase) Delete(ctx context.Context, id string) *errs.Error {
 	if err := u.approachRepository.Delete(ctx, id); err != nil {
 		return err
 	}

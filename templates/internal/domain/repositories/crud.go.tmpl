@@ -3,6 +3,7 @@ package repositories
 import (
     "context"
 
+    "{{ .Module }}/internal/domain/errs"
     "{{ .Module }}/internal/domain/models"
 )
 
@@ -13,25 +14,25 @@ type {{ .RepositoryTypeName }} interface {
     Get(
         ctx context.Context,
         id string,
-    ) (*models.{{ .ModelName }}, error)
+    ) (*models.{{ .ModelName }}, *errs.Error)
     List(
         ctx context.Context,
         filter *models.{{ .FilterTypeName }},
-    ) ([]*models.{{ .ModelName }}, error)
+    ) ([]*models.{{ .ModelName }}, *errs.Error)
     Count(
         ctx context.Context,
         filter *models.{{ .FilterTypeName }},
-    ) (uint64, error)
+    ) (uint64, *errs.Error)
     Create(
         ctx context.Context,
         {{ .Variable }} *models.{{ .ModelName }},
-    ) error
+    ) *errs.Error
     Update(
         ctx context.Context,
         {{ .Variable  }} *models.{{ .ModelName }},
-    ) error
+    ) *errs.Error
     Delete(
         ctx context.Context,
         id string,
-    ) error
+    ) *errs.Error
 }

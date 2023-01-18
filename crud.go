@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -95,6 +96,23 @@ func CreateCRUD(data Model) error {
 	if err := registerHandler(data.RESTHandlerVariableName(), data.RESTHandlerTypeName()); err != nil {
 		return err
 	}
+	if data.Auth && data.ModelName() != "User" {
+		if err := addPermission(data.PermissionIDList(), "objectAnybody"); err != nil {
+			return err
+		}
+		//if err := addPermission(data.PermissionIDDetail(), "objectAnybody"); err != nil {
+		//	return err
+		//}
+		//if err := addPermission(data.PermissionIDCreate(), "objectAnybody"); err != nil {
+		//	return err
+		//}
+		//if err := addPermission(data.PermissionIDUpdate(), "objectAnybody"); err != nil {
+		//	return err
+		//}
+		//if err := addPermission(data.PermissionIDDelete(), "objectAnybody"); err != nil {
+		//	return err
+		//}
+	}
 	return nil
 }
 
@@ -171,6 +189,64 @@ func registerHandler(variableName, typeName string) error {
 						}
 						if err := printer.Fprint(openFile, fileset, file); err != nil {
 							return err
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func addPermission(permission, check string) error {
+	packagePath := filepath.Join(destinationPath, "internal", "repositories")
+	fileset := token.NewFileSet()
+	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
+		return true
+	}, parser.SkipObjectResolution)
+	if err != nil {
+		return err
+	}
+	for _, p := range tree {
+		for filePath, file := range p.Files {
+			for _, decl := range file.Decls {
+				genDecl, ok := decl.(*ast.GenDecl)
+				if ok {
+					for _, spec := range genDecl.Specs {
+						variable, ok := spec.(*ast.ValueSpec)
+						if ok {
+							for _, name := range variable.Names {
+								if name.Name == "hasObjectPermission" {
+									for _, values := range variable.Values {
+										lit, ok := values.(*ast.CompositeLit)
+										if ok {
+											lit.Elts = append(lit.Elts, &ast.KeyValueExpr{
+												Key: &ast.SelectorExpr{
+													X:   ast.NewIdent("models"),
+													Sel: ast.NewIdent(permission),
+												},
+												Colon: 0,
+												Value: &ast.CompositeLit{
+													Type:   nil,
+													Lbrace: 0,
+													Elts: []ast.Expr{
+														ast.NewIdent(check),
+													},
+													Rbrace:     0,
+													Incomplete: false,
+												},
+											})
+											a := &bytes.Buffer{}
+											if err := printer.Fprint(a, fileset, file); err != nil {
+												return err
+											}
+											if err := os.WriteFile(filePath, a.Bytes(), 0777); err != nil {
+												return err
+											}
+										}
+									}
+								}
+							}
 						}
 					}
 				}

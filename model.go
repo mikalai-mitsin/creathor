@@ -159,3 +159,23 @@ func (m Model) MockFileName() string {
 func (m Model) TableName() string {
 	return strcase.ToSnake(inflection.Plural(m.Model))
 }
+
+func (m Model) PermissionIDList() string {
+	return fmt.Sprintf("PermissionID%sList", m.ModelName())
+}
+
+func (m Model) PermissionIDDetail() string {
+	return fmt.Sprintf("PermissionID%sDetail", m.ModelName())
+}
+
+func (m Model) PermissionIDCreate() string {
+	return fmt.Sprintf("PermissionID%sCreate", m.ModelName())
+}
+
+func (m Model) PermissionIDUpdate() string {
+	return fmt.Sprintf("PermissionID%sUpdate", m.ModelName())
+}
+
+func (m Model) PermissionIDDelete() string {
+	return fmt.Sprintf("PermissionID%sDelete", m.ModelName())
+}

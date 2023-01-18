@@ -28,7 +28,7 @@ type Config struct {
 {{- end }}
 }
 
-func ParseConfig(configPath string) (*Config, *errs.Error) {
+func ParseConfig(configPath string) (*Config, error) {
     config := &Config{}
     if configPath != "" {
         if err := cleanenv.ReadConfig(configPath, config); err != nil {

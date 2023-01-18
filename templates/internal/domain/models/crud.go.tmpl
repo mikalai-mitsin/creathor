@@ -93,10 +93,10 @@ func (c *{{ .UpdateTypeName }}) Validate() error {
 }
 {{ if .Auth }}
 const (
-    PermissionID{{ .ModelName }}List   PermissionID = "{{ .KeyName }}_list"
-    PermissionID{{ .ModelName }}Detail PermissionID = "{{ .KeyName }}_detail"
-    PermissionID{{ .ModelName }}Create PermissionID = "{{ .KeyName }}_create"
-    PermissionID{{ .ModelName }}Update PermissionID = "{{ .KeyName }}_update"
-    PermissionID{{ .ModelName }}Delete PermissionID = "{{ .KeyName }}_delete"
+    {{ .PermissionIDList }} PermissionID = "{{ .KeyName }}_list"
+    {{ .PermissionIDDetail }} PermissionID = "{{ .KeyName }}_detail"
+    {{ .PermissionIDCreate }} PermissionID = "{{ .KeyName }}_create"
+    {{ .PermissionIDUpdate }} PermissionID = "{{ .KeyName }}_update"
+    {{ .PermissionIDDelete }} PermissionID = "{{ .KeyName }}_delete"
 )
 {{ end }}

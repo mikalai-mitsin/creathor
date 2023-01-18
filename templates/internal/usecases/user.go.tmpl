@@ -85,6 +85,7 @@ func (u *UserUseCase) Create(
         UpdatedAt: time.Time{},
         GroupID:   models.GroupIDUser,
     }
+    user.SetPassword(create.Password)
     if err := u.userRepository.Create(ctx, user); err != nil {
         return nil, err
     }

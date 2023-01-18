@@ -13,7 +13,7 @@ import (
 var FXModule = fx.Options(
 	fx.Provide(),
 {{- if .Auth }}
-	fx.Provide(NewAuthMiddleware),
+	fx.Provide(NewAuthMiddleware, NewAuthHandler, NewUserHandler),
 {{- end }}
 	fx.Provide(NewRouter),
 	fx.Invoke(func(lifecycle fx.Lifecycle, router *gin.Engine, config *configs.Config) {

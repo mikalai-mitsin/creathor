@@ -328,6 +328,16 @@ func CreateLayout(data *Project) error {
 				DestinationPath: path.Join(destinationPath, "internal", "repositories", "auth_test.go"),
 				Name:            "test auth repository implementation",
 			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/rest/auth.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "auth.go"),
+				Name:            "rest auth handler",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/rest/user.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "user.go"),
+				Name:            "rest user handler",
+			},
 		)
 	}
 	for _, file := range files {

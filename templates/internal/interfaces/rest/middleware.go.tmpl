@@ -26,7 +26,7 @@ func (m *AuthMiddleware) Middleware() gin.HandlerFunc {
 		if len(token) > 7 {
 			token = token[7:]
 			authUser, err := m.authService.Auth(ctx, models.Token(token))
-			if err != nil {
+			if err == nil {
 				user = authUser
 			}
 		}

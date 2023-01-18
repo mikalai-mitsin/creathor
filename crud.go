@@ -100,18 +100,18 @@ func CreateCRUD(data Model) error {
 		if err := addPermission(data.PermissionIDList(), "objectAnybody"); err != nil {
 			return err
 		}
-		//if err := addPermission(data.PermissionIDDetail(), "objectAnybody"); err != nil {
-		//	return err
-		//}
-		//if err := addPermission(data.PermissionIDCreate(), "objectAnybody"); err != nil {
-		//	return err
-		//}
-		//if err := addPermission(data.PermissionIDUpdate(), "objectAnybody"); err != nil {
-		//	return err
-		//}
-		//if err := addPermission(data.PermissionIDDelete(), "objectAnybody"); err != nil {
-		//	return err
-		//}
+		if err := addPermission(data.PermissionIDDetail(), "objectAnybody"); err != nil {
+			return err
+		}
+		if err := addPermission(data.PermissionIDCreate(), "objectAnybody"); err != nil {
+			return err
+		}
+		if err := addPermission(data.PermissionIDUpdate(), "objectAnybody"); err != nil {
+			return err
+		}
+		if err := addPermission(data.PermissionIDDelete(), "objectAnybody"); err != nil {
+			return err
+		}
 	}
 	return nil
 }

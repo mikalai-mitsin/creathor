@@ -20,6 +20,8 @@ func NewRouter(
 	logger log.Logger,
 {{- if .Auth }}
 	authMiddleware *AuthMiddleware,
+	authHandler *AuthHandler,
+	userHandler *UserHandler,
 {{- end }}
 ) *gin.Engine {
 	router := gin.Default()
@@ -35,5 +37,9 @@ func NewRouter(
 			"message": "ok",
 		})
 	})
+{{- if .Auth }}
+	authHandler.Register(router)
+	userHandler.Register(router)
+{{- end }}
 	return router
 }

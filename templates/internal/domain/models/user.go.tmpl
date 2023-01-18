@@ -22,7 +22,7 @@ type User struct {
     ID          string    `db:"id,omitempty" json:"id" form:"id"`
     FirstName   string    `db:"first_name" json:"first_name" form:"first_name"`
     LastName    string    `db:"last_name" json:"last_name" form:"last_name"`
-    Password    string    `db:"password" json:"password" form:"password"`
+    Password    string    `db:"password" json:"-" form:"-"`
     Email       string    `db:"email" json:"email" form:"email"`
     GroupID     GroupID   `db:"group_id" json:"group_id" form:"group_id"`
     CreatedAt   time.Time `db:"created_at,omitempty" json:"created_at" form:"created_at"`

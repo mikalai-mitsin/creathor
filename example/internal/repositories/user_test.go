@@ -85,7 +85,7 @@ func TestUserRepository_Create(t *testing.T) {
 		setup   func()
 		fields  fields
 		args    args
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -166,7 +166,7 @@ func TestUserRepository_Get(t *testing.T) {
 		fields  fields
 		args    args
 		want    *models.User
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -269,7 +269,7 @@ func TestUserRepository_List(t *testing.T) {
 		fields  fields
 		args    args
 		want    []*models.User
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -373,7 +373,7 @@ func TestUserRepository_Update(t *testing.T) {
 		setup   func()
 		fields  fields
 		args    args
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -499,7 +499,7 @@ func TestUserRepository_Delete(t *testing.T) {
 		setup   func()
 		fields  fields
 		args    args
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -608,7 +608,7 @@ func TestUserRepository_Count(t *testing.T) {
 		fields  fields
 		args    args
 		want    uint64
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",

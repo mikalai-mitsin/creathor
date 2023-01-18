@@ -3,7 +3,6 @@ package usecases
 import (
     "context"
 
-    "{{ .Module }}/internal/domain/errs"
     "{{ .Module }}/internal/domain/models"
 )
 
@@ -14,32 +13,32 @@ type AuthUseCase interface {
     CreateToken(
         ctx context.Context,
         login *models.Login,
-    ) (*models.TokenPair, *errs.Error)
+    ) (*models.TokenPair, error)
     CreateTokenByUser(
         ctx context.Context,
         user *models.User,
-    ) (*models.TokenPair, *errs.Error)
+    ) (*models.TokenPair, error)
     HasPermission(
         ctx context.Context,
         user *models.User,
         permission models.PermissionID,
-    ) *errs.Error
+    ) error
     HasObjectPermission(
         ctx context.Context,
         user *models.User,
         permission models.PermissionID,
         object any,
-    ) *errs.Error
+    ) error
     RefreshToken(
         ctx context.Context,
         refresh models.Token,
-    ) (*models.TokenPair, *errs.Error)
+    ) (*models.TokenPair, error)
     ValidateToken(
         ctx context.Context,
         access models.Token,
-    ) *errs.Error
+    ) error
     Auth(
         ctx context.Context,
         access models.Token,
-    ) (*models.User, *errs.Error)
+    ) (*models.User, error)
 }

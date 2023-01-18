@@ -3,7 +3,6 @@ package interceptors
 import (
     "context"
 
-    "{{ .Module }}/internal/domain/errs"
     "{{ .Module }}/internal/domain/interceptors"
     "{{ .Module }}/internal/domain/models"
     "{{ .Module }}/internal/domain/usecases"
@@ -35,7 +34,7 @@ func NewAuthInterceptor(
 func (i *AuthInterceptor) CreateToken(
     ctx context.Context,
     login *models.Login,
-) (*models.TokenPair, *errs.Error) {
+) (*models.TokenPair, error) {
     pair, err := i.authUseCase.CreateToken(ctx, login)
     if err != nil {
         return nil, err
@@ -46,7 +45,7 @@ func (i *AuthInterceptor) CreateToken(
 func (i *AuthInterceptor) ValidateToken(
     ctx context.Context,
     token models.Token,
-) *errs.Error {
+) error {
     if err := i.authUseCase.ValidateToken(ctx, token); err != nil {
         return err
     }
@@ -56,7 +55,7 @@ func (i *AuthInterceptor) ValidateToken(
 func (i *AuthInterceptor) RefreshToken(
     ctx context.Context,
     refresh models.Token,
-) (*models.TokenPair, *errs.Error) {
+) (*models.TokenPair, error) {
     pair, err := i.authUseCase.RefreshToken(ctx, refresh)
     if err != nil {
         return nil, err
@@ -67,7 +66,7 @@ func (i *AuthInterceptor) RefreshToken(
 func (i *AuthInterceptor) Auth(
     ctx context.Context,
     access models.Token,
-) (*models.User, *errs.Error) {
+) (*models.User, error) {
     user, err := i.authUseCase.Auth(ctx, access)
     if err != nil {
         return nil, err

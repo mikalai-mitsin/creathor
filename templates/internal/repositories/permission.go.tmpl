@@ -12,7 +12,7 @@ import (
     "github.com/jmoiron/sqlx"
 )
 
-type objectPermissionChecker func(model any, user *models.User) *errs.Error 
+type objectPermissionChecker func(model any, user *models.User) error
 
 var hasObjectPermission = map[models.PermissionID][]objectPermissionChecker{
     models.PermissionIDUserCreate: {objectAnybody},
@@ -36,7 +36,7 @@ func (r *PermissionRepository) HasPermission(
     ctx context.Context,
     permissionID models.PermissionID,
     user *models.User,
-) *errs.Error {
+) error {
     permission := &models.Permission{}
     q := sq.Select("permissions.id", "permissions.name").
         From("public.permissions").
@@ -57,7 +57,7 @@ func (r *PermissionRepository) HasObjectPermission(
     permission models.PermissionID,
     user *models.User,
     obj any,
-) *errs.Error {
+) error {
     checkers := hasObjectPermission[permission]
     for _, checker := range checkers {
         if err := checker(obj, user); err == nil {
@@ -67,7 +67,7 @@ func (r *PermissionRepository) HasObjectPermission(
     return errs.NewPermissionDeniedError()
 }
 
-func objectOwner(model any, user *models.User) *errs.Error {
+func objectOwner(model any, user *models.User) error {
     valueOf := reflect.ValueOf(model)
     if valueOf.Kind() == reflect.Pointer {
         valueOf = valueOf.Elem()
@@ -89,7 +89,7 @@ func objectOwner(model any, user *models.User) *errs.Error {
     return errs.NewPermissionDeniedError()
 }
 
-func objectOwnerOrAll(model any, user *models.User) *errs.Error {
+func objectOwnerOrAll(model any, user *models.User) error {
     if model == nil {
         return nil
     }
@@ -117,10 +117,10 @@ func objectOwnerOrAll(model any, user *models.User) *errs.Error {
     return errs.NewPermissionDeniedError()
 }
 
-func objectNobody(_ any, _ *models.User) *errs.Error {
+func objectNobody(_ any, _ *models.User) error {
     return errs.NewPermissionDeniedError()
 }
 
-func objectAnybody(_ any, _ *models.User) *errs.Error {
+func objectAnybody(_ any, _ *models.User) error {
     return nil
 }

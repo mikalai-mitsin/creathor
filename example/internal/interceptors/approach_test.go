@@ -78,7 +78,7 @@ func TestApproachInterceptor_Get(t *testing.T) {
 		fields  fields
 		args    args
 		want    *models.Approach
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -159,7 +159,7 @@ func TestApproachInterceptor_Create(t *testing.T) {
 		fields  fields
 		args    args
 		want    *models.Approach
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -239,7 +239,7 @@ func TestApproachInterceptor_Update(t *testing.T) {
 		fields  fields
 		args    args
 		want    *models.Approach
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -316,7 +316,7 @@ func TestApproachInterceptor_Delete(t *testing.T) {
 		setup   func()
 		fields  fields
 		args    args
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -394,7 +394,7 @@ func TestApproachInterceptor_List(t *testing.T) {
 		args    args
 		want    []*models.Approach
 		want1   uint64
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",

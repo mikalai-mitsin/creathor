@@ -19,7 +19,7 @@ type TokenPair struct {
     Refresh Token `json:"refresh" form:"refresh"`
 }
 
-func (c *TokenPair) Validate() *errs.Error {
+func (c *TokenPair) Validate() error {
     err := validation.ValidateStruct(
         c,
         validation.Field(&c.Access),
@@ -36,7 +36,7 @@ type Login struct {
     Password string `json:"password" form:"password"`
 }
 
-func (c *Login) Validate() *errs.Error {
+func (c *Login) Validate() error {
     err := validation.ValidateStruct(
         c,
         validation.Field(&c.Email, is.Email),

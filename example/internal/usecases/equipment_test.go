@@ -85,7 +85,7 @@ func TestEquipmentUseCase_Get(t *testing.T) {
 		fields  fields
 		args    args
 		want    *models.Equipment
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -166,7 +166,7 @@ func TestEquipmentUseCase_List(t *testing.T) {
 		args    args
 		want    []*models.Equipment
 		want1   uint64
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -268,7 +268,7 @@ func TestEquipmentUseCase_Create(t *testing.T) {
 		fields  fields
 		args    args
 		want    *models.Equipment
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -389,7 +389,7 @@ func TestEquipmentUseCase_Update(t *testing.T) {
 		fields  fields
 		args    args
 		want    *models.Equipment
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -511,7 +511,7 @@ func TestEquipmentUseCase_Delete(t *testing.T) {
 		setup   func()
 		fields  fields
 		args    args
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",

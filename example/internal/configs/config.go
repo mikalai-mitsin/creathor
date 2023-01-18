@@ -17,7 +17,7 @@ type Config struct {
 	Database database `toml:"database"`
 }
 
-func ParseConfig(configPath string) (*Config, error) {
+func ParseConfig(configPath string) (*Config, *errs.Error) {
 	config := &Config{}
 	if configPath != "" {
 		if err := cleanenv.ReadConfig(configPath, config); err != nil {

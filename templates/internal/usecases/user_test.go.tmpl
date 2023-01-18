@@ -250,7 +250,10 @@ func TestUserUseCase_Create(t *testing.T) {
             setup: func() {
                 userRepository.EXPECT().
                     Create(ctx, gomock.Any()).
-                    Return(nil)
+                    DoAndReturn(func(_ context.Context, user *models.User) error {
+						user.Password = ""
+						return nil
+					})
             },
             fields: fields{
                 userRepository: userRepository,

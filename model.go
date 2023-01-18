@@ -80,6 +80,18 @@ func (m Model) UseCaseTypeName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Model))
 }
 
+func (m Model) RESTHandlerTypeName() string {
+	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Model))
+}
+
+func (m Model) RESTHandlerPath() string {
+	return strcase.ToSnake(inflection.Plural(m.Model))
+}
+
+func (m Model) RESTHandlerVariableName() string {
+	return fmt.Sprintf("%sHandler", strcase.ToLowerCamel(m.Model))
+}
+
 func (m Model) UseCaseVariableName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToLowerCamel(m.Model))
 }
@@ -146,4 +158,24 @@ func (m Model) MockFileName() string {
 
 func (m Model) TableName() string {
 	return strcase.ToSnake(inflection.Plural(m.Model))
+}
+
+func (m Model) PermissionIDList() string {
+	return fmt.Sprintf("PermissionID%sList", m.ModelName())
+}
+
+func (m Model) PermissionIDDetail() string {
+	return fmt.Sprintf("PermissionID%sDetail", m.ModelName())
+}
+
+func (m Model) PermissionIDCreate() string {
+	return fmt.Sprintf("PermissionID%sCreate", m.ModelName())
+}
+
+func (m Model) PermissionIDUpdate() string {
+	return fmt.Sprintf("PermissionID%sUpdate", m.ModelName())
+}
+
+func (m Model) PermissionIDDelete() string {
+	return fmt.Sprintf("PermissionID%sDelete", m.ModelName())
 }

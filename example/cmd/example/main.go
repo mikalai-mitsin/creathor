@@ -8,7 +8,7 @@ import (
 
 const version = "0.1.0"
 
-const configPath = ""
+var configPath = ""
 
 func main() {
 	app := &cli.App{
@@ -23,7 +23,7 @@ func main() {
 				EnvVars:     []string{"EXAMPLE_CONFIG_PATH"},
 				TakesFile:   true,
 				Value:       configPath,
-				DefaultText: configPath,
+				Destination: &configPath,
 				HasBeenSet:  false,
 			},
 		},
@@ -36,7 +36,7 @@ func main() {
 
 // runApp - run app
 func runApp(context *cli.Context) error {
-	app := containers.NewExample(configPath)
+	app := containers.NewRESTExample(configPath)
 	err := app.Start(context.Context)
 	if err != nil {
 		return err

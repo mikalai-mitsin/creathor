@@ -3,6 +3,10 @@ package usecases
 import (
 	"context"
 	"errors"
+	"reflect"
+	"strings"
+	"testing"
+
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
@@ -15,10 +19,7 @@ import (
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/018bf/example/pkg/utils"
 	"github.com/golang/mock/gomock"
-	"reflect"
-	"strings"
 	"syreclabs.com/go/faker"
-	"testing"
 )
 
 func TestNewUserUseCase(t *testing.T) {
@@ -249,7 +250,10 @@ func TestUserUseCase_Create(t *testing.T) {
 			setup: func() {
 				userRepository.EXPECT().
 					Create(ctx, gomock.Any()).
-					Return(nil)
+					DoAndReturn(func(_ context.Context, user *models.User) error {
+						user.Password = ""
+						return nil
+					})
 			},
 			fields: fields{
 				userRepository: userRepository,

@@ -607,6 +607,7 @@ func TestUserInterceptor_List(t *testing.T) {
             name: "ok",
             setup: func() {
                 authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserList).Return(nil)
+                authUseCase.EXPECT().HasObjectPermission(ctx, user, models.PermissionIDUserList, filter).Return(nil)
                 userUseCase.EXPECT().List(ctx, filter).Return(users, count, nil)
             },
             fields: fields{
@@ -622,6 +623,28 @@ func TestUserInterceptor_List(t *testing.T) {
             want:    users,
             want1:   count,
             wantErr: nil,
+        },
+        {
+            name: "object permission error",
+            setup: func() {
+                authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserList).Return(nil)
+                authUseCase.EXPECT().
+                    HasObjectPermission(ctx, user, models.PermissionIDUserList, filter).
+                    Return(errs.NewPermissionDenied())
+            },
+            fields: fields{
+                userUseCase: userUseCase,
+                authUseCase: authUseCase,
+                logger:      logger,
+            },
+            args: args{
+                ctx:    ctx,
+                filter: filter,
+                in2:    user,
+            },
+            want:    nil,
+            want1:   0,
+            wantErr: errs.NewPermissionDenied(),
         },
         {
             name: "permission error",
@@ -646,6 +669,7 @@ func TestUserInterceptor_List(t *testing.T) {
             name: "list error",
             setup: func() {
                 authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserList).Return(nil)
+                authUseCase.EXPECT().HasObjectPermission(ctx, user, models.PermissionIDUserList, filter).Return(nil)
                 userUseCase.EXPECT().List(ctx, filter).Return(nil, uint64(0), errs.NewUnexpectedBehaviorError("l e"))
             },
             fields: fields{

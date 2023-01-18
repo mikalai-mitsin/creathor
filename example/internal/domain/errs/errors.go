@@ -6,10 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/lib/pq"
-	"go.uber.org/zap/zapcore"
 	"reflect"
 	"text/template"
+
+	"github.com/lib/pq"
+	"go.uber.org/zap/zapcore"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )

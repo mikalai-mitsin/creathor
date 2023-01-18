@@ -6,8 +6,17 @@ Creathor provides:
 * Clean architecture with interfaces, interceptors, usecases, repositories and domain models 
 * DI with [FX](https://github.com/uber-go/fx)
 * Interface of [Logger](https://github.com/uber-go/zap) and clock
+* gRPC and RESTful APIs
+* PostgreSQL repositories
+* CI/CD configurations for Github and GitLab
 * [Changelog](https://keepachangelog.com/en/1.0.0/)
 * Dockerfile and helm chart
+
+# Example
+[Example](/example) of using `Creathor` with rich models and authentication by this command
+```shell
+creathor -d ./example -ci github -a init --name example --module "github.com/018bf/example" --model '{"model":"session", "params": {"title": "string", "description": "string"}}' --model '{"model":"equipment", "params": {"name": "string", "repeat": "int", "weight": "int"}}'
+```
 
 # Installing
 ```

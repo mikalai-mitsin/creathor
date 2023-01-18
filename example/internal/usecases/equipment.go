@@ -65,6 +65,9 @@ func (u *EquipmentUseCase) Create(
 	now := u.clock.Now().UTC()
 	equipment := &models.Equipment{
 		ID:        "",
+		Name:      create.Name,
+		Repeat:    create.Repeat,
+		Weight:    create.Weight,
 		UpdatedAt: now,
 		CreatedAt: now,
 	}
@@ -84,6 +87,15 @@ func (u *EquipmentUseCase) Update(
 	equipment, err := u.equipmentRepository.Get(ctx, update.ID)
 	if err != nil {
 		return nil, err
+	}
+	if update.Name != nil {
+		equipment.Name = *update.Name
+	}
+	if update.Repeat != nil {
+		equipment.Repeat = *update.Repeat
+	}
+	if update.Weight != nil {
+		equipment.Weight = *update.Weight
 	}
 	equipment.UpdatedAt = u.clock.Now()
 	if err := u.equipmentRepository.Update(ctx, equipment); err != nil {

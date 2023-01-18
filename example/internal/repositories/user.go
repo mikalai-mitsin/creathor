@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/018bf/example/pkg/postgresql"
 	"time"
+
+	"github.com/018bf/example/pkg/postgresql"
 
 	sq "github.com/Masterminds/squirrel"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/018bf/example/internal/domain/repositories"
 
 	"github.com/018bf/example/internal/domain/errs"
+	"github.com/018bf/example/pkg/utils"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 )
@@ -140,7 +142,10 @@ func (r *PostgresUserRepository) List(ctx context.Context, filter *models.UserFi
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	var users []*models.User
-	const pageSize = 10
+	const pageSize = uint64(10)
+	if filter.PageSize == nil {
+		filter.PageSize = utils.Pointer(pageSize)
+	}
 	q := sq.Select(
 		"id",
 		"first_name",
@@ -163,9 +168,7 @@ func (r *PostgresUserRepository) List(ctx context.Context, filter *models.UserFi
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
 		q = q.Offset((*filter.PageNumber - 1) * *filter.PageSize)
 	}
-	if filter.PageSize != nil {
-		q = q.Limit(*filter.PageSize)
-	}
+	q = q.Limit(*filter.PageSize)
 	if len(filter.OrderBy) > 0 {
 		q = q.OrderBy(filter.OrderBy...)
 	}

@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
 	"github.com/018bf/example/internal/domain/usecases"

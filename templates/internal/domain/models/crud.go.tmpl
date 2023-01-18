@@ -9,12 +9,12 @@ import (
 )
 
 type {{ .ModelName }} struct {
-    ID        string `json:"id" db:"id,omitempty"`
+    ID        string `json:"id" db:"id,omitempty" form:"id"`
 {{- range $key, $value := .Params }}
-    {{ $key.Name }} {{ $value }} `json:"{{ $key.Tag }}" db:"{{ $key.Tag }}"`
+    {{ $key.Name }} {{ $value }} `json:"{{ $key.Tag }}" db:"{{ $key.Tag }}" form:"{{ $key.Tag }}"`
 {{- end }}
-    UpdatedAt time.Time `json:"updated_at" db:"updated_at,omitempty"`
-    CreatedAt time.Time `json:"created_at" db:"created_at,omitempty"`
+    UpdatedAt time.Time `json:"updated_at" db:"updated_at,omitempty" form:"updated_at"`
+    CreatedAt time.Time `json:"created_at" db:"created_at,omitempty" form:"created_at,omitempty"`
 }
 
 func (c *{{ .ModelName }}) Validate() error {
@@ -32,10 +32,10 @@ func (c *{{ .ModelName }}) Validate() error {
 }
 
 type {{ .FilterTypeName }} struct {
-    IDs        []string `json:"ids"`
-    PageSize   *uint64  `json:"page_size"`
-    PageNumber *uint64  `json:"page_number"`
-    OrderBy    []string `json:"order_by"`
+    IDs        []string `json:"ids" form:"ids"`
+    PageSize   *uint64  `json:"page_size" form:"page_size"`
+    PageNumber *uint64  `json:"page_number" form:"page_number"`
+    OrderBy    []string `json:"order_by" form:"order_by"`
 }
 
 func (c *{{ .FilterTypeName }}) Validate() error {
@@ -54,7 +54,7 @@ func (c *{{ .FilterTypeName }}) Validate() error {
 
 type {{ .CreateTypeName }} struct {
 {{- range $key, $value := .Params }}
-    {{ $key.Name }} {{ $value }} `json:"{{ $key.Tag }}"`
+    {{ $key.Name }} {{ $value }} `json:"{{ $key.Tag }}" form:"{{ $key.Tag }}"`
 {{- end }}
 }
 
@@ -74,7 +74,7 @@ func (c *{{ .CreateTypeName }}) Validate() error {
 type {{ .UpdateTypeName }} struct {
     ID string `json:"id"`
 {{- range $key, $value := .Params }}
-    {{ $key.Name }} *{{ $value }} `json:"{{ $key.Tag }}"`
+    {{ $key.Name }} *{{ $value }} `json:"{{ $key.Tag }}" form:"{{ $key.Tag }}"`
 {{- end }}
 }
 
@@ -93,10 +93,10 @@ func (c *{{ .UpdateTypeName }}) Validate() error {
 }
 {{ if .Auth }}
 const (
-    PermissionID{{ .ModelName }}List   PermissionID = "{{ .KeyName }}_list"
-    PermissionID{{ .ModelName }}Detail PermissionID = "{{ .KeyName }}_detail"
-    PermissionID{{ .ModelName }}Create PermissionID = "{{ .KeyName }}_create"
-    PermissionID{{ .ModelName }}Update PermissionID = "{{ .KeyName }}_update"
-    PermissionID{{ .ModelName }}Delete PermissionID = "{{ .KeyName }}_delete"
+    {{ .PermissionIDList }} PermissionID = "{{ .KeyName }}_list"
+    {{ .PermissionIDDetail }} PermissionID = "{{ .KeyName }}_detail"
+    {{ .PermissionIDCreate }} PermissionID = "{{ .KeyName }}_create"
+    {{ .PermissionIDUpdate }} PermissionID = "{{ .KeyName }}_update"
+    {{ .PermissionIDDelete }} PermissionID = "{{ .KeyName }}_delete"
 )
 {{ end }}

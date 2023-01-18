@@ -4,15 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"reflect"
+	"testing"
+
 	"github.com/018bf/example/internal/domain/errs"
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
 	"github.com/018bf/example/internal/interfaces/postgres"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/golang/mock/gomock"
-	"reflect"
 	"syreclabs.com/go/faker"
-	"testing"
 
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
@@ -148,7 +149,7 @@ func TestSessionRepository_Get(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	query := "SELECT sessions.id, sessions.updated_at, sessions.created_at FROM public.sessions WHERE id = \\$1 LIMIT 1"
+	query := "SELECT sessions.id, sessions.description, sessions.title, sessions.updated_at, sessions.created_at FROM public.sessions WHERE id = \\$1 LIMIT 1"
 	session := mock_models.NewSession(t)
 	ctx := context.Background()
 	type fields struct {
@@ -253,7 +254,7 @@ func TestSessionRepository_List(t *testing.T) {
 		sessions = append(sessions, mock_models.NewSession(t))
 	}
 	filter := mock_models.NewSessionFilter(t)
-	query := "SELECT sessions.id, sessions.updated_at, sessions.created_at FROM public.sessions"
+	query := "SELECT sessions.id, sessions.description, sessions.title, sessions.updated_at, sessions.created_at FROM public.sessions"
 	type fields struct {
 		database *sqlx.DB
 		logger   log.Logger
@@ -689,14 +690,16 @@ func newSessionRows(t *testing.T, sessions []*models.Session) *sqlmock.Rows {
 	t.Helper()
 	rows := sqlmock.NewRows([]string{
 		"id",
-		// TODO: add columns
+		"description",
+		"title",
 		"updated_at",
 		"created_at",
 	})
 	for _, session := range sessions {
 		rows.AddRow(
 			session.ID,
-			// TODO: add values
+			session.Description,
+			session.Title,
 			session.UpdatedAt,
 			session.CreatedAt,
 		)

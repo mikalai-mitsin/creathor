@@ -55,6 +55,14 @@ func (i *UserInterceptor) List(
     if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDUserList); err != nil {
         return nil, 0, err
     }
+    if err := i.authUseCase.HasObjectPermission(
+        ctx,
+        requestUser,
+        models.PermissionIDUserList,
+        filter,
+    ); err != nil {
+        return nil, 0, err
+    }
     users, count, err := i.userUseCase.List(ctx, filter)
     if err != nil {
         return nil, 0, err

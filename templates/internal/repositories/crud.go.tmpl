@@ -13,6 +13,7 @@ import (
     "{{ .Module }}/internal/domain/repositories"
 
     "{{ .Module }}/internal/domain/errs"
+    "{{ .Module }}/pkg/utils"
     "github.com/jmoiron/sqlx"
 )
 
@@ -64,7 +65,7 @@ func (r *{{ .RepositoryTypeName }}) Create(
 func (r *{{ .RepositoryTypeName }}) Get(
     ctx context.Context,
     id string,
-) (*models.{{ .ModelName }}, error) {
+) (*models.{{ .ModelName }}, error ) {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     {{ .Variable }} := &models.{{ .ModelName }}{}
@@ -91,7 +92,7 @@ func (r *{{ .RepositoryTypeName }}) Get(
 func (r *{{ .RepositoryTypeName }}) List(
     ctx context.Context,
     filter *models.{{ .FilterTypeName }},
-) ([]*models.{{ .ModelName }}, error) {
+) ([]*models.{{ .ModelName }}, error ) {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     var {{ .ListVariable }} []*models.{{ .ModelName }}
@@ -188,7 +189,7 @@ func (r *{{ .RepositoryTypeName }}) Delete(
 func (r *{{ .RepositoryTypeName }}) Count(
     ctx context.Context,
     filter *models.{{ .FilterTypeName }},
-) (uint64, error) {
+) (uint64, error ) {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     q := sq.Select("count(id)").From("public.{{ .TableName }}")

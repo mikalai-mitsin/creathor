@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"errors"
+
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/pkg/log"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
@@ -11,7 +12,7 @@ import (
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcZap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
-	"github.com/grpc-ecosystem/go-grpc-prometheus"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

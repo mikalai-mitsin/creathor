@@ -32,7 +32,7 @@ func New{{ .UseCaseTypeName }}(
 func (u *{{ .UseCaseTypeName }}) Get(
     ctx context.Context,
     id string,
-) (*models.{{ .ModelName }}, error) {
+) (*models.{{ .ModelName }}, error ) {
     {{ .Variable }}, err := u.{{ .RepositoryVariableName }}.Get(ctx, id)
     if err != nil {
         return nil, err
@@ -43,7 +43,7 @@ func (u *{{ .UseCaseTypeName }}) Get(
 func (u *{{ .UseCaseTypeName }}) List(
     ctx context.Context,
     filter *models.{{ .FilterTypeName }},
-) ([]*models.{{ .ModelName }}, uint64, error) {
+) ([]*models.{{ .ModelName }}, uint64, error ) {
     {{ .ListVariable }}, err := u.{{ .RepositoryVariableName }}.List(ctx, filter)
     if err != nil {
         return nil, 0, err
@@ -58,7 +58,7 @@ func (u *{{ .UseCaseTypeName }}) List(
 func (u *{{ .UseCaseTypeName }}) Create(
     ctx context.Context,
     create *models.{{ .ModelName }}Create,
-) (*models.{{ .ModelName }}, error) {
+) (*models.{{ .ModelName }}, error ) {
     if err := create.Validate(); err != nil {
         return nil, err
     }
@@ -80,7 +80,7 @@ func (u *{{ .UseCaseTypeName }}) Create(
 func (u *{{ .UseCaseTypeName }}) Update(
     ctx context.Context,
     update *models.{{ .ModelName }}Update,
-) (*models.{{ .ModelName }}, error) {
+) (*models.{{ .ModelName }}, error ) {
     if err := update.Validate(); err != nil {
         return nil, err
     }

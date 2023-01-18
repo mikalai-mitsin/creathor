@@ -33,7 +33,7 @@ func NewAuthUseCase(
 func (u AuthUseCase) CreateToken(
     ctx context.Context,
     login *models.Login,
-) (*models.TokenPair, error) {
+) (*models.TokenPair, error ) {
     user, err := u.userRepository.GetByEmail(ctx, login.Email)
     if err != nil {
         return nil, err
@@ -51,7 +51,7 @@ func (u AuthUseCase) CreateToken(
 func (u AuthUseCase) CreateTokenByUser(
     ctx context.Context,
     user *models.User,
-) (*models.TokenPair, error) {
+) (*models.TokenPair, error ) {
     tokenPair, err := u.authRepository.Create(ctx, user)
     if err != nil {
         return nil, err
@@ -62,7 +62,7 @@ func (u AuthUseCase) CreateTokenByUser(
 func (u AuthUseCase) RefreshToken(
     ctx context.Context,
     refresh models.Token,
-) (*models.TokenPair, error) {
+) (*models.TokenPair, error ) {
     pair, err := u.authRepository.RefreshToken(ctx, refresh)
     if err != nil {
         return nil, err
@@ -83,7 +83,7 @@ func (u AuthUseCase) ValidateToken(
 func (u AuthUseCase) Auth(
     ctx context.Context,
     access models.Token,
-) (*models.User, error) {
+) (*models.User, error ) {
     userID, err := u.authRepository.GetSubject(ctx, access)
     if err != nil {
         return nil, err

@@ -2,12 +2,13 @@ package usecases
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
 	"github.com/018bf/example/internal/domain/usecases"
 	"github.com/018bf/example/pkg/clock"
-	"strings"
-	"time"
 
 	"github.com/018bf/example/pkg/log"
 )
@@ -84,6 +85,7 @@ func (u *UserUseCase) Create(
 		UpdatedAt: time.Time{},
 		GroupID:   models.GroupIDUser,
 	}
+	user.SetPassword(create.Password)
 	if err := u.userRepository.Create(ctx, user); err != nil {
 		return nil, err
 	}

@@ -2,8 +2,24 @@
 ## [Unreleased]
 
 
-<a name="0.3.2"></a>
-## [0.3.2] - 2023-01-16
+<a name="0.3.3"></a>
+## [0.3.3] - 2023-01-18
+### Docs
+- updated example
+
+### Feat
+- add rest
+- **permissions:** add model permissions to repository
+- **rest:** add user handler
+
+### Fix
+- use error interface
+- use error interface
+- **user:** update tests
+
+
+<a name="v0.3.2"></a>
+## [v0.3.2] - 2023-01-16
 ### Ci
 - add release action
 
@@ -116,8 +132,9 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/018bf/creathor/compare/0.3.2...HEAD
-[0.3.2]: https://github.com/018bf/creathor/compare/v0.3.1...0.3.2
+[Unreleased]: https://github.com/018bf/creathor/compare/0.3.3...HEAD
+[0.3.3]: https://github.com/018bf/creathor/compare/v0.3.2...0.3.3
+[v0.3.2]: https://github.com/018bf/creathor/compare/v0.3.1...v0.3.2
 [v0.3.1]: https://github.com/018bf/creathor/compare/v0.3.0...v0.3.1
 [v0.3.0]: https://github.com/018bf/creathor/compare/v0.2.1...v0.3.0
 [v0.2.1]: https://github.com/018bf/creathor/compare/v0.2.0...v0.2.1

@@ -1,10 +1,11 @@
 package models
 
 import (
+	"time"
+
 	"github.com/018bf/example/internal/domain/errs"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
-	"time"
 )
 
 type Token string
@@ -14,8 +15,8 @@ func (t Token) String() string {
 }
 
 type TokenPair struct {
-	Access  Token
-	Refresh Token
+	Access  Token `json:"access" form:"access"`
+	Refresh Token `json:"refresh" form:"refresh"`
 }
 
 func (c *TokenPair) Validate() error {
@@ -31,8 +32,8 @@ func (c *TokenPair) Validate() error {
 }
 
 type Login struct {
-	Email    string
-	Password string
+	Email    string `json:"email" form:"email"`
+	Password string `json:"password" form:"password"`
 }
 
 func (c *Login) Validate() error {

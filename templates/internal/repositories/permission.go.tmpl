@@ -16,7 +16,7 @@ type objectPermissionChecker func(model any, user *models.User) error
 
 var hasObjectPermission = map[models.PermissionID][]objectPermissionChecker{
     models.PermissionIDUserCreate: {objectAnybody},
-    models.PermissionIDUserList:   {objectNobody},
+    models.PermissionIDUserList:   {objectAnybody},
     models.PermissionIDUserDetail: {objectOwner},
     models.PermissionIDUserUpdate: {objectOwner},
     models.PermissionIDUserDelete: {objectOwner},

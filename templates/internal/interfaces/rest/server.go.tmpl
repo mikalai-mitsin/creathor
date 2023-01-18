@@ -1,0 +1,45 @@
+package rest
+
+import (
+	"net/http"
+
+	"{{ .Module }}/pkg/log"
+	"github.com/gin-gonic/gin"
+)
+
+type ctxKey string
+
+const (
+{{- if .Auth }}
+	UserContextKey      ctxKey = "user"
+{{- end }}
+	RequestIDContextKey ctxKey = "request_id"
+)
+
+func NewRouter(
+	logger log.Logger,
+{{- if .Auth }}
+	authMiddleware *AuthMiddleware,
+	authHandler *AuthHandler,
+	userHandler *UserHandler,
+{{- end }}
+) *gin.Engine {
+	router := gin.Default()
+{{- if .Auth }}
+    router.Use(authMiddleware.Middleware())
+{{- end }}
+	router.Use(RequestMiddleware)
+	router.GET("/", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "ok",
+		})
+	})
+{{- if .Auth }}
+	authHandler.Register(router)
+	userHandler.Register(router)
+{{- end }}
+	return router
+}

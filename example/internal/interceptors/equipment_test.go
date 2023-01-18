@@ -78,7 +78,7 @@ func TestEquipmentInterceptor_Get(t *testing.T) {
 		fields  fields
 		args    args
 		want    *models.Equipment
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -159,7 +159,7 @@ func TestEquipmentInterceptor_Create(t *testing.T) {
 		fields  fields
 		args    args
 		want    *models.Equipment
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -239,7 +239,7 @@ func TestEquipmentInterceptor_Update(t *testing.T) {
 		fields  fields
 		args    args
 		want    *models.Equipment
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -316,7 +316,7 @@ func TestEquipmentInterceptor_Delete(t *testing.T) {
 		setup   func()
 		fields  fields
 		args    args
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",
@@ -394,7 +394,7 @@ func TestEquipmentInterceptor_List(t *testing.T) {
 		args    args
 		want    []*models.Equipment
 		want1   uint64
-		wantErr error
+		wantErr *errs.Error
 	}{
 		{
 			name: "ok",

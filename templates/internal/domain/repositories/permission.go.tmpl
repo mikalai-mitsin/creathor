@@ -3,7 +3,6 @@ package repositories
 import (
     "context"
 
-    "{{ .Module }}/internal/domain/errs"
     "{{ .Module }}/internal/domain/models"
 )
 
@@ -15,11 +14,11 @@ type PermissionRepository interface {
         ctx context.Context,
         permission models.PermissionID,
         requestUser *models.User,
-    ) *errs.Error
+    ) error
     HasObjectPermission(
         ctx context.Context,
         permission models.PermissionID,
         user *models.User,
         obj any,
-    ) *errs.Error
+    ) error
 }

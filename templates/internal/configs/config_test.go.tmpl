@@ -37,7 +37,7 @@ log_level = 2
         name    string
         args    args
         want    *Config
-        wantErr error
+        wantErr *errs.Error
     }{
         {
             name: "ok",

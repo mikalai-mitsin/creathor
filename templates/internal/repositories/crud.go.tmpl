@@ -35,7 +35,7 @@ func New{{ .RepositoryTypeName }}(
 func (r *{{ .RepositoryTypeName }}) Create(
     ctx context.Context,
     {{ .Variable }} *models.{{ .ModelName }},
-) *errs.Error {
+) error {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     q := sq.Insert("public.{{ .TableName }}").
@@ -65,7 +65,7 @@ func (r *{{ .RepositoryTypeName }}) Create(
 func (r *{{ .RepositoryTypeName }}) Get(
     ctx context.Context,
     id string,
-) (*models.{{ .ModelName }}, *errs.Error ) {
+) (*models.{{ .ModelName }}, error ) {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     {{ .Variable }} := &models.{{ .ModelName }}{}
@@ -92,7 +92,7 @@ func (r *{{ .RepositoryTypeName }}) Get(
 func (r *{{ .RepositoryTypeName }}) List(
     ctx context.Context,
     filter *models.{{ .FilterTypeName }},
-) ([]*models.{{ .ModelName }}, *errs.Error ) {
+) ([]*models.{{ .ModelName }}, error ) {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     var {{ .ListVariable }} []*models.{{ .ModelName }}
@@ -129,7 +129,7 @@ func (r *{{ .RepositoryTypeName }}) List(
 func (r *{{ .RepositoryTypeName }}) Update(
     ctx context.Context,
     {{ .Variable }} *models.{{ .ModelName }},
-) *errs.Error {
+) error {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     q := sq.Update("public.{{ .TableName }}").
@@ -161,7 +161,7 @@ func (r *{{ .RepositoryTypeName }}) Update(
 func (r *{{ .RepositoryTypeName }}) Delete(
     ctx context.Context,
     id string,
-) *errs.Error {
+) error {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     q := sq.Delete("public.{{ .TableName }}").Where(sq.Eq{"id": id})
@@ -189,7 +189,7 @@ func (r *{{ .RepositoryTypeName }}) Delete(
 func (r *{{ .RepositoryTypeName }}) Count(
     ctx context.Context,
     filter *models.{{ .FilterTypeName }},
-) (uint64, *errs.Error ) {
+) (uint64, error ) {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     q := sq.Select("count(id)").From("public.{{ .TableName }}")

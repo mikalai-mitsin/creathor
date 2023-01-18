@@ -3,7 +3,6 @@ package interceptors
 import (
     "context"
 
-    "{{ .Module }}/internal/domain/errs"
     "{{ .Module }}/internal/domain/models"
 )
 
@@ -14,17 +13,17 @@ type AuthInterceptor interface {
     CreateToken(
         ctx context.Context,
         login *models.Login,
-    ) (*models.TokenPair, *errs.Error)
+    ) (*models.TokenPair, error)
     RefreshToken(
         ctx context.Context,
         refresh models.Token,
-    ) (*models.TokenPair, *errs.Error)
+    ) (*models.TokenPair, error)
     Auth(
         ctx context.Context,
         access models.Token,
-    ) (*models.User, *errs.Error)
+    ) (*models.User, error)
     ValidateToken(
         ctx context.Context,
         access models.Token,
-    ) *errs.Error
+    ) error
 }

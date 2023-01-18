@@ -3,7 +3,6 @@ package repositories
 import (
     "context"
 
-    "{{ .Module }}/internal/domain/errs"
     "{{ .Module }}/internal/domain/models"
 )
 
@@ -14,29 +13,29 @@ type UserRepository interface {
     Get(
         ctx context.Context,
         id string,
-    ) (*models.User, *errs.Error)
+    ) (*models.User, error)
     GetByEmail(
         ctx context.Context,
         email string,
-    ) (*models.User, *errs.Error)
+    ) (*models.User, error)
     List(
         ctx context.Context,
         filter *models.UserFilter,
-    ) ([]*models.User, *errs.Error)
+    ) ([]*models.User, error)
     Count(
         ctx context.Context,
         filter *models.UserFilter,
-    ) (uint64, *errs.Error)
+    ) (uint64, error)
     Create(
         ctx context.Context,
         user *models.User,
-    ) *errs.Error
+    ) error
     Update(
         ctx context.Context,
         user *models.User,
-    ) *errs.Error
+    ) error
     Delete(
         ctx context.Context,
         id string,
-    ) *errs.Error
+    ) error
 }

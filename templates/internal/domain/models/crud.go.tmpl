@@ -17,7 +17,7 @@ type {{ .ModelName }} struct {
     CreatedAt time.Time `json:"created_at" db:"created_at,omitempty" form:"created_at,omitempty"`
 }
 
-func (c *{{ .ModelName }}) Validate() *errs.Error {
+func (c *{{ .ModelName }}) Validate() error {
     err := validation.ValidateStruct(
         c,
         validation.Field(&c.ID, is.UUID),
@@ -38,7 +38,7 @@ type {{ .FilterTypeName }} struct {
     OrderBy    []string `json:"order_by" form:"order_by"`
 }
 
-func (c *{{ .FilterTypeName }}) Validate() *errs.Error {
+func (c *{{ .FilterTypeName }}) Validate() error {
     err := validation.ValidateStruct(
         c,
         validation.Field(&c.IDs),
@@ -58,7 +58,7 @@ type {{ .CreateTypeName }} struct {
 {{- end }}
 }
 
-func (c *{{ .CreateTypeName }}) Validate() *errs.Error {
+func (c *{{ .CreateTypeName }}) Validate() error {
     err := validation.ValidateStruct(
         c,
 {{- range $key, $value := .Params }}
@@ -78,7 +78,7 @@ type {{ .UpdateTypeName }} struct {
 {{- end }}
 }
 
-func (c *{{ .UpdateTypeName }}) Validate() *errs.Error {
+func (c *{{ .UpdateTypeName }}) Validate() error {
     err := validation.ValidateStruct(
         c,
         validation.Field(&c.ID, validation.Required, is.UUID),

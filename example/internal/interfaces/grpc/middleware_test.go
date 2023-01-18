@@ -64,7 +64,7 @@ func TestAuthMiddleware_Auth(t *testing.T) {
 		fields  fields
 		args    args
 		want    context.Context
-		wantErr error
+		wantErr *errs.Error
 		setup   func()
 	}{
 		{

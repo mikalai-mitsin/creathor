@@ -29,7 +29,7 @@ type User struct {
     UpdatedAt   time.Time `db:"updated_at" json:"updated_at" form:"updated_at"`
 }
 
-func (u *User) Validate() *errs.Error {
+func (u *User) Validate() error {
     err := validation.ValidateStruct(
         u,
         validation.Field(&u.ID, is.UUID),
@@ -51,7 +51,7 @@ func (u *User) SetPassword(password string) {
     u.Password = string(fromPassword)
 }
 
-func (u *User) CheckPassword(password string) *errs.Error {
+func (u *User) CheckPassword(password string) error {
     if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
         return errs.NewInvalidParameter("email or password")
     }
@@ -69,7 +69,7 @@ type UserFilter struct {
     OrderBy         []string   `json:"order_by" form:"order_by"`
 }
 
-func (c *UserFilter) Validate() *errs.Error {
+func (c *UserFilter) Validate() error {
     err := validation.ValidateStruct(
         c,
         validation.Field(&c.PageSize),
@@ -88,7 +88,7 @@ type UserCreate struct {
     Password string `json:"password" form:"password"`
 }
 
-func (u *UserCreate) Validate() *errs.Error {
+func (u *UserCreate) Validate() error {
     err := validation.ValidateStruct(
         u,
         validation.Field(&u.Email, is.Email, validation.Required),
@@ -108,7 +108,7 @@ type UserUpdate struct {
     Email       *string    `json:"email" form:"email"`
 }
 
-func (u *UserUpdate) Validate() *errs.Error {
+func (u *UserUpdate) Validate() error {
     err := validation.ValidateStruct(
         u,
         validation.Field(&u.ID, validation.Required, is.UUID),
@@ -128,7 +128,7 @@ type SetPassword struct {
     Password string `json:"password" form:"password"`
 }
 
-func (u *SetPassword) Validate() *errs.Error {
+func (u *SetPassword) Validate() error {
     err := validation.ValidateStruct(
         u,
         validation.Field(&u.UserID, validation.Required, is.UUID),

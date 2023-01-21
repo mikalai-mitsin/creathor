@@ -131,7 +131,7 @@ func registerHandler(variableName, typeName string) error {
 	fileset := token.NewFileSet()
 	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
 		return true
-	}, parser.SkipObjectResolution)
+	}, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -182,7 +182,7 @@ func registerHandler(variableName, typeName string) error {
 								Args: []ast.Expr{
 									&ast.Ident{
 										NamePos: 0,
-										Name:    "router",
+										Name:    "apiV1",
 										Obj:     nil,
 									},
 								},
@@ -193,11 +193,11 @@ func registerHandler(variableName, typeName string) error {
 						le := len(funcDecl.Body.List)
 						newBody := append(funcDecl.Body.List[:le-1], registerCall, funcDecl.Body.List[le-1])
 						funcDecl.Body.List = newBody
-						openFile, err := os.OpenFile(filePath, os.O_WRONLY, 0777)
-						if err != nil {
+						a := &bytes.Buffer{}
+						if err := printer.Fprint(a, fileset, file); err != nil {
 							return err
 						}
-						if err := printer.Fprint(openFile, fileset, file); err != nil {
+						if err := os.WriteFile(filePath, a.Bytes(), 0777); err != nil {
 							return err
 						}
 					}

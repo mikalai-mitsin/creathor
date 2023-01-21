@@ -174,19 +174,27 @@ func postInit() error {
 	generate := exec.Command("go", "generate", "./...")
 	generate.Dir = destinationPath
 	generate.Stderr = &errb
+	fmt.Println(strings.Join(generate.Args, " "))
 	if err := generate.Run(); err != nil {
-		fmt.Println(strings.Join(generate.Args, " "))
 		fmt.Println(errb.String())
 	}
 	tidy := exec.Command("go", "mod", "tidy")
 	tidy.Dir = destinationPath
 	tidy.Stderr = &errb
+	fmt.Println(strings.Join(tidy.Args, " "))
 	if err := tidy.Run(); err != nil {
-		fmt.Println(strings.Join(tidy.Args, " "))
+		fmt.Println(errb.String())
+	}
+	swag := exec.Command("swag", "init", "-d", "./internal/interfaces/rest", "-g", "server.go", "--parseDependency", "-o", "./api", "-ot", "yaml")
+	swag.Dir = destinationPath
+	swag.Stderr = &errb
+	fmt.Println(strings.Join(swag.Args, " "))
+	if err := swag.Run(); err != nil {
 		fmt.Println(errb.String())
 	}
 	clean := exec.Command("golangci-lint", "run", "./...", "--fix")
 	clean.Dir = destinationPath
+	fmt.Println(strings.Join(clean.Args, " "))
 	_ = clean.Run()
 	return nil
 }

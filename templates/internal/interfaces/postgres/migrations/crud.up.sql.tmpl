@@ -12,7 +12,7 @@ CREATE TABLE public.{{ .TableName }}
 {{- if .SearchEnabled }}
 CREATE INDEX search_{{ .TableName }}
     ON public.{{ .TableName }}
-        USING GIN (to_tsvector('english', title || body));
+        USING GIN ({{ .SearchVector }});
 {{- end}}
 
 CREATE TRIGGER update_{{ .TableName }}_updated_at

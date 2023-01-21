@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"github.com/iancoleman/strcase"
 	"github.com/jinzhu/inflection"
+	"os"
+	"path"
+	"strconv"
 	"strings"
-	"time"
 )
 
 type Param struct {
@@ -227,11 +229,39 @@ func (m Model) FileName() string {
 }
 
 func (m Model) MigrationUpFileName() string {
-	return fmt.Sprintf("%s_%s.up.sql", time.Now().UTC().Format("20060102150405"), m.TableName())
+	last, err := lastMigration()
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("%06d_%s.up.sql", last+1, m.TableName())
 }
 
 func (m Model) MigrationDownFileName() string {
-	return fmt.Sprintf("%s_%s.down.sql", time.Now().UTC().Format("20060102150405"), m.TableName())
+	last, err := lastMigration()
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("%06d_%s.down.sql", last+1, m.TableName())
+}
+
+func lastMigration() (int, error) {
+	dir, err := os.ReadDir(path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations"))
+	if err != nil {
+		return 0, err
+	}
+	var files []string
+	for _, entry := range dir {
+		if !entry.IsDir() {
+			files = append(files, entry.Name())
+		}
+	}
+	last := files[len(files)-1]
+	n, _, _ := strings.Cut(strings.Trim(last, "0"), "_")
+	index, err := strconv.Atoi(n)
+	if err != nil {
+		return 0, err
+	}
+	return index, nil
 }
 
 func (m Model) TestFileName() string {

@@ -13,6 +13,7 @@ import (
 	"github.com/018bf/example/internal/domain/repositories"
 
 	"github.com/018bf/example/internal/domain/errs"
+	"github.com/018bf/example/pkg/postgresql"
 	"github.com/018bf/example/pkg/utils"
 	"github.com/jmoiron/sqlx"
 )
@@ -110,6 +111,15 @@ func (r *EquipmentRepository) List(
 	).
 		From("public.equipment").
 		Limit(pageSize)
+	if filter.Search != nil {
+		q = q.Where(postgresql.Search{
+			Lang:  "english",
+			Query: *filter.Search,
+			Fields: []string{
+				"name",
+			},
+		})
+	}
 	// TODO: add filtering
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
 		q = q.Offset((*filter.PageNumber - 1) * *filter.PageSize)

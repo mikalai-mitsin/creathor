@@ -10,8 +10,8 @@ import (
 
 type Session struct {
 	ID          string    `json:"id" db:"id,omitempty" form:"id"`
-	Description string    `json:"description" db:"description" form:"description"`
 	Title       string    `json:"title" db:"title" form:"title"`
+	Description string    `json:"description" db:"description" form:"description"`
 	UpdatedAt   time.Time `json:"updated_at" db:"updated_at,omitempty" form:"updated_at"`
 	CreatedAt   time.Time `json:"created_at" db:"created_at,omitempty" form:"created_at,omitempty"`
 }
@@ -20,8 +20,8 @@ func (c *Session) Validate() error {
 	err := validation.ValidateStruct(
 		c,
 		validation.Field(&c.ID, is.UUID),
-		validation.Field(&c.Description),
 		validation.Field(&c.Title),
+		validation.Field(&c.Description),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -51,15 +51,15 @@ func (c *SessionFilter) Validate() error {
 }
 
 type SessionCreate struct {
-	Description string `json:"description" form:"description"`
 	Title       string `json:"title" form:"title"`
+	Description string `json:"description" form:"description"`
 }
 
 func (c *SessionCreate) Validate() error {
 	err := validation.ValidateStruct(
 		c,
-		validation.Field(&c.Description),
 		validation.Field(&c.Title),
+		validation.Field(&c.Description),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -69,16 +69,16 @@ func (c *SessionCreate) Validate() error {
 
 type SessionUpdate struct {
 	ID          string  `json:"id"`
-	Description *string `json:"description" form:"description"`
 	Title       *string `json:"title" form:"title"`
+	Description *string `json:"description" form:"description"`
 }
 
 func (c *SessionUpdate) Validate() error {
 	err := validation.ValidateStruct(
 		c,
 		validation.Field(&c.ID, validation.Required, is.UUID),
-		validation.Field(&c.Description),
 		validation.Field(&c.Title),
+		validation.Field(&c.Description),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)

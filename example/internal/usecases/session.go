@@ -65,8 +65,8 @@ func (u *SessionUseCase) Create(
 	now := u.clock.Now().UTC()
 	session := &models.Session{
 		ID:          "",
-		Description: create.Description,
 		Title:       create.Title,
+		Description: create.Description,
 		UpdatedAt:   now,
 		CreatedAt:   now,
 	}
@@ -87,11 +87,11 @@ func (u *SessionUseCase) Update(
 	if err != nil {
 		return nil, err
 	}
-	if update.Description != nil {
-		session.Description = *update.Description
-	}
 	if update.Title != nil {
 		session.Title = *update.Title
+	}
+	if update.Description != nil {
+		session.Description = *update.Description
 	}
 	session.UpdatedAt = u.clock.Now()
 	if err := u.sessionRepository.Update(ctx, session); err != nil {

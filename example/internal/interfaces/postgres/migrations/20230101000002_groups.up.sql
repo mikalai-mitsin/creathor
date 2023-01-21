@@ -1,0 +1,7 @@
+create table public.groups
+(
+    id   varchar(255) not null
+        constraint groups_pk
+            primary key,
+    name varchar(255) not null
+);

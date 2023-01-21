@@ -36,6 +36,7 @@ type EquipmentFilter struct {
 	PageSize   *uint64  `json:"page_size" form:"page_size"`
 	PageNumber *uint64  `json:"page_number" form:"page_number"`
 	OrderBy    []string `json:"order_by" form:"order_by"`
+	Search     *string  `json:"search" form:"search"`
 }
 
 func (c *EquipmentFilter) Validate() error {
@@ -45,6 +46,7 @@ func (c *EquipmentFilter) Validate() error {
 		validation.Field(&c.PageSize),
 		validation.Field(&c.PageNumber),
 		validation.Field(&c.OrderBy),
+		validation.Field(&c.Search),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)

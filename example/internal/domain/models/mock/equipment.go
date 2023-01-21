@@ -48,5 +48,6 @@ func NewEquipmentFilter(t *testing.T) *models.EquipmentFilter {
 		PageNumber: utils.Pointer(uint64(faker.RandomInt64(2, 100))),
 		OrderBy:    faker.Lorem().Words(5),
 		IDs:        []string{uuid.New().String(), uuid.New().String(), uuid.New().String()},
+		Search:     utils.Pointer(faker.Lorem().String()),
 	}
 }

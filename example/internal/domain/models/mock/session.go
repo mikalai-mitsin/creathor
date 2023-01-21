@@ -14,8 +14,8 @@ func NewSession(t *testing.T) *models.Session {
 	t.Helper()
 	return &models.Session{
 		ID:          uuid.New().String(),
-		Description: faker.Lorem().String(),
 		Title:       faker.Lorem().String(),
+		Description: faker.Lorem().String(),
 		UpdatedAt:   faker.Time().Backward(40 * time.Hour).UTC(),
 		CreatedAt:   faker.Time().Backward(40 * time.Hour).UTC(),
 	}
@@ -24,8 +24,8 @@ func NewSession(t *testing.T) *models.Session {
 func NewSessionCreate(t *testing.T) *models.SessionCreate {
 	t.Helper()
 	return &models.SessionCreate{
-		Description: faker.Lorem().String(),
 		Title:       faker.Lorem().String(),
+		Description: faker.Lorem().String(),
 	}
 }
 
@@ -33,8 +33,8 @@ func NewSessionUpdate(t *testing.T) *models.SessionUpdate {
 	t.Helper()
 	return &models.SessionUpdate{
 		ID:          uuid.New().String(),
-		Description: utils.Pointer(faker.Lorem().String()),
 		Title:       utils.Pointer(faker.Lorem().String()),
+		Description: utils.Pointer(faker.Lorem().String()),
 	}
 }
 

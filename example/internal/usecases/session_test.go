@@ -278,8 +278,8 @@ func TestSessionUseCase_Create(t *testing.T) {
 					Create(
 						ctx,
 						&models.Session{
-							Description: create.Description,
 							Title:       create.Title,
+							Description: create.Description,
 							UpdatedAt:   now,
 							CreatedAt:   now,
 						},
@@ -297,8 +297,8 @@ func TestSessionUseCase_Create(t *testing.T) {
 			},
 			want: &models.Session{
 				ID:          "",
-				Description: create.Description,
 				Title:       create.Title,
+				Description: create.Description,
 				UpdatedAt:   now,
 				CreatedAt:   now,
 			},
@@ -313,8 +313,8 @@ func TestSessionUseCase_Create(t *testing.T) {
 						ctx,
 						&models.Session{
 							ID:          "",
-							Description: create.Description,
 							Title:       create.Title,
+							Description: create.Description,
 							UpdatedAt:   now,
 							CreatedAt:   now,
 						},

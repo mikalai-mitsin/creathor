@@ -24,3 +24,25 @@ create trigger update_users_updated_at
     on public.users
     for each row
 execute procedure public.update_updated_at_task();
+
+insert into public.permissions (id, name)
+values ('user_list', 'User list'),
+       ('user_detail', 'User detail'),
+       ('user_create', 'User create'),
+       ('user_update', 'User update'),
+       ('user_delete', 'User delete');
+
+insert into public.group_permissions (group_id, permission_id)
+values ('admin', 'user_list'),
+       ('admin', 'user_detail'),
+       ('admin', 'user_create'),
+       ('admin', 'user_update'),
+       ('admin', 'user_delete'),
+       ('user', 'user_list'),
+       ('user', 'user_detail'),
+       ('user', 'user_create'),
+       ('user', 'user_update'),
+       ('user', 'user_delete'),
+       ('guest', 'user_list'),
+       ('guest', 'user_detail'),
+       ('guest', 'user_create');

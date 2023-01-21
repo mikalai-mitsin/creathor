@@ -6,17 +6,19 @@ import (
 )
 
 type Project struct {
-	Name      string
-	Module    string
-	GoVersion string
-	Auth      bool
+	Name      string   `yaml:"name"`
+	Module    string   `yaml:"module"`
+	GoVersion string   `yaml:"goVersion"`
+	Auth      bool     `yaml:"auth"`
+	CI        string   `yaml:"ci"`
+	Models    []*Model `yaml:"models"`
 }
 
-func CreateLayout(data *Project) error {
+func CreateLayout(project *Project) error {
 	directories := []string{
 		path.Join(destinationPath, "build"),
 		path.Join(destinationPath, "cmd"),
-		path.Join(destinationPath, "cmd", data.Name),
+		path.Join(destinationPath, "cmd", project.Name),
 		path.Join(destinationPath, "configs"),
 		path.Join(destinationPath, "dist"),
 		path.Join(destinationPath, "docs"),
@@ -51,7 +53,7 @@ func CreateLayout(data *Project) error {
 	files := []*Template{
 		{
 			SourcePath:      "templates/cmd/service/main.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "cmd", data.Name, "main.go"),
+			DestinationPath: path.Join(destinationPath, "cmd", project.Name, "main.go"),
 			Name:            "service main",
 		},
 		{
@@ -195,7 +197,7 @@ func CreateLayout(data *Project) error {
 			Name:            "rest server",
 		},
 	}
-	if authEnabled {
+	if project.Auth {
 		files = append(
 			files,
 			&Template{
@@ -381,7 +383,7 @@ func CreateLayout(data *Project) error {
 		)
 	}
 	for _, file := range files {
-		if err := file.renderToFile(data); err != nil {
+		if err := file.renderToFile(project); err != nil {
 			return err
 		}
 	}

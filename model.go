@@ -12,9 +12,9 @@ import (
 )
 
 type Param struct {
-	Name   string
-	Type   string
-	Search bool
+	Name   string `yaml:"name"`
+	Type   string `yaml:"type"`
+	Search bool   `yaml:"search"`
 }
 
 func (n Param) Fake() string {
@@ -103,10 +103,10 @@ func (n Param) Tag() string {
 type Params []Param
 
 type Model struct {
-	Model  string `json:"model"`
-	Module string
-	Auth   bool
-	Params Params `json:"params"`
+	Model  string `json:"model" yaml:"model"`
+	Module string `json:"module" yaml:"module"`
+	Auth   bool   `json:"auth" yaml:"auth"`
+	Params Params `json:"params" yaml:"params"`
 }
 
 func (m Model) SearchEnabled() bool {
@@ -129,18 +129,16 @@ func (m Model) SearchVector() string {
 	return vector
 }
 
-func ParseModel(s string) Model {
-	model := Model{}
-	if err := json.Unmarshal([]byte(s), &model); err != nil {
-		model = Model{
+func ParseModel(s string) *Model {
+	model := &Model{}
+	if err := json.Unmarshal([]byte(s), model); err != nil {
+		model = &Model{
 			Model:  s,
 			Module: "",
 			Auth:   false,
 			Params: Params{},
 		}
 	}
-	model.Module = moduleName
-	model.Auth = authEnabled
 	return model
 }
 

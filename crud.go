@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 )
 
-func CreateCRUD(data Model) error {
+func CreateCRUD(data *Model) error {
 	files := []*Template{
 		{
 			SourcePath:      "templates/internal/domain/models/crud.go.tmpl",

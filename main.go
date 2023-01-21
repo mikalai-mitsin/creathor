@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/mod/modfile"
+	"gopkg.in/yaml.v3"
 	"log"
 	"os"
 	"os/exec"
@@ -24,6 +25,7 @@ var (
 	models          cli.StringSlice
 	authEnabled     bool
 	ci              string
+	configPath      string
 )
 
 //go:embed templates/*
@@ -55,6 +57,12 @@ func main() {
 				Destination: &ci,
 				Required:    false,
 			},
+			&cli.StringFlag{
+				Name:        "c",
+				Usage:       "generate by config",
+				Destination: &configPath,
+				Required:    false,
+			},
 		},
 		Commands: []*cli.Command{
 			{
@@ -67,13 +75,13 @@ func main() {
 						Aliases:     []string{"n"},
 						Usage:       "service name",
 						Destination: &serviceName,
-						Required:    true,
+						Required:    false,
 					},
 					&cli.StringFlag{
 						Name:        "module",
 						Usage:       "module name",
 						Destination: &moduleName,
-						Required:    true,
+						Required:    false,
 					},
 					&cli.StringFlag{
 						Name:        "go",
@@ -101,7 +109,7 @@ func main() {
 						Aliases:     []string{"m"},
 						Usage:       "model name",
 						Destination: &models,
-						Required:    true,
+						Required:    false,
 					},
 					&cli.StringFlag{
 						Name:        "module",
@@ -121,24 +129,38 @@ func main() {
 }
 
 func initProject(ctx *cli.Context) error {
-	data := &Project{Name: serviceName, Module: moduleName, GoVersion: goVersion, Auth: authEnabled}
-	if err := CreateLayout(data); err != nil {
-		return err
-	}
-	if err := CreateCI(data); err != nil {
-		return err
-	}
-	if err := CreateDI(data); err != nil {
-		return err
-	}
-	if err := CreateBuild(data); err != nil {
-		return err
-	}
-	if err := CreateDeployment(data); err != nil {
-		return err
-	}
+	project := &Project{Name: "serviceName", Module: "moduleName", GoVersion: "goVersion", Auth: false}
 	for _, model := range models.Value() {
-		if err := CreateCRUD(ParseModel(model)); err != nil {
+		project.Models = append(project.Models, ParseModel(model))
+	}
+	if configPath != "" {
+		file, err := os.ReadFile(path.Join(destinationPath, configPath))
+		if err != nil {
+			return err
+		}
+		if err := yaml.Unmarshal(file, project); err != nil {
+			log.Fatalf("error: %v", err)
+		}
+	}
+	if err := CreateLayout(project); err != nil {
+		return err
+	}
+	if err := CreateCI(project); err != nil {
+		return err
+	}
+	if err := CreateDI(project); err != nil {
+		return err
+	}
+	if err := CreateBuild(project); err != nil {
+		return err
+	}
+	if err := CreateDeployment(project); err != nil {
+		return err
+	}
+	for _, model := range project.Models {
+		model.Module = project.Module
+		model.Auth = project.Auth
+		if err := CreateCRUD(model); err != nil {
 			return err
 		}
 	}

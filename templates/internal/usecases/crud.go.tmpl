@@ -66,7 +66,7 @@ func (u *{{ .UseCaseTypeName }}) Create(
     {{ .Variable }} := &models.{{ .ModelName }}{
         ID: "",
 {{- range $key, $value := .Params }}
-        {{ $key.Name }}: create.{{ $key.Name }},
+        {{ $value.GetName }}: create.{{ $value.GetName }},
 {{- end }}
         UpdatedAt: now,
         CreatedAt: now,
@@ -89,8 +89,8 @@ func (u *{{ .UseCaseTypeName }}) Update(
         return nil, err
     }
 {{- range $key, $value := .Params }}
-    if update.{{ $key.Name }} != nil {
-        {{ $.Variable }}.{{ $key.Name }} = *update.{{ $key.Name }}
+    if update.{{ $value.GetName }} != nil {
+        {{ $.Variable }}.{{ $value.GetName }} = *update.{{ $value.GetName }}
     }
 {{- end }}
     {{ .Variable }}.UpdatedAt = u.clock.Now()

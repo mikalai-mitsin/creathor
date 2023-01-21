@@ -149,7 +149,7 @@ func Test{{ .RepositoryTypeName }}_Get(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     logger := mock_log.NewMockLogger(ctrl)
-    query := "SELECT {{ .TableName }}.id,{{ range $key, $value := .Params }} {{ $.TableName }}.{{ $key.Tag }},{{ end }} {{ .TableName }}.updated_at, {{ .TableName }}.created_at FROM public.{{ .TableName }} WHERE id = \\$1 LIMIT 1"
+    query := "SELECT {{ .TableName }}.id,{{ range $key, $value := .Params }} {{ $.TableName }}.{{ $value.Tag }},{{ end }} {{ .TableName }}.updated_at, {{ .TableName }}.created_at FROM public.{{ .TableName }} WHERE id = \\$1 LIMIT 1"
     {{ .Variable }} := mock_models.New{{ .ModelName }}(t)
     ctx := context.Background()
     type fields struct {
@@ -254,7 +254,7 @@ func Test{{ .RepositoryTypeName }}_List(t *testing.T) {
         {{ .ListVariable }} = append({{ .ListVariable }}, mock_models.New{{ .ModelName }}(t))
     }
     filter := mock_models.New{{ .FilterTypeName }}(t)
-    query := "SELECT {{ .TableName }}.id,{{ range $key, $value := .Params }} {{ $.TableName }}.{{ $key.Tag }},{{ end }} {{ .TableName }}.updated_at, {{ .TableName }}.created_at FROM public.{{ .TableName }}"
+    query := "SELECT {{ .TableName }}.id,{{ range $key, $value := .Params }} {{ $.TableName }}.{{ $value.Tag }},{{ end }} {{ .TableName }}.updated_at, {{ .TableName }}.created_at FROM public.{{ .TableName }}"
     type fields struct {
         database *sqlx.DB
         logger   log.Logger
@@ -692,7 +692,7 @@ func new{{ .ModelName }}Rows(t *testing.T, {{ .ListVariable }} []*models.{{ .Mod
         "id",
 {{- if .Params }}
     {{- range $key, $value := .Params }}
-        "{{ $key.Tag }}",
+        "{{ $value.Tag }}",
     {{- end }}
 {{- else }}
     // TODO: add columns
@@ -705,7 +705,7 @@ func new{{ .ModelName }}Rows(t *testing.T, {{ .ListVariable }} []*models.{{ .Mod
             {{ .Variable }}.ID,
 {{- if .Params }}
 {{- range $key, $value := .Params }}
-            {{ $.Variable }}.{{ $key.Name }},
+            {{ $.Variable }}.{{ $value.GetName }},
 {{- end }}
 {{- else }}
             // TODO: add values

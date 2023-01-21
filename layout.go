@@ -156,7 +156,7 @@ func CreateLayout(data *Project) error {
 		},
 		{
 			SourcePath:      "templates/internal/interfaces/postgres/migrations/init.sql.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "init.sql"),
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "20230101000000_init.sql"),
 			Name:            "postgres init migration",
 		},
 		{
@@ -337,6 +337,46 @@ func CreateLayout(data *Project) error {
 				SourcePath:      "templates/internal/interfaces/rest/user.go.tmpl",
 				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "user.go"),
 				Name:            "rest user handler",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/permissions.up.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "20230101000001_permissions.up.sql"),
+				Name:            "postgres permissions migration up",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/permissions.down.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "20230101000001_permissions.down.sql"),
+				Name:            "postgres permissions migration down",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/groups.up.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "20230101000002_groups.up.sql"),
+				Name:            "postgres groups migration up",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/groups.down.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "20230101000002_groups.down.sql"),
+				Name:            "postgres groups migration down",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/group_permissions.up.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "20230101000003_group_permissions.up.sql"),
+				Name:            "postgres group permissions migration up",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/group_permissions.down.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "20230101000003_group_permissions.down.sql"),
+				Name:            "postgres group permissions migration down",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/users.up.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "20230101000004_users.up.sql"),
+				Name:            "postgres users migration up",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/users.down.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "20230101000004_users.down.sql"),
+				Name:            "postgres users migration down",
 			},
 		)
 	}

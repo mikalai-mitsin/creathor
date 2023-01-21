@@ -1,0 +1,23 @@
+CREATE TABLE public.{{ .TableName }}
+(
+    id          uuid                  DEFAULT uuid_generate_v4()
+        CONSTRAINT {{ .TableName }}_pk PRIMARY KEY,
+{{- range $value := .Params }}
+    {{ $value.Tag }} {{ $value.SQLType }} {{ if $value.Required }}NOT NULL{{- end -}},
+{{- end }}
+    updated_at  timestamp    NOT NULL DEFAULT (now() at time zone 'utc'),
+    created_at  timestamp    NOT NULL DEFAULT (now() at time zone 'utc')
+);
+
+{{- if .SearchEnabled }}
+CREATE INDEX search_{{ .TableName }}
+    ON public.{{ .TableName }}
+        USING GIN (to_tsvector('english', title || body));
+{{- end}}
+
+CREATE TRIGGER update_{{ .TableName }}_updated_at
+    BEFORE UPDATE
+    ON
+        public.{{ .TableName }}
+    FOR EACH ROW
+EXECUTE PROCEDURE update_updated_at_task();

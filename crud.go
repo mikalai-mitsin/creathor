@@ -73,7 +73,17 @@ func CreateCRUD(data Model) error {
 		{
 			SourcePath:      "templates/internal/interfaces/rest/crud.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", data.FileName()),
-			Name:            "rest mark",
+			Name:            "rest crud",
+		},
+		{
+			SourcePath:      "templates/internal/interfaces/postgres/migrations/crud.up.sql.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", data.MigrationUpFileName()),
+			Name:            "migration up",
+		},
+		{
+			SourcePath:      "templates/internal/interfaces/postgres/migrations/crud.down.sql.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", data.MigrationDownFileName()),
+			Name:            "migration down",
 		},
 	}
 	for _, tmpl := range files {

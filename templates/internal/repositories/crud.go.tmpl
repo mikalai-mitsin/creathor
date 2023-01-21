@@ -13,6 +13,9 @@ import (
     "{{ .Module }}/internal/domain/repositories"
 
     "{{ .Module }}/internal/domain/errs"
+{{- if .SearchEnabled }}
+    "{{ .Module }}/pkg/postgresql"
+{{- end }}
     "{{ .Module }}/pkg/utils"
     "github.com/jmoiron/sqlx"
 )
@@ -41,14 +44,14 @@ func (r *{{ .RepositoryTypeName }}) Create(
     q := sq.Insert("public.{{ .TableName }}").
         Columns(
 {{- range $key, $value := .Params }}
-            "{{ $key.Tag }}",
+            "{{ $value.Tag }}",
 {{- end }}
             "updated_at",
             "created_at",
         ).
         Values(
 {{- range $key, $value := .Params }}
-            {{ $.Variable }}.{{ $key.Name }},
+            {{ $.Variable }}.{{ $value.GetName }},
 {{- end }}
             {{ .Variable }}.UpdatedAt,
             {{ .Variable }}.CreatedAt,
@@ -72,7 +75,7 @@ func (r *{{ .RepositoryTypeName }}) Get(
     q := sq.Select(
         "{{ .TableName }}.id",
 {{- range $key, $value := .Params }}
-        "{{ $.TableName }}.{{ $key.Tag }}",
+        "{{ $.TableName }}.{{ $value.Tag }}",
 {{- end }}
         "{{ .TableName }}.updated_at",
         "{{ .TableName }}.created_at",
@@ -96,20 +99,35 @@ func (r *{{ .RepositoryTypeName }}) List(
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     var {{ .ListVariable }} []*models.{{ .ModelName }}
-	const pageSize = uint64(10)
-	if filter.PageSize == nil {
-		filter.PageSize = utils.Pointer(pageSize)
-	}
+    const pageSize = uint64(10)
+    if filter.PageSize == nil {
+        filter.PageSize = utils.Pointer(pageSize)
+    }
     q := sq.Select(
         "{{ .TableName }}.id",
-{{- range $key, $value := .Params }}
-        "{{ $.TableName }}.{{ $key.Tag }}",
+{{- range $value := .Params }}
+        "{{ $.TableName }}.{{ $value.Tag }}",
 {{- end }}
         "{{ .TableName }}.updated_at",
         "{{ .TableName }}.created_at",
     ).
         From("public.{{ .TableName }}").
         Limit(pageSize)
+{{- if .SearchEnabled }}
+    if filter.Search != nil {
+        q = q.Where(postgresql.Search{
+            Lang:   "english",
+            Query:  *filter.Search,
+            Fields: []string{
+{{- range $value := .Params }}
+{{- if $value.Search }}
+                "{{ $value.Tag }}",
+{{- end }}
+{{- end }}
+            },
+        })
+    }
+{{- end }}
     // TODO: add filtering
     if filter.PageNumber != nil && *filter.PageNumber > 1 {
         q = q.Offset((*filter.PageNumber - 1) * *filter.PageSize)
@@ -135,7 +153,7 @@ func (r *{{ .RepositoryTypeName }}) Update(
     q := sq.Update("public.{{ .TableName }}").
         Where(sq.Eq{"id": {{ .Variable }}.ID}).
     {{- range $key, $value := .Params }}
-        Set("{{ $.TableName }}.{{ $key.Tag }}", {{ $.Variable }}.{{ $key.Name }}).
+        Set("{{ $.TableName }}.{{ $value.Tag }}", {{ $.Variable }}.{{ $value.GetName }}).
     {{- end }}
         Set("updated_at", {{ .Variable }}.UpdatedAt)
     query, args := q.PlaceholderFormat(sq.Dollar).MustSql()

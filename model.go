@@ -5,48 +5,126 @@ import (
 	"fmt"
 	"github.com/iancoleman/strcase"
 	"github.com/jinzhu/inflection"
+	"strings"
+	"time"
 )
 
-type ParamName string
-
-func (n ParamName) Name() string {
-	return strcase.ToCamel(string(n))
+type Param struct {
+	Name   string
+	Type   string
+	Search bool
 }
 
-func (n ParamName) Tag() string {
-	return strcase.ToSnake(string(n))
-}
-
-type ParamType string
-
-func (n ParamType) Fake() string {
-	switch n {
+func (n Param) Fake() string {
+	typeName := strings.TrimPrefix(n.Type, "*")
+	var fake string
+	switch typeName {
 	case "int":
-		return "faker.RandomInt(2, 100)"
+		fake = "faker.RandomInt(2, 100)"
 	case "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64":
-		return fmt.Sprintf("%s(faker.RandomInt(2, 100))", n)
+		fake = fmt.Sprintf("%s(faker.RandomInt(2, 100))", n)
 	case "[]int":
-		return fmt.Sprintf("[]%s{faker.RandomInt(2, 100), %s(faker.RandomInt(2, 100))}", n, n)
+		fake = fmt.Sprintf("[]%s{faker.RandomInt(2, 100), %s(faker.RandomInt(2, 100))}", n, n)
 	case "[]int8", "[]int16", "[]int32", "[]int64", "[]uint", "[]uint8", "[]uint16", "[]uint32", "[]uint64":
-		return fmt.Sprintf("[]%s{%s(faker.RandomInt(2, 100)), %s(faker.RandomInt(2, 100))}", n, n, n)
+		fake = fmt.Sprintf("[]%s{%s(faker.RandomInt(2, 100)), %s(faker.RandomInt(2, 100))}", n, n, n)
 	case "string":
-		return "faker.Lorem().String()"
+		fake = "faker.Lorem().String()"
 	case "[]string":
 		return "faker.Lorem().Words(5)"
 	case "uuid":
-		return "uuid.NewString()"
+		fake = "uuid.NewString()"
 	default:
-		return ""
+		return "/*FIXME*/"
+	}
+	if strings.HasPrefix(n.Type, "*") {
+		return fmt.Sprintf("utils.Pointer(%s)", fake)
+	}
+	return fake
+}
+
+func (n Param) SQLType() string {
+	typeName := strings.TrimPrefix(n.Type, "*")
+	switch typeName {
+	case "int8", "int16", "int32", "int":
+		return "int"
+	case "float32":
+		return "float"
+	case "float64":
+		return "double precision"
+	case "int64", "uint", "uint8", "uint16", "uint32", "uint64":
+		return "bigint"
+	case "[]int8", "[]int16", "[]int32", "[]int":
+		return "int[]"
+	case "[]int64", "[]uint", "[]uint8", "[]uint16", "[]uint32", "[]uint64":
+		return "bigint[]"
+	case "string":
+		switch n.Name {
+		case "title", "name":
+			return "varchar"
+		default:
+			return "text"
+		}
+	case "[]string":
+		return "varchar[]"
+	case "uuid":
+		return "uuid"
+	case "time.Time":
+		switch n.Name {
+		case "date":
+			return "date"
+		case "time":
+			return "time"
+		default:
+			return "timestamp"
+		}
+	case "time.Duration":
+		return "interval"
+	case "bool":
+		return "boolean"
+	default:
+		return "/* FIXME */"
 	}
 }
 
-type Params map[ParamName]ParamType
+func (n Param) Required() bool {
+	return !strings.HasPrefix(n.Type, "*")
+}
+
+func (n Param) GetName() string {
+	return strcase.ToCamel(n.Name)
+}
+
+func (n Param) Tag() string {
+	return strcase.ToSnake(n.Name)
+}
+
+type Params []Param
 
 type Model struct {
 	Model  string `json:"model"`
 	Module string
 	Auth   bool
 	Params Params `json:"params"`
+}
+
+func (m Model) SearchEnabled() bool {
+	for _, param := range m.Params {
+		if param.Search {
+			return true
+		}
+	}
+	return false
+}
+
+func (m Model) SearchVector() string {
+	var params []string
+	for _, param := range m.Params {
+		if param.Search {
+			params = append(params, param.Tag())
+		}
+	}
+	vector := fmt.Sprintf("to_tsvector('english', %s)", strings.Join(params, " || "))
+	return vector
 }
 
 func ParseModel(s string) Model {
@@ -146,6 +224,14 @@ func (m Model) SnakeName() string {
 
 func (m Model) FileName() string {
 	return fmt.Sprintf("%s.go", m.SnakeName())
+}
+
+func (m Model) MigrationUpFileName() string {
+	return fmt.Sprintf("%s_%s.up.sql", time.Now().UTC().Format("20060102150405"), m.TableName())
+}
+
+func (m Model) MigrationDownFileName() string {
+	return fmt.Sprintf("%s_%s.down.sql", time.Now().UTC().Format("20060102150405"), m.TableName())
 }
 
 func (m Model) TestFileName() string {

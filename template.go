@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"os"
@@ -25,7 +26,19 @@ type Template struct {
 	Name            string
 }
 
+func (t *Template) hasRewrite() bool {
+	_, err := os.Stat(t.DestinationPath)
+	if err != nil && os.IsNotExist(err) {
+		return true
+	}
+	return false
+}
+
 func (t *Template) renderToFile(data interface{}) error {
+	if !t.hasRewrite() {
+		fmt.Printf("%s already exists.\n", t.Name)
+		return nil
+	}
 	a := path.Base(t.SourcePath)
 	tmpl, err := template.New(a).Funcs(funcMap).ParseFS(content, t.SourcePath)
 	if err != nil {

@@ -141,6 +141,20 @@ func registerHandler(variableName, typeName string) error {
 				funcDecl, ok := decl.(*ast.FuncDecl)
 				if ok {
 					if funcDecl.Name.String() == "NewRouter" {
+						var exists bool
+						for _, existedParam := range funcDecl.Type.Params.List {
+							selector, ok := existedParam.Type.(*ast.StarExpr)
+							if ok {
+								t, ok := selector.X.(*ast.Ident)
+								if ok && t.Name == typeName {
+									exists = true
+									break
+								}
+							}
+						}
+						if exists {
+							continue
+						}
 						field := &ast.Field{
 							Doc: &ast.CommentGroup{
 								List: nil,
@@ -230,6 +244,20 @@ func addPermission(permission, check string) error {
 									for _, values := range variable.Values {
 										lit, ok := values.(*ast.CompositeLit)
 										if ok {
+											var exists bool
+											for _, elt := range lit.Elts {
+												kv, ok := elt.(*ast.KeyValueExpr)
+												if ok {
+													selector, ok := kv.Key.(*ast.SelectorExpr)
+													if ok && selector.Sel.Name == permission {
+														exists = true
+														break
+													}
+												}
+											}
+											if exists {
+												continue
+											}
 											lit.Elts = append(lit.Elts, &ast.KeyValueExpr{
 												Key: &ast.SelectorExpr{
 													X:   ast.NewIdent("models"),

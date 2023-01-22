@@ -83,9 +83,19 @@ func addToDI(packageName string, constructors ...string) error {
 													fun, ok := provideFunc.Fun.(*ast.SelectorExpr)
 													if ok && fun.Sel.Name == "Provide" {
 														for _, constructor := range constructors {
-															provideFunc.Args = append(provideFunc.Args, &ast.Ident{
-																Name: constructor,
-															})
+															var exists bool
+															for _, existedArg := range provideFunc.Args {
+																ident := existedArg.(*ast.Ident)
+																if ident.Name == constructor {
+																	exists = true
+																	break
+																}
+															}
+															if !exists {
+																provideFunc.Args = append(provideFunc.Args, &ast.Ident{
+																	Name: constructor,
+																})
+															}
 														}
 													}
 													break

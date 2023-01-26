@@ -12,7 +12,7 @@ import (
 type {{ .InterceptorTypeName }} interface {
     Get(
         ctx context.Context,
-        id string,
+        id models.UUID,
 {{- if .Auth }}
         requestUser *models.User,
 {{- end }}
@@ -40,7 +40,7 @@ type {{ .InterceptorTypeName }} interface {
     ) (*models.{{ .ModelName }}, error)
     Delete(
         ctx context.Context,
-        id string,
+        id models.UUID,
 {{- if .Auth }}
         requestUser *models.User,
 {{- end }}

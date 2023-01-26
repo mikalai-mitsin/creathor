@@ -40,7 +40,7 @@ func (u UserServiceServer) Signup(ctx context.Context, input *{{ .ProtoPackage }
 
 func (u UserServiceServer) Update(ctx context.Context, input *{{ .ProtoPackage }}.UserUpdate) (*{{ .ProtoPackage }}.User, error) {
 	update := &models.UserUpdate{
-		ID: input.GetId(),
+		ID: models.UUID(input.GetId()),
 	}
 	if input.GetFirstName() != nil {
 		update.FirstName = utils.Pointer(input.GetFirstName().GetValue())
@@ -62,7 +62,7 @@ func (u UserServiceServer) Update(ctx context.Context, input *{{ .ProtoPackage }
 }
 
 func (u UserServiceServer) Get(ctx context.Context, input *{{ .ProtoPackage }}.UserGet) (*{{ .ProtoPackage }}.User, error) {
-	user, err := u.userInterceptor.Get(ctx, input.GetId(), ctx.Value(UserKey).(*models.User))
+	user, err := u.userInterceptor.Get(ctx, models.UUID(input.GetId()), ctx.Value(UserKey).(*models.User))
 	if err != nil {
 		return nil, decodeError(err)
 	}
@@ -103,7 +103,7 @@ func encodeUserFilter(input *{{ .ProtoPackage }}.UserFilter) *models.UserFilter 
 }
 
 func (u UserServiceServer) Delete(ctx context.Context, input *{{ .ProtoPackage }}.UserDelete) (*emptypb.Empty, error) {
-	if err := u.userInterceptor.Delete(ctx, input.GetId(), ctx.Value(UserKey).(*models.User)); err != nil {
+	if err := u.userInterceptor.Delete(ctx, models.UUID(input.GetId()), ctx.Value(UserKey).(*models.User)); err != nil {
 		return nil, decodeError(err)
 	}
 	return &emptypb.Empty{}, nil
@@ -111,7 +111,7 @@ func (u UserServiceServer) Delete(ctx context.Context, input *{{ .ProtoPackage }
 
 func decodeUser(user *models.User) *{{ .ProtoPackage }}.User {
 	u := &{{ .ProtoPackage }}.User{
-		Id:        user.ID,
+		Id:        string(user.ID),
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Email:     user.Email,

@@ -77,7 +77,7 @@ func TestUserUseCase_Get(t *testing.T) {
     }
     type args struct {
         ctx context.Context
-        id  string
+        id  models.UUID
     }
     tests := []struct {
         name    string
@@ -472,7 +472,7 @@ func TestUserUseCase_Delete(t *testing.T) {
     }
     type args struct {
         ctx context.Context
-        id  string
+        id  models.UUID
     }
     tests := []struct {
         name    string

@@ -53,7 +53,7 @@ func NewJWTAuthRepository(
 }
 
 func (r *JWTAuthRepository) Create(_ context.Context, user *models.User) (*models.TokenPair, error) {
-    pair := r.createPair(user.ID)
+    pair := r.createPair(string(user.ID))
     return pair, nil
 }
 

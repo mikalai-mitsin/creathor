@@ -158,7 +158,7 @@ func Test{{ .RepositoryTypeName }}_Get(t *testing.T) {
     }
     type args struct {
         ctx context.Context
-        id  string
+        id  models.UUID
     }
     tests := []struct {
         name    string
@@ -200,7 +200,7 @@ func Test{{ .RepositoryTypeName }}_Get(t *testing.T) {
             },
             want: nil,
             wantErr: errs.FromPostgresError(errors.New("test error")).
-                WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID),
+                WithParam("{{ .KeyName }}_id", string({{ .Variable }}.ID)),
         },
         {
             name: "not found",
@@ -216,7 +216,7 @@ func Test{{ .RepositoryTypeName }}_Get(t *testing.T) {
                 id:  {{ .Variable }}.ID,
             },
             want:    nil,
-            wantErr: errs.NewEntityNotFound().WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID),
+            wantErr: errs.NewEntityNotFound().WithParam("{{ .KeyName }}_id", string({{ .Variable }}.ID)),
         },
     }
     for _, tt := range tests {
@@ -407,7 +407,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
                 ctx:  ctx,
                 card: {{ .Variable }},
             },
-            wantErr: errs.NewEntityNotFound().WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID),
+            wantErr: errs.NewEntityNotFound().WithParam("{{ .KeyName }}_id", string({{ .Variable }}.ID)),
         },
         {
             name: "database error",
@@ -424,7 +424,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
                 ctx:  ctx,
                 card: {{ .Variable }},
             },
-            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID),
+            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .KeyName }}_id", string({{ .Variable }}.ID)),
         },
         {
             name: "unexpected error",
@@ -441,7 +441,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
                 ctx:  ctx,
                 card: {{ .Variable }},
             },
-            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID),
+            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .KeyName }}_id", string({{ .Variable }}.ID)),
         },
         {
             name: "result error",
@@ -458,7 +458,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
                 ctx:  ctx,
                 card: {{ .Variable }},
             },
-            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID),
+            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .KeyName }}_id", string({{ .Variable }}.ID)),
         },
     }
     for _, tt := range tests {
@@ -492,7 +492,7 @@ func Test{{ .RepositoryTypeName }}_Delete(t *testing.T) {
     }
     type args struct {
         ctx context.Context
-        id  string
+        id  models.UUID
     }
     tests := []struct {
         name    string
@@ -533,7 +533,7 @@ func Test{{ .RepositoryTypeName }}_Delete(t *testing.T) {
                 ctx: context.Background(),
                 id:  {{ .Variable }}.ID,
             },
-            wantErr: errs.NewEntityNotFound().WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID),
+            wantErr: errs.NewEntityNotFound().WithParam("{{ .KeyName }}_id", string({{ .Variable }}.ID)),
         },
         {
             name: "database error",
@@ -550,7 +550,7 @@ func Test{{ .RepositoryTypeName }}_Delete(t *testing.T) {
                 ctx: context.Background(),
                 id:  {{ .Variable }}.ID,
             },
-            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID),
+            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .KeyName }}_id", string({{ .Variable }}.ID)),
         },
         {
             name: "result error",
@@ -567,7 +567,7 @@ func Test{{ .RepositoryTypeName }}_Delete(t *testing.T) {
                 ctx: context.Background(),
                 id:  {{ .Variable }}.ID,
             },
-            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID),
+            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .KeyName }}_id", string({{ .Variable }}.ID)),
         },
     }
     for _, tt := range tests {

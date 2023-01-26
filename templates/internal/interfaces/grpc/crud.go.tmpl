@@ -50,7 +50,7 @@ func (s *{{ .GRPCHandlerTypeName }}) Get(
 ) (*{{ .ProtoPackage }}.{{ .ModelName }}, error) {
     {{ .Variable }}, err := s.{{ .InterceptorVariableName }}.Get(
         ctx,
-        input.GetId(),
+        models.UUID(input.GetId()),
 {{- if .Auth }}
         ctx.Value(UserKey).(*models.User),
 {{- end }}
@@ -101,7 +101,7 @@ func (s *{{ .GRPCHandlerTypeName }}) Delete(
 ) (*emptypb.Empty, error) {
     if err := s.{{ .InterceptorVariableName }}.Delete(
         ctx,
-        input.GetId(),
+        models.UUID(input.GetId()),
     {{- if .Auth }}
         ctx.Value(UserKey).(*models.User),
     {{- end }}
@@ -113,7 +113,7 @@ func (s *{{ .GRPCHandlerTypeName }}) Delete(
 
 func encode{{ .UpdateTypeName }}(input *{{ .ProtoPackage }}.{{ .UpdateTypeName }}) *models.{{ .UpdateTypeName }} {
     update := &models.{{ .UpdateTypeName }}{
-        ID:          input.GetId(),
+        ID:          models.UUID(input.GetId()),
 {{- range $value := .Params }}
         {{ $value.GetName }}: nil,
 {{- end }}
@@ -153,7 +153,7 @@ func decodeList{{ .ModelName }}({{ .ListVariable }} []*models.{{ .ModelName }}, 
 
 func encode{{ .FilterTypeName }}(input *{{ .ProtoPackage }}.{{ .FilterTypeName }}) *models.{{ .FilterTypeName }} {
     filter := &models.{{ .FilterTypeName }}{
-        IDs:        input.GetIds(),
+        IDs:        nil,
         PageSize:   nil,
         PageNumber: nil,
         OrderBy:    input.GetOrderBy(),
@@ -172,6 +172,9 @@ func encode{{ .FilterTypeName }}(input *{{ .ProtoPackage }}.{{ .FilterTypeName }
         filter.Search = utils.Pointer(input.GetSearch().GetValue())
     }
 {{- end }}
+    for _, id := range input.GetIds() {
+        filter.IDs = append(filter.IDs, models.UUID(id))
+    }
     return filter
 }
 
@@ -191,9 +194,9 @@ func encode{{ .CreateTypeName }}(input *{{ .ProtoPackage }}.{{ .CreateTypeName }
     }
 {{- range $value := .Params }}
     {{- if $value.IsSlice }}
-        for _, param := range input.{{ $value.GRPCGetter }}() {
-            create.{{ $value.GetName }} = append(create.{{ $value.GetName }}, {{ $value.SliceType }}(param))
-        }
+    for _, param := range input.{{ $value.GRPCGetter }}() {
+        create.{{ $value.GetName }} = append(create.{{ $value.GetName }}, {{ $value.SliceType }}(param))
+    }
     {{- end }}
 {{- end }}
     return create
@@ -201,22 +204,22 @@ func encode{{ .CreateTypeName }}(input *{{ .ProtoPackage }}.{{ .CreateTypeName }
 
 func decode{{ .ModelName }}({{ .Variable }} *models.{{ .ModelName }}) *{{ .ProtoPackage }}.{{ .ModelName }} {
     response := &{{ .ProtoPackage }}.{{ .ModelName }}{
-        Id:          {{ .Variable }}.ID,
+        Id:          string({{ .Variable }}.ID),
         UpdatedAt:   timestamppb.New({{ .Variable }}.UpdatedAt),
         CreatedAt:   timestamppb.New({{ .Variable }}.CreatedAt),
 {{- range $value := .Params }}
     {{- if $value.IsSlice }}
-    {{ $value.GRPCParam }}: nil,
+        {{ $value.GRPCParam }}: nil,
     {{- else }}
-    {{ $value.GRPCParam }}: {{ $value.GRPCType }}({{ $.Variable }}.{{ $value.GetName }}),
+        {{ $value.GRPCParam }}: {{ $value.GRPCType }}({{ $.Variable }}.{{ $value.GetName }}),
     {{- end }}
 {{- end }}
     }
 {{- range $value := .Params }}
     {{- if $value.IsSlice }}
-        for _, param := range {{ $.Variable }}.{{ $value.GetName }} {
-            response.{{ $value.GRPCParam }} = append(response.{{ $value.GRPCParam }}, {{ $value.GRPCSliceType }}(param))
-        }
+    for _, param := range {{ $.Variable }}.{{ $value.GetName }} {
+        response.{{ $value.GRPCParam }} = append(response.{{ $value.GRPCParam }}, {{ $value.GRPCSliceType }}(param))
+    }
     {{- end }}
 {{- end }}
     return response

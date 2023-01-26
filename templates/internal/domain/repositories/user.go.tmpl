@@ -12,7 +12,7 @@ import (
 type UserRepository interface {
     Get(
         ctx context.Context,
-        id string,
+        id models.UUID,
     ) (*models.User, error)
     GetByEmail(
         ctx context.Context,
@@ -36,6 +36,6 @@ type UserRepository interface {
     ) error
     Delete(
         ctx context.Context,
-        id string,
+        id models.UUID,
     ) error
 }

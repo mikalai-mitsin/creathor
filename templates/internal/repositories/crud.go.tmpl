@@ -67,7 +67,7 @@ func (r *{{ .RepositoryTypeName }}) Create(
 
 func (r *{{ .RepositoryTypeName }}) Get(
     ctx context.Context,
-    id string,
+    id models.UUID,
 ) (*models.{{ .ModelName }}, error ) {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
@@ -86,7 +86,7 @@ func (r *{{ .RepositoryTypeName }}) Get(
     query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
     if err := r.database.GetContext(ctx, {{ .Variable }}, query, args...); err != nil {
         e := errs.FromPostgresError(err).
-            WithParam("{{ .KeyName }}_id", id)
+            WithParam("{{ .KeyName }}_id", string(id))
         return nil, e
     }
     return {{ .Variable }}, nil
@@ -178,7 +178,7 @@ func (r *{{ .RepositoryTypeName }}) Update(
 
 func (r *{{ .RepositoryTypeName }}) Delete(
     ctx context.Context,
-    id string,
+    id models.UUID,
 ) error {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()

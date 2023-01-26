@@ -31,7 +31,7 @@ func New{{ .UseCaseTypeName }}(
 
 func (u *{{ .UseCaseTypeName }}) Get(
     ctx context.Context,
-    id string,
+    id models.UUID,
 ) (*models.{{ .ModelName }}, error ) {
     {{ .Variable }}, err := u.{{ .RepositoryVariableName }}.Get(ctx, id)
     if err != nil {
@@ -100,7 +100,7 @@ func (u *{{ .UseCaseTypeName }}) Update(
     return {{ .Variable }}, nil
 }
 
-func (u *{{ .UseCaseTypeName }}) Delete(ctx context.Context, id string) error {
+func (u *{{ .UseCaseTypeName }}) Delete(ctx context.Context, id models.UUID) error {
     if err := u.{{ .RepositoryVariableName }}.Delete(ctx, id); err != nil {
         return err
     }

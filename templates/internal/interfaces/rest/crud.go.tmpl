@@ -89,7 +89,7 @@ func (h *{{ .RESTHandlerTypeName }}) Get(c *gin.Context) {
 {{- if .Auth }}
 	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
 {{- end }}
-    {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Get(c.Request.Context(), c.Param("id"){{- if .Auth -}}, requestUser{{- end -}})
+    {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Get(c.Request.Context(), models.UUID(c.Param("id")){{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
@@ -114,7 +114,7 @@ func (h *{{ .RESTHandlerTypeName }}) Update(c *gin.Context) {
 	if err := c.Bind(update); err != nil {
 		return
 	}
-	update.ID = c.Param("id")
+	update.ID = models.UUID(c.Param("id"))
     {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Update(c.Request.Context(), update{{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
@@ -134,7 +134,7 @@ func (h *{{ .RESTHandlerTypeName }}) Delete(c *gin.Context) {
 {{- if .Auth }}
 	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
 {{- end }}
-	err := h.{{ .InterceptorVariableName }}.Delete(c.Request.Context(), c.Param("id"){{- if .Auth -}}, requestUser{{- end -}})
+	err := h.{{ .InterceptorVariableName }}.Delete(c.Request.Context(), models.UUID(c.Param("id")){{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return

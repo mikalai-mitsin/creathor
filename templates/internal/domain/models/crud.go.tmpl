@@ -9,7 +9,7 @@ import (
 )
 
 type {{ .ModelName }} struct {
-    ID        string `json:"id" db:"id,omitempty" form:"id"`
+    ID        UUID      `json:"id" db:"id,omitempty" form:"id"`
 {{- range $value := .Params }}
     {{ $value.GetName }} {{ $value.Type }} `json:"{{ $value.Tag }}" db:"{{ $value.Tag }}" form:"{{ $value.Tag }}"`
 {{- end }}
@@ -32,7 +32,7 @@ func (c *{{ .ModelName }}) Validate() error {
 }
 
 type {{ .FilterTypeName }} struct {
-    IDs        []string `json:"ids" form:"ids"`
+    IDs        []UUID `json:"ids" form:"ids"`
     PageSize   *uint64  `json:"page_size" form:"page_size"`
     PageNumber *uint64  `json:"page_number" form:"page_number"`
     OrderBy    []string `json:"order_by" form:"order_by"`
@@ -78,7 +78,7 @@ func (c *{{ .CreateTypeName }}) Validate() error {
 }
 
 type {{ .UpdateTypeName }} struct {
-    ID string `json:"id"`
+    ID UUID `json:"id"`
 {{- range $key, $value := .Params }}
     {{ $value.GetName }} *{{ $value.Type }} `json:"{{ $value.Tag }}" form:"{{ $value.Tag }}"`
 {{- end }}

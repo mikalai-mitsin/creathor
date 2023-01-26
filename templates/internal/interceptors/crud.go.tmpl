@@ -36,7 +36,8 @@ func New{{ .InterceptorTypeName }}(
 
 func (i *{{ .InterceptorTypeName }}) Get(
     ctx context.Context,
-    id string,{{if .Auth}}
+    id models.UUID,
+{{- if .Auth}}
     requestUser *models.User,
 {{- end}}
 ) (*models.{{ .ModelName }}, error) {
@@ -166,7 +167,8 @@ func (i *{{ .InterceptorTypeName }}) Update(
 
 func (i *{{ .InterceptorTypeName }}) Delete(
     ctx context.Context,
-    id string,{{if .Auth}}
+    id models.UUID,
+{{- if .Auth}}
     requestUser *models.User,
 {{- end}}
 ) error {

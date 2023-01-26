@@ -219,6 +219,11 @@ func CreateLayout(project *Project) error {
 			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "server.go"),
 			Name:            "rest server",
 		},
+		{
+			SourcePath:      "templates/internal/domain/models/types.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "domain", "models", "types.go"),
+			Name:            "model types",
+		},
 	}
 	if project.Auth {
 		files = append(

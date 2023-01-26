@@ -13,7 +13,7 @@ import (
 func New{{ .ModelName }}(t *testing.T) *models.{{ .ModelName }} {
     t.Helper()
     return &models.{{ .ModelName }}{
-        ID:         uuid.New().String(),
+        ID:         models.UUID(uuid.NewString()),
 {{- range $key, $value := .Params }}
         {{ $value.GetName }}: {{ $value.Fake }},
 {{- end }}
@@ -34,7 +34,7 @@ func New{{ .CreateTypeName }}(t *testing.T) *models.{{ .CreateTypeName }} {
 func New{{ .UpdateTypeName }}(t *testing.T) *models.{{ .UpdateTypeName }} {
     t.Helper()
     return &models.{{ .UpdateTypeName }}{
-        ID: uuid.New().String(),
+        ID: models.UUID(uuid.NewString()),
 {{- range $key, $value := .Params }}
         {{ $value.GetName }}:  utils.Pointer({{ $value.Fake }}),
 {{- end }}
@@ -47,7 +47,7 @@ func New{{ .FilterTypeName }}(t *testing.T) *models.{{ .FilterTypeName }} {
         PageSize:   utils.Pointer(uint64(faker.RandomInt64(2, 100))),
         PageNumber: utils.Pointer(uint64(faker.RandomInt64(2, 100))),
         OrderBy:    faker.Lorem().Words(5),
-        IDs:        []string{uuid.New().String(), uuid.New().String(), uuid.New().String()},
+        IDs:        []models.UUID{models.UUID(uuid.NewString()), models.UUID(uuid.NewString()), models.UUID(uuid.NewString())},
 {{- if .SearchEnabled }}
         Search: utils.Pointer(faker.Lorem().String()),
 {{- end }}

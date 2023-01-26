@@ -12,7 +12,7 @@ import (
 type UserUseCase interface {
     Get(
         ctx context.Context,
-        id string,
+        id models.UUID,
     ) (*models.User, error)
     GetByEmail(
         ctx context.Context,
@@ -32,6 +32,6 @@ type UserUseCase interface {
     ) (*models.User, error)
     Delete(
         ctx context.Context,
-        id string,
+        id models.UUID,
     ) error
 }

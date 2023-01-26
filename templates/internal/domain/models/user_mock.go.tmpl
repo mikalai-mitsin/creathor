@@ -13,7 +13,7 @@ import (
 func NewUser(t *testing.T) *models.User {
     t.Helper()
     return &models.User{
-        ID:          uuid.NewString(),
+        ID:          models.UUID(uuid.NewString()),
         FirstName:   faker.Name().FirstName(),
         LastName:    faker.Name().LastName(),
         Password:    faker.Number().Hexadecimal(10),
@@ -26,7 +26,7 @@ func NewUser(t *testing.T) *models.User {
 func NewUserUpdate(t *testing.T) *models.UserUpdate {
     t.Helper()
     return &models.UserUpdate{
-        ID:          uuid.NewString(),
+        ID:          models.UUID(uuid.NewString()),
         FirstName:   utils.Pointer(faker.Name().FirstName()),
         LastName:    utils.Pointer(faker.Name().LastName()),
         Password:    utils.Pointer(faker.Number().Hexadecimal(10)),

@@ -189,7 +189,7 @@ func TestUserServiceServer_Get(t *testing.T) {
             args: args{
                 ctx: ctx,
                 input: &{{ .ProtoPackage }}.UserGet{
-                    Id: user.ID,
+                    Id: string(user.ID),
                 },
             },
             want:    decodeUser(user),
@@ -210,7 +210,7 @@ func TestUserServiceServer_Get(t *testing.T) {
             args: args{
                 ctx: ctx,
                 input: &{{ .ProtoPackage }}.UserGet{
-                    Id: user.ID,
+                    Id: string(user.ID),
                 },
             },
             want:    nil,
@@ -471,7 +471,7 @@ func TestUserServiceServer_Update(t *testing.T) {
             args: args{
                 ctx: ctx,
                 input: &{{ .ProtoPackage }}.UserUpdate{
-                    Id:        userUpdate.ID,
+                    Id:        string(userUpdate.ID),
                     FirstName: wrapperspb.String(*userUpdate.FirstName),
                     LastName:  wrapperspb.String(*userUpdate.LastName),
                     Email:     wrapperspb.String(*userUpdate.Email),
@@ -501,7 +501,7 @@ func TestUserServiceServer_Update(t *testing.T) {
             args: args{
                 ctx: ctx,
                 input: &{{ .ProtoPackage }}.UserUpdate{
-                    Id:        userUpdate.ID,
+                    Id:        string(userUpdate.ID),
                     FirstName: wrapperspb.String(*userUpdate.FirstName),
                     LastName:  wrapperspb.String(*userUpdate.LastName),
                     Email:     wrapperspb.String(*userUpdate.Email),
@@ -548,7 +548,7 @@ func Test_decodeUser(t *testing.T) {
                 user: user,
             },
             want: &{{ .ProtoPackage }}.User{
-                Id:        user.ID,
+                Id:        string(user.ID),
                 FirstName: user.FirstName,
                 LastName:  user.LastName,
                 Email:     user.Email,

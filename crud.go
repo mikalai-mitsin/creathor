@@ -14,6 +14,10 @@ import (
 )
 
 func CreateCRUD(data *Model) error {
+	if err := data.Validate(); err != nil {
+		fmt.Printf("invalid model %s: %s\n", data.Model, err)
+		return err
+	}
 	files := []*Template{
 		{
 			SourcePath:      "templates/internal/domain/models/crud.go.tmpl",
@@ -84,6 +88,21 @@ func CreateCRUD(data *Model) error {
 			SourcePath:      "templates/internal/interfaces/postgres/migrations/crud.down.sql.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", data.MigrationDownFileName()),
 			Name:            "migration down",
+		},
+		{
+			SourcePath:      "templates/internal/interfaces/grpc/crud.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", data.FileName()),
+			Name:            "grpc service server",
+		},
+		{
+			SourcePath:      "templates/internal/interfaces/grpc/crud_test.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", data.TestFileName()),
+			Name:            "test grpc service server",
+		},
+		{
+			SourcePath:      "templates/api/proto/crud.proto.tmpl",
+			DestinationPath: path.Join(destinationPath, "api", "proto", data.ProtoFileName()),
+			Name:            "proto def",
 		},
 	}
 	for _, tmpl := range files {

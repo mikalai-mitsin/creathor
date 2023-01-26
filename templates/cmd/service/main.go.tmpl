@@ -44,7 +44,7 @@ func main() {
 
 // runApp - run app
 func runApp(context *cli.Context) error {
-    app := containers.NewREST{{ .Name | Title }}(configPath)
+    app := containers.NewGRPC{{ .Name | Title }}(configPath)
     err := app.Start(context.Context)
     if err != nil {
         return err

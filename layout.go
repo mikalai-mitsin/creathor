@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"github.com/iancoleman/strcase"
 	"os"
 	"path"
 )
@@ -14,6 +16,10 @@ type Project struct {
 	Models    []*Model `yaml:"models"`
 }
 
+func (p *Project) ProtoPackage() string {
+	return fmt.Sprintf("%spb", strcase.ToSnake(p.Name))
+}
+
 func CreateLayout(project *Project) error {
 	directories := []string{
 		path.Join(destinationPath, "build"),
@@ -23,6 +29,8 @@ func CreateLayout(project *Project) error {
 		path.Join(destinationPath, "dist"),
 		path.Join(destinationPath, "docs"),
 		path.Join(destinationPath, "docs", ".chglog"),
+		path.Join(destinationPath, "api"),
+		path.Join(destinationPath, "api", "proto"),
 		path.Join(destinationPath, "internal"),
 		path.Join(destinationPath, "internal", "configs"),
 		path.Join(destinationPath, "internal", "domain", "errs"),
@@ -55,6 +63,21 @@ func CreateLayout(project *Project) error {
 			SourcePath:      "templates/cmd/service/main.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "cmd", project.Name, "main.go"),
 			Name:            "service main",
+		},
+		{
+			SourcePath:      "templates/api/proto/buf.yaml.tmpl",
+			DestinationPath: path.Join(destinationPath, "api", "proto", "buf.yaml"),
+			Name:            "buf.yaml",
+		},
+		{
+			SourcePath:      "templates/buf.gen.yaml.tmpl",
+			DestinationPath: path.Join(destinationPath, "buf.gen.yaml"),
+			Name:            "buf.gen.yaml",
+		},
+		{
+			SourcePath:      "templates/buf.work.yaml.tmpl",
+			DestinationPath: path.Join(destinationPath, "buf.work.yaml"),
+			Name:            "buf.work.yaml",
 		},
 		{
 			SourcePath:      "templates/configs/config.toml.tmpl",
@@ -379,6 +402,36 @@ func CreateLayout(project *Project) error {
 				SourcePath:      "templates/internal/interfaces/postgres/migrations/users.down.sql.tmpl",
 				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "000005_users.down.sql"),
 				Name:            "postgres users migration down",
+			},
+			&Template{
+				SourcePath:      "templates/api/proto/auth.proto.tmpl",
+				DestinationPath: path.Join(destinationPath, "api", "proto", "auth.proto"),
+				Name:            "auth.proto",
+			},
+			&Template{
+				SourcePath:      "templates/api/proto/user.proto.tmpl",
+				DestinationPath: path.Join(destinationPath, "api", "proto", "user.proto"),
+				Name:            "user.proto",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/grpc/auth.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "auth.go"),
+				Name:            "grpc auth",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/grpc/auth_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "auth_test.go"),
+				Name:            "grpc auth test",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/grpc/user.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "user.go"),
+				Name:            "grpc user",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/grpc/user_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "user_test.go"),
+				Name:            "grpc user test",
 			},
 		)
 	}

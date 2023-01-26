@@ -3,7 +3,7 @@ CREATE TABLE public.{{ .TableName }}
     id          uuid                  DEFAULT uuid_generate_v4()
         CONSTRAINT {{ .TableName }}_pk PRIMARY KEY,
 {{- range $value := .Params }}
-    {{ $value.Tag }} {{ $value.SQLType }} {{ if $value.Required }}NOT NULL{{- end -}},
+    {{ $value.Tag }} {{ $value.SQLType }} NOT NULL,
 {{- end }}
     updated_at  timestamp    NOT NULL DEFAULT (now() at time zone 'utc'),
     created_at  timestamp    NOT NULL DEFAULT (now() at time zone 'utc')

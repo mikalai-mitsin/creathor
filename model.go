@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/iancoleman/strcase"
 	"github.com/jinzhu/inflection"
 	"os"
@@ -17,36 +18,80 @@ type Param struct {
 	Search bool   `yaml:"search"`
 }
 
+func (p *Param) Validate() error {
+	err := validation.ValidateStruct(
+		p,
+		validation.Field(&p.Name, validation.Required),
+		validation.Field(&p.Type, validation.Required, validation.In(
+			"int", "int64", "int32", "int16", "int8",
+			"[]int", "[]int64", "[]int32", "[]int16", "[]int8",
+			"uint", "uint64", "uint32", "uint16", "uint8",
+			"[]uint", "[]uint64", "[]uint32", "[]uint16", "[]uint8",
+			"string",
+			"[]string",
+			"time.Time",
+			"[]time.Time",
+		)),
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Param) IsSlice() bool {
+	return strings.HasPrefix(p.Type, "[]")
+}
+
+func (p *Param) SliceType() string {
+	return strings.TrimPrefix(p.Type, "[]")
+}
+
+func (p *Param) GrpcGetFromListValueAs() string {
+	sliceType := p.SliceType()
+	switch sliceType {
+	case "int", "int32", "int64", "uint", "uint32", "uint64", "float32", "float64":
+		return "GetNumberValue"
+	case "string":
+		return "GetStringValue"
+	case "bool":
+		return "GetBoolValue"
+	case "map[string]interface{}", "map[string]any":
+		return "GetStructValue"
+	case "[]interface{}", "[]any":
+		return "GetListValue"
+	default:
+		return "AsInterface"
+	}
+}
+
 func (n Param) Fake() string {
-	typeName := strings.TrimPrefix(n.Type, "*")
 	var fake string
-	switch typeName {
+	switch n.Type {
 	case "int":
 		fake = "faker.RandomInt(2, 100)"
 	case "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64":
-		fake = fmt.Sprintf("%s(faker.RandomInt(2, 100))", n)
+		fake = fmt.Sprintf("%s(faker.RandomInt(2, 100))", n.Type)
 	case "[]int":
-		fake = fmt.Sprintf("[]%s{faker.RandomInt(2, 100), %s(faker.RandomInt(2, 100))}", n, n)
+		fake = fmt.Sprintf("[]int{faker.RandomInt(2, 100), faker.RandomInt(2, 100)}")
 	case "[]int8", "[]int16", "[]int32", "[]int64", "[]uint", "[]uint8", "[]uint16", "[]uint32", "[]uint64":
-		fake = fmt.Sprintf("[]%s{%s(faker.RandomInt(2, 100)), %s(faker.RandomInt(2, 100))}", n, n, n)
+		fake = fmt.Sprintf("%s{%s(faker.RandomInt(2, 100)), %s(faker.RandomInt(2, 100))}", n.Type, n.SliceType(), n.SliceType())
 	case "string":
 		fake = "faker.Lorem().String()"
 	case "[]string":
 		return "faker.Lorem().Words(5)"
 	case "uuid":
 		fake = "uuid.NewString()"
+	case "time.Time":
+		fake = "faker.Time().Backward(40 * time.Hour).UTC()"
 	default:
 		return "/*FIXME*/"
-	}
-	if strings.HasPrefix(n.Type, "*") {
-		return fmt.Sprintf("utils.Pointer(%s)", fake)
 	}
 	return fake
 }
 
 func (n Param) SQLType() string {
-	typeName := strings.TrimPrefix(n.Type, "*")
-	switch typeName {
+	switch n.Type {
 	case "int8", "int16", "int32", "int":
 		return "int"
 	case "float32":
@@ -88,8 +133,173 @@ func (n Param) SQLType() string {
 	}
 }
 
-func (n Param) Required() bool {
-	return !strings.HasPrefix(n.Type, "*")
+func (n Param) GetGRPCWrapper() string {
+	switch n.Type {
+	case "int", "int32", "int8", "int16":
+		return "wrapperspb.Int32"
+	case "int64":
+		return "wrapperspb.Int64"
+	case "uint8", "uint16", "uint32":
+		return "wrapperspb.UInt32"
+	case "uint64":
+		return "wrapperspb.UInt64"
+	case "string":
+		return "wrapperspb.String"
+	case "bool", "booleand":
+		return "wrapperspb.Bool"
+	case "float32":
+		return "wrapperspb.Float"
+	case "float64":
+		return "wrapperspb.Double"
+	case "time.Time":
+		return "timestamppb.New"
+	default:
+		return "/* FIXME */"
+	}
+}
+
+func (n Param) GetGRPCWrapperArgumentType() string {
+	switch n.Type {
+	case "int", "int32", "int8", "int16":
+		return "int32"
+	case "int64":
+		return "int64"
+	case "uint8", "uint16", "uint32":
+		return "uint32"
+	case "uint64":
+		return "uint64"
+	case "string":
+		return "string"
+	case "bool", "booleand":
+		return "bool"
+	case "float32":
+		return "float32"
+	case "float64":
+		return "float64"
+	case "time.Time":
+		return "time.Time"
+	default:
+		return "/* FIXME */"
+	}
+}
+
+func (n Param) GRPCType() string {
+	switch n.Type {
+	case "int8", "int16", "int32", "int":
+		return "int32"
+	case "int64":
+		return "int64"
+	case "float32":
+		return "float"
+	case "float64":
+		return "double"
+	case "uint", "uint8", "uint16", "uint32":
+		return "uint32"
+	case "uint64":
+		return "uint64"
+	case "[]int8", "[]int16", "[]int32", "[]int":
+		return "[]int32"
+	case "[]int64":
+		return "[]int64"
+	case "[]uint", "[]uint8", "[]uint16", "[]uint32":
+		return "[]uint32"
+	case "[]uint64":
+		return "[]uint64"
+	case "string", "uuid":
+		return "string"
+	case "[]string":
+		return "[]string"
+	case "time.Time":
+		return "timestamppb.New"
+	case "bool":
+		return "bool"
+	default:
+		return "/* FIXME */"
+	}
+}
+
+func (n Param) GRPCSliceType() string {
+	return strings.TrimPrefix(n.GRPCType(), "[]")
+}
+
+func (n Param) ProtoType() string {
+	switch n.Type {
+	case "int8", "int16", "int32", "int":
+		return "int32"
+	case "int64":
+		return "int64"
+	case "float32":
+		return "float"
+	case "float64":
+		return "double"
+	case "uint", "uint8", "uint16", "uint32":
+		return "uint32"
+	case "uint64":
+		return "uint64"
+	case "[]int8", "[]int16", "[]int32", "[]int":
+		return "repeated int32"
+	case "[]int64":
+		return "repeated int64"
+	case "[]uint", "[]uint8", "[]uint16", "[]uint32":
+		return "repeated uint32"
+	case "[]uint64":
+		return "repeated uint64"
+	case "string", "uuid":
+		return "string"
+	case "[]string":
+		return "repeated string"
+	case "time.Time":
+		return "google.protobuf.Timestamp"
+	case "bool":
+		return "bool"
+	default:
+		return "/* FIXME */"
+	}
+}
+
+func (n Param) GRPCGetter() string {
+	return fmt.Sprintf("Get%s", n.GRPCParam())
+}
+
+func (n Param) GRPCParam() string {
+	return strings.ReplaceAll(strcase.ToCamel(n.Name), "ID", "Id")
+}
+
+func (n Param) ProtoWrapType() string {
+	switch n.Type {
+	case "int8", "int16", "int32", "int":
+		return "google.protobuf.Int32Value"
+	case "int64":
+		return "google.protobuf.Int64Value"
+	case "float32":
+		return "google.protobuf.FloatValue"
+	case "float64":
+		return "google.protobuf.DoubleValue"
+	case "uint", "uint8", "uint16", "uint32":
+		return "google.protobuf.UInt32Value"
+	case "uint64":
+		return "google.protobuf.UInt64Value"
+	case "[]int8", "[]int16", "[]int32", "[]int":
+		return "google.protobuf.ListValue"
+	case "[]int64":
+		return "google.protobuf.ListValue"
+	case "[]uint", "[]uint8", "[]uint16", "[]uint32":
+		return "google.protobuf.ListValue"
+	case "[]uint64":
+		return "google.protobuf.ListValue"
+	case "string", "uuid":
+		return "google.protobuf.StringValue"
+	case "[]string":
+		return "google.protobuf.ListValue"
+	case "time.Time":
+		return "google.protobuf.Timestamp"
+	case "bool":
+		return "google.protobuf.BoolValue"
+	case "[]bool":
+		return "google.protobuf.ListValue"
+	default:
+		return "/* FIXME */"
+	}
 }
 
 func (n Param) GetName() string {
@@ -100,13 +310,28 @@ func (n Param) Tag() string {
 	return strcase.ToSnake(n.Name)
 }
 
-type Params []Param
-
 type Model struct {
-	Model  string `json:"model" yaml:"model"`
-	Module string `json:"module" yaml:"module"`
-	Auth   bool   `json:"auth" yaml:"auth"`
-	Params Params `json:"params" yaml:"params"`
+	Model        string   `json:"model" yaml:"model"`
+	Module       string   `json:"module" yaml:"module"`
+	ProjectName  string   `json:"project_name" yaml:"projectName"`
+	ProtoPackage string   `json:"proto_package" yaml:"protoPackage"`
+	Auth         bool     `json:"auth" yaml:"auth"`
+	Params       []*Param `json:"params" yaml:"params"`
+}
+
+func (m *Model) Validate() error {
+	err := validation.ValidateStruct(
+		m,
+		validation.Field(&m.Model, validation.Required),
+		validation.Field(&m.Module, validation.Required),
+		validation.Field(&m.ProjectName, validation.Required),
+		validation.Field(&m.Auth),
+		validation.Field(&m.Params),
+	)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (m Model) SearchEnabled() bool {
@@ -136,7 +361,7 @@ func ParseModel(s string) *Model {
 			Model:  s,
 			Module: "",
 			Auth:   false,
-			Params: Params{},
+			Params: nil,
 		}
 	}
 	return model
@@ -147,7 +372,7 @@ func (m Model) Variable() string {
 }
 
 func (m Model) ListVariable() string {
-	return strcase.ToLowerCamel(inflection.Plural(m.Model))
+	return strcase.ToLowerCamel(fmt.Sprintf("list%s", strcase.ToCamel(inflection.Plural(m.Model))))
 }
 
 func (m Model) ModelName() string {
@@ -156,6 +381,10 @@ func (m Model) ModelName() string {
 
 func (m Model) UseCaseTypeName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Model))
+}
+
+func (m Model) GRPCHandlerTypeName() string {
+	return fmt.Sprintf("%sServiceServer", strcase.ToCamel(m.Model))
 }
 
 func (m Model) RESTHandlerTypeName() string {
@@ -264,6 +493,10 @@ func lastMigration() (int, error) {
 
 func (m Model) TestFileName() string {
 	return fmt.Sprintf("%s_test.go", m.SnakeName())
+}
+
+func (m Model) ProtoFileName() string {
+	return fmt.Sprintf("%s.proto", m.SnakeName())
 }
 
 func (m Model) MockFileName() string {

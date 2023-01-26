@@ -160,6 +160,8 @@ func initProject(ctx *cli.Context) error {
 	for _, model := range project.Models {
 		model.Module = project.Module
 		model.Auth = project.Auth
+		model.ProjectName = project.Name
+		model.ProtoPackage = project.ProtoPackage()
 		if err := CreateCRUD(model); err != nil {
 			return err
 		}
@@ -212,6 +214,13 @@ func postInit() error {
 	swag.Stderr = &errb
 	fmt.Println(strings.Join(swag.Args, " "))
 	if err := swag.Run(); err != nil {
+		fmt.Println(errb.String())
+	}
+	buf := exec.Command("buf", "generate")
+	buf.Dir = destinationPath
+	buf.Stderr = &errb
+	fmt.Println(strings.Join(buf.Args, " "))
+	if err := buf.Run(); err != nil {
 		fmt.Println(errb.String())
 	}
 	clean := exec.Command("golangci-lint", "run", "./...", "--fix")

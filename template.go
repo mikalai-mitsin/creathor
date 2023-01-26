@@ -18,6 +18,9 @@ var funcMap = template.FuncMap{
 	"inc": func(i int) int {
 		return i + 1
 	},
+	"add": func(i, j int) int {
+		return i + j
+	},
 }
 
 type Template struct {

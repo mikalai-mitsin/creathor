@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package {{ .ProtoPackage }};
+
+option go_package = "{{ .Module }}/pkg/{{ .ProtoPackage }}";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "auth.proto";
+
+message User {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string photo = 5;
+  google.protobuf.Timestamp created_at = 6;
+  bool is_banned = 7;
+  google.protobuf.StringValue region_id = 8;
+}
+
+message Users {
+  repeated User users = 1;
+  uint64 count = 2;
+}
+
+message Signup {
+  string email = 1;
+  string password = 2;
+}
+
+message UserUpdate {
+  string id = 1;
+  google.protobuf.StringValue first_name = 2;
+  google.protobuf.StringValue last_name = 3;
+  google.protobuf.StringValue email = 4;
+  google.protobuf.StringValue password = 5;
+  bytes photo = 6;
+  google.protobuf.BoolValue is_banned = 7;
+  google.protobuf.StringValue region_id = 8;
+}
+
+message UserFilter {
+  google.protobuf.UInt64Value page_number = 1;
+  google.protobuf.UInt64Value page_size = 2;
+  google.protobuf.StringValue search = 3;
+  repeated string order_by = 4;
+}
+
+message UserGet {
+  string id = 1;
+}
+
+message UserDelete {
+  string id = 1;
+}
+
+service UserService {
+  rpc Signup({{ .ProtoPackage }}.Signup) returns ({{ .ProtoPackage }}.User);
+  rpc Update({{ .ProtoPackage }}.UserUpdate) returns ({{ .ProtoPackage }}.User);
+  rpc Get({{ .ProtoPackage }}.UserGet) returns ({{ .ProtoPackage }}.User);
+  rpc List({{ .ProtoPackage }}.UserFilter) returns ({{ .ProtoPackage }}.Users);
+  rpc Delete({{ .ProtoPackage }}.UserDelete) returns (google.protobuf.Empty);
+}

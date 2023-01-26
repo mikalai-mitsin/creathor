@@ -87,7 +87,7 @@ func TestUserServiceServer_Delete(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                userInterceptor.EXPECT().Delete(ctx, userID, user).Return(nil).Times(1)
+                userInterceptor.EXPECT().Delete(ctx, models.UUID(userID), user).Return(nil).Times(1)
             },
             fields: fields{
                 UnimplementedUserServiceServer: {{ .ProtoPackage }}.UnimplementedUserServiceServer{},
@@ -106,7 +106,7 @@ func TestUserServiceServer_Delete(t *testing.T) {
         {
             name: "interceptor error",
             setup: func() {
-                userInterceptor.EXPECT().Delete(ctx, userID, user).
+                userInterceptor.EXPECT().Delete(ctx, models.UUID(userID), user).
                     Return(errs.NewUnexpectedBehaviorError("i error")).
                     Times(1)
             },

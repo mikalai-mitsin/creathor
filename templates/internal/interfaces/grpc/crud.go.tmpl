@@ -131,7 +131,7 @@ func encode{{ .UpdateTypeName }}(input *{{ .ProtoPackage }}.{{ .UpdateTypeName }
     if input.{{ $value.GRPCGetter }}() != nil {
         {{- if eq $value.Type "time.Time" }}
         update.{{ $value.GetName }} = utils.Pointer(input.{{ $value.GRPCGetter }}().AsTime())
-        {{- else if $value.IsSlice }}
+        {{- else }}
         update.{{ $value.GetName }} = utils.Pointer({{ $value.Type }}(input.{{ $value.GRPCGetter }}().GetValue()))
         {{- end }}
     }

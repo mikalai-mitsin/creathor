@@ -6,6 +6,7 @@ import (
 
     "{{ .Module }}/internal/domain/errs"
     "{{ .Module }}/pkg/log"
+    "{{ .Module }}/pkg/{{ .ProtoPackage }}"
     "google.golang.org/genproto/googleapis/rpc/errdetails"
     "google.golang.org/grpc/status"
 
@@ -27,13 +28,17 @@ func NewServer(
     logger log.Logger,
 {{- if .Auth }}
     authMiddleware *AuthMiddleware,
+    authHandler {{ .ProtoPackage }}.AuthServiceServer,
+    userHandler {{ .ProtoPackage }}.UserServiceServer,
 {{- end }}
 ) *grpc.Server {
     server := grpc.NewServer(
         grpc.UnaryInterceptor(
             grpcMiddleware.ChainUnaryServer(
                 grpc_prometheus.UnaryServerInterceptor,
+{{- if .Auth }}
                 authMiddleware.UnaryServerInterceptorAuth,
+{{- end }}
                 RequestIDUnaryServerInterceptor,
                 grpcZap.UnaryServerInterceptor(
                     logger.Logger(),
@@ -48,6 +53,10 @@ func NewServer(
         healthServer.SetServingStatus(service, grpc_health_v1.HealthCheckResponse_SERVING)
     }
     grpc_health_v1.RegisterHealthServer(server, healthServer)
+{{- if .Auth }}
+    {{ .ProtoPackage }}.RegisterAuthServiceServer(server, authHandler)
+    {{ .ProtoPackage }}.RegisterUserServiceServer(server, userHandler)
+{{- end }}
     return server
 }
 

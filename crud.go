@@ -122,7 +122,13 @@ func CreateCRUD(data *Model) error {
 	if err := addToDI("interfaces/rest", fmt.Sprintf("New%s", data.RESTHandlerTypeName())); err != nil {
 		return err
 	}
-	if err := registerHandler(data.RESTHandlerVariableName(), data.RESTHandlerTypeName()); err != nil {
+	if err := addToDI("interfaces/grpc", fmt.Sprintf("New%s", data.GRPCHandlerTypeName())); err != nil {
+		return err
+	}
+	if err := registerRESTHandler(data.RESTHandlerVariableName(), data.RESTHandlerTypeName()); err != nil {
+		return err
+	}
+	if err := registerGRPCHandler(data.RESTHandlerVariableName(), data.ProtoPackage, data.GRPCHandlerTypeName()); err != nil {
 		return err
 	}
 	if data.Auth && data.ModelName() != "User" {
@@ -145,7 +151,7 @@ func CreateCRUD(data *Model) error {
 	return nil
 }
 
-func registerHandler(variableName, typeName string) error {
+func registerRESTHandler(variableName, typeName string) error {
 	packagePath := filepath.Join(destinationPath, "internal", "interfaces", "rest")
 	fileset := token.NewFileSet()
 	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
@@ -231,6 +237,94 @@ func registerHandler(variableName, typeName string) error {
 							return err
 						}
 						if err := os.WriteFile(filePath, a.Bytes(), 0777); err != nil {
+							return err
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func registerGRPCHandler(variableName, typePackage, typeName string) error {
+	packagePath := filepath.Join(destinationPath, "internal", "interfaces", "grpc")
+	fileset := token.NewFileSet()
+	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
+		return true
+	}, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	for _, p := range tree {
+		for filePath, file := range p.Files {
+			for _, decl := range file.Decls {
+				funcDecl, ok := decl.(*ast.FuncDecl)
+				if ok {
+					if funcDecl.Name.String() == "NewServer" {
+						var exists bool
+						for _, existedParam := range funcDecl.Type.Params.List {
+							selector, ok := existedParam.Type.(*ast.SelectorExpr)
+							if ok {
+								t, ok := selector.X.(*ast.Ident)
+								if ok && t.Name == typeName {
+									exists = true
+									break
+								}
+							}
+						}
+						if exists {
+							continue
+						}
+						field := &ast.Field{
+							Doc: &ast.CommentGroup{
+								List: nil,
+							},
+							Names: []*ast.Ident{
+								ast.NewIdent(variableName),
+							},
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent(typePackage),
+								Sel: ast.NewIdent(typeName),
+							},
+							Tag: nil,
+							Comment: &ast.CommentGroup{
+								List: nil,
+							},
+						}
+						_ = field
+						funcDecl.Type.Params.List = append(funcDecl.Type.Params.List, field)
+						registerCall := &ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										NamePos: 0,
+										Name:    typePackage,
+										Obj:     nil,
+									},
+									Sel: &ast.Ident{
+										NamePos: 0,
+										Name:    fmt.Sprintf("Register%s", typeName),
+										Obj:     nil,
+									},
+								},
+								Lparen: 0,
+								Args: []ast.Expr{
+									ast.NewIdent("server"),
+									ast.NewIdent(variableName),
+								},
+								Ellipsis: 0,
+								Rparen:   0,
+							},
+						}
+						le := len(funcDecl.Body.List)
+						newBody := append(funcDecl.Body.List[:le-1], registerCall, funcDecl.Body.List[le-1])
+						funcDecl.Body.List = newBody
+						buff := &bytes.Buffer{}
+						if err := printer.Fprint(buff, fileset, file); err != nil {
+							return err
+						}
+						if err := os.WriteFile(filePath, buff.Bytes(), 0777); err != nil {
 							return err
 						}
 					}

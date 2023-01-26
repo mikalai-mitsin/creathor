@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -101,11 +102,11 @@ func addToDI(packageName string, constructors ...string) error {
 													break
 												}
 											}
-											openFile, err := os.OpenFile(filePath, os.O_WRONLY, 0777)
-											if err != nil {
+											buff := &bytes.Buffer{}
+											if err := printer.Fprint(buff, fileset, file); err != nil {
 												return err
 											}
-											if err := printer.Fprint(openFile, fileset, file); err != nil {
+											if err := os.WriteFile(filePath, buff.Bytes(), 0777); err != nil {
 												return err
 											}
 										}

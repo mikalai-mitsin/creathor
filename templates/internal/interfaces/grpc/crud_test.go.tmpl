@@ -174,7 +174,7 @@ func Test{{ .GRPCHandlerTypeName }}_Delete(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				{{ .InterceptorVariableName }}.EXPECT().Delete(ctx, id, user).Return(nil).Times(1)
+				{{ .InterceptorVariableName }}.EXPECT().Delete(ctx, models.UUID(id), user).Return(nil).Times(1)
 			},
 			fields: fields{
 				Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
@@ -193,7 +193,7 @@ func Test{{ .GRPCHandlerTypeName }}_Delete(t *testing.T) {
 		{
 			name: "interceptor error",
 			setup: func() {
-				{{ .InterceptorVariableName }}.EXPECT().Delete(ctx, id, user).
+				{{ .InterceptorVariableName }}.EXPECT().Delete(ctx, models.UUID(id), user).
 					Return(errs.NewUnexpectedBehaviorError("i error")).
 					Times(1)
 			},

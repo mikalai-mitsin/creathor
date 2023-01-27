@@ -50,12 +50,13 @@ func (t *Template) renderToFile(data interface{}) error {
 	file, err := os.Create(t.DestinationPath)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return NewDirectoryNotExistsError(t.DestinationPath)
+			println(t.DestinationPath)
+			//return NewDirectoryNotExistsError(t.DestinationPath)
 		}
 		if errors.Is(err, os.ErrPermission) {
 			return NewPermissionError(t.DestinationPath)
 		}
-		return NewUnexpectedBehaviorError(err.Error())
+		//return NewUnexpectedBehaviorError(err.Error())
 	}
 	if err := tmpl.Execute(file, data); err != nil {
 		return NewUnexpectedBehaviorError(err.Error())

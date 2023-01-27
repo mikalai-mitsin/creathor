@@ -30,7 +30,7 @@ func NewSessionInterceptor(
 
 func (i *SessionInterceptor) Get(
 	ctx context.Context,
-	id string,
+	id models.UUID,
 	requestUser *models.User,
 ) (*models.Session, error) {
 	if err := i.authUseCase.HasPermission(
@@ -76,11 +76,11 @@ func (i *SessionInterceptor) List(
 	); err != nil {
 		return nil, 0, err
 	}
-	sessions, count, err := i.sessionUseCase.List(ctx, filter)
+	listSessions, count, err := i.sessionUseCase.List(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}
-	return sessions, count, nil
+	return listSessions, count, nil
 }
 
 func (i *SessionInterceptor) Create(
@@ -143,7 +143,7 @@ func (i *SessionInterceptor) Update(
 
 func (i *SessionInterceptor) Delete(
 	ctx context.Context,
-	id string,
+	id models.UUID,
 	requestUser *models.User,
 ) error {
 	if err := i.authUseCase.HasPermission(

@@ -65,7 +65,7 @@ func (r *EquipmentRepository) Create(
 
 func (r *EquipmentRepository) Get(
 	ctx context.Context,
-	id string,
+	id models.UUID,
 ) (*models.Equipment, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
@@ -84,7 +84,7 @@ func (r *EquipmentRepository) Get(
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.GetContext(ctx, equipment, query, args...); err != nil {
 		e := errs.FromPostgresError(err).
-			WithParam("equipment_id", id)
+			WithParam("equipment_id", string(id))
 		return nil, e
 	}
 	return equipment, nil
@@ -96,7 +96,7 @@ func (r *EquipmentRepository) List(
 ) ([]*models.Equipment, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	var equipment []*models.Equipment
+	var listEquipment []*models.Equipment
 	const pageSize = uint64(10)
 	if filter.PageSize == nil {
 		filter.PageSize = utils.Pointer(pageSize)
@@ -129,11 +129,11 @@ func (r *EquipmentRepository) List(
 		q = q.OrderBy(filter.OrderBy...)
 	}
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.SelectContext(ctx, &equipment, query, args...); err != nil {
+	if err := r.database.SelectContext(ctx, &listEquipment, query, args...); err != nil {
 		e := errs.FromPostgresError(err)
 		return nil, e
 	}
-	return equipment, nil
+	return listEquipment, nil
 }
 
 func (r *EquipmentRepository) Update(
@@ -170,7 +170,7 @@ func (r *EquipmentRepository) Update(
 
 func (r *EquipmentRepository) Delete(
 	ctx context.Context,
-	id string,
+	id models.UUID,
 ) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()

@@ -65,7 +65,7 @@ func (mr *MockSessionRepositoryMockRecorder) Create(arg0, arg1 interface{}) *gom
 }
 
 // Delete mocks base method.
-func (m *MockSessionRepository) Delete(arg0 context.Context, arg1 string) error {
+func (m *MockSessionRepository) Delete(arg0 context.Context, arg1 models.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -79,7 +79,7 @@ func (mr *MockSessionRepositoryMockRecorder) Delete(arg0, arg1 interface{}) *gom
 }
 
 // Get mocks base method.
-func (m *MockSessionRepository) Get(arg0 context.Context, arg1 string) (*models.Session, error) {
+func (m *MockSessionRepository) Get(arg0 context.Context, arg1 models.UUID) (*models.Session, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(*models.Session)

@@ -77,7 +77,7 @@ func TestSessionInterceptor_Get(t *testing.T) {
 	}
 	type args struct {
 		ctx         context.Context
-		id          string
+		id          models.UUID
 		requestUser *models.User
 	}
 	tests := []struct {
@@ -108,7 +108,7 @@ func TestSessionInterceptor_Get(t *testing.T) {
 			},
 			args: args{
 				ctx:         ctx,
-				id:          session.ID,
+				id:          models.UUID(session.ID),
 				requestUser: requestUser,
 			},
 			want:    session,
@@ -535,7 +535,7 @@ func TestSessionInterceptor_Delete(t *testing.T) {
 	}
 	type args struct {
 		ctx         context.Context
-		id          string
+		id          models.UUID
 		requestUser *models.User
 	}
 	tests := []struct {
@@ -693,9 +693,9 @@ func TestSessionInterceptor_List(t *testing.T) {
 	ctx := context.Background()
 	filter := mock_models.NewSessionFilter(t)
 	count := uint64(faker.Number().NumberInt64(2))
-	sessions := make([]*models.Session, 0, count)
+	listSessions := make([]*models.Session, 0, count)
 	for i := uint64(0); i < count; i++ {
-		sessions = append(sessions, mock_models.NewSession(t))
+		listSessions = append(listSessions, mock_models.NewSession(t))
 	}
 	type fields struct {
 		sessionUseCase usecases.SessionUseCase
@@ -727,7 +727,7 @@ func TestSessionInterceptor_List(t *testing.T) {
 					Return(nil)
 				sessionUseCase.EXPECT().
 					List(ctx, filter).
-					Return(sessions, count, nil)
+					Return(listSessions, count, nil)
 			},
 			fields: fields{
 				sessionUseCase: sessionUseCase,
@@ -739,7 +739,7 @@ func TestSessionInterceptor_List(t *testing.T) {
 				filter:      filter,
 				requestUser: requestUser,
 			},
-			want:    sessions,
+			want:    listSessions,
 			want1:   count,
 			wantErr: nil,
 		},

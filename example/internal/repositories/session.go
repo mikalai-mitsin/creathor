@@ -13,6 +13,7 @@ import (
 	"github.com/018bf/example/internal/domain/repositories"
 
 	"github.com/018bf/example/internal/domain/errs"
+	"github.com/018bf/example/pkg/postgresql"
 	"github.com/018bf/example/pkg/utils"
 	"github.com/jmoiron/sqlx"
 )
@@ -62,7 +63,7 @@ func (r *SessionRepository) Create(
 
 func (r *SessionRepository) Get(
 	ctx context.Context,
-	id string,
+	id models.UUID,
 ) (*models.Session, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
@@ -80,7 +81,7 @@ func (r *SessionRepository) Get(
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.GetContext(ctx, session, query, args...); err != nil {
 		e := errs.FromPostgresError(err).
-			WithParam("session_id", id)
+			WithParam("session_id", string(id))
 		return nil, e
 	}
 	return session, nil
@@ -92,7 +93,7 @@ func (r *SessionRepository) List(
 ) ([]*models.Session, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	var sessions []*models.Session
+	var listSessions []*models.Session
 	const pageSize = uint64(10)
 	if filter.PageSize == nil {
 		filter.PageSize = utils.Pointer(pageSize)
@@ -106,6 +107,15 @@ func (r *SessionRepository) List(
 	).
 		From("public.sessions").
 		Limit(pageSize)
+	if filter.Search != nil {
+		q = q.Where(postgresql.Search{
+			Lang:  "english",
+			Query: *filter.Search,
+			Fields: []string{
+				"description",
+			},
+		})
+	}
 	// TODO: add filtering
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
 		q = q.Offset((*filter.PageNumber - 1) * *filter.PageSize)
@@ -115,11 +125,11 @@ func (r *SessionRepository) List(
 		q = q.OrderBy(filter.OrderBy...)
 	}
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.SelectContext(ctx, &sessions, query, args...); err != nil {
+	if err := r.database.SelectContext(ctx, &listSessions, query, args...); err != nil {
 		e := errs.FromPostgresError(err)
 		return nil, e
 	}
-	return sessions, nil
+	return listSessions, nil
 }
 
 func (r *SessionRepository) Update(
@@ -155,7 +165,7 @@ func (r *SessionRepository) Update(
 
 func (r *SessionRepository) Delete(
 	ctx context.Context,
-	id string,
+	id models.UUID,
 ) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()

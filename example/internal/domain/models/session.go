@@ -9,7 +9,7 @@ import (
 )
 
 type Session struct {
-	ID          string    `json:"id" db:"id,omitempty" form:"id"`
+	ID          UUID      `json:"id" db:"id,omitempty" form:"id"`
 	Title       string    `json:"title" db:"title" form:"title"`
 	Description string    `json:"description" db:"description" form:"description"`
 	UpdatedAt   time.Time `json:"updated_at" db:"updated_at,omitempty" form:"updated_at"`
@@ -30,10 +30,11 @@ func (c *Session) Validate() error {
 }
 
 type SessionFilter struct {
-	IDs        []string `json:"ids" form:"ids"`
+	IDs        []UUID   `json:"ids" form:"ids"`
 	PageSize   *uint64  `json:"page_size" form:"page_size"`
 	PageNumber *uint64  `json:"page_number" form:"page_number"`
 	OrderBy    []string `json:"order_by" form:"order_by"`
+	Search     *string  `json:"search" form:"search"`
 }
 
 func (c *SessionFilter) Validate() error {
@@ -43,6 +44,7 @@ func (c *SessionFilter) Validate() error {
 		validation.Field(&c.PageSize),
 		validation.Field(&c.PageNumber),
 		validation.Field(&c.OrderBy),
+		validation.Field(&c.Search),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -68,7 +70,7 @@ func (c *SessionCreate) Validate() error {
 }
 
 type SessionUpdate struct {
-	ID          string  `json:"id"`
+	ID          UUID    `json:"id"`
 	Title       *string `json:"title" form:"title"`
 	Description *string `json:"description" form:"description"`
 }

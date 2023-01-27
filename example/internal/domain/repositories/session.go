@@ -12,7 +12,7 @@ import (
 type SessionRepository interface {
 	Get(
 		ctx context.Context,
-		id string,
+		id models.UUID,
 	) (*models.Session, error)
 	List(
 		ctx context.Context,
@@ -32,6 +32,6 @@ type SessionRepository interface {
 	) error
 	Delete(
 		ctx context.Context,
-		id string,
+		id models.UUID,
 	) error
 }

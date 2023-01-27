@@ -19,7 +19,7 @@ Creathor provides:
 [Example](/example) of using `Creathor` with rich models and authentication by this command
 
 ```shell
-creathor -d example -ci github -a init --name example --module "github.com/018bf/example" --model '{"model":"session","params":[{"name": "title", "type": "string"}, {"name": "description", "type": "string"}]}' --model '{"model":"equipment", "params": [{"name":"name", "type": "string", "search": true}, {"name": "repeat", "type": "int"}, {"name": "weight", "type":"int"}]}'
+creathor -d example -c creathor.yaml
 ```
 
 # Installing
@@ -30,42 +30,34 @@ go install github.com/018bf/creathor@latest
 
 # Usage
 
-To initialize a project in the current directory, use the command `init`
+Config example
 
+```yaml
+name: "example"                    // Service name
+module: "github.com/018bf/example" // Module name
+goVersion: "1.19"                  // go version
+auth: true                         // Generate auth, permissions and users api
+ci: "github"                       // Add `gitlab` or `github` CI configs
+models:
+  - model: "session" // Model name
+    params:
+      - name: "title"  // Parameter name
+        type: "string" // Parameter type one of "int", "int64", "int32", "int16", "int8", "[]int", "[]int64", "[]int32", "[]int16", "[]int8", "uint", "uint64", "uint32", "uint16", "uint8", "[]uint", "[]uint64", "[]uint32", "[]uint16", "[]uint8", "string", "[]string", "time.Time", "[]time.Time",
+        search: false  // Add field to the search
+      - name: "description"
+        type: "string"
+        search: true
+  - model: "equipment"
+    params:
+      - name: "name"
+        type: "string"
+        search: true
+      - name: "repeat"
+        type: "int"
+        search: false
+      - name: "weight"
+        type: "int"
+        search: false
 ```
-creathor init --name tracker --module github.com/018bf/tracker --model user --model token --model equipment --model session --model approach --model '{"model":"session","params":[{"name": "title", "type": "string"}, {"name": "description", "type": "string"}]}'
-```
 
-To add auth and permission checks add `-a` or `--auth` flag
-
-```
-creathor -a init --name tracker --module github.com/018bf/tracker --model user --model token --model equipment --model session --model approach
-```
-
-You can override the project path with the `-d` or `--destination` flag
-
-```
-creathor -d /Users/me/Projects/mysimpletracker init --name tracker --module github.com/018bf/tracker --model user --model token --model equipment --model session --model approach
-```
-
-To add new models use the `model` command
-
-```
-creathor model --model category --model '{"model":"equipment", "params": [{"name":"name", "type": "string", "search": true}, {"name": "repeat", "type": "int"}, {"name": "weight", "type":"int"}]}'
-```
-
-Reach model scheme
-
-```json
-
-{
-  "model": "string",
-  "params": [
-    {
-      "name": "string",
-      "type": "string",
-      "search": "boolean"
-    }
-  ]
-}
-```
+To generate code in the current directory and with default config name, use the command `creathor`

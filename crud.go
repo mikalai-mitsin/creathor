@@ -13,138 +13,138 @@ import (
 	"path/filepath"
 )
 
-func CreateCRUD(data *Model) error {
-	if err := data.Validate(); err != nil {
-		fmt.Printf("invalid model %s: %s\n", data.Model, err)
+func CreateCRUD(model *Model) error {
+	if err := model.Validate(); err != nil {
+		fmt.Printf("invalid model %s: %s\n", model.Model, err)
 		return err
 	}
 	files := []*Template{
 		{
 			SourcePath:      "templates/internal/domain/models/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "models", data.FileName()),
+			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "models", model.FileName()),
 			Name:            "model",
 		},
 		{
 			SourcePath:      "templates/internal/domain/models/crud_mock.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "models", "mock", data.FileName()),
+			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "models", "mock", model.FileName()),
 			Name:            "model_mock",
 		},
 		{
 			SourcePath:      "templates/internal/domain/repositories/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "repositories", data.FileName()),
+			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "repositories", model.FileName()),
 			Name:            "repository",
 		},
 		{
 			SourcePath:      "templates/internal/domain/usecases/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "usecases", data.FileName()),
+			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "usecases", model.FileName()),
 			Name:            "usecase",
 		},
 		{
 			SourcePath:      "templates/internal/domain/interceptors/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "interceptors", data.FileName()),
+			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "interceptors", model.FileName()),
 			Name:            "interceptor",
 		},
 		{
 			SourcePath:      "templates/internal/usecases/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", data.FileName()),
+			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", model.FileName()),
 			Name:            "usecase",
 		},
 		{
 			SourcePath:      "templates/internal/usecases/crud_test.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", data.TestFileName()),
+			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", model.TestFileName()),
 			Name:            "usecase test",
 		},
 		{
 			SourcePath:      "templates/internal/interceptors/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "interceptors", data.FileName()),
+			DestinationPath: filepath.Join(destinationPath, "internal", "interceptors", model.FileName()),
 			Name:            "interceptor",
 		},
 		{
 			SourcePath:      "templates/internal/interceptors/crud_test.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "interceptors", data.TestFileName()),
+			DestinationPath: filepath.Join(destinationPath, "internal", "interceptors", model.TestFileName()),
 			Name:            "interceptor test",
 		},
 		{
 			SourcePath:      "templates/internal/repositories/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", data.FileName()),
+			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", model.FileName()),
 			Name:            "repository",
 		},
 		{
 			SourcePath:      "templates/internal/repositories/crud_test.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", data.TestFileName()),
+			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", model.TestFileName()),
 			Name:            "repository test",
 		},
 		{
 			SourcePath:      "templates/internal/interfaces/rest/crud.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", data.FileName()),
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", model.FileName()),
 			Name:            "rest crud",
 		},
 		{
 			SourcePath:      "templates/internal/interfaces/postgres/migrations/crud.up.sql.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", data.MigrationUpFileName()),
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", model.MigrationUpFileName()),
 			Name:            "migration up",
 		},
 		{
 			SourcePath:      "templates/internal/interfaces/postgres/migrations/crud.down.sql.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", data.MigrationDownFileName()),
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", model.MigrationDownFileName()),
 			Name:            "migration down",
 		},
 		{
 			SourcePath:      "templates/internal/interfaces/grpc/crud.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", data.FileName()),
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", model.FileName()),
 			Name:            "grpc service server",
 		},
 		{
 			SourcePath:      "templates/internal/interfaces/grpc/crud_test.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", data.TestFileName()),
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", model.TestFileName()),
 			Name:            "test grpc service server",
 		},
 		{
 			SourcePath:      "templates/api/proto/crud.proto.tmpl",
-			DestinationPath: path.Join(destinationPath, "api", "proto", data.ProtoFileName()),
+			DestinationPath: path.Join(destinationPath, "api", "proto", model.ProtoFileName()),
 			Name:            "proto def",
 		},
 	}
 	for _, tmpl := range files {
-		if err := tmpl.renderToFile(data); err != nil {
+		if err := tmpl.renderToFile(model); err != nil {
 			return err
 		}
 	}
-	if err := addToDI("usecases", fmt.Sprintf("New%s", data.UseCaseTypeName())); err != nil {
+	if err := addToDI("usecases", fmt.Sprintf("New%s", model.UseCaseTypeName())); err != nil {
 		return err
 	}
-	if err := addToDI("interceptors", fmt.Sprintf("New%s", data.InterceptorTypeName())); err != nil {
+	if err := addToDI("interceptors", fmt.Sprintf("New%s", model.InterceptorTypeName())); err != nil {
 		return err
 	}
-	if err := addToDI("repositories", fmt.Sprintf("New%s", data.RepositoryTypeName())); err != nil {
+	if err := addToDI("repositories", fmt.Sprintf("New%s", model.RepositoryTypeName())); err != nil {
 		return err
 	}
-	if err := addToDI("interfaces/rest", fmt.Sprintf("New%s", data.RESTHandlerTypeName())); err != nil {
+	if err := addToDI("interfaces/rest", fmt.Sprintf("New%s", model.RESTHandlerTypeName())); err != nil {
 		return err
 	}
-	if err := addToDI("interfaces/grpc", fmt.Sprintf("New%s", data.GRPCHandlerTypeName())); err != nil {
+	if err := addToDI("interfaces/grpc", fmt.Sprintf("New%s", model.GRPCHandlerTypeName())); err != nil {
 		return err
 	}
-	if err := registerRESTHandler(data.RESTHandlerVariableName(), data.RESTHandlerTypeName()); err != nil {
+	if err := registerRESTHandler(model.RESTHandlerVariableName(), model.RESTHandlerTypeName()); err != nil {
 		return err
 	}
-	if err := registerGRPCHandler(data.RESTHandlerVariableName(), data.ProtoPackage, data.GRPCHandlerTypeName()); err != nil {
+	if err := registerGRPCHandler(model.RESTHandlerVariableName(), model.ProtoPackage, model.GRPCHandlerTypeName()); err != nil {
 		return err
 	}
-	if data.Auth && data.ModelName() != "User" {
-		if err := addPermission(data.PermissionIDList(), "objectAnybody"); err != nil {
+	if model.Auth && model.ModelName() != "User" {
+		if err := addPermission(model.PermissionIDList(), "objectAnybody"); err != nil {
 			return err
 		}
-		if err := addPermission(data.PermissionIDDetail(), "objectAnybody"); err != nil {
+		if err := addPermission(model.PermissionIDDetail(), "objectAnybody"); err != nil {
 			return err
 		}
-		if err := addPermission(data.PermissionIDCreate(), "objectAnybody"); err != nil {
+		if err := addPermission(model.PermissionIDCreate(), "objectAnybody"); err != nil {
 			return err
 		}
-		if err := addPermission(data.PermissionIDUpdate(), "objectAnybody"); err != nil {
+		if err := addPermission(model.PermissionIDUpdate(), "objectAnybody"); err != nil {
 			return err
 		}
-		if err := addPermission(data.PermissionIDDelete(), "objectAnybody"); err != nil {
+		if err := addPermission(model.PermissionIDDelete(), "objectAnybody"); err != nil {
 			return err
 		}
 	}
@@ -265,12 +265,9 @@ func registerGRPCHandler(variableName, typePackage, typeName string) error {
 						var exists bool
 						for _, existedParam := range funcDecl.Type.Params.List {
 							selector, ok := existedParam.Type.(*ast.SelectorExpr)
-							if ok {
-								t, ok := selector.X.(*ast.Ident)
-								if ok && t.Name == typeName {
-									exists = true
-									break
-								}
+							if ok && selector.Sel.Name == typeName {
+								exists = true
+								break
 							}
 						}
 						if exists {

@@ -77,7 +77,7 @@ func TestEquipmentInterceptor_Get(t *testing.T) {
 	}
 	type args struct {
 		ctx         context.Context
-		id          string
+		id          models.UUID
 		requestUser *models.User
 	}
 	tests := []struct {
@@ -108,7 +108,7 @@ func TestEquipmentInterceptor_Get(t *testing.T) {
 			},
 			args: args{
 				ctx:         ctx,
-				id:          equipment.ID,
+				id:          models.UUID(equipment.ID),
 				requestUser: requestUser,
 			},
 			want:    equipment,
@@ -535,7 +535,7 @@ func TestEquipmentInterceptor_Delete(t *testing.T) {
 	}
 	type args struct {
 		ctx         context.Context
-		id          string
+		id          models.UUID
 		requestUser *models.User
 	}
 	tests := []struct {
@@ -693,9 +693,9 @@ func TestEquipmentInterceptor_List(t *testing.T) {
 	ctx := context.Background()
 	filter := mock_models.NewEquipmentFilter(t)
 	count := uint64(faker.Number().NumberInt64(2))
-	equipment := make([]*models.Equipment, 0, count)
+	listEquipment := make([]*models.Equipment, 0, count)
 	for i := uint64(0); i < count; i++ {
-		equipment = append(equipment, mock_models.NewEquipment(t))
+		listEquipment = append(listEquipment, mock_models.NewEquipment(t))
 	}
 	type fields struct {
 		equipmentUseCase usecases.EquipmentUseCase
@@ -727,7 +727,7 @@ func TestEquipmentInterceptor_List(t *testing.T) {
 					Return(nil)
 				equipmentUseCase.EXPECT().
 					List(ctx, filter).
-					Return(equipment, count, nil)
+					Return(listEquipment, count, nil)
 			},
 			fields: fields{
 				equipmentUseCase: equipmentUseCase,
@@ -739,7 +739,7 @@ func TestEquipmentInterceptor_List(t *testing.T) {
 				filter:      filter,
 				requestUser: requestUser,
 			},
-			want:    equipment,
+			want:    listEquipment,
 			want1:   count,
 			wantErr: nil,
 		},

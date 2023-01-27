@@ -13,7 +13,7 @@ import (
 func NewSession(t *testing.T) *models.Session {
 	t.Helper()
 	return &models.Session{
-		ID:          uuid.New().String(),
+		ID:          models.UUID(uuid.NewString()),
 		Title:       faker.Lorem().String(),
 		Description: faker.Lorem().String(),
 		UpdatedAt:   faker.Time().Backward(40 * time.Hour).UTC(),
@@ -32,7 +32,7 @@ func NewSessionCreate(t *testing.T) *models.SessionCreate {
 func NewSessionUpdate(t *testing.T) *models.SessionUpdate {
 	t.Helper()
 	return &models.SessionUpdate{
-		ID:          uuid.New().String(),
+		ID:          models.UUID(uuid.NewString()),
 		Title:       utils.Pointer(faker.Lorem().String()),
 		Description: utils.Pointer(faker.Lorem().String()),
 	}
@@ -44,6 +44,7 @@ func NewSessionFilter(t *testing.T) *models.SessionFilter {
 		PageSize:   utils.Pointer(uint64(faker.RandomInt64(2, 100))),
 		PageNumber: utils.Pointer(uint64(faker.RandomInt64(2, 100))),
 		OrderBy:    faker.Lorem().Words(5),
-		IDs:        []string{uuid.New().String(), uuid.New().String(), uuid.New().String()},
+		IDs:        []models.UUID{models.UUID(uuid.NewString()), models.UUID(uuid.NewString()), models.UUID(uuid.NewString())},
+		Search:     utils.Pointer(faker.Lorem().String()),
 	}
 }

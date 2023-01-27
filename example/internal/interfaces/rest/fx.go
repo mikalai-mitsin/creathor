@@ -11,7 +11,7 @@ import (
 )
 
 var FXModule = fx.Options(
-	fx.Provide(NewSessionHandler, NewEquipmentHandler),
+	fx.Provide(NewSessionHandler, NewEquipmentHandler, NewPlanHandler, NewDayHandler, NewArchHandler),
 	fx.Provide(NewAuthMiddleware, NewAuthHandler, NewUserHandler),
 	fx.Provide(NewRouter),
 	fx.Invoke(func(lifecycle fx.Lifecycle, router *gin.Engine, config *configs.Config) {

@@ -51,7 +51,7 @@ func (mr *MockEquipmentUseCaseMockRecorder) Create(arg0, arg1 interface{}) *gomo
 }
 
 // Delete mocks base method.
-func (m *MockEquipmentUseCase) Delete(arg0 context.Context, arg1 string) error {
+func (m *MockEquipmentUseCase) Delete(arg0 context.Context, arg1 models.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -65,7 +65,7 @@ func (mr *MockEquipmentUseCaseMockRecorder) Delete(arg0, arg1 interface{}) *gomo
 }
 
 // Get mocks base method.
-func (m *MockEquipmentUseCase) Get(arg0 context.Context, arg1 string) (*models.Equipment, error) {
+func (m *MockEquipmentUseCase) Get(arg0 context.Context, arg1 models.UUID) (*models.Equipment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(*models.Equipment)

@@ -5,3 +5,5 @@ create table public.groups
             primary key,
     name varchar(255) not null
 );
+
+insert into public.groups (id, name) VALUES ('admin', 'Admin'), ('user', 'User'), ('guest', 'Guest');

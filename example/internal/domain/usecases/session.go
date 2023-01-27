@@ -12,7 +12,7 @@ import (
 type SessionUseCase interface {
 	Get(
 		ctx context.Context,
-		id string,
+		id models.UUID,
 	) (*models.Session, error)
 	List(
 		ctx context.Context,
@@ -28,6 +28,6 @@ type SessionUseCase interface {
 	) (*models.Session, error)
 	Delete(
 		ctx context.Context,
-		id string,
+		id models.UUID,
 	) error
 }

@@ -65,7 +65,7 @@ func (mr *MockEquipmentRepositoryMockRecorder) Create(arg0, arg1 interface{}) *g
 }
 
 // Delete mocks base method.
-func (m *MockEquipmentRepository) Delete(arg0 context.Context, arg1 string) error {
+func (m *MockEquipmentRepository) Delete(arg0 context.Context, arg1 models.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -79,7 +79,7 @@ func (mr *MockEquipmentRepositoryMockRecorder) Delete(arg0, arg1 interface{}) *g
 }
 
 // Get mocks base method.
-func (m *MockEquipmentRepository) Get(arg0 context.Context, arg1 string) (*models.Equipment, error) {
+func (m *MockEquipmentRepository) Get(arg0 context.Context, arg1 models.UUID) (*models.Equipment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(*models.Equipment)

@@ -12,7 +12,7 @@ import (
 type EquipmentUseCase interface {
 	Get(
 		ctx context.Context,
-		id string,
+		id models.UUID,
 	) (*models.Equipment, error)
 	List(
 		ctx context.Context,
@@ -28,6 +28,6 @@ type EquipmentUseCase interface {
 	) (*models.Equipment, error)
 	Delete(
 		ctx context.Context,
-		id string,
+		id models.UUID,
 	) error
 }

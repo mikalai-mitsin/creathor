@@ -13,9 +13,9 @@ import (
 )
 
 type Param struct {
-	Name   string `yaml:"name"`
-	Type   string `yaml:"type"`
-	Search bool   `yaml:"search"`
+	Name   string `json:"name" yaml:"name"`
+	Type   string `json:"type" yaml:"type"`
+	Search bool   `json:"search" yaml:"search"`
 }
 
 func (p *Param) Validate() error {
@@ -65,17 +65,17 @@ func (p *Param) GrpcGetFromListValueAs() string {
 	}
 }
 
-func (n Param) Fake() string {
+func (p Param) Fake() string {
 	var fake string
-	switch n.Type {
+	switch p.Type {
 	case "int":
 		fake = "faker.RandomInt(2, 100)"
 	case "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64":
-		fake = fmt.Sprintf("%s(faker.RandomInt(2, 100))", n.Type)
+		fake = fmt.Sprintf("%s(faker.RandomInt(2, 100))", p.Type)
 	case "[]int":
 		fake = fmt.Sprintf("[]int{faker.RandomInt(2, 100), faker.RandomInt(2, 100)}")
 	case "[]int8", "[]int16", "[]int32", "[]int64", "[]uint", "[]uint8", "[]uint16", "[]uint32", "[]uint64":
-		fake = fmt.Sprintf("%s{%s(faker.RandomInt(2, 100)), %s(faker.RandomInt(2, 100))}", n.Type, n.SliceType(), n.SliceType())
+		fake = fmt.Sprintf("%s{%s(faker.RandomInt(2, 100)), %s(faker.RandomInt(2, 100))}", p.Type, p.SliceType(), p.SliceType())
 	case "string":
 		fake = "faker.Lorem().String()"
 	case "[]string":
@@ -90,8 +90,8 @@ func (n Param) Fake() string {
 	return fake
 }
 
-func (n Param) SQLType() string {
-	switch n.Type {
+func (p Param) SQLType() string {
+	switch p.Type {
 	case "int8", "int16", "int32", "int":
 		return "int"
 	case "float32":
@@ -105,7 +105,7 @@ func (n Param) SQLType() string {
 	case "[]int64", "[]uint", "[]uint8", "[]uint16", "[]uint32", "[]uint64":
 		return "bigint[]"
 	case "string":
-		switch n.Name {
+		switch p.Name {
 		case "title", "name":
 			return "varchar"
 		default:
@@ -116,7 +116,7 @@ func (n Param) SQLType() string {
 	case "uuid":
 		return "uuid"
 	case "time.Time":
-		switch n.Name {
+		switch p.Name {
 		case "date":
 			return "date"
 		case "time":
@@ -133,8 +133,8 @@ func (n Param) SQLType() string {
 	}
 }
 
-func (n Param) GetGRPCWrapper() string {
-	switch n.Type {
+func (p Param) GetGRPCWrapper() string {
+	switch p.Type {
 	case "int", "int32", "int8", "int16":
 		return "wrapperspb.Int32"
 	case "int64":
@@ -158,8 +158,8 @@ func (n Param) GetGRPCWrapper() string {
 	}
 }
 
-func (n Param) GetGRPCWrapperArgumentType() string {
-	switch n.Type {
+func (p Param) GetGRPCWrapperArgumentType() string {
+	switch p.Type {
 	case "int", "int32", "int8", "int16":
 		return "int32"
 	case "int64":
@@ -183,8 +183,8 @@ func (n Param) GetGRPCWrapperArgumentType() string {
 	}
 }
 
-func (n Param) GRPCType() string {
-	switch n.Type {
+func (p Param) GRPCType() string {
+	switch p.Type {
 	case "int8", "int16", "int32", "int":
 		return "int32"
 	case "int64":
@@ -218,12 +218,12 @@ func (n Param) GRPCType() string {
 	}
 }
 
-func (n Param) GRPCSliceType() string {
-	return strings.TrimPrefix(n.GRPCType(), "[]")
+func (p Param) GRPCSliceType() string {
+	return strings.TrimPrefix(p.GRPCType(), "[]")
 }
 
-func (n Param) ProtoType() string {
-	switch n.Type {
+func (p Param) ProtoType() string {
+	switch p.Type {
 	case "int8", "int16", "int32", "int":
 		return "int32"
 	case "int64":
@@ -257,16 +257,16 @@ func (n Param) ProtoType() string {
 	}
 }
 
-func (n Param) GRPCGetter() string {
-	return fmt.Sprintf("Get%s", n.GRPCParam())
+func (p Param) GRPCGetter() string {
+	return fmt.Sprintf("Get%s", p.GRPCParam())
 }
 
-func (n Param) GRPCParam() string {
-	return strings.ReplaceAll(strcase.ToCamel(n.Name), "ID", "Id")
+func (p Param) GRPCParam() string {
+	return strings.ReplaceAll(strcase.ToCamel(p.Name), "ID", "Id")
 }
 
-func (n Param) ProtoWrapType() string {
-	switch n.Type {
+func (p Param) ProtoWrapType() string {
+	switch p.Type {
 	case "int8", "int16", "int32", "int":
 		return "google.protobuf.Int32Value"
 	case "int64":
@@ -302,12 +302,12 @@ func (n Param) ProtoWrapType() string {
 	}
 }
 
-func (n Param) GetName() string {
-	return strcase.ToCamel(n.Name)
+func (p Param) GetName() string {
+	return strcase.ToCamel(p.Name)
 }
 
-func (n Param) Tag() string {
-	return strcase.ToSnake(n.Name)
+func (p Param) Tag() string {
+	return strcase.ToSnake(p.Name)
 }
 
 type Model struct {

@@ -30,7 +30,7 @@ func NewEquipmentInterceptor(
 
 func (i *EquipmentInterceptor) Get(
 	ctx context.Context,
-	id string,
+	id models.UUID,
 	requestUser *models.User,
 ) (*models.Equipment, error) {
 	if err := i.authUseCase.HasPermission(
@@ -76,11 +76,11 @@ func (i *EquipmentInterceptor) List(
 	); err != nil {
 		return nil, 0, err
 	}
-	equipment, count, err := i.equipmentUseCase.List(ctx, filter)
+	listEquipment, count, err := i.equipmentUseCase.List(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}
-	return equipment, count, nil
+	return listEquipment, count, nil
 }
 
 func (i *EquipmentInterceptor) Create(
@@ -143,7 +143,7 @@ func (i *EquipmentInterceptor) Update(
 
 func (i *EquipmentInterceptor) Delete(
 	ctx context.Context,
-	id string,
+	id models.UUID,
 	requestUser *models.User,
 ) error {
 	if err := i.authUseCase.HasPermission(

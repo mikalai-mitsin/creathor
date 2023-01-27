@@ -31,7 +31,7 @@ func NewEquipmentUseCase(
 
 func (u *EquipmentUseCase) Get(
 	ctx context.Context,
-	id string,
+	id models.UUID,
 ) (*models.Equipment, error) {
 	equipment, err := u.equipmentRepository.Get(ctx, id)
 	if err != nil {
@@ -44,7 +44,7 @@ func (u *EquipmentUseCase) List(
 	ctx context.Context,
 	filter *models.EquipmentFilter,
 ) ([]*models.Equipment, uint64, error) {
-	equipment, err := u.equipmentRepository.List(ctx, filter)
+	listEquipment, err := u.equipmentRepository.List(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -52,7 +52,7 @@ func (u *EquipmentUseCase) List(
 	if err != nil {
 		return nil, 0, err
 	}
-	return equipment, count, nil
+	return listEquipment, count, nil
 }
 
 func (u *EquipmentUseCase) Create(
@@ -104,7 +104,7 @@ func (u *EquipmentUseCase) Update(
 	return equipment, nil
 }
 
-func (u *EquipmentUseCase) Delete(ctx context.Context, id string) error {
+func (u *EquipmentUseCase) Delete(ctx context.Context, id models.UUID) error {
 	if err := u.equipmentRepository.Delete(ctx, id); err != nil {
 		return err
 	}

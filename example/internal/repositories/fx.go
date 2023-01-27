@@ -5,5 +5,5 @@ import (
 )
 
 var FXModule = fx.Options(
-	fx.Provide(NewJWTAuthRepository, NewPostgresUserRepository, NewPermissionRepository, NewSessionRepository, NewEquipmentRepository),
+	fx.Provide(NewJWTAuthRepository, NewPostgresUserRepository, NewPermissionRepository, NewSessionRepository, NewEquipmentRepository, NewPlanRepository, NewDayRepository, NewArchRepository),
 )

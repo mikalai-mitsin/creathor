@@ -19,7 +19,7 @@ var hasObjectPermission = map[models.PermissionID][]objectPermissionChecker{
 	models.PermissionIDUserList:   {objectAnybody},
 	models.PermissionIDUserDetail: {objectOwner},
 	models.PermissionIDUserUpdate: {objectOwner},
-	models.PermissionIDUserDelete: {objectOwner}, models.PermissionIDSessionList: {objectAnybody}, models.PermissionIDSessionDetail: {objectAnybody}, models.PermissionIDSessionCreate: {objectAnybody}, models.PermissionIDSessionUpdate: {objectAnybody}, models.PermissionIDSessionDelete: {objectAnybody}, models.PermissionIDEquipmentList: {objectAnybody}, models.PermissionIDEquipmentDetail: {objectAnybody}, models.PermissionIDEquipmentCreate: {objectAnybody}, models.PermissionIDEquipmentUpdate: {objectAnybody}, models.PermissionIDEquipmentDelete: {objectAnybody},
+	models.PermissionIDUserDelete: {objectOwner}, models.PermissionIDSessionList: {objectAnybody}, models.PermissionIDSessionDetail: {objectAnybody}, models.PermissionIDSessionCreate: {objectAnybody}, models.PermissionIDSessionUpdate: {objectAnybody}, models.PermissionIDSessionDelete: {objectAnybody}, models.PermissionIDEquipmentList: {objectAnybody}, models.PermissionIDEquipmentDetail: {objectAnybody}, models.PermissionIDEquipmentCreate: {objectAnybody}, models.PermissionIDEquipmentUpdate: {objectAnybody}, models.PermissionIDEquipmentDelete: {objectAnybody}, models.PermissionIDPlanList: {objectAnybody}, models.PermissionIDPlanDetail: {objectAnybody}, models.PermissionIDPlanCreate: {objectAnybody}, models.PermissionIDPlanUpdate: {objectAnybody}, models.PermissionIDPlanDelete: {objectAnybody}, models.PermissionIDDayList: {objectAnybody}, models.PermissionIDDayDetail: {objectAnybody}, models.PermissionIDDayCreate: {objectAnybody}, models.PermissionIDDayUpdate: {objectAnybody}, models.PermissionIDDayDelete: {objectAnybody}, models.PermissionIDArchList: {objectAnybody}, models.PermissionIDArchDetail: {objectAnybody}, models.PermissionIDArchCreate: {objectAnybody}, models.PermissionIDArchUpdate: {objectAnybody}, models.PermissionIDArchDelete: {objectAnybody},
 }
 
 type PermissionRepository struct {
@@ -83,7 +83,7 @@ func objectOwner(model any, user *models.User) error {
 	if modelID.Kind() == reflect.Pointer {
 		modelID = modelID.Elem()
 	}
-	if modelID.String() == user.ID || modelUserID.String() == user.ID {
+	if modelID.String() == string(user.ID) || modelUserID.String() == string(user.ID) {
 		return nil
 	}
 	return errs.NewPermissionDeniedError()
@@ -111,7 +111,7 @@ func objectOwnerOrAll(model any, user *models.User) error {
 	if modelID.Kind() == reflect.Pointer {
 		modelID = modelID.Elem()
 	}
-	if modelID.String() == user.ID || modelUserID.String() == user.ID {
+	if modelID.String() == string(user.ID) || modelUserID.String() == string(user.ID) {
 		return nil
 	}
 	return errs.NewPermissionDeniedError()

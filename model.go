@@ -73,7 +73,7 @@ func (p Param) Fake() string {
 	case "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64":
 		fake = fmt.Sprintf("%s(faker.RandomInt(2, 100))", p.Type)
 	case "[]int":
-		fake = fmt.Sprintf("[]int{faker.RandomInt(2, 100), faker.RandomInt(2, 100)}")
+		fake = "[]int{faker.RandomInt(2, 100), faker.RandomInt(2, 100)}"
 	case "[]int8", "[]int16", "[]int32", "[]int64", "[]uint", "[]uint8", "[]uint16", "[]uint32", "[]uint64":
 		fake = fmt.Sprintf("%s{%s(faker.RandomInt(2, 100)), %s(faker.RandomInt(2, 100))}", p.Type, p.SliceType(), p.SliceType())
 	case "string":

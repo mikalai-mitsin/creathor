@@ -1,0 +1,945 @@
+basePath: /api/v1
+definitions:
+  models.Arch:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      release:
+        type: string
+      tested:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.ArchCreate:
+    properties:
+      name:
+        type: string
+      release:
+        type: string
+      tested:
+        type: string
+    type: object
+  models.ArchUpdate:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      release:
+        type: string
+      tested:
+        type: string
+    type: object
+  models.Day:
+    properties:
+      created_at:
+        type: string
+      equipment_id:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      repeat:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.DayCreate:
+    properties:
+      equipment_id:
+        type: string
+      name:
+        type: string
+      repeat:
+        type: integer
+    type: object
+  models.DayUpdate:
+    properties:
+      equipment_id:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      repeat:
+        type: integer
+    type: object
+  models.Equipment:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      repeat:
+        type: integer
+      updated_at:
+        type: string
+      weight:
+        type: integer
+    type: object
+  models.EquipmentCreate:
+    properties:
+      name:
+        type: string
+      repeat:
+        type: integer
+      weight:
+        type: integer
+    type: object
+  models.EquipmentUpdate:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      repeat:
+        type: integer
+      weight:
+        type: integer
+    type: object
+  models.GroupID:
+    enum:
+    - admin
+    - user
+    - guest
+    type: string
+    x-enum-varnames:
+    - GroupIDAdmin
+    - GroupIDUser
+    - GroupIDGuest
+  models.Login:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  models.Plan:
+    properties:
+      created_at:
+        type: string
+      equipment_id:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      repeat:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.PlanCreate:
+    properties:
+      equipment_id:
+        type: string
+      name:
+        type: string
+      repeat:
+        type: integer
+    type: object
+  models.PlanUpdate:
+    properties:
+      equipment_id:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      repeat:
+        type: integer
+    type: object
+  models.Session:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.SessionCreate:
+    properties:
+      description:
+        type: string
+      title:
+        type: string
+    type: object
+  models.SessionUpdate:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+    type: object
+  models.TokenPair:
+    properties:
+      access:
+        type: string
+      refresh:
+        type: string
+    type: object
+  models.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      group_id:
+        $ref: '#/definitions/models.GroupID'
+      id:
+        type: string
+      last_name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.UserCreate:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  models.UserUpdate:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+    type: object
+  rest.Refresh:
+    properties:
+      token:
+        type: string
+    type: object
+host: 127.0.0.1:8000
+info:
+  contact: {}
+  description: TBD
+  title: example
+  version: 0.1.0
+paths:
+  /arches:
+    get:
+      description: Responds with the list of all Arch as JSON.
+      parameters:
+      - in: query
+        items:
+          type: string
+        name: ids
+        type: array
+      - in: query
+        items:
+          type: string
+        name: order_by
+        type: array
+      - in: query
+        name: page_number
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Arch'
+            type: array
+      summary: List Arch array
+      tags:
+      - Arch
+    post:
+      description: Takes a Arch JSON and store in DB. Return saved JSON.
+      parameters:
+      - description: Arch JSON
+        in: body
+        name: Arch
+        required: true
+        schema:
+          $ref: '#/definitions/models.ArchCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Arch'
+      summary: Store a new Arch
+      tags:
+      - Arch
+  /arches/{uuid}:
+    delete:
+      description: Delete the Arch whose UUID value matches the UUID.
+      parameters:
+      - description: delete Arch by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Delete single Arch by UUID
+      tags:
+      - Arch
+    get:
+      description: Returns the Arch whose UUID value matches the UUID.
+      parameters:
+      - description: search Arch by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Arch'
+      summary: Get single Arch by UUID
+      tags:
+      - Arch
+    patch:
+      description: Returns the updated Arch.
+      parameters:
+      - description: update Arch by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: Arch JSON
+        in: body
+        name: Arch
+        required: true
+        schema:
+          $ref: '#/definitions/models.ArchUpdate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Arch'
+      summary: Update Arch by UUID
+      tags:
+      - Arch
+  /auth:
+    patch:
+      description: Return new token pair.
+      parameters:
+      - description: Refresh token JSON
+        in: body
+        name: Refresh
+        required: true
+        schema:
+          $ref: '#/definitions/rest.Refresh'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TokenPair'
+      summary: Refresh token
+      tags:
+      - Auth
+    post:
+      description: Auth user return access and refresh token.
+      parameters:
+      - description: Login JSON
+        in: body
+        name: Login
+        required: true
+        schema:
+          $ref: '#/definitions/models.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TokenPair'
+      summary: Create token pair
+      tags:
+      - Auth
+  /days:
+    get:
+      description: Responds with the list of all Day as JSON.
+      parameters:
+      - in: query
+        items:
+          type: string
+        name: ids
+        type: array
+      - in: query
+        items:
+          type: string
+        name: order_by
+        type: array
+      - in: query
+        name: page_number
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Day'
+            type: array
+      summary: List Day array
+      tags:
+      - Day
+    post:
+      description: Takes a Day JSON and store in DB. Return saved JSON.
+      parameters:
+      - description: Day JSON
+        in: body
+        name: Day
+        required: true
+        schema:
+          $ref: '#/definitions/models.DayCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Day'
+      summary: Store a new Day
+      tags:
+      - Day
+  /days/{uuid}:
+    delete:
+      description: Delete the Day whose UUID value matches the UUID.
+      parameters:
+      - description: delete Day by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Delete single Day by UUID
+      tags:
+      - Day
+    get:
+      description: Returns the Day whose UUID value matches the UUID.
+      parameters:
+      - description: search Day by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Day'
+      summary: Get single Day by UUID
+      tags:
+      - Day
+    patch:
+      description: Returns the updated Day.
+      parameters:
+      - description: update Day by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: Day JSON
+        in: body
+        name: Day
+        required: true
+        schema:
+          $ref: '#/definitions/models.DayUpdate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Day'
+      summary: Update Day by UUID
+      tags:
+      - Day
+  /equipment:
+    get:
+      description: Responds with the list of all Equipment as JSON.
+      parameters:
+      - in: query
+        items:
+          type: string
+        name: ids
+        type: array
+      - in: query
+        items:
+          type: string
+        name: order_by
+        type: array
+      - in: query
+        name: page_number
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Equipment'
+            type: array
+      summary: List Equipment array
+      tags:
+      - Equipment
+    post:
+      description: Takes a Equipment JSON and store in DB. Return saved JSON.
+      parameters:
+      - description: Equipment JSON
+        in: body
+        name: Equipment
+        required: true
+        schema:
+          $ref: '#/definitions/models.EquipmentCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Equipment'
+      summary: Store a new Equipment
+      tags:
+      - Equipment
+  /equipment/{uuid}:
+    delete:
+      description: Delete the Equipment whose UUID value matches the UUID.
+      parameters:
+      - description: delete Equipment by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Delete single Equipment by UUID
+      tags:
+      - Equipment
+    get:
+      description: Returns the Equipment whose UUID value matches the UUID.
+      parameters:
+      - description: search Equipment by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Equipment'
+      summary: Get single Equipment by UUID
+      tags:
+      - Equipment
+    patch:
+      description: Returns the updated Equipment.
+      parameters:
+      - description: update Equipment by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: Equipment JSON
+        in: body
+        name: Equipment
+        required: true
+        schema:
+          $ref: '#/definitions/models.EquipmentUpdate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Equipment'
+      summary: Update Equipment by UUID
+      tags:
+      - Equipment
+  /plans:
+    get:
+      description: Responds with the list of all Plan as JSON.
+      parameters:
+      - in: query
+        items:
+          type: string
+        name: ids
+        type: array
+      - in: query
+        items:
+          type: string
+        name: order_by
+        type: array
+      - in: query
+        name: page_number
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Plan'
+            type: array
+      summary: List Plan array
+      tags:
+      - Plan
+    post:
+      description: Takes a Plan JSON and store in DB. Return saved JSON.
+      parameters:
+      - description: Plan JSON
+        in: body
+        name: Plan
+        required: true
+        schema:
+          $ref: '#/definitions/models.PlanCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Plan'
+      summary: Store a new Plan
+      tags:
+      - Plan
+  /plans/{uuid}:
+    delete:
+      description: Delete the Plan whose UUID value matches the UUID.
+      parameters:
+      - description: delete Plan by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Delete single Plan by UUID
+      tags:
+      - Plan
+    get:
+      description: Returns the Plan whose UUID value matches the UUID.
+      parameters:
+      - description: search Plan by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Plan'
+      summary: Get single Plan by UUID
+      tags:
+      - Plan
+    patch:
+      description: Returns the updated Plan.
+      parameters:
+      - description: update Plan by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: Plan JSON
+        in: body
+        name: Plan
+        required: true
+        schema:
+          $ref: '#/definitions/models.PlanUpdate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Plan'
+      summary: Update Plan by UUID
+      tags:
+      - Plan
+  /sessions:
+    get:
+      description: Responds with the list of all Session as JSON.
+      parameters:
+      - in: query
+        items:
+          type: string
+        name: ids
+        type: array
+      - in: query
+        items:
+          type: string
+        name: order_by
+        type: array
+      - in: query
+        name: page_number
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Session'
+            type: array
+      summary: List Session array
+      tags:
+      - Session
+    post:
+      description: Takes a Session JSON and store in DB. Return saved JSON.
+      parameters:
+      - description: Session JSON
+        in: body
+        name: Session
+        required: true
+        schema:
+          $ref: '#/definitions/models.SessionCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Session'
+      summary: Store a new Session
+      tags:
+      - Session
+  /sessions/{uuid}:
+    delete:
+      description: Delete the Session whose UUID value matches the UUID.
+      parameters:
+      - description: delete Session by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Delete single Session by UUID
+      tags:
+      - Session
+    get:
+      description: Returns the Session whose UUID value matches the UUID.
+      parameters:
+      - description: search Session by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Session'
+      summary: Get single Session by UUID
+      tags:
+      - Session
+    patch:
+      description: Returns the updated Session.
+      parameters:
+      - description: update Session by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: Session JSON
+        in: body
+        name: Session
+        required: true
+        schema:
+          $ref: '#/definitions/models.SessionUpdate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Session'
+      summary: Update Session by UUID
+      tags:
+      - Session
+  /users:
+    get:
+      description: Responds with the list of all User as JSON.
+      parameters:
+      - in: query
+        items:
+          type: string
+        name: order_by
+        type: array
+      - in: query
+        name: page_number
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+      summary: List User array
+      tags:
+      - User
+    post:
+      description: Takes a User JSON and store in DB. Return saved JSON.
+      parameters:
+      - description: User JSON
+        in: body
+        name: User
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Store a new User
+      tags:
+      - User
+  /users/{uuid}:
+    delete:
+      description: Delete the User whose UUID value matches the UUID.
+      parameters:
+      - description: delete User by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Delete single User by UUID
+      tags:
+      - User
+    get:
+      description: Returns the User whose UUID value matches the UUID.
+      parameters:
+      - description: search User by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Get single User by UUID
+      tags:
+      - User
+    patch:
+      description: Returns the updated User.
+      parameters:
+      - description: update User by UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: User JSON
+        in: body
+        name: User
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Update User by UUID
+      tags:
+      - User
+swagger: "2.0"

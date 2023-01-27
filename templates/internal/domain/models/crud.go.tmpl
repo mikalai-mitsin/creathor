@@ -9,9 +9,9 @@ import (
 )
 
 type {{ .ModelName }} struct {
-    ID        string `json:"id" db:"id,omitempty" form:"id"`
-{{- range $key, $value := .Params }}
-    {{ $key.Name }} {{ $value }} `json:"{{ $key.Tag }}" db:"{{ $key.Tag }}" form:"{{ $key.Tag }}"`
+    ID        UUID      `json:"id" db:"id,omitempty" form:"id"`
+{{- range $value := .Params }}
+    {{ $value.GetName }} {{ $value.Type }} `json:"{{ $value.Tag }}" db:"{{ $value.Tag }}" form:"{{ $value.Tag }}"`
 {{- end }}
     UpdatedAt time.Time `json:"updated_at" db:"updated_at,omitempty" form:"updated_at"`
     CreatedAt time.Time `json:"created_at" db:"created_at,omitempty" form:"created_at,omitempty"`
@@ -21,8 +21,8 @@ func (c *{{ .ModelName }}) Validate() error {
     err := validation.ValidateStruct(
         c,
         validation.Field(&c.ID, is.UUID),
-{{- range $key, $value := .Params }}
-        validation.Field(&c.{{ $key.Name }}),
+{{- range $value := .Params }}
+        validation.Field(&c.{{ $value.GetName }}),
 {{- end }}
     )
     if err != nil {
@@ -32,10 +32,13 @@ func (c *{{ .ModelName }}) Validate() error {
 }
 
 type {{ .FilterTypeName }} struct {
-    IDs        []string `json:"ids" form:"ids"`
+    IDs        []UUID `json:"ids" form:"ids"`
     PageSize   *uint64  `json:"page_size" form:"page_size"`
     PageNumber *uint64  `json:"page_number" form:"page_number"`
     OrderBy    []string `json:"order_by" form:"order_by"`
+{{- if .SearchEnabled }}
+    Search     *string  `json:"search" form:"search"`
+{{- end }}
 }
 
 func (c *{{ .FilterTypeName }}) Validate() error {
@@ -45,6 +48,9 @@ func (c *{{ .FilterTypeName }}) Validate() error {
         validation.Field(&c.PageSize),
         validation.Field(&c.PageNumber),
         validation.Field(&c.OrderBy),
+{{- if .SearchEnabled }}
+        validation.Field(&c.Search),
+{{- end }}
     )
     if err != nil {
         return errs.FromValidationError(err)
@@ -54,7 +60,7 @@ func (c *{{ .FilterTypeName }}) Validate() error {
 
 type {{ .CreateTypeName }} struct {
 {{- range $key, $value := .Params }}
-    {{ $key.Name }} {{ $value }} `json:"{{ $key.Tag }}" form:"{{ $key.Tag }}"`
+    {{ $value.GetName }} {{ $value.Type }} `json:"{{ $value.Tag }}" form:"{{ $value.Tag }}"`
 {{- end }}
 }
 
@@ -62,7 +68,7 @@ func (c *{{ .CreateTypeName }}) Validate() error {
     err := validation.ValidateStruct(
         c,
 {{- range $key, $value := .Params }}
-        validation.Field(&c.{{ $key.Name }}),
+        validation.Field(&c.{{ $value.GetName }}),
 {{- end }}
     )
     if err != nil {
@@ -72,9 +78,9 @@ func (c *{{ .CreateTypeName }}) Validate() error {
 }
 
 type {{ .UpdateTypeName }} struct {
-    ID string `json:"id"`
+    ID UUID `json:"id"`
 {{- range $key, $value := .Params }}
-    {{ $key.Name }} *{{ $value }} `json:"{{ $key.Tag }}" form:"{{ $key.Tag }}"`
+    {{ $value.GetName }} *{{ $value.Type }} `json:"{{ $value.Tag }}" form:"{{ $value.Tag }}"`
 {{- end }}
 }
 
@@ -82,8 +88,8 @@ func (c *{{ .UpdateTypeName }}) Validate() error {
     err := validation.ValidateStruct(
         c,
         validation.Field(&c.ID, validation.Required, is.UUID),
-{{- range $key, $value := .Params }}
-        validation.Field(&c.{{ $key.Name }}),
+{{- range $value := .Params }}
+        validation.Field(&c.{{ $value.GetName }}),
 {{- end }}
     )
     if err != nil {

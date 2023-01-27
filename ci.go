@@ -19,7 +19,7 @@ func CreateCI(project *Project) error {
 			Name:            "pre-commit",
 		},
 	}
-	switch ci {
+	switch project.CI {
 	case "gitlab":
 		files = append(files, &Template{
 			SourcePath:      "templates/ci/gitlab/gitlab-ci.yml.tmpl",

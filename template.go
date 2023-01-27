@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"os"
@@ -17,6 +18,9 @@ var funcMap = template.FuncMap{
 	"inc": func(i int) int {
 		return i + 1
 	},
+	"add": func(i, j int) int {
+		return i + j
+	},
 }
 
 type Template struct {
@@ -25,7 +29,19 @@ type Template struct {
 	Name            string
 }
 
+func (t *Template) hasRewrite() bool {
+	_, err := os.Stat(t.DestinationPath)
+	if err != nil && os.IsNotExist(err) {
+		return true
+	}
+	return false
+}
+
 func (t *Template) renderToFile(data interface{}) error {
+	if !t.hasRewrite() {
+		fmt.Printf("%s already exists.\n", t.Name)
+		return nil
+	}
 	a := path.Base(t.SourcePath)
 	tmpl, err := template.New(a).Funcs(funcMap).ParseFS(content, t.SourcePath)
 	if err != nil {
@@ -34,12 +50,13 @@ func (t *Template) renderToFile(data interface{}) error {
 	file, err := os.Create(t.DestinationPath)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return NewDirectoryNotExistsError(t.DestinationPath)
+			println(t.DestinationPath)
+			//return NewDirectoryNotExistsError(t.DestinationPath)
 		}
 		if errors.Is(err, os.ErrPermission) {
 			return NewPermissionError(t.DestinationPath)
 		}
-		return NewUnexpectedBehaviorError(err.Error())
+		//return NewUnexpectedBehaviorError(err.Error())
 	}
 	if err := tmpl.Execute(file, data); err != nil {
 		return NewUnexpectedBehaviorError(err.Error())

@@ -77,7 +77,7 @@ func Test{{ .UseCaseTypeName }}_Get(t *testing.T) {
     }
     type args struct {
         ctx context.Context
-        id  string
+        id  models.UUID
     }
     tests := []struct {
         name    string
@@ -279,7 +279,7 @@ func Test{{ .UseCaseTypeName }}_Create(t *testing.T) {
                         ctx,
                         &models.{{ .ModelName }}{
 {{- range $key, $value := .Params }}
-                            {{ $key.Name }}: create.{{ $key.Name }},
+                            {{ $value.GetName }}: create.{{ $value.GetName }},
 {{- end }}
                             UpdatedAt: now,
                             CreatedAt: now,
@@ -299,7 +299,7 @@ func Test{{ .UseCaseTypeName }}_Create(t *testing.T) {
             want: &models.{{ .ModelName }}{
                 ID: "",
 {{- range $key, $value := .Params }}
-                {{ $key.Name }}: create.{{ $key.Name }},
+                {{ $value.GetName }}: create.{{ $value.GetName }},
 {{- end }}
                 UpdatedAt: now,
                 CreatedAt: now,
@@ -316,7 +316,7 @@ func Test{{ .UseCaseTypeName }}_Create(t *testing.T) {
                         &models.{{ .ModelName }}{
                             ID: "",
 {{- range $key, $value := .Params }}
-                            {{ $key.Name }}: create.{{ $key.Name }},
+                            {{ $value.GetName }}: create.{{ $value.GetName }},
 {{- end }}
                             UpdatedAt: now,
                             CreatedAt: now,
@@ -473,7 +473,7 @@ func Test{{ .UseCaseTypeName }}_Update(t *testing.T) {
             args: args{
                 ctx: ctx,
                 update: &models.{{ .UpdateTypeName }}{
-                    ID:   faker.Number().Number(1),
+                    ID: models.UUID(faker.Number().Number(1)),
                 },
             },
             want: nil,
@@ -513,7 +513,7 @@ func Test{{ .UseCaseTypeName }}_Delete(t *testing.T) {
     }
     type args struct {
         ctx context.Context
-        id  string
+        id  models.UUID
     }
     tests := []struct {
         name    string

@@ -77,7 +77,7 @@ func TestSessionUseCase_Get(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		id  string
+		id  models.UUID
 	}
 	tests := []struct {
 		name    string
@@ -145,10 +145,10 @@ func TestSessionUseCase_List(t *testing.T) {
 	sessionRepository := mock_repositories.NewMockSessionRepository(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
-	var sessions []*models.Session
+	var listSessions []*models.Session
 	count := uint64(faker.Number().NumberInt(2))
 	for i := uint64(0); i < count; i++ {
-		sessions = append(sessions, mock_models.NewSession(t))
+		listSessions = append(listSessions, mock_models.NewSession(t))
 	}
 	filter := mock_models.NewSessionFilter(t)
 	type fields struct {
@@ -171,7 +171,7 @@ func TestSessionUseCase_List(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				sessionRepository.EXPECT().List(ctx, filter).Return(sessions, nil)
+				sessionRepository.EXPECT().List(ctx, filter).Return(listSessions, nil)
 				sessionRepository.EXPECT().Count(ctx, filter).Return(count, nil)
 			},
 			fields: fields{
@@ -182,7 +182,7 @@ func TestSessionUseCase_List(t *testing.T) {
 				ctx:    ctx,
 				filter: filter,
 			},
-			want:    sessions,
+			want:    listSessions,
 			want1:   count,
 			wantErr: nil,
 		},
@@ -206,7 +206,7 @@ func TestSessionUseCase_List(t *testing.T) {
 		{
 			name: "count error",
 			setup: func() {
-				sessionRepository.EXPECT().List(ctx, filter).Return(sessions, nil)
+				sessionRepository.EXPECT().List(ctx, filter).Return(listSessions, nil)
 				sessionRepository.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
@@ -278,8 +278,8 @@ func TestSessionUseCase_Create(t *testing.T) {
 					Create(
 						ctx,
 						&models.Session{
-							Description: create.Description,
 							Title:       create.Title,
+							Description: create.Description,
 							UpdatedAt:   now,
 							CreatedAt:   now,
 						},
@@ -297,8 +297,8 @@ func TestSessionUseCase_Create(t *testing.T) {
 			},
 			want: &models.Session{
 				ID:          "",
-				Description: create.Description,
 				Title:       create.Title,
+				Description: create.Description,
 				UpdatedAt:   now,
 				CreatedAt:   now,
 			},
@@ -313,8 +313,8 @@ func TestSessionUseCase_Create(t *testing.T) {
 						ctx,
 						&models.Session{
 							ID:          "",
-							Description: create.Description,
 							Title:       create.Title,
+							Description: create.Description,
 							UpdatedAt:   now,
 							CreatedAt:   now,
 						},
@@ -470,7 +470,7 @@ func TestSessionUseCase_Update(t *testing.T) {
 			args: args{
 				ctx: ctx,
 				update: &models.SessionUpdate{
-					ID: faker.Number().Number(1),
+					ID: models.UUID(faker.Number().Number(1)),
 				},
 			},
 			want:    nil,
@@ -510,7 +510,7 @@ func TestSessionUseCase_Delete(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		id  string
+		id  models.UUID
 	}
 	tests := []struct {
 		name    string

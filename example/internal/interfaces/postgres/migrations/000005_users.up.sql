@@ -1,47 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
-create function update_updated_at_task() returns trigger
-    language plpgsql
-as
-$$
-BEGIN
-    NEW.updated_at = now();
-    RETURN NEW;
-END;
-$$;
-
-create table public.permissions
-(
-    id   varchar(255) not null
-        constraint permissions_pk
-            primary key,
-    name varchar(255)
-);
-
-create table public.groups
-(
-    id   varchar(255) not null
-        constraint groups_pk
-            primary key,
-    name varchar(255) not null
-);
-
-create table public.group_permissions
-(
-    group_id      varchar(255) not null
-        references public.groups
-            on update cascade on delete cascade
-        constraint group_permissions_group_ids
-            references public.groups
-            deferrable initially deferred,
-    permission_id varchar(255) not null
-        references public.permissions
-            on update cascade on delete cascade
-        constraint group_permissions_permission_ids
-            references public.permissions
-            deferrable initially deferred
-);
-
 create table public.users
 (
     id         uuid         default uuid_generate_v4()               not null
@@ -68,3 +24,25 @@ create trigger update_users_updated_at
     on public.users
     for each row
 execute procedure public.update_updated_at_task();
+
+insert into public.permissions (id, name)
+values ('user_list', 'User list'),
+       ('user_detail', 'User detail'),
+       ('user_create', 'User create'),
+       ('user_update', 'User update'),
+       ('user_delete', 'User delete');
+
+insert into public.group_permissions (group_id, permission_id)
+values ('admin', 'user_list'),
+       ('admin', 'user_detail'),
+       ('admin', 'user_create'),
+       ('admin', 'user_update'),
+       ('admin', 'user_delete'),
+       ('user', 'user_list'),
+       ('user', 'user_detail'),
+       ('user', 'user_create'),
+       ('user', 'user_update'),
+       ('user', 'user_delete'),
+       ('guest', 'user_list'),
+       ('guest', 'user_detail'),
+       ('guest', 'user_create');

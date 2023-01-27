@@ -14,11 +14,17 @@ const (
 	RequestIDContextKey ctxKey = "request_id"
 )
 
+// NewRouter        godoc
+// @title           example
+// @version         0.1.0
+// @description     TBD
+// @host      127.0.0.1:8000
+// @BasePath  /api/v1
 func NewRouter(
 	logger log.Logger,
 	authMiddleware *AuthMiddleware,
 	authHandler *AuthHandler,
-	userHandler *UserHandler, sessionHandler *SessionHandler, equipmentHandler *EquipmentHandler,
+	userHandler *UserHandler, sessionHandler *SessionHandler, equipmentHandler *EquipmentHandler, planHandler *PlanHandler, dayHandler *DayHandler, archHandler *ArchHandler,
 ) *gin.Engine {
 	router := gin.Default()
 	router.Use(authMiddleware.Middleware())
@@ -31,9 +37,13 @@ func NewRouter(
 			"message": "ok",
 		})
 	})
-	authHandler.Register(router)
-	userHandler.Register(router)
-	sessionHandler.Register(router)
-	equipmentHandler.Register(router)
+	apiV1 := router.Group("api").Group("v1")
+	authHandler.Register(apiV1)
+	userHandler.Register(apiV1)
+	sessionHandler.Register(apiV1)
+	equipmentHandler.Register(apiV1)
+	planHandler.Register(apiV1)
+	dayHandler.Register(apiV1)
+	archHandler.Register(apiV1)
 	return router
 }

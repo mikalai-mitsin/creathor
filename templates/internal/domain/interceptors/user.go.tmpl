@@ -12,7 +12,7 @@ import (
 type UserInterceptor interface {
     Get(
         ctx context.Context,
-        id string,
+        id models.UUID,
         requestUser *models.User,
     ) (*models.User, error)
     List(
@@ -32,7 +32,7 @@ type UserInterceptor interface {
     ) (*models.User, error)
     Delete(
         ctx context.Context,
-        id string,
+        id models.UUID,
         requestUser *models.User,
     ) error
 }

@@ -12,7 +12,7 @@ import (
 type {{ .RepositoryTypeName }} interface {
     Get(
         ctx context.Context,
-        id string,
+        id models.UUID,
     ) (*models.{{ .ModelName }}, error)
     List(
         ctx context.Context,
@@ -32,6 +32,6 @@ type {{ .RepositoryTypeName }} interface {
     ) error
     Delete(
         ctx context.Context,
-        id string,
+        id models.UUID,
     ) error
 }

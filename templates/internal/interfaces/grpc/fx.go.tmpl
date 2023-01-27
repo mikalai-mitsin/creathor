@@ -10,7 +10,10 @@ import (
 )
 
 var FXModule = fx.Options(
-    fx.Provide(NewAuthMiddleware),
+    fx.Provide(),
+{{- if .Auth }}
+    fx.Provide(NewAuthMiddleware, NewAuthServiceServer, NewUserServiceServer),
+{{- end }}
     fx.Provide(NewServer),
     fx.Invoke(func(lifecycle fx.Lifecycle, server *grpc.Server, config *configs.Config) {
         lifecycle.Append(fx.Hook{

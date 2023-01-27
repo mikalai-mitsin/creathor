@@ -1,0 +1,226 @@
+package grpc
+
+import (
+    "context"
+    "{{ .Module }}/internal/domain/interceptors"
+    "{{ .Module }}/internal/domain/models"
+    "{{ .Module }}/pkg/{{ .ProtoPackage }}"
+    "{{ .Module }}/pkg/log"
+    "{{ .Module }}/pkg/utils"
+    "google.golang.org/protobuf/types/known/emptypb"
+    "google.golang.org/protobuf/types/known/timestamppb"
+)
+
+type {{ .GRPCHandlerTypeName }} struct {
+    {{ .ProtoPackage }}.Unimplemented{{ .ModelName }}ServiceServer
+    {{ .InterceptorVariableName }} interceptors.{{ .InterceptorTypeName }}
+    logger                      log.Logger
+}
+
+func New{{ .GRPCHandlerTypeName }}(
+    {{ .InterceptorVariableName }} interceptors.{{ .InterceptorTypeName }},
+    logger log.Logger,
+) {{ .ProtoPackage }}.{{ .ModelName }}ServiceServer {
+    return &{{ .GRPCHandlerTypeName }}{
+        {{ .InterceptorVariableName }}: {{ .InterceptorVariableName }},
+        logger:                      logger,
+    }
+}
+
+func (s *{{ .GRPCHandlerTypeName }}) Create(
+    ctx context.Context,
+    input *{{ .ProtoPackage }}.{{ .CreateTypeName }},
+) (*{{ .ProtoPackage }}.{{ .ModelName }}, error) {
+    {{ .Variable }}, err := s.{{ .InterceptorVariableName }}.Create(
+        ctx,
+        encode{{ .CreateTypeName }}(input),
+{{- if .Auth }}
+        ctx.Value(UserKey).(*models.User),
+{{- end }}
+    )
+    if err != nil {
+        return nil, decodeError(err)
+    }
+    return decode{{ .ModelName }}({{ .Variable }}), nil
+}
+
+func (s *{{ .GRPCHandlerTypeName }}) Get(
+    ctx context.Context,
+    input *{{ .ProtoPackage }}.{{ .ModelName }}Get,
+) (*{{ .ProtoPackage }}.{{ .ModelName }}, error) {
+    {{ .Variable }}, err := s.{{ .InterceptorVariableName }}.Get(
+        ctx,
+        models.UUID(input.GetId()),
+{{- if .Auth }}
+        ctx.Value(UserKey).(*models.User),
+{{- end }}
+    )
+    if err != nil {
+        return nil, decodeError(err)
+    }
+    return decode{{ .ModelName }}({{ .Variable }}), nil
+}
+
+func (s *{{ .GRPCHandlerTypeName }}) List(
+    ctx context.Context,
+    filter *{{ .ProtoPackage }}.{{ .FilterTypeName }},
+) (*{{ .ProtoPackage }}.List{{ .ModelName }}, error) {
+    {{ .ListVariable }}, count, err := s.{{ .InterceptorVariableName }}.List(
+        ctx,
+        encode{{ .FilterTypeName }}(filter),
+{{- if .Auth }}
+        ctx.Value(UserKey).(*models.User),
+{{- end }}
+    )
+    if err != nil {
+        return nil, decodeError(err)
+    }
+    return decodeList{{ .ModelName }}({{ .ListVariable }}, count), nil
+}
+
+func (s *{{ .GRPCHandlerTypeName }}) Update(
+    ctx context.Context,
+    input *{{ .ProtoPackage }}.{{ .UpdateTypeName }},
+) (*{{ .ProtoPackage }}.{{ .ModelName }}, error) {
+    {{ .Variable }}, err := s.{{ .InterceptorVariableName }}.Update(
+        ctx,
+        encode{{ .UpdateTypeName }}(input),
+{{- if .Auth }}
+        ctx.Value(UserKey).(*models.User),
+{{- end }}
+    )
+    if err != nil {
+        return nil, decodeError(err)
+    }
+    return decode{{ .ModelName }}({{ .Variable }}), nil
+}
+
+func (s *{{ .GRPCHandlerTypeName }}) Delete(
+    ctx context.Context,
+    input *{{ .ProtoPackage }}.{{ .ModelName }}Delete,
+) (*emptypb.Empty, error) {
+    if err := s.{{ .InterceptorVariableName }}.Delete(
+        ctx,
+        models.UUID(input.GetId()),
+    {{- if .Auth }}
+        ctx.Value(UserKey).(*models.User),
+    {{- end }}
+    ); err != nil {
+        return nil, decodeError(err)
+    }
+    return &emptypb.Empty{}, nil
+}
+
+func encode{{ .UpdateTypeName }}(input *{{ .ProtoPackage }}.{{ .UpdateTypeName }}) *models.{{ .UpdateTypeName }} {
+    update := &models.{{ .UpdateTypeName }}{
+        ID:          models.UUID(input.GetId()),
+{{- range $value := .Params }}
+        {{ $value.GetName }}: nil,
+{{- end }}
+    }
+{{- range $value := .Params }}
+{{- if $value.IsSlice }}
+    if input.{{ $value.GRPCGetter }}() != nil {
+		var params []{{ $value.SliceType }}
+		for _, item := range input.{{ $value.GRPCGetter }}().GetValues() {
+            params = append(params, {{ $value.SliceType }}(item.{{ $value.GrpcGetFromListValueAs }}()))
+		}
+		update.{{ $value.GetName }}  = &params
+	}
+{{- else }}
+    if input.{{ $value.GRPCGetter }}() != nil {
+        {{- if eq $value.Type "time.Time" }}
+        update.{{ $value.GetName }} = utils.Pointer(input.{{ $value.GRPCGetter }}().AsTime())
+        {{- else }}
+        update.{{ $value.GetName }} = utils.Pointer({{ $value.Type }}(input.{{ $value.GRPCGetter }}().GetValue()))
+        {{- end }}
+    }
+{{- end }}
+{{- end }}
+    return update
+}
+
+func decodeList{{ .ModelName }}({{ .ListVariable }} []*models.{{ .ModelName }}, count uint64) *{{ .ProtoPackage }}.List{{ .ModelName }} {
+    response := &{{ .ProtoPackage }}.List{{ .ModelName }}{
+        Items:   make([]*{{ .ProtoPackage }}.{{ .ModelName }}, 0, len({{ .ListVariable }})),
+        Count:   count,
+    }
+    for _, {{ .Variable }} := range {{ .ListVariable }} {
+        response.Items = append(response.Items, decode{{ .ModelName }}({{ .Variable }}))
+    }
+    return response
+}
+
+func encode{{ .FilterTypeName }}(input *{{ .ProtoPackage }}.{{ .FilterTypeName }}) *models.{{ .FilterTypeName }} {
+    filter := &models.{{ .FilterTypeName }}{
+        IDs:        nil,
+        PageSize:   nil,
+        PageNumber: nil,
+        OrderBy:    input.GetOrderBy(),
+{{- if .SearchEnabled }}
+        Search:     nil,
+{{- end }}
+    }
+    if input.GetPageSize() != nil {
+        filter.PageSize = utils.Pointer(input.GetPageSize().GetValue())
+    }
+    if input.GetPageNumber() != nil {
+        filter.PageNumber = utils.Pointer(input.GetPageNumber().GetValue())
+    }
+{{- if .SearchEnabled }}
+    if input.GetSearch() != nil {
+        filter.Search = utils.Pointer(input.GetSearch().GetValue())
+    }
+{{- end }}
+    for _, id := range input.GetIds() {
+        filter.IDs = append(filter.IDs, models.UUID(id))
+    }
+    return filter
+}
+
+func encode{{ .CreateTypeName }}(input *{{ .ProtoPackage }}.{{ .CreateTypeName }}) *models.{{ .CreateTypeName }} {
+    create := &models.{{ .CreateTypeName }}{
+{{- range $value := .Params }}
+    {{- if eq $value.Type "time.Time" }}
+        {{ $value.GetName }}: input.{{ $value.GRPCGetter }}().AsTime(),
+    {{- else }}
+        {{- if $value.IsSlice }}
+        {{ $value.GetName }}: nil,
+        {{- else }}
+        {{ $value.GetName }}: {{ $value.Type }}(input.{{ $value.GRPCGetter }}()),
+        {{- end }}
+    {{- end }}
+{{- end }}
+    }
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+    for _, param := range input.{{ $value.GRPCGetter }}() {
+        create.{{ $value.GetName }} = append(create.{{ $value.GetName }}, {{ $value.SliceType }}(param))
+    }
+    {{- end }}
+{{- end }}
+    return create
+}
+
+func decode{{ .ModelName }}({{ .Variable }} *models.{{ .ModelName }}) *{{ .ProtoPackage }}.{{ .ModelName }} {
+    response := &{{ .ProtoPackage }}.{{ .ModelName }}{
+        Id:          string({{ .Variable }}.ID),
+        UpdatedAt:   timestamppb.New({{ .Variable }}.UpdatedAt),
+        CreatedAt:   timestamppb.New({{ .Variable }}.CreatedAt),
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+        {{ $value.GRPCParam }}: nil,
+    {{- else }}
+        {{ $value.GRPCParam }}: {{ $value.GRPCType }}({{ $.Variable }}.{{ $value.GetName }}),
+    {{- end }}
+{{- end }}
+    }
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+    for _, param := range {{ $.Variable }}.{{ $value.GetName }} {
+        response.{{ $value.GRPCParam }} = append(response.{{ $value.GRPCParam }}, {{ $value.GRPCSliceType }}(param))
+    }
+    {{- end }}
+{{- end }}
+    return response
+}

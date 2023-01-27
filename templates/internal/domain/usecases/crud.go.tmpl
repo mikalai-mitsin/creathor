@@ -12,7 +12,7 @@ import (
 type {{ .UseCaseTypeName }} interface {
     Get(
         ctx context.Context,
-        id string,
+        id models.UUID,
     ) (*models.{{ .ModelName }}, error)
     List(
         ctx context.Context,
@@ -28,6 +28,6 @@ type {{ .UseCaseTypeName }} interface {
     ) (*models.{{ .ModelName }}, error)
     Delete(
         ctx context.Context,
-        id string,
+        id models.UUID,
     ) error
 }

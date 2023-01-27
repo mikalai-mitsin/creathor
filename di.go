@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -83,19 +84,29 @@ func addToDI(packageName string, constructors ...string) error {
 													fun, ok := provideFunc.Fun.(*ast.SelectorExpr)
 													if ok && fun.Sel.Name == "Provide" {
 														for _, constructor := range constructors {
-															provideFunc.Args = append(provideFunc.Args, &ast.Ident{
-																Name: constructor,
-															})
+															var exists bool
+															for _, existedArg := range provideFunc.Args {
+																ident := existedArg.(*ast.Ident)
+																if ident.Name == constructor {
+																	exists = true
+																	break
+																}
+															}
+															if !exists {
+																provideFunc.Args = append(provideFunc.Args, &ast.Ident{
+																	Name: constructor,
+																})
+															}
 														}
 													}
 													break
 												}
 											}
-											openFile, err := os.OpenFile(filePath, os.O_WRONLY, 0777)
-											if err != nil {
+											buff := &bytes.Buffer{}
+											if err := printer.Fprint(buff, fileset, file); err != nil {
 												return err
 											}
-											if err := printer.Fprint(openFile, fileset, file); err != nil {
+											if err := os.WriteFile(filePath, buff.Bytes(), 0777); err != nil {
 												return err
 											}
 										}

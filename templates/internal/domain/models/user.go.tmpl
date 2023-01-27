@@ -19,7 +19,7 @@ const (
 )
 
 type User struct {
-    ID          string    `db:"id,omitempty" json:"id" form:"id"`
+    ID          UUID      `db:"id,omitempty" json:"id" form:"id"`
     FirstName   string    `db:"first_name" json:"first_name" form:"first_name"`
     LastName    string    `db:"last_name" json:"last_name" form:"last_name"`
     Password    string    `db:"password" json:"-" form:"-"`
@@ -101,7 +101,7 @@ func (u *UserCreate) Validate() error {
 }
 
 type UserUpdate struct {
-    ID          string     `json:"id" form:"id"`
+    ID          UUID       `json:"id" form:"id"`
     FirstName   *string    `json:"first_name" form:"first_name"`
     LastName    *string    `json:"last_name" form:"last_name"`
     Password    *string    `json:"password" form:"password"`

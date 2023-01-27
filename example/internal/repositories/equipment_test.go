@@ -158,7 +158,7 @@ func TestEquipmentRepository_Get(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		id  string
+		id  models.UUID
 	}
 	tests := []struct {
 		name    string
@@ -200,7 +200,7 @@ func TestEquipmentRepository_Get(t *testing.T) {
 			},
 			want: nil,
 			wantErr: errs.FromPostgresError(errors.New("test error")).
-				WithParam("equipment_id", equipment.ID),
+				WithParam("equipment_id", string(equipment.ID)),
 		},
 		{
 			name: "not found",
@@ -216,7 +216,7 @@ func TestEquipmentRepository_Get(t *testing.T) {
 				id:  equipment.ID,
 			},
 			want:    nil,
-			wantErr: errs.NewEntityNotFound().WithParam("equipment_id", equipment.ID),
+			wantErr: errs.NewEntityNotFound().WithParam("equipment_id", string(equipment.ID)),
 		},
 	}
 	for _, tt := range tests {
@@ -249,9 +249,9 @@ func TestEquipmentRepository_List(t *testing.T) {
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
-	var equipment []*models.Equipment
+	var listEquipment []*models.Equipment
 	for i := 0; i < faker.RandomInt(1, 20); i++ {
-		equipment = append(equipment, mock_models.NewEquipment(t))
+		listEquipment = append(listEquipment, mock_models.NewEquipment(t))
 	}
 	filter := mock_models.NewEquipmentFilter(t)
 	query := "SELECT equipment.id, equipment.name, equipment.repeat, equipment.weight, equipment.updated_at, equipment.created_at FROM public.equipment"
@@ -275,7 +275,7 @@ func TestEquipmentRepository_List(t *testing.T) {
 			name: "ok",
 			setup: func() {
 				mock.ExpectQuery(query).
-					WillReturnRows(newEquipmentRows(t, equipment))
+					WillReturnRows(newEquipmentRows(t, listEquipment))
 			},
 			fields: fields{
 				database: db,
@@ -285,7 +285,7 @@ func TestEquipmentRepository_List(t *testing.T) {
 				ctx:    ctx,
 				filter: filter,
 			},
-			want:    equipment,
+			want:    listEquipment,
 			wantErr: nil,
 		},
 		{
@@ -407,7 +407,7 @@ func TestEquipmentRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: equipment,
 			},
-			wantErr: errs.NewEntityNotFound().WithParam("equipment_id", equipment.ID),
+			wantErr: errs.NewEntityNotFound().WithParam("equipment_id", string(equipment.ID)),
 		},
 		{
 			name: "database error",
@@ -424,7 +424,7 @@ func TestEquipmentRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: equipment,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", equipment.ID),
+			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", string(equipment.ID)),
 		},
 		{
 			name: "unexpected error",
@@ -441,7 +441,7 @@ func TestEquipmentRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: equipment,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", equipment.ID),
+			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", string(equipment.ID)),
 		},
 		{
 			name: "result error",
@@ -458,7 +458,7 @@ func TestEquipmentRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: equipment,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", equipment.ID),
+			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", string(equipment.ID)),
 		},
 	}
 	for _, tt := range tests {
@@ -492,7 +492,7 @@ func TestEquipmentRepository_Delete(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		id  string
+		id  models.UUID
 	}
 	tests := []struct {
 		name    string
@@ -533,7 +533,7 @@ func TestEquipmentRepository_Delete(t *testing.T) {
 				ctx: context.Background(),
 				id:  equipment.ID,
 			},
-			wantErr: errs.NewEntityNotFound().WithParam("equipment_id", equipment.ID),
+			wantErr: errs.NewEntityNotFound().WithParam("equipment_id", string(equipment.ID)),
 		},
 		{
 			name: "database error",
@@ -550,7 +550,7 @@ func TestEquipmentRepository_Delete(t *testing.T) {
 				ctx: context.Background(),
 				id:  equipment.ID,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", equipment.ID),
+			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", string(equipment.ID)),
 		},
 		{
 			name: "result error",
@@ -567,7 +567,7 @@ func TestEquipmentRepository_Delete(t *testing.T) {
 				ctx: context.Background(),
 				id:  equipment.ID,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", equipment.ID),
+			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", string(equipment.ID)),
 		},
 	}
 	for _, tt := range tests {
@@ -686,7 +686,7 @@ func TestEquipmentRepository_Count(t *testing.T) {
 	}
 }
 
-func newEquipmentRows(t *testing.T, equipment []*models.Equipment) *sqlmock.Rows {
+func newEquipmentRows(t *testing.T, listEquipment []*models.Equipment) *sqlmock.Rows {
 	t.Helper()
 	rows := sqlmock.NewRows([]string{
 		"id",
@@ -696,7 +696,7 @@ func newEquipmentRows(t *testing.T, equipment []*models.Equipment) *sqlmock.Rows
 		"updated_at",
 		"created_at",
 	})
-	for _, equipment := range equipment {
+	for _, equipment := range listEquipment {
 		rows.AddRow(
 			equipment.ID,
 			equipment.Name,

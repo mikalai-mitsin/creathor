@@ -77,7 +77,7 @@ func TestEquipmentUseCase_Get(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		id  string
+		id  models.UUID
 	}
 	tests := []struct {
 		name    string
@@ -145,10 +145,10 @@ func TestEquipmentUseCase_List(t *testing.T) {
 	equipmentRepository := mock_repositories.NewMockEquipmentRepository(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
-	var equipment []*models.Equipment
+	var listEquipment []*models.Equipment
 	count := uint64(faker.Number().NumberInt(2))
 	for i := uint64(0); i < count; i++ {
-		equipment = append(equipment, mock_models.NewEquipment(t))
+		listEquipment = append(listEquipment, mock_models.NewEquipment(t))
 	}
 	filter := mock_models.NewEquipmentFilter(t)
 	type fields struct {
@@ -171,7 +171,7 @@ func TestEquipmentUseCase_List(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				equipmentRepository.EXPECT().List(ctx, filter).Return(equipment, nil)
+				equipmentRepository.EXPECT().List(ctx, filter).Return(listEquipment, nil)
 				equipmentRepository.EXPECT().Count(ctx, filter).Return(count, nil)
 			},
 			fields: fields{
@@ -182,7 +182,7 @@ func TestEquipmentUseCase_List(t *testing.T) {
 				ctx:    ctx,
 				filter: filter,
 			},
-			want:    equipment,
+			want:    listEquipment,
 			want1:   count,
 			wantErr: nil,
 		},
@@ -206,7 +206,7 @@ func TestEquipmentUseCase_List(t *testing.T) {
 		{
 			name: "count error",
 			setup: func() {
-				equipmentRepository.EXPECT().List(ctx, filter).Return(equipment, nil)
+				equipmentRepository.EXPECT().List(ctx, filter).Return(listEquipment, nil)
 				equipmentRepository.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
@@ -473,7 +473,7 @@ func TestEquipmentUseCase_Update(t *testing.T) {
 			args: args{
 				ctx: ctx,
 				update: &models.EquipmentUpdate{
-					ID: faker.Number().Number(1),
+					ID: models.UUID(faker.Number().Number(1)),
 				},
 			},
 			want:    nil,
@@ -513,7 +513,7 @@ func TestEquipmentUseCase_Delete(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		id  string
+		id  models.UUID
 	}
 	tests := []struct {
 		name    string

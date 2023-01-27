@@ -13,6 +13,7 @@ import (
 	"github.com/018bf/example/internal/domain/repositories"
 
 	"github.com/018bf/example/internal/domain/errs"
+	"github.com/018bf/example/pkg/postgresql"
 	"github.com/018bf/example/pkg/utils"
 	"github.com/jmoiron/sqlx"
 )
@@ -40,14 +41,14 @@ func (r *SessionRepository) Create(
 	defer cancel()
 	q := sq.Insert("public.sessions").
 		Columns(
-			"description",
 			"title",
+			"description",
 			"updated_at",
 			"created_at",
 		).
 		Values(
-			session.Description,
 			session.Title,
+			session.Description,
 			session.UpdatedAt,
 			session.CreatedAt,
 		).
@@ -62,15 +63,15 @@ func (r *SessionRepository) Create(
 
 func (r *SessionRepository) Get(
 	ctx context.Context,
-	id string,
+	id models.UUID,
 ) (*models.Session, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	session := &models.Session{}
 	q := sq.Select(
 		"sessions.id",
-		"sessions.description",
 		"sessions.title",
+		"sessions.description",
 		"sessions.updated_at",
 		"sessions.created_at",
 	).
@@ -80,7 +81,7 @@ func (r *SessionRepository) Get(
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.GetContext(ctx, session, query, args...); err != nil {
 		e := errs.FromPostgresError(err).
-			WithParam("session_id", id)
+			WithParam("session_id", string(id))
 		return nil, e
 	}
 	return session, nil
@@ -92,20 +93,29 @@ func (r *SessionRepository) List(
 ) ([]*models.Session, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	var sessions []*models.Session
+	var listSessions []*models.Session
 	const pageSize = uint64(10)
 	if filter.PageSize == nil {
 		filter.PageSize = utils.Pointer(pageSize)
 	}
 	q := sq.Select(
 		"sessions.id",
-		"sessions.description",
 		"sessions.title",
+		"sessions.description",
 		"sessions.updated_at",
 		"sessions.created_at",
 	).
 		From("public.sessions").
 		Limit(pageSize)
+	if filter.Search != nil {
+		q = q.Where(postgresql.Search{
+			Lang:  "english",
+			Query: *filter.Search,
+			Fields: []string{
+				"description",
+			},
+		})
+	}
 	// TODO: add filtering
 	if filter.PageNumber != nil && *filter.PageNumber > 1 {
 		q = q.Offset((*filter.PageNumber - 1) * *filter.PageSize)
@@ -115,11 +125,11 @@ func (r *SessionRepository) List(
 		q = q.OrderBy(filter.OrderBy...)
 	}
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-	if err := r.database.SelectContext(ctx, &sessions, query, args...); err != nil {
+	if err := r.database.SelectContext(ctx, &listSessions, query, args...); err != nil {
 		e := errs.FromPostgresError(err)
 		return nil, e
 	}
-	return sessions, nil
+	return listSessions, nil
 }
 
 func (r *SessionRepository) Update(
@@ -130,8 +140,8 @@ func (r *SessionRepository) Update(
 	defer cancel()
 	q := sq.Update("public.sessions").
 		Where(sq.Eq{"id": session.ID}).
-		Set("sessions.description", session.Description).
 		Set("sessions.title", session.Title).
+		Set("sessions.description", session.Description).
 		Set("updated_at", session.UpdatedAt)
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
@@ -155,7 +165,7 @@ func (r *SessionRepository) Update(
 
 func (r *SessionRepository) Delete(
 	ctx context.Context,
-	id string,
+	id models.UUID,
 ) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()

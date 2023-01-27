@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/018bf/example/internal/domain/errs"
+	"github.com/018bf/example/pkg/examplepb"
 	"github.com/018bf/example/pkg/log"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/status"
@@ -26,6 +27,8 @@ import (
 func NewServer(
 	logger log.Logger,
 	authMiddleware *AuthMiddleware,
+	authHandler examplepb.AuthServiceServer,
+	userHandler examplepb.UserServiceServer, sessionHandler examplepb.SessionServiceServer, equipmentHandler examplepb.EquipmentServiceServer, planHandler examplepb.PlanServiceServer, dayHandler examplepb.DayServiceServer, archHandler examplepb.ArchServiceServer,
 ) *grpc.Server {
 	server := grpc.NewServer(
 		grpc.UnaryInterceptor(
@@ -46,6 +49,13 @@ func NewServer(
 		healthServer.SetServingStatus(service, grpc_health_v1.HealthCheckResponse_SERVING)
 	}
 	grpc_health_v1.RegisterHealthServer(server, healthServer)
+	examplepb.RegisterAuthServiceServer(server, authHandler)
+	examplepb.RegisterUserServiceServer(server, userHandler)
+	examplepb.RegisterSessionServiceServer(server, sessionHandler)
+	examplepb.RegisterEquipmentServiceServer(server, equipmentHandler)
+	examplepb.RegisterPlanServiceServer(server, planHandler)
+	examplepb.RegisterDayServiceServer(server, dayHandler)
+	examplepb.RegisterArchServiceServer(server, archHandler)
 	return server
 }
 

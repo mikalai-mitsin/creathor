@@ -30,7 +30,7 @@ func NewUserInterceptor(
 
 func (i *UserInterceptor) Get(
     ctx context.Context,
-    id string,
+    id models.UUID,
     requestUser *models.User,
 ) (*models.User, error) {
     if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDUserDetail); err != nil {
@@ -110,7 +110,7 @@ func (i *UserInterceptor) Update(
 
 func (i *UserInterceptor) Delete(
     ctx context.Context,
-    id string,
+    id models.UUID,
     requestUser *models.User,
 ) error {
     if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDUserDelete); err != nil {

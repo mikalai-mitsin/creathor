@@ -13,7 +13,7 @@ import (
 func NewEquipment(t *testing.T) *models.Equipment {
 	t.Helper()
 	return &models.Equipment{
-		ID:        uuid.New().String(),
+		ID:        models.UUID(uuid.NewString()),
 		Name:      faker.Lorem().String(),
 		Repeat:    faker.RandomInt(2, 100),
 		Weight:    faker.RandomInt(2, 100),
@@ -34,7 +34,7 @@ func NewEquipmentCreate(t *testing.T) *models.EquipmentCreate {
 func NewEquipmentUpdate(t *testing.T) *models.EquipmentUpdate {
 	t.Helper()
 	return &models.EquipmentUpdate{
-		ID:     uuid.New().String(),
+		ID:     models.UUID(uuid.NewString()),
 		Name:   utils.Pointer(faker.Lorem().String()),
 		Repeat: utils.Pointer(faker.RandomInt(2, 100)),
 		Weight: utils.Pointer(faker.RandomInt(2, 100)),
@@ -47,6 +47,7 @@ func NewEquipmentFilter(t *testing.T) *models.EquipmentFilter {
 		PageSize:   utils.Pointer(uint64(faker.RandomInt64(2, 100))),
 		PageNumber: utils.Pointer(uint64(faker.RandomInt64(2, 100))),
 		OrderBy:    faker.Lorem().Words(5),
-		IDs:        []string{uuid.New().String(), uuid.New().String(), uuid.New().String()},
+		IDs:        []models.UUID{models.UUID(uuid.NewString()), models.UUID(uuid.NewString()), models.UUID(uuid.NewString())},
+		Search:     utils.Pointer(faker.Lorem().String()),
 	}
 }

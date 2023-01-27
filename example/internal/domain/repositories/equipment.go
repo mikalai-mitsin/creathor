@@ -12,7 +12,7 @@ import (
 type EquipmentRepository interface {
 	Get(
 		ctx context.Context,
-		id string,
+		id models.UUID,
 	) (*models.Equipment, error)
 	List(
 		ctx context.Context,
@@ -32,6 +32,6 @@ type EquipmentRepository interface {
 	) error
 	Delete(
 		ctx context.Context,
-		id string,
+		id models.UUID,
 	) error
 }

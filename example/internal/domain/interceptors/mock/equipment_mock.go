@@ -51,7 +51,7 @@ func (mr *MockEquipmentInterceptorMockRecorder) Create(arg0, arg1, arg2 interfac
 }
 
 // Delete mocks base method.
-func (m *MockEquipmentInterceptor) Delete(arg0 context.Context, arg1 string, arg2 *models.User) error {
+func (m *MockEquipmentInterceptor) Delete(arg0 context.Context, arg1 models.UUID, arg2 *models.User) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -65,7 +65,7 @@ func (mr *MockEquipmentInterceptorMockRecorder) Delete(arg0, arg1, arg2 interfac
 }
 
 // Get mocks base method.
-func (m *MockEquipmentInterceptor) Get(arg0 context.Context, arg1 string, arg2 *models.User) (*models.Equipment, error) {
+func (m *MockEquipmentInterceptor) Get(arg0 context.Context, arg1 models.UUID, arg2 *models.User) (*models.Equipment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*models.Equipment)

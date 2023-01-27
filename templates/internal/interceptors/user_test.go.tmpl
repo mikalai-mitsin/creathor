@@ -78,7 +78,7 @@ func TestUserInterceptor_Get(t *testing.T) {
     }
     type args struct {
         ctx context.Context
-        id  string
+        id  models.UUID
         in2 *models.User
     }
     tests := []struct {
@@ -450,7 +450,7 @@ func TestUserInterceptor_Delete(t *testing.T) {
     }
     type args struct {
         ctx context.Context
-        id  string
+        id  models.UUID
         in2 *models.User
     }
     tests := []struct {

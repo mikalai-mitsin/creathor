@@ -19,7 +19,7 @@ func New{{ .RESTHandlerTypeName }}({{ .InterceptorVariableName }} interceptors.{
 	return &{{ .RESTHandlerTypeName }}{ {{- .InterceptorVariableName -}}: {{ .InterceptorVariableName }}, logger: logger}
 }
 
-func (h *{{ .RESTHandlerTypeName }}) Register(router *gin.Engine) {
+func (h *{{ .RESTHandlerTypeName }}) Register(router *gin.RouterGroup) {
 	group := router.Group("/{{ .RESTHandlerPath }}")
 	group.POST("/", h.Create)
 	group.GET("/", h.List)
@@ -28,6 +28,14 @@ func (h *{{ .RESTHandlerTypeName }}) Register(router *gin.Engine) {
 	group.DELETE("/:id", h.Delete)
 }
 
+// Create        godoc
+// @Summary      Store a new {{ .ModelName }}
+// @Description  Takes a {{ .ModelName }} JSON and store in DB. Return saved JSON.
+// @Tags         {{ .ModelName }}
+// @Produce      json
+// @Param        {{ .ModelName }}  body   models.{{ .CreateTypeName }}  true  "{{ .ModelName }} JSON"
+// @Success      201   {object}  models.{{ .ModelName }}
+// @Router       /{{ .RESTHandlerPath }} [post]
 func (h *{{ .RESTHandlerTypeName }}) Create(ctx *gin.Context) {
 {{- if .Auth }}
 	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
@@ -36,14 +44,22 @@ func (h *{{ .RESTHandlerTypeName }}) Create(ctx *gin.Context) {
 	if err := ctx.Bind(create); err != nil {
 		return
 	}
-	marks, err := h.{{ .InterceptorVariableName }}.Create(ctx.Request.Context(), create{{- if .Auth -}}, requestUser{{- end -}})
+    {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Create(ctx.Request.Context(), create{{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
-	ctx.JSON(http.StatusOK, marks)
+	ctx.JSON(http.StatusCreated, {{ .Variable }})
 }
 
+// List          godoc
+// @Summary      List {{ .ModelName }} array
+// @Description  Responds with the list of all {{ .ModelName }} as JSON.
+// @Tags         {{ .ModelName }}
+// @Produce      json
+// @Param        filter  query   models.{{ .FilterTypeName }} false "{{ .ModelName }} filter"
+// @Success      200  {array}  models.{{ .ModelName }}
+// @Router       /{{ .RESTHandlerPath }} [get]
 func (h *{{ .RESTHandlerTypeName }}) List(ctx *gin.Context) {
 {{- if .Auth }}
 	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
@@ -52,27 +68,44 @@ func (h *{{ .RESTHandlerTypeName }}) List(ctx *gin.Context) {
 	if err := ctx.Bind(filter); err != nil {
 		return
 	}
-	marks, count, err := h.{{ .InterceptorVariableName }}.List(ctx.Request.Context(), filter{{- if .Auth -}}, requestUser{{- end -}})
+    {{ .ListVariable }}, count, err := h.{{ .InterceptorVariableName }}.List(ctx.Request.Context(), filter{{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
 	ctx.Header("count", fmt.Sprint(count))
-	ctx.JSON(http.StatusOK, marks)
+	ctx.JSON(http.StatusOK, {{ .ListVariable }})
 }
 
+// Get           godoc
+// @Summary      Get single {{ .ModelName }} by UUID
+// @Description  Returns the {{ .ModelName }} whose UUID value matches the UUID.
+// @Tags         {{ .ModelName }}
+// @Produce      json
+// @Param        uuid  path      string  true  "search {{ .ModelName }} by UUID"
+// @Success      200  {object}  models.{{ .ModelName }}
+// @Router       /{{ .RESTHandlerPath }}/{uuid} [get]
 func (h *{{ .RESTHandlerTypeName }}) Get(c *gin.Context) {
 {{- if .Auth }}
 	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
 {{- end }}
-	marks, err := h.{{ .InterceptorVariableName }}.Get(c.Request.Context(), c.Param("id"){{- if .Auth -}}, requestUser{{- end -}})
+    {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Get(c.Request.Context(), models.UUID(c.Param("id")){{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	c.JSON(http.StatusOK, marks)
+	c.JSON(http.StatusOK, {{ .Variable }})
 }
 
+// Update        godoc
+// @Summary      Update {{ .ModelName }} by UUID
+// @Description  Returns the updated {{ .ModelName }}.
+// @Tags         {{ .ModelName }}
+// @Produce      json
+// @Param        uuid  path      string  true  "update {{ .ModelName }} by UUID"
+// @Param        {{ .ModelName }}  body   models.{{ .UpdateTypeName }}  true  "{{ .ModelName }} JSON"
+// @Success      201  {object}  models.{{ .ModelName }}
+// @Router       /{{ .RESTHandlerPath }}/{uuid} [PATCH]
 func (h *{{ .RESTHandlerTypeName }}) Update(c *gin.Context) {
 {{- if .Auth }}
 	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
@@ -81,20 +114,27 @@ func (h *{{ .RESTHandlerTypeName }}) Update(c *gin.Context) {
 	if err := c.Bind(update); err != nil {
 		return
 	}
-	update.ID = c.Param("id")
-	marks, err := h.{{ .InterceptorVariableName }}.Update(c.Request.Context(), update{{- if .Auth -}}, requestUser{{- end -}})
+	update.ID = models.UUID(c.Param("id"))
+    {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Update(c.Request.Context(), update{{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	c.JSON(http.StatusOK, marks)
+	c.JSON(http.StatusOK, {{ .Variable }})
 }
 
+// Delete        godoc
+// @Summary      Delete single {{ .ModelName }} by UUID
+// @Description  Delete the {{ .ModelName }} whose UUID value matches the UUID.
+// @Tags         {{ .ModelName }}
+// @Param        uuid  path      string  true  "delete {{ .ModelName }} by UUID"
+// @Success      204
+// @Router       /{{ .RESTHandlerPath }}/{uuid} [delete]
 func (h *{{ .RESTHandlerTypeName }}) Delete(c *gin.Context) {
 {{- if .Auth }}
 	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
 {{- end }}
-	err := h.{{ .InterceptorVariableName }}.Delete(c.Request.Context(), c.Param("id"){{- if .Auth -}}, requestUser{{- end -}})
+	err := h.{{ .InterceptorVariableName }}.Delete(c.Request.Context(), models.UUID(c.Param("id")){{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return

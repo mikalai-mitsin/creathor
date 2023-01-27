@@ -43,6 +43,9 @@ func (m *AuthMiddleware) Auth(ctx context.Context) (context.Context, error) {
 	if err != nil {
 		return context.WithValue(ctx, UserKey, models.Guest), nil
 	}
+	if stringToken == "" {
+		return context.WithValue(ctx, UserKey, models.Guest), nil
+	}
 	token = models.Token(stringToken)
 	user, err := m.authInterceptor.Auth(ctx, token)
 	if err != nil {

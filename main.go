@@ -6,24 +6,17 @@ import (
 	_ "embed"
 	"fmt"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/mod/modfile"
 	"log"
 	"os"
 	"os/exec"
-	"path"
 	"strings"
 )
 
-const version = "0.3.3"
+const version = "0.4.0"
 
 var (
-	serviceName     string
-	moduleName      string
-	goVersion       string
 	destinationPath = "."
-	models          cli.StringSlice
-	authEnabled     bool
-	ci              string
+	configPath      = "./creathor.yaml"
 )
 
 //go:embed templates/*
@@ -42,78 +35,15 @@ func main() {
 				Destination: &destinationPath,
 				Required:    false,
 			},
-			&cli.BoolFlag{
-				Name:        "auth",
-				Aliases:     []string{"a"},
-				Usage:       "enable auth",
-				Destination: &authEnabled,
-				Required:    false,
-			},
 			&cli.StringFlag{
-				Name:        "ci",
-				Usage:       "CI/CD",
-				Destination: &ci,
+				Name:        "c",
+				Usage:       "config path",
+				Destination: &configPath,
 				Required:    false,
+				Value:       configPath,
 			},
 		},
-		Commands: []*cli.Command{
-			{
-				Name:   "init",
-				Usage:  "create base files and directories",
-				Action: initProject,
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:        "name",
-						Aliases:     []string{"n"},
-						Usage:       "service name",
-						Destination: &serviceName,
-						Required:    true,
-					},
-					&cli.StringFlag{
-						Name:        "module",
-						Usage:       "module name",
-						Destination: &moduleName,
-						Required:    true,
-					},
-					&cli.StringFlag{
-						Name:        "go",
-						Usage:       "go",
-						Destination: &goVersion,
-						Required:    false,
-						Value:       "1.19",
-					},
-					&cli.StringSliceFlag{
-						Name:        "model",
-						Aliases:     []string{"m"},
-						Usage:       "generate models",
-						Required:    false,
-						Destination: &models,
-					},
-				},
-			},
-			{
-				Name:   "model",
-				Usage:  "create base model and CRUD interfaces",
-				Action: initModels,
-				Flags: []cli.Flag{
-					&cli.StringSliceFlag{
-						Name:        "model",
-						Aliases:     []string{"m"},
-						Usage:       "model name",
-						Destination: &models,
-						Required:    true,
-					},
-					&cli.StringFlag{
-						Name:        "module",
-						Usage:       "module name",
-						Destination: &moduleName,
-						Required:    false,
-						Hidden:      true,
-						Value:       getModuleName(),
-					},
-				},
-			},
-		},
+		Action: initProject,
 	}
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
@@ -121,51 +51,38 @@ func main() {
 }
 
 func initProject(ctx *cli.Context) error {
-	data := &Project{Name: serviceName, Module: moduleName, GoVersion: goVersion, Auth: authEnabled}
-	if err := CreateLayout(data); err != nil {
-		return err
-	}
-	if err := CreateCI(data); err != nil {
-		return err
-	}
-	if err := CreateDI(data); err != nil {
-		return err
-	}
-	if err := CreateBuild(data); err != nil {
-		return err
-	}
-	if err := CreateDeployment(data); err != nil {
-		return err
-	}
-	for _, model := range models.Value() {
-		if err := CreateCRUD(ParseModel(model)); err != nil {
-			return err
-		}
-	}
-	if err := postInit(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func initModels(ctx *cli.Context) error {
-	for _, model := range models.Value() {
-		if err := CreateCRUD(ParseModel(model)); err != nil {
-			return err
-		}
-	}
-	if err := postInit(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func getModuleName() string {
-	gomod, err := os.ReadFile(path.Join(destinationPath, "go.mod"))
+	project, err := NewProject()
 	if err != nil {
-		return serviceName
+		return err
 	}
-	return modfile.ModulePath(gomod)
+	if err := CreateLayout(project); err != nil {
+		return err
+	}
+	if err := CreateCI(project); err != nil {
+		return err
+	}
+	if err := CreateDI(project); err != nil {
+		return err
+	}
+	if err := CreateBuild(project); err != nil {
+		return err
+	}
+	if err := CreateDeployment(project); err != nil {
+		return err
+	}
+	for _, model := range project.Models {
+		model.Module = project.Module
+		model.Auth = project.Auth
+		model.ProjectName = project.Name
+		model.ProtoPackage = project.ProtoPackage()
+		if err := CreateCRUD(model); err != nil {
+			return err
+		}
+	}
+	if err := postInit(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func postInit() error {
@@ -174,19 +91,34 @@ func postInit() error {
 	generate := exec.Command("go", "generate", "./...")
 	generate.Dir = destinationPath
 	generate.Stderr = &errb
+	fmt.Println(strings.Join(generate.Args, " "))
 	if err := generate.Run(); err != nil {
-		fmt.Println(strings.Join(generate.Args, " "))
 		fmt.Println(errb.String())
 	}
 	tidy := exec.Command("go", "mod", "tidy")
 	tidy.Dir = destinationPath
 	tidy.Stderr = &errb
+	fmt.Println(strings.Join(tidy.Args, " "))
 	if err := tidy.Run(); err != nil {
-		fmt.Println(strings.Join(tidy.Args, " "))
+		fmt.Println(errb.String())
+	}
+	swag := exec.Command("swag", "init", "-d", "./internal/interfaces/rest", "-g", "server.go", "--parseDependency", "-o", "./api", "-ot", "yaml")
+	swag.Dir = destinationPath
+	swag.Stderr = &errb
+	fmt.Println(strings.Join(swag.Args, " "))
+	if err := swag.Run(); err != nil {
+		fmt.Println(errb.String())
+	}
+	buf := exec.Command("buf", "generate")
+	buf.Dir = destinationPath
+	buf.Stderr = &errb
+	fmt.Println(strings.Join(buf.Args, " "))
+	if err := buf.Run(); err != nil {
 		fmt.Println(errb.String())
 	}
 	clean := exec.Command("golangci-lint", "run", "./...", "--fix")
 	clean.Dir = destinationPath
+	fmt.Println(strings.Join(clean.Args, " "))
 	_ = clean.Run()
 	return nil
 }

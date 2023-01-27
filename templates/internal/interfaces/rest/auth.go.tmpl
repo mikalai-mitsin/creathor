@@ -18,12 +18,20 @@ func NewAuthHandler(authInterceptor interceptors.AuthInterceptor, logger log.Log
 	return &AuthHandler{authInterceptor: authInterceptor, logger: logger}
 }
 
-func (h *AuthHandler) Register(router *gin.Engine) {
+func (h *AuthHandler) Register(router *gin.RouterGroup) {
 	group := router.Group("/auth")
 	group.POST("/", h.CreateTokenPair)
 	group.PATCH("/", h.RefreshTokenPair)
 }
 
+// CreateTokenPair godoc
+// @Summary        Create token pair
+// @Description    Auth user return access and refresh token.
+// @Tags           Auth
+// @Produce        json
+// @Param          Login  body   models.Login  true  "Login JSON"
+// @Success        200   {object}  models.TokenPair
+// @Router         /auth [post]
 func (h *AuthHandler) CreateTokenPair(ctx *gin.Context) {
 	create := &models.Login{}
 	if err := ctx.Bind(create); err != nil {
@@ -37,10 +45,20 @@ func (h *AuthHandler) CreateTokenPair(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, marks)
 }
 
+type Refresh struct {
+	Token models.Token `json:"token"`
+}
+
+// RefreshTokenPair godoc
+// @Summary        Refresh token
+// @Description    Return new token pair.
+// @Tags           Auth
+// @Produce        json
+// @Param          Refresh  body   Refresh  true  "Refresh token JSON"
+// @Success        200   {object}  models.TokenPair
+// @Router         /auth [patch]
 func (h *AuthHandler) RefreshTokenPair(ctx *gin.Context) {
-	form := &struct {
-		Token models.Token `json:"token"`
-	}{}
+	form := &Refresh{}
 	if err := ctx.Bind(form); err != nil {
 		return
 	}

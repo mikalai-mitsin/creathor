@@ -88,7 +88,7 @@ func (u AuthUseCase) Auth(
     if err != nil {
         return nil, err
     }
-    user, err := u.userRepository.Get(ctx, userID)
+    user, err := u.userRepository.Get(ctx, models.UUID(userID))
     if err != nil {
         return nil, err
     }

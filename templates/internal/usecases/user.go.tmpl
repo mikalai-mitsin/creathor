@@ -33,7 +33,7 @@ func NewUserUseCase(
 
 func (u *UserUseCase) Get(
     ctx context.Context,
-    id string,
+    id models.UUID,
 ) (*models.User, error ) {
     user, err := u.userRepository.Get(ctx, id)
     if err != nil {
@@ -123,7 +123,7 @@ func (u *UserUseCase) Update(
 
 func (u *UserUseCase) Delete(
     ctx context.Context,
-    id string,
+    id models.UUID,
 ) error {
     if err := u.userRepository.Delete(ctx, id); err != nil {
         return err

@@ -86,7 +86,7 @@ func (r *PostgresUserRepository) Create(ctx context.Context, user *models.User) 
     return nil
 }
 
-func (r *PostgresUserRepository) Get(ctx context.Context, id string) (*models.User, error) {
+func (r *PostgresUserRepository) Get(ctx context.Context, id models.UUID) (*models.User, error) {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     user := &models.User{}
@@ -214,7 +214,7 @@ func (r *PostgresUserRepository) Update(ctx context.Context, user *models.User) 
     return nil
 }
 
-func (r *PostgresUserRepository) Delete(ctx context.Context, id string) error {
+func (r *PostgresUserRepository) Delete(ctx context.Context, id models.UUID) error {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     q := sq.Delete("public.users").Where(sq.Eq{"id": id})

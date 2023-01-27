@@ -279,7 +279,7 @@ func TestPermissionRepository_HasPermission(t *testing.T) {
                 Params: map[string]string{
                     "error":         "error",
                     "permission_id": "user_list",
-                    "user_id":       user.ID,
+                    "user_id":       string(user.ID),
                 },
             },
         },

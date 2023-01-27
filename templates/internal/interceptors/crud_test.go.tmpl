@@ -89,7 +89,7 @@ func Test{{ .InterceptorTypeName }}_Get(t *testing.T) {
     }
     type args struct {
         ctx context.Context
-        id  string
+        id  models.UUID
 {{- if .Auth }}
         requestUser *models.User
 {{- end }}
@@ -128,7 +128,7 @@ func Test{{ .InterceptorTypeName }}_Get(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
-                id:  {{ .Variable }}.ID,
+                id:  models.UUID({{ .Variable }}.ID),
 {{- if .Auth }}
                 requestUser: requestUser,
 {{- end }}
@@ -611,7 +611,7 @@ func Test{{ .InterceptorTypeName }}_Delete(t *testing.T) {
     }
     type args struct {
         ctx context.Context
-        id  string
+        id  models.UUID
         requestUser *models.User
     }
     tests := []struct {

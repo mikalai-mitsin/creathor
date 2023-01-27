@@ -46,7 +46,7 @@ func TestAuthUseCase_Auth(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                authRepository.EXPECT().GetSubject(ctx, models.Token("mytoken")).Return(user.ID, nil).Times(1)
+                authRepository.EXPECT().GetSubject(ctx, models.Token("mytoken")).Return(string(user.ID), nil).Times(1)
                 userRepository.EXPECT().Get(ctx, user.ID).Return(user, nil).Times(1)
             },
             fields: fields{
@@ -84,7 +84,7 @@ func TestAuthUseCase_Auth(t *testing.T) {
         {
             name: "user not found",
             setup: func() {
-                authRepository.EXPECT().GetSubject(ctx, models.Token("mytoken")).Return(user.ID, nil).Times(1)
+                authRepository.EXPECT().GetSubject(ctx, models.Token("mytoken")).Return(string(user.ID), nil).Times(1)
                 userRepository.EXPECT().Get(ctx, user.ID).Return(nil, errs.NewEntityNotFound()).Times(1)
             },
             fields: fields{

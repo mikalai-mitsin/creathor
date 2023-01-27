@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package examplepb;
+
+option go_package = "github.com/018bf/example/pkg/examplepb";
+
+message CreateToken {
+  string email = 1;
+  string password = 2;
+}
+
+message AccessToken {
+  string token = 1;
+}
+
+message RefreshToken {
+  string token = 1;
+}
+
+message RevokeToken {
+  string token = 1;
+}
+
+message TokenPair {
+  string access = 1;
+  string refresh = 2;
+}
+
+service AuthService {
+  rpc CreateToken(examplepb.CreateToken) returns (examplepb.TokenPair);
+  rpc RefreshToken(examplepb.RefreshToken) returns (examplepb.TokenPair);
+}

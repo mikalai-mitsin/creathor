@@ -31,7 +31,7 @@ func NewSessionUseCase(
 
 func (u *SessionUseCase) Get(
 	ctx context.Context,
-	id string,
+	id models.UUID,
 ) (*models.Session, error) {
 	session, err := u.sessionRepository.Get(ctx, id)
 	if err != nil {
@@ -44,7 +44,7 @@ func (u *SessionUseCase) List(
 	ctx context.Context,
 	filter *models.SessionFilter,
 ) ([]*models.Session, uint64, error) {
-	sessions, err := u.sessionRepository.List(ctx, filter)
+	listSessions, err := u.sessionRepository.List(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -52,7 +52,7 @@ func (u *SessionUseCase) List(
 	if err != nil {
 		return nil, 0, err
 	}
-	return sessions, count, nil
+	return listSessions, count, nil
 }
 
 func (u *SessionUseCase) Create(
@@ -65,8 +65,8 @@ func (u *SessionUseCase) Create(
 	now := u.clock.Now().UTC()
 	session := &models.Session{
 		ID:          "",
-		Description: create.Description,
 		Title:       create.Title,
+		Description: create.Description,
 		UpdatedAt:   now,
 		CreatedAt:   now,
 	}
@@ -87,11 +87,11 @@ func (u *SessionUseCase) Update(
 	if err != nil {
 		return nil, err
 	}
-	if update.Description != nil {
-		session.Description = *update.Description
-	}
 	if update.Title != nil {
 		session.Title = *update.Title
+	}
+	if update.Description != nil {
+		session.Description = *update.Description
 	}
 	session.UpdatedAt = u.clock.Now()
 	if err := u.sessionRepository.Update(ctx, session); err != nil {
@@ -100,7 +100,7 @@ func (u *SessionUseCase) Update(
 	return session, nil
 }
 
-func (u *SessionUseCase) Delete(ctx context.Context, id string) error {
+func (u *SessionUseCase) Delete(ctx context.Context, id models.UUID) error {
 	if err := u.sessionRepository.Delete(ctx, id); err != nil {
 		return err
 	}

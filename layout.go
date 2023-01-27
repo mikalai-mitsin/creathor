@@ -1,26 +1,80 @@
 package main
 
 import (
+	"fmt"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/iancoleman/strcase"
+	"gopkg.in/yaml.v3"
+	"log"
 	"os"
 	"path"
 )
 
 type Project struct {
-	Name      string
-	Module    string
-	GoVersion string
-	Auth      bool
+	Name      string   `yaml:"name"`
+	Module    string   `yaml:"module"`
+	GoVersion string   `yaml:"goVersion"`
+	Auth      bool     `yaml:"auth"`
+	CI        string   `yaml:"ci"`
+	Models    []*Model `yaml:"models"`
 }
 
-func CreateLayout(data *Project) error {
+func NewProject() (*Project, error) {
+	project := &Project{
+		Name:      "",
+		Module:    "",
+		GoVersion: "",
+		Auth:      false,
+		CI:        "",
+		Models:    nil,
+	}
+	file, err := os.ReadFile(path.Join(destinationPath, configPath))
+	if err != nil {
+		return nil, err
+	}
+	if err := yaml.Unmarshal(file, project); err != nil {
+		log.Fatalf("error: %v", err)
+	}
+	for _, model := range project.Models {
+		model.Module = project.Module
+		model.Auth = project.Auth
+		model.ProjectName = project.Name
+		model.ProtoPackage = project.ProtoPackage()
+	}
+	return project, nil
+}
+
+func (p *Project) Validate() error {
+	err := validation.ValidateStruct(
+		p,
+		validation.Field(&p.Name, validation.Required),
+		validation.Field(&p.Module, validation.Required),
+		validation.Field(&p.GoVersion, validation.Required),
+		validation.Field(&p.Auth, validation.Required),
+		validation.Field(&p.CI),
+		validation.Field(&p.Models),
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Project) ProtoPackage() string {
+	return fmt.Sprintf("%spb", strcase.ToSnake(p.Name))
+}
+
+func CreateLayout(project *Project) error {
 	directories := []string{
 		path.Join(destinationPath, "build"),
 		path.Join(destinationPath, "cmd"),
-		path.Join(destinationPath, "cmd", data.Name),
+		path.Join(destinationPath, "cmd", project.Name),
 		path.Join(destinationPath, "configs"),
 		path.Join(destinationPath, "dist"),
 		path.Join(destinationPath, "docs"),
 		path.Join(destinationPath, "docs", ".chglog"),
+		path.Join(destinationPath, "api"),
+		path.Join(destinationPath, "api", "proto"),
 		path.Join(destinationPath, "internal"),
 		path.Join(destinationPath, "internal", "configs"),
 		path.Join(destinationPath, "internal", "domain", "errs"),
@@ -51,8 +105,23 @@ func CreateLayout(data *Project) error {
 	files := []*Template{
 		{
 			SourcePath:      "templates/cmd/service/main.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "cmd", data.Name, "main.go"),
+			DestinationPath: path.Join(destinationPath, "cmd", project.Name, "main.go"),
 			Name:            "service main",
+		},
+		{
+			SourcePath:      "templates/api/proto/buf.yaml.tmpl",
+			DestinationPath: path.Join(destinationPath, "api", "proto", "buf.yaml"),
+			Name:            "buf.yaml",
+		},
+		{
+			SourcePath:      "templates/buf.gen.yaml.tmpl",
+			DestinationPath: path.Join(destinationPath, "buf.gen.yaml"),
+			Name:            "buf.gen.yaml",
+		},
+		{
+			SourcePath:      "templates/buf.work.yaml.tmpl",
+			DestinationPath: path.Join(destinationPath, "buf.work.yaml"),
+			Name:            "buf.work.yaml",
 		},
 		{
 			SourcePath:      "templates/configs/config.toml.tmpl",
@@ -156,7 +225,7 @@ func CreateLayout(data *Project) error {
 		},
 		{
 			SourcePath:      "templates/internal/interfaces/postgres/migrations/init.sql.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "init.sql"),
+			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "000001_init.up.sql"),
 			Name:            "postgres init migration",
 		},
 		{
@@ -194,8 +263,13 @@ func CreateLayout(data *Project) error {
 			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "server.go"),
 			Name:            "rest server",
 		},
+		{
+			SourcePath:      "templates/internal/domain/models/types.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "domain", "models", "types.go"),
+			Name:            "model types",
+		},
 	}
-	if authEnabled {
+	if project.Auth {
 		files = append(
 			files,
 			&Template{
@@ -338,10 +412,80 @@ func CreateLayout(data *Project) error {
 				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "user.go"),
 				Name:            "rest user handler",
 			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/permissions.up.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "000002_permissions.up.sql"),
+				Name:            "postgres permissions migration up",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/permissions.down.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "000002_permissions.down.sql"),
+				Name:            "postgres permissions migration down",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/groups.up.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "000003_groups.up.sql"),
+				Name:            "postgres groups migration up",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/groups.down.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "000003_groups.down.sql"),
+				Name:            "postgres groups migration down",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/group_permissions.up.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "000004_group_permissions.up.sql"),
+				Name:            "postgres group permissions migration up",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/group_permissions.down.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "000004_group_permissions.down.sql"),
+				Name:            "postgres group permissions migration down",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/users.up.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "000005_users.up.sql"),
+				Name:            "postgres users migration up",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/postgres/migrations/users.down.sql.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "000005_users.down.sql"),
+				Name:            "postgres users migration down",
+			},
+			&Template{
+				SourcePath:      "templates/api/proto/auth.proto.tmpl",
+				DestinationPath: path.Join(destinationPath, "api", "proto", "auth.proto"),
+				Name:            "auth.proto",
+			},
+			&Template{
+				SourcePath:      "templates/api/proto/user.proto.tmpl",
+				DestinationPath: path.Join(destinationPath, "api", "proto", "user.proto"),
+				Name:            "user.proto",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/grpc/auth.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "auth.go"),
+				Name:            "grpc auth",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/grpc/auth_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "auth_test.go"),
+				Name:            "grpc auth test",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/grpc/user.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "user.go"),
+				Name:            "grpc user",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/grpc/user_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "user_test.go"),
+				Name:            "grpc user test",
+			},
 		)
 	}
 	for _, file := range files {
-		if err := file.renderToFile(data); err != nil {
+		if err := file.renderToFile(project); err != nil {
 			return err
 		}
 	}

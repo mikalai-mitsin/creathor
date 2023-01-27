@@ -9,7 +9,7 @@ import (
 )
 
 type Equipment struct {
-	ID        string    `json:"id" db:"id,omitempty" form:"id"`
+	ID        UUID      `json:"id" db:"id,omitempty" form:"id"`
 	Name      string    `json:"name" db:"name" form:"name"`
 	Repeat    int       `json:"repeat" db:"repeat" form:"repeat"`
 	Weight    int       `json:"weight" db:"weight" form:"weight"`
@@ -32,10 +32,11 @@ func (c *Equipment) Validate() error {
 }
 
 type EquipmentFilter struct {
-	IDs        []string `json:"ids" form:"ids"`
+	IDs        []UUID   `json:"ids" form:"ids"`
 	PageSize   *uint64  `json:"page_size" form:"page_size"`
 	PageNumber *uint64  `json:"page_number" form:"page_number"`
 	OrderBy    []string `json:"order_by" form:"order_by"`
+	Search     *string  `json:"search" form:"search"`
 }
 
 func (c *EquipmentFilter) Validate() error {
@@ -45,6 +46,7 @@ func (c *EquipmentFilter) Validate() error {
 		validation.Field(&c.PageSize),
 		validation.Field(&c.PageNumber),
 		validation.Field(&c.OrderBy),
+		validation.Field(&c.Search),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -72,7 +74,7 @@ func (c *EquipmentCreate) Validate() error {
 }
 
 type EquipmentUpdate struct {
-	ID     string  `json:"id"`
+	ID     UUID    `json:"id"`
 	Name   *string `json:"name" form:"name"`
 	Repeat *int    `json:"repeat" form:"repeat"`
 	Weight *int    `json:"weight" form:"weight"`

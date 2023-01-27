@@ -181,7 +181,7 @@ func TestPostgresRepository_Delete(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		id  string
+		id  models.UUID
 	}
 	tests := []struct {
 		name    string
@@ -223,7 +223,7 @@ func TestPostgresRepository_Delete(t *testing.T) {
 			wantErr: &errs.Error{
 				Code:    5,
 				Message: "Entity not found.",
-				Params:  map[string]string{"user_id": user.ID},
+				Params:  map[string]string{"user_id": string(user.ID)},
 			},
 		},
 		{
@@ -245,7 +245,7 @@ func TestPostgresRepository_Delete(t *testing.T) {
 				Message: "Unexpected behavior.",
 				Params: map[string]string{
 					"error":   "test error",
-					"user_id": user.ID,
+					"user_id": string(user.ID),
 				},
 			},
 		},
@@ -268,7 +268,7 @@ func TestPostgresRepository_Delete(t *testing.T) {
 				Message: "Unexpected behavior.",
 				Params: map[string]string{
 					"error":   "test error",
-					"user_id": user.ID,
+					"user_id": string(user.ID),
 				},
 			},
 		},
@@ -300,7 +300,7 @@ func TestPostgresRepository_Get(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		id  string
+		id  models.UUID
 	}
 	tests := []struct {
 		name    string
@@ -343,7 +343,7 @@ func TestPostgresRepository_Get(t *testing.T) {
 				Code:    5,
 				Message: "Entity not found.",
 				Params: map[string]string{
-					"user_id": user.ID,
+					"user_id": string(user.ID),
 				},
 			},
 		},
@@ -605,7 +605,7 @@ func TestPostgresRepository_Update(t *testing.T) {
 				Code:    5,
 				Message: "Entity not found.",
 				Params: map[string]string{
-					"user_id": user.ID,
+					"user_id": string(user.ID),
 				},
 			},
 		},
@@ -634,7 +634,7 @@ func TestPostgresRepository_Update(t *testing.T) {
 				Code:    3,
 				Message: "The form sent is not valid, please correct the errors below.",
 				Params: map[string]string{
-					"user_id": user.ID,
+					"user_id": string(user.ID),
 					"email":   "The email field has already been taken.",
 				},
 			},
@@ -662,7 +662,7 @@ func TestPostgresRepository_Update(t *testing.T) {
 				Code:    13,
 				Message: "Unexpected behavior.",
 				Params: map[string]string{
-					"user_id": user.ID,
+					"user_id": string(user.ID),
 					"error":   "test error",
 				},
 			},
@@ -691,7 +691,7 @@ func TestPostgresRepository_Update(t *testing.T) {
 				Message: "Unexpected behavior.",
 				Params: map[string]string{
 					"error":   "test error",
-					"user_id": user.ID,
+					"user_id": string(user.ID),
 				},
 			},
 		},

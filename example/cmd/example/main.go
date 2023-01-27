@@ -28,6 +28,14 @@ func main() {
 			},
 		},
 		Action: runApp,
+		Commands: []*cli.Command{
+			{
+				Name:      "migrate",
+				Usage:     "Run migrations",
+				Action:    runMigrations,
+				ArgsUsage: "",
+			},
+		},
 	}
 	if err := app.Run(os.Args); err != nil {
 		panic(err)
@@ -36,7 +44,17 @@ func main() {
 
 // runApp - run app
 func runApp(context *cli.Context) error {
-	app := containers.NewRESTExample(configPath)
+	app := containers.NewGRPCExample(configPath)
+	err := app.Start(context.Context)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// runMigrations - migrate database
+func runMigrations(context *cli.Context) error {
+	app := containers.NewMigrate(configPath)
 	err := app.Start(context.Context)
 	if err != nil {
 		return err

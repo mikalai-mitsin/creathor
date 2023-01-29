@@ -1,4 +1,4 @@
-package repositories
+package jwt
 
 import (
     "context"
@@ -20,7 +20,7 @@ import (
 const refreshAudience = "refresh"
 const accessAudience = "access"
 
-type JWTAuthRepository struct {
+type AuthRepository struct {
     accessTTL  time.Duration
     refreshTTL time.Duration
     publicKey  *rsa.PublicKey
@@ -29,7 +29,7 @@ type JWTAuthRepository struct {
     logger     log.Logger
 }
 
-func NewJWTAuthRepository(
+func NewAuthRepository(
     config *configs.Config,
     clock clock.Clock,
     logger log.Logger,
@@ -42,7 +42,7 @@ func NewJWTAuthRepository(
     if err != nil {
         panic(err)
     }
-    return &JWTAuthRepository{
+    return &AuthRepository{
         accessTTL:  time.Duration(config.Auth.AccessTTL) * time.Second,
         refreshTTL: time.Duration(config.Auth.RefreshTTL) * time.Second,
         publicKey:  public,
@@ -52,12 +52,12 @@ func NewJWTAuthRepository(
     }
 }
 
-func (r *JWTAuthRepository) Create(_ context.Context, user *models.User) (*models.TokenPair, error) {
+func (r *AuthRepository) Create(_ context.Context, user *models.User) (*models.TokenPair, error) {
     pair := r.createPair(string(user.ID))
     return pair, nil
 }
 
-func (r *JWTAuthRepository) createPair(subject string) *models.TokenPair {
+func (r *AuthRepository) createPair(subject string) *models.TokenPair {
     now := r.clock.Now().UTC()
     accessClaims := jwt.RegisteredClaims{
         Audience:  []string{accessAudience},
@@ -94,7 +94,7 @@ func (r *JWTAuthRepository) createPair(subject string) *models.TokenPair {
     }
 }
 
-func (r *JWTAuthRepository) Validate(_ context.Context, token models.Token) error {
+func (r *AuthRepository) Validate(_ context.Context, token models.Token) error {
     jwtToken, err := r.validate(token)
     if err != nil {
         return err
@@ -106,7 +106,7 @@ func (r *JWTAuthRepository) Validate(_ context.Context, token models.Token) erro
     return nil
 }
 
-func (r *JWTAuthRepository) RefreshToken(_ context.Context, token models.Token) (*models.TokenPair, error) {
+func (r *AuthRepository) RefreshToken(_ context.Context, token models.Token) (*models.TokenPair, error) {
     jwtToken, err := r.validate(token)
     if err != nil {
         return nil, err
@@ -119,7 +119,7 @@ func (r *JWTAuthRepository) RefreshToken(_ context.Context, token models.Token) 
     return pair, nil
 }
 
-func (r *JWTAuthRepository) validate(token models.Token) (*jwt.Token, error) {
+func (r *AuthRepository) validate(token models.Token) (*jwt.Token, error) {
     jwtToken, err := jwt.Parse(token.String(), r.keyFunc)
     if err != nil {
         e := errs.NewBadToken()
@@ -128,7 +128,7 @@ func (r *JWTAuthRepository) validate(token models.Token) (*jwt.Token, error) {
     return jwtToken, nil
 }
 
-func (r *JWTAuthRepository) GetSubject(_ context.Context, token models.Token) (string, error) {
+func (r *AuthRepository) GetSubject(_ context.Context, token models.Token) (string, error) {
     jwtToken, err := jwt.Parse(token.String(), r.keyFunc)
     if err != nil {
         e := errs.NewError(errs.ErrorCodeUnauthenticated, "Invalid token.")
@@ -138,6 +138,6 @@ func (r *JWTAuthRepository) GetSubject(_ context.Context, token models.Token) (s
     return fmt.Sprint(claims["sub"]), nil
 }
 
-func (r *JWTAuthRepository) keyFunc(_ *jwt.Token) (interface{}, error) {
+func (r *AuthRepository) keyFunc(_ *jwt.Token) (interface{}, error) {
     return r.publicKey, nil
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/018bf/creathor/models"
 	"go/ast"
 	"go/parser"
@@ -57,7 +58,7 @@ func CreateDI(data *models.Project) error {
 	return nil
 }
 
-func addToDI(packageName string, constructors ...string) error {
+func addToDI(packageName string, constructor string) error {
 	packagePath := filepath.Join(destinationPath, "internal", packageName)
 	fileset := token.NewFileSet()
 	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
@@ -84,20 +85,28 @@ func addToDI(packageName string, constructors ...string) error {
 												if ok {
 													fun, ok := provideFunc.Fun.(*ast.SelectorExpr)
 													if ok && fun.Sel.Name == "Provide" {
-														for _, constructor := range constructors {
-															var exists bool
-															for _, existedArg := range provideFunc.Args {
-																ident := existedArg.(*ast.Ident)
+														var exists bool
+														for _, existedArg := range provideFunc.Args {
+															ident, ok := existedArg.(*ast.Ident)
+															if ok {
 																if ident.Name == constructor {
 																	exists = true
 																	break
 																}
 															}
-															if !exists {
-																provideFunc.Args = append(provideFunc.Args, &ast.Ident{
-																	Name: constructor,
-																})
+															selector, ok := existedArg.(*ast.SelectorExpr)
+															if ok {
+																ident, ok := selector.X.(*ast.Ident)
+																if ok && fmt.Sprintf("%s.%s", ident.Name, selector.Sel.Name) == constructor {
+																	exists = true
+																	break
+																}
 															}
+														}
+														if !exists {
+															provideFunc.Args = append(provideFunc.Args, &ast.Ident{
+																Name: constructor,
+															})
 														}
 													}
 													break

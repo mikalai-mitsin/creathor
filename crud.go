@@ -66,13 +66,13 @@ func CreateCRUD(model *models.Model) error {
 			Name:            "interceptor test",
 		},
 		{
-			SourcePath:      "templates/internal/repositories/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", model.FileName()),
+			SourcePath:      "templates/internal/repositories/postgres/crud.go.tmpl",
+			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", "postgres", model.FileName()),
 			Name:            "repository",
 		},
 		{
-			SourcePath:      "templates/internal/repositories/crud_test.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", model.TestFileName()),
+			SourcePath:      "templates/internal/repositories/postgres/crud_test.go.tmpl",
+			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", "postgres", model.TestFileName()),
 			Name:            "repository test",
 		},
 		{
@@ -117,7 +117,7 @@ func CreateCRUD(model *models.Model) error {
 	if err := addToDI("interceptors", fmt.Sprintf("New%s", model.InterceptorTypeName())); err != nil {
 		return err
 	}
-	if err := addToDI("repositories", fmt.Sprintf("New%s", model.RepositoryTypeName())); err != nil {
+	if err := addToDI("repositories", fmt.Sprintf("postgres.New%s", model.RepositoryTypeName())); err != nil {
 		return err
 	}
 	if err := addToDI("interfaces/rest", fmt.Sprintf("New%s", model.RESTHandlerTypeName())); err != nil {

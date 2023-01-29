@@ -478,9 +478,7 @@ func Test{{ .GRPCHandlerTypeName }}_Update(t *testing.T) {
 			},
 			args: args{
 				ctx: ctx,
-				input: &{{ .ProtoPackage }}.{{ .UpdateTypeName }}{
-					Id: string(update.ID),
-				}, // TODO: Fill me
+				input: decode{{ .UpdateTypeName }}(update),
 			},
 			want:    decode{{ .ModelName }}({{ .Variable }}),
 			wantErr: nil,
@@ -498,9 +496,7 @@ func Test{{ .GRPCHandlerTypeName }}_Update(t *testing.T) {
 			},
 			args: args{
 				ctx: ctx,
-				input: &{{ .ProtoPackage }}.{{ .UpdateTypeName }}{
-					Id: string(update.ID),
-				}, // TODO: Fill me
+				input: decode{{ .UpdateTypeName }}(update),
 			},
 			want:    nil,
 			wantErr: decodeError(errs.NewUnexpectedBehaviorError("i error")),
@@ -528,6 +524,25 @@ func Test{{ .GRPCHandlerTypeName }}_Update(t *testing.T) {
 
 func Test_decode{{ .ModelName }}(t *testing.T) {
 	{{ .Variable }} := mock_models.New{{ .ModelName }}(t)
+	result := &{{ .ProtoPackage }}.{{ .ModelName }}{
+		Id:          string({{ .Variable }}.ID),
+		UpdatedAt:   timestamppb.New({{ .Variable }}.UpdatedAt),
+		CreatedAt:   timestamppb.New({{ .Variable }}.CreatedAt),
+		{{- range $value := .Params }}
+			{{- if $value.IsSlice }}
+		{{ $value.GRPCParam }}: {{ $value.GRPCType }}{},
+			{{- else }}
+		{{ $value.GRPCParam }}: {{ $value.GRPCType }}({{ $.Variable }}.{{ $value.GetName }}),
+			{{- end }}
+		{{- end }}
+	}
+{{- range $value := .Params }}
+	{{- if $value.IsSlice }}
+	for _, param := range {{ $.Variable }}.{{ $value.GetName }} {
+		result.{{ $value.GRPCParam }} = append(result.{{ $value.GRPCParam }}, {{ $value.GRPCSliceType }}(param))
+	}
+	{{- end }}
+{{- end }}
 	type args struct {
 		{{ .Variable }} *models.{{ .ModelName }}
 	}
@@ -541,18 +556,7 @@ func Test_decode{{ .ModelName }}(t *testing.T) {
 			args: args{
 				{{ .Variable }}: {{ .Variable }},
 			},
-			want: &{{ .ProtoPackage }}.{{ .ModelName }}{
-				Id:          string({{ .Variable }}.ID),
-				UpdatedAt:   timestamppb.New({{ .Variable }}.UpdatedAt),
-				CreatedAt:   timestamppb.New({{ .Variable }}.CreatedAt),
-				{{- range $value := .Params }}
-					{{- if $value.IsSlice }}
-				{{ $value.GRPCParam }}: {{ $value.GRPCType }}{}, // TODO: Fill me
-					{{- else }}
-				{{ $value.GRPCParam }}: {{ $value.GRPCType }}({{ $.Variable }}.{{ $value.GetName }}),
-					{{- end }}
-				{{- end }}
-			},
+			want: result,
 		},
 	}
 	for _, tt := range tests {

@@ -50,6 +50,12 @@ models:
       - name: "name"
         type: "string"
         search: true
+      - name: "tags"
+        type: "[]string"
+      - name: "versions"
+        type: "[]uint"
+      - name: "oldVersions"
+        type: "[]uint64"
       - name: "release"
         type: "time.Time"
       - name: "tested"

@@ -117,13 +117,13 @@ func CreateCRUD(model *models.Model) error {
 	if err := addToDI("interceptors", fmt.Sprintf("New%s", model.InterceptorTypeName())); err != nil {
 		return err
 	}
-	if err := addToDI("repositories", fmt.Sprintf("postgres.New%s", model.RepositoryTypeName())); err != nil {
+	if err := addToDI("postgresRepositories", fmt.Sprintf("New%s", model.RepositoryTypeName())); err != nil {
 		return err
 	}
-	if err := addToDI("interfaces/rest", fmt.Sprintf("New%s", model.RESTHandlerTypeName())); err != nil {
+	if err := addToDI("restInterface", fmt.Sprintf("New%s", model.RESTHandlerTypeName())); err != nil {
 		return err
 	}
-	if err := addToDI("interfaces/grpc", fmt.Sprintf("New%s", model.GRPCHandlerTypeName())); err != nil {
+	if err := addToDI("grpcInterface", fmt.Sprintf("New%s", model.GRPCHandlerTypeName())); err != nil {
 		return err
 	}
 	if err := registerRESTHandler(model.RESTHandlerVariableName(), model.RESTHandlerTypeName()); err != nil {
@@ -166,7 +166,7 @@ func registerRESTHandler(variableName, typeName string) error {
 			for _, decl := range file.Decls {
 				funcDecl, ok := decl.(*ast.FuncDecl)
 				if ok {
-					if funcDecl.Name.String() == "NewRouter" {
+					if funcDecl.Name.String() == "NewServer" {
 						var exists bool
 						for _, existedParam := range funcDecl.Type.Params.List {
 							selector, ok := existedParam.Type.(*ast.StarExpr)

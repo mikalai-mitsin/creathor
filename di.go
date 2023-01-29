@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/018bf/creathor/models"
 	"go/ast"
 	"go/parser"
@@ -29,26 +28,6 @@ func CreateDI(data *models.Project) error {
 			DestinationPath: path.Join(destinationPath, "internal", "containers", "fx.go"),
 			Name:            "Uber FX DI container",
 		},
-		{
-			SourcePath:      "templates/internal/containers/configs.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "configs", "fx.go"),
-			Name:            "Configs FX module",
-		},
-		{
-			SourcePath:      "templates/internal/containers/repositories.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "repositories", "fx.go"),
-			Name:            "Repositories FX module",
-		},
-		{
-			SourcePath:      "templates/internal/containers/usecases.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "usecases", "fx.go"),
-			Name:            "Use Cases FX module",
-		},
-		{
-			SourcePath:      "templates/internal/containers/interceptors.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interceptors", "fx.go"),
-			Name:            "Interceptors FX module",
-		},
 	}
 	for _, tmpl := range files {
 		if err := tmpl.renderToFile(data); err != nil {
@@ -59,7 +38,7 @@ func CreateDI(data *models.Project) error {
 }
 
 func addToDI(packageName string, constructor string) error {
-	packagePath := filepath.Join(destinationPath, "internal", packageName)
+	packagePath := filepath.Join(destinationPath, "internal", "containers")
 	fileset := token.NewFileSet()
 	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
 		return true
@@ -87,27 +66,25 @@ func addToDI(packageName string, constructor string) error {
 													if ok && fun.Sel.Name == "Provide" {
 														var exists bool
 														for _, existedArg := range provideFunc.Args {
-															ident, ok := existedArg.(*ast.Ident)
-															if ok {
-																if ident.Name == constructor {
-																	exists = true
-																	break
-																}
-															}
-															selector, ok := existedArg.(*ast.SelectorExpr)
-															if ok {
-																ident, ok := selector.X.(*ast.Ident)
-																if ok && fmt.Sprintf("%s.%s", ident.Name, selector.Sel.Name) == constructor {
-																	exists = true
-																	break
+															selector, sOk := existedArg.(*ast.SelectorExpr)
+															if sOk {
+																ident, iOk := selector.X.(*ast.Ident)
+																if iOk {
+																	if ident.Name == packageName && selector.Sel.Name == constructor {
+																		exists = true
+																		break
+																	}
 																}
 															}
 														}
 														if !exists {
-															provideFunc.Args = append(provideFunc.Args, &ast.Ident{
-																Name: constructor,
+															provideFunc.Args = append(provideFunc.Args, &ast.SelectorExpr{
+																X:   ast.NewIdent(packageName),
+																Sel: ast.NewIdent(constructor),
 															})
 														}
+													} else {
+														continue
 													}
 													break
 												}

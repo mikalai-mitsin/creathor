@@ -153,11 +153,6 @@ func CreateLayout(project *models.Project) error {
 			Name:            "CHANGELOG.md",
 		},
 		{
-			SourcePath:      "templates/internal/interfaces/postgres/fx.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "fx.go"),
-			Name:            "postgres fx",
-		},
-		{
 			SourcePath:      "templates/internal/interfaces/postgres/postgres.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "postgres.go"),
 			Name:            "postgres",
@@ -173,11 +168,6 @@ func CreateLayout(project *models.Project) error {
 			Name:            "postgres init migration",
 		},
 		{
-			SourcePath:      "templates/internal/interfaces/grpc/fx.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "fx.go"),
-			Name:            "grpc fx",
-		},
-		{
 			SourcePath:      "templates/internal/interfaces/grpc/middleware.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "middleware.go"),
 			Name:            "grpc middleware",
@@ -191,11 +181,6 @@ func CreateLayout(project *models.Project) error {
 			SourcePath:      "templates/internal/interfaces/grpc/server.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "server.go"),
 			Name:            "grpc server",
-		},
-		{
-			SourcePath:      "templates/internal/interfaces/rest/fx.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "fx.go"),
-			Name:            "rest fx",
 		},
 		{
 			SourcePath:      "templates/internal/interfaces/rest/middleware.go.tmpl",

@@ -1,6 +1,7 @@
 package postgres
 
 import (
+    "context"
     "embed"
     "errors"
 
@@ -27,20 +28,22 @@ func NewDatabase(config *configs.Config) (*sqlx.DB, error) {
 
 type MigrateManager struct {
     database *sqlx.DB
+    config   *configs.Config
 }
 
-func NewMigrateManager(database *sqlx.DB) *MigrateManager {
+func NewMigrateManager(database *sqlx.DB, config *configs.Config) *MigrateManager {
     return &MigrateManager{
         database: database,
+        config:   config,
     }
 }
 
-func (m MigrateManager) Up(config *configs.Config) error {
+func (m MigrateManager) Up(_ context.Context) error {
     source, err := iofs.New(MigrationsFS, "migrations")
     if err != nil {
         return err
     }
-    instance, err := migrate.NewWithSourceInstance("iofs", source, config.Database.URI)
+    instance, err := migrate.NewWithSourceInstance("iofs", source, m.config.Database.URI)
     if err != nil {
         return err
     }

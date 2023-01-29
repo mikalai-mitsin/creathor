@@ -3,15 +3,16 @@ package containers
 import (
     "context"
 
-    "{{ .Module }}/internal/interfaces/grpc"
-    "{{ .Module }}/internal/interfaces/rest"
-    "{{ .Module }}/internal/interfaces/postgres"
+	grpcInterface "{{ .Module }}/internal/interfaces/grpc"
+	postgresInterface "{{ .Module }}/internal/interfaces/postgres"
+	restInterface "{{ .Module }}/internal/interfaces/rest"
+	jwtRepositories "{{ .Module }}/internal/repositories/jwt"
+	postgresRepositories "{{ .Module }}/internal/repositories/postgres"
 
     "{{ .Module }}/pkg/log"
     "go.uber.org/fx/fxevent"
 
     "{{ .Module }}/internal/interceptors"
-    "{{ .Module }}/internal/repositories"
     "{{ .Module }}/internal/usecases"
 
     "{{ .Module }}/pkg/clock"
@@ -20,31 +21,51 @@ import (
     "go.uber.org/fx"
 )
 
-var appModule = fx.Options(
-    fx.Provide(
+var FXModule = fx.Options(
+    fx.WithLogger(
+        func(logger log.Logger) fxevent.Logger {
+            return logger
+        },
+    ),
+	fx.Provide(
         context.Background,
+        configs.ParseConfig,
         clock.NewRealClock,
+        postgresInterface.NewDatabase,
+        postgresInterface.NewMigrateManager,
+        grpcInterface.NewServer,
+        restInterface.NewServer,
         func(config *configs.Config) (log.Logger, error) {
             return log.NewLog(config.LogLevel)
         },
+{{- if .Auth }}
+        usecases.NewAuthUseCase,
+        interceptors.NewAuthInterceptor,
+        jwtRepositories.NewAuthRepository,
+        postgresRepositories.NewPermissionRepository,
+        grpcInterface.NewAuthMiddleware,
+        grpcInterface.NewAuthServiceServer,
+        restInterface.NewAuthHandler,
+        restInterface.NewAuthMiddleware,
+        usecases.NewUserUseCase,
+        interceptors.NewUserInterceptor,
+        postgresRepositories.NewPostgresUserRepository,
+        grpcInterface.NewUserServiceServer,
+        restInterface.NewUserHandler,
+{{- end }}
     ),
-    configs.FXModule,
-    repositories.FXModule,
-    usecases.FXModule,
-    interceptors.FXModule,
-    postgres.FXModule,
 )
 
 func NewGRPC{{ .Name | Title }}(config string) *fx.App {
     app := fx.New(
         fx.Provide(func() string { return config }),
-        appModule,
-        fx.WithLogger(
-            func(logger log.Logger) fxevent.Logger {
-                return logger
-            },
-        ),
-        grpc.FXModule,
+        FXModule,
+		fx.Invoke(func(lifecycle fx.Lifecycle, server *grpcInterface.Server) {
+			lifecycle.Append(fx.Hook{
+				OnStart: server.Start,
+				OnStop:  server.Stop,
+			})
+		}),
     )
     return app
 }
@@ -52,13 +73,13 @@ func NewGRPC{{ .Name | Title }}(config string) *fx.App {
 func NewREST{{ .Name | Title }}(config string) *fx.App {
     app := fx.New(
         fx.Provide(func() string { return config }),
-        appModule,
-        fx.WithLogger(
-            func(logger log.Logger) fxevent.Logger {
-                return logger
-            },
-        ),
-        rest.FXModule,
+        FXModule,
+		fx.Invoke(func(lifecycle fx.Lifecycle, server *restInterface.Server) {
+			lifecycle.Append(fx.Hook{
+				OnStart: server.Start,
+				OnStop:  server.Stop,
+			})
+		}),
     )
     return app
 }
@@ -66,13 +87,12 @@ func NewREST{{ .Name | Title }}(config string) *fx.App {
 func NewMigrate(config string) *fx.App {
 	app := fx.New(
 		fx.Provide(func() string { return config }),
-		appModule,
-		postgres.FXApp,
-		fx.WithLogger(
-			func(logger log.Logger) fxevent.Logger {
-				return logger
-			},
-		),
+        FXModule,
+        fx.Invoke(func(lifecycle fx.Lifecycle, manager *postgresInterface.MigrateManager) {
+            lifecycle.Append(fx.Hook{
+                OnStart: manager.Up,
+            })
+        }),
 	)
 	return app
 }

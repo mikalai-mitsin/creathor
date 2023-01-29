@@ -1,11 +1,12 @@
 package main
 
 import (
+	"github.com/018bf/creathor/models"
 	"os"
 	"path/filepath"
 )
 
-func CreateCI(project *Project) error {
+func CreateCI(project *models.Project) error {
 	var directories []string
 	files := []*Template{
 		{

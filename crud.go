@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/018bf/creathor/models"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -13,7 +14,7 @@ import (
 	"path/filepath"
 )
 
-func CreateCRUD(model *Model) error {
+func CreateCRUD(model *models.Model) error {
 	if err := model.Validate(); err != nil {
 		fmt.Printf("invalid model %s: %s\n", model.Model, err)
 		return err

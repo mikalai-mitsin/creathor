@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"github.com/018bf/creathor/models"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -12,7 +13,7 @@ import (
 	"path/filepath"
 )
 
-func CreateDI(data *Project) error {
+func CreateDI(data *models.Project) error {
 	directories := []string{
 		path.Join(destinationPath, "internal", "containers"),
 	}

@@ -5,10 +5,12 @@ import (
 	"embed"
 	_ "embed"
 	"fmt"
+	"github.com/018bf/creathor/models"
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 )
 
@@ -51,7 +53,7 @@ func main() {
 }
 
 func initProject(ctx *cli.Context) error {
-	project, err := NewProject()
+	project, err := models.NewProject(path.Join(destinationPath, configPath))
 	if err != nil {
 		return err
 	}
@@ -71,10 +73,6 @@ func initProject(ctx *cli.Context) error {
 		return err
 	}
 	for _, model := range project.Models {
-		model.Module = project.Module
-		model.Auth = project.Auth
-		model.ProjectName = project.Name
-		model.ProtoPackage = project.ProtoPackage()
 		if err := CreateCRUD(model); err != nil {
 			return err
 		}
@@ -95,13 +93,6 @@ func postInit() error {
 	if err := generate.Run(); err != nil {
 		fmt.Println(errb.String())
 	}
-	tidy := exec.Command("go", "mod", "tidy")
-	tidy.Dir = destinationPath
-	tidy.Stderr = &errb
-	fmt.Println(strings.Join(tidy.Args, " "))
-	if err := tidy.Run(); err != nil {
-		fmt.Println(errb.String())
-	}
 	swag := exec.Command("swag", "init", "-d", "./internal/interfaces/rest", "-g", "server.go", "--parseDependency", "-o", "./api", "-ot", "yaml")
 	swag.Dir = destinationPath
 	swag.Stderr = &errb
@@ -114,6 +105,13 @@ func postInit() error {
 	buf.Stderr = &errb
 	fmt.Println(strings.Join(buf.Args, " "))
 	if err := buf.Run(); err != nil {
+		fmt.Println(errb.String())
+	}
+	tidy := exec.Command("go", "mod", "tidy")
+	tidy.Dir = destinationPath
+	tidy.Stderr = &errb
+	fmt.Println(strings.Join(tidy.Args, " "))
+	if err := tidy.Run(); err != nil {
 		fmt.Println(errb.String())
 	}
 	clean := exec.Command("golangci-lint", "run", "./...", "--fix")

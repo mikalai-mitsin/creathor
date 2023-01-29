@@ -1,10 +1,11 @@
 package main
 
 import (
+	"github.com/018bf/creathor/models"
 	"path/filepath"
 )
 
-func CreateBuild(data *Project) error {
+func CreateBuild(data *models.Project) error {
 	files := []*Template{
 		{
 			SourcePath:      "templates/build/Dockerfile.tmpl",

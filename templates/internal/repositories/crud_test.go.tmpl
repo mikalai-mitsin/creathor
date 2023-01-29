@@ -2,6 +2,12 @@ package repositories
 
 import (
     "context"
+{{- range $value := .Params }}
+    {{- if .IsSlice }}
+    "github.com/lib/pq"
+        {{- break }}
+    {{- end }}
+{{- end }}
     "database/sql"
     "errors"
     "reflect"
@@ -284,6 +290,23 @@ func Test{{ .RepositoryTypeName }}_List(t *testing.T) {
             args: args{
                 ctx:    ctx,
                 filter: filter,
+            },
+            want:    {{ .ListVariable }},
+            wantErr: nil,
+        },
+        {
+            name: "nil page size",
+            setup: func() {
+                mock.ExpectQuery(query).
+                    WillReturnRows(new{{ .ModelName }}Rows(t, {{ .ListVariable }}))
+            },
+            fields: fields{
+                database: db,
+                logger:   logger,
+            },
+            args: args{
+                ctx:    ctx,
+                filter: &models.{{ .FilterTypeName }}{},
             },
             want:    {{ .ListVariable }},
             wantErr: nil,
@@ -705,7 +728,11 @@ func new{{ .ModelName }}Rows(t *testing.T, {{ .ListVariable }} []*models.{{ .Mod
             {{ .Variable }}.ID,
 {{- if .Params }}
 {{- range $key, $value := .Params }}
+{{- if $value.IsSlice }}
+            pq.Array({{ $.Variable }}.{{ $value.GetName }}),
+{{- else }}
             {{ $.Variable }}.{{ $value.GetName }},
+{{- end }}
 {{- end }}
 {{- else }}
             // TODO: add values

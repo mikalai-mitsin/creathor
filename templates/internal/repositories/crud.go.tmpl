@@ -3,6 +3,12 @@ package repositories
 import (
     "context"
     "fmt"
+{{- range $value := .Params }}
+    {{- if .IsSlice }}
+    "github.com/lib/pq"
+    {{- break }}
+    {{- end }}
+{{- end }}
     "time"
 
     sq "github.com/Masterminds/squirrel"
@@ -19,6 +25,72 @@ import (
     "{{ .Module }}/pkg/utils"
     "github.com/jmoiron/sqlx"
 )
+
+
+type {{ .PostgresDTOTypeName }} struct {
+	ID          string         `db:"id,omitempty"`
+{{- range $value := .Params }}
+    {{ $value.GetName }} {{ $value.PostgresDTOType }} `db:"{{ $value.Tag }}"`
+{{- end }}
+	UpdatedAt   time.Time      `db:"updated_at,omitempty"`
+	CreatedAt   time.Time      `db:"created_at,omitempty"`
+}
+
+func New{{ .PostgresDTOTypeName }}FromModel({{ .Variable }} *models.{{ .ModelName }}) *{{ .PostgresDTOTypeName }} {
+	dto := &{{ .PostgresDTOTypeName }}{
+		ID:          string({{ .Variable }}.ID),
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+        {{ $value.GetName }}: {{ $value.PostgresDTOType }}{},
+    {{- else }}
+        {{ $value.GetName }}: {{ $value.PostgresDTOType }}({{ $.Variable }}.{{ $value.GetName }}),
+    {{- end }}
+{{- end }}
+		UpdatedAt:   {{ .Variable }}.UpdatedAt,
+		CreatedAt:   {{ .Variable }}.CreatedAt,
+	}
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+    for _, param := range {{ $.Variable }}.{{ $value.GetName }} {
+        dto.{{ $value.GetName }} = append(dto.{{ $value.GetName }}, {{ .PostgresDTOSliceType }}(param))
+    }
+    {{- end }}
+{{- end }}
+	return dto
+}
+
+func (dto *{{ .PostgresDTOTypeName }}) ToModel() *models.{{ .ModelName }} {
+	model := &models.{{ .ModelName }}{
+		ID:          models.UUID(dto.ID),
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+        {{ $value.GetName }}: {{ $value.Type }}{},
+    {{- else }}
+        {{ $value.GetName }}: {{ $value.Type }}(dto.{{ $value.GetName }}),
+    {{- end }}
+{{- end }}
+		UpdatedAt:   dto.UpdatedAt,
+		CreatedAt:   dto.CreatedAt,
+	}
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+        for _, param := range dto.{{ $value.GetName }} {
+            model.{{ $value.GetName }} = append(model.{{ $value.GetName }}, {{ .SliceType }}(param))
+        }
+    {{- end }}
+{{- end }}
+	return model
+}
+
+type {{ .PostgresDTOListTypeName }} []*{{ .PostgresDTOTypeName }}
+
+func (list {{ .PostgresDTOListTypeName }}) ToModels() []*models.{{ .ModelName }} {
+    {{ .ListVariable }} := make([]*models.{{ .ModelName }}, len(list))
+	for i := range list {
+        {{ .ListVariable }}[i] = list[i].ToModel()
+	}
+	return {{ .ListVariable }}
+}
 
 type {{ .RepositoryTypeName }} struct {
     database *sqlx.DB
@@ -41,27 +113,29 @@ func (r *{{ .RepositoryTypeName }}) Create(
 ) error {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
+    dto := New{{ .PostgresDTOTypeName }}FromModel({{ .Variable }})
     q := sq.Insert("public.{{ .TableName }}").
         Columns(
-{{- range $key, $value := .Params }}
+{{- range $value := .Params }}
             "{{ $value.Tag }}",
 {{- end }}
             "updated_at",
             "created_at",
         ).
         Values(
-{{- range $key, $value := .Params }}
-            {{ $.Variable }}.{{ $value.GetName }},
+{{- range $value := .Params }}
+            dto.{{ $value.GetName }},
 {{- end }}
-            {{ .Variable }}.UpdatedAt,
-            {{ .Variable }}.CreatedAt,
+            dto.UpdatedAt,
+            dto.CreatedAt,
         ).
         Suffix("RETURNING id")
     query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-    if err := r.database.QueryRowxContext(ctx, query, args...).StructScan({{ .Variable }}); err != nil {
+    if err := r.database.QueryRowxContext(ctx, query, args...).StructScan(dto); err != nil {
         e := errs.FromPostgresError(err)
         return e
     }
+    {{ .Variable }}.ID = models.UUID(dto.ID)
     return nil
 }
 
@@ -71,7 +145,7 @@ func (r *{{ .RepositoryTypeName }}) Get(
 ) (*models.{{ .ModelName }}, error ) {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
-    {{ .Variable }} := &models.{{ .ModelName }}{}
+    dto := &{{ .PostgresDTOTypeName }}{}
     q := sq.Select(
         "{{ .TableName }}.id",
 {{- range $key, $value := .Params }}
@@ -84,12 +158,12 @@ func (r *{{ .RepositoryTypeName }}) Get(
         Where(sq.Eq{"id": id}).
         Limit(1)
     query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-    if err := r.database.GetContext(ctx, {{ .Variable }}, query, args...); err != nil {
+    if err := r.database.GetContext(ctx, dto, query, args...); err != nil {
         e := errs.FromPostgresError(err).
             WithParam("{{ .KeyName }}_id", string(id))
         return nil, e
     }
-    return {{ .Variable }}, nil
+    return dto.ToModel(), nil
 }
 
 func (r *{{ .RepositoryTypeName }}) List(
@@ -98,7 +172,7 @@ func (r *{{ .RepositoryTypeName }}) List(
 ) ([]*models.{{ .ModelName }}, error ) {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
-    var {{ .ListVariable }} []*models.{{ .ModelName }}
+    var dto {{ .PostgresDTOListTypeName }}
     const pageSize = uint64(10)
     if filter.PageSize == nil {
         filter.PageSize = utils.Pointer(pageSize)
@@ -128,7 +202,6 @@ func (r *{{ .RepositoryTypeName }}) List(
         })
     }
 {{- end }}
-    // TODO: add filtering
     if filter.PageNumber != nil && *filter.PageNumber > 1 {
         q = q.Offset((*filter.PageNumber - 1) * *filter.PageSize)
     }
@@ -137,11 +210,11 @@ func (r *{{ .RepositoryTypeName }}) List(
         q = q.OrderBy(filter.OrderBy...)
     }
     query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-    if err := r.database.SelectContext(ctx, &{{ .ListVariable }}, query, args...); err != nil {
+    if err := r.database.SelectContext(ctx, &dto, query, args...); err != nil {
         e := errs.FromPostgresError(err)
         return nil, e
     }
-    return {{ .ListVariable }}, nil
+    return dto.ToModels(), nil
 }
 
 func (r *{{ .RepositoryTypeName }}) Update(
@@ -150,10 +223,11 @@ func (r *{{ .RepositoryTypeName }}) Update(
 ) error {
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
+    dto := New{{ .PostgresDTOTypeName }}FromModel({{ .Variable }})
     q := sq.Update("public.{{ .TableName }}").
         Where(sq.Eq{"id": {{ .Variable }}.ID}).
     {{- range $key, $value := .Params }}
-        Set("{{ $.TableName }}.{{ $value.Tag }}", {{ $.Variable }}.{{ $value.GetName }}).
+        Set("{{ $.TableName }}.{{ $value.Tag }}", dto.{{ $value.GetName }}).
     {{- end }}
         Set("updated_at", {{ .Variable }}.UpdatedAt)
     query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
@@ -211,7 +285,6 @@ func (r *{{ .RepositoryTypeName }}) Count(
     ctx, cancel := context.WithTimeout(ctx, time.Second)
     defer cancel()
     q := sq.Select("count(id)").From("public.{{ .TableName }}")
-    // TODO: add filtering
     query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
     result := r.database.QueryRowxContext(ctx, query, args...)
     if err := result.Err(); err != nil {

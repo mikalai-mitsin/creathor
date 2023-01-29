@@ -252,6 +252,67 @@ func (p *Param) ProtoType() string {
 	}
 }
 
+func (p *Param) PostgresDTOType() string {
+	switch p.Type {
+	case "int8", "int16", "int32", "int":
+		return "int"
+	case "float32":
+		return "float"
+	case "byte":
+		return "byte"
+	case "[]byte":
+		return "pq.ByteaArray"
+	case "float64":
+		return "float64"
+	case "[]float32":
+		return "pq.Float32Array"
+	case "[]float64":
+		return "pq.Float64Array"
+	case "int64", "uint", "uint8", "uint16", "uint32", "uint64":
+		return "int64"
+	case "[]int8", "[]int16", "[]int32", "[]int":
+		return "pq.Int32Array"
+	case "[]int64", "[]uint", "[]uint8", "[]uint16", "[]uint32", "[]uint64":
+		return "pq.Int64Array"
+	case "string":
+		return "string"
+	case "[]string":
+		return "pq.StringArray"
+	case "uuid":
+		return "string"
+	case "time.Time":
+		return "time.Time"
+	case "time.Duration":
+		return "time.Duration"
+	case "bool":
+		return "bool"
+	case "[]bool":
+		return "pq.BoolArray"
+	default:
+		return "/* FIXME */"
+	}
+}
+func (p *Param) PostgresDTOSliceType() string {
+	switch p.Type {
+	case "[]byte":
+		return "byte"
+	case "[]float32":
+		return "float32"
+	case "[]float64":
+		return "float64"
+	case "[]int8", "[]int16", "[]int32", "[]int":
+		return "int32"
+	case "[]int64", "[]uint", "[]uint8", "[]uint16", "[]uint32", "[]uint64":
+		return "int64"
+	case "[]string":
+		return "string"
+	case "[]bool":
+		return "bool"
+	default:
+		return "/* FIXME */"
+	}
+}
+
 func (p *Param) GRPCGetter() string {
 	return fmt.Sprintf("Get%s", p.GRPCParam())
 }

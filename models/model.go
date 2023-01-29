@@ -127,6 +127,14 @@ func (m *Model) CreateTypeName() string {
 	return fmt.Sprintf("%sCreate", strcase.ToCamel(m.Model))
 }
 
+func (m *Model) PostgresDTOTypeName() string {
+	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.Model))
+}
+
+func (m *Model) PostgresDTOListTypeName() string {
+	return fmt.Sprintf("%sListDTO", strcase.ToCamel(m.Model))
+}
+
 func (m *Model) CreateVariableName() string {
 	return fmt.Sprintf("%sCreate", strcase.ToLowerCamel(m.Model))
 }

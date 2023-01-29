@@ -90,6 +90,8 @@ func TestPostgresRepository_Create(t *testing.T) {
                     user.Password,
                     user.Email,
                     user.GroupID,
+                    user.UpdatedAt,
+                    user.CreatedAt,
                 ).WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).
                     AddRow(user.ID, user.CreatedAt))
             },
@@ -111,6 +113,8 @@ func TestPostgresRepository_Create(t *testing.T) {
                     user.Password,
                     user.Email,
                     user.GroupID,
+                    user.UpdatedAt,
+                    user.CreatedAt,
                 ).WillReturnError(errors.New("test error"))
             },
             fields: fields{
@@ -137,6 +141,8 @@ func TestPostgresRepository_Create(t *testing.T) {
                     user.Password,
                     user.Email,
                     user.GroupID,
+                    user.UpdatedAt,
+                    user.CreatedAt,
                 ).WillReturnError(sql.ErrNoRows)
             },
             fields: fields{
@@ -488,6 +494,22 @@ func TestPostgresRepository_List(t *testing.T) {
             args: args{
                 ctx:    context.Background(),
                 filter: filter,
+            },
+            want:    users,
+            wantErr: nil,
+        },
+        {
+            name: "nil page",
+            setup: func() {
+                mock.ExpectQuery(query).
+                    WillReturnRows(NewUserRows(t, users))
+            },
+            fields: fields{
+                database: database,
+            },
+            args: args{
+                ctx:    context.Background(),
+                filter: &models.UserFilter{},
             },
             want:    users,
             wantErr: nil,

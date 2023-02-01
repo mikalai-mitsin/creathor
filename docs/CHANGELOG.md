@@ -2,8 +2,14 @@
 ## [Unreleased]
 
 
-<a name="0.4.1"></a>
-## [0.4.1] - 2023-02-01
+<a name="0.4.2"></a>
+## [0.4.2] - 2023-02-01
+### Ci
+- **release:** set tag
+
+
+<a name="v0.4.1"></a>
+## [v0.4.1] - 2023-02-01
 ### Feat
 - **apis:** possible to disable grpc or rest api
 - **build:** add task
@@ -176,8 +182,9 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/018bf/creathor/compare/0.4.1...HEAD
-[0.4.1]: https://github.com/018bf/creathor/compare/v0.4.0...0.4.1
+[Unreleased]: https://github.com/018bf/creathor/compare/0.4.2...HEAD
+[0.4.2]: https://github.com/018bf/creathor/compare/v0.4.1...0.4.2
+[v0.4.1]: https://github.com/018bf/creathor/compare/v0.4.0...v0.4.1
 [v0.4.0]: https://github.com/018bf/creathor/compare/v0.3.3...v0.4.0
 [v0.3.3]: https://github.com/018bf/creathor/compare/v0.3.2...v0.3.3
 [v0.3.2]: https://github.com/018bf/creathor/compare/v0.3.1...v0.3.2

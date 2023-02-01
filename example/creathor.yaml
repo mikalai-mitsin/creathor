@@ -3,6 +3,8 @@ module: "github.com/018bf/example"
 goVersion: "1.19"
 auth: true
 ci: "github"
+gRPC: false
+REST: false
 models:
   - model: "session"
     params:
@@ -50,6 +52,12 @@ models:
       - name: "name"
         type: "string"
         search: true
+      - name: "tags"
+        type: "[]string"
+      - name: "versions"
+        type: "[]uint"
+      - name: "oldVersions"
+        type: "[]uint64"
       - name: "release"
         type: "time.Time"
       - name: "tested"

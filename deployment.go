@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/018bf/creathor/models"
 	"github.com/iancoleman/strcase"
 	"os"
 	"os/exec"
@@ -11,7 +12,7 @@ import (
 	"strings"
 )
 
-func CreateDeployment(data *Project) error {
+func CreateDeployment(data *models.Project) error {
 	directories := []string{
 		path.Join(destinationPath, "deployments", "helm_vars", "staging"),
 		path.Join(destinationPath, "deployments", "helm_vars", "development"),

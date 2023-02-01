@@ -1,13 +1,14 @@
 syntax = "proto3";
 
-package {{ .ProtoPackage }};
+package {{ .ProtoPackage }}.v1;
 
-option go_package = "{{ .Module }}/pkg/{{ .ProtoPackage }}";
+option go_package = "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
 
 message {{ .CreateTypeName }} {
 {{- range $i, $value := .Params }}
@@ -55,9 +56,25 @@ message {{ .FilterTypeName }} {
 }
 
 service {{ .ModelName }}Service {
-  rpc Create({{ .ProtoPackage }}.{{ .CreateTypeName }}) returns ({{ .ProtoPackage }}.{{ .ModelName }});
-  rpc Get({{ .ProtoPackage }}.{{ .ModelName}}Get) returns ({{ .ProtoPackage }}.{{ .ModelName }});
-  rpc Update({{ .ProtoPackage }}.{{ .UpdateTypeName }}) returns ({{ .ProtoPackage }}.{{ .ModelName }});
-  rpc Delete({{ .ProtoPackage }}.{{ .ModelName }}Delete) returns (google.protobuf.Empty);
-  rpc List({{ .ProtoPackage }}.{{ .FilterTypeName }}) returns ({{ .ProtoPackage }}.List{{ .ModelName }});
+  rpc Create({{ .ProtoPackage }}.v1.{{ .CreateTypeName }}) returns ({{ .ProtoPackage }}.v1.{{ .ModelName }}) {
+    option (google.api.http) = {
+      post: "/v1/arches"
+      body: "*"
+    };
+  }
+  rpc Get({{ .ProtoPackage }}.v1.{{ .ModelName}}Get) returns ({{ .ProtoPackage }}.v1.{{ .ModelName }}) {
+    option (google.api.http) = {get: "/v1/arches/{id}"};
+  }
+  rpc Update({{ .ProtoPackage }}.v1.{{ .UpdateTypeName }}) returns ({{ .ProtoPackage }}.v1.{{ .ModelName }}) {
+    option (google.api.http) = {
+      patch: "/v1/arches/{id}"
+      body: "*"
+    };
+  }
+  rpc Delete({{ .ProtoPackage }}.v1.{{ .ModelName }}Delete) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/v1/arches/{id}"};
+  }
+  rpc List({{ .ProtoPackage }}.v1.{{ .FilterTypeName }}) returns ({{ .ProtoPackage }}.v1.List{{ .ModelName }}) {
+    option (google.api.http) = {get: "/v1/arches"};
+  }
 }

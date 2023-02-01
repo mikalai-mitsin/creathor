@@ -4,11 +4,18 @@ import (
     "context"
     "{{ .Module }}/internal/domain/interceptors"
     "{{ .Module }}/internal/domain/models"
-    "{{ .Module }}/pkg/{{ .ProtoPackage }}"
+    {{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
     "{{ .Module }}/pkg/log"
     "{{ .Module }}/pkg/utils"
     "google.golang.org/protobuf/types/known/emptypb"
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+    "google.golang.org/protobuf/types/known/structpb"
+        {{- break -}}
+    {{- end }}
+{{- end }}
     "google.golang.org/protobuf/types/known/timestamppb"
+    "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type {{ .GRPCHandlerTypeName }} struct {
@@ -223,4 +230,33 @@ func decode{{ .ModelName }}({{ .Variable }} *models.{{ .ModelName }}) *{{ .Proto
     {{- end }}
 {{- end }}
     return response
+}
+
+func decode{{ .UpdateTypeName }}(update *models.{{ .UpdateTypeName }}) *{{ .ProtoPackage }}.{{ .UpdateTypeName }} {
+	result := &{{ .ProtoPackage }}.{{ .UpdateTypeName }}{
+		Id:      string(update.ID),
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+        {{ $value.GRPCParam }}: nil,
+    {{- else }}
+        {{- if eq $value.Type "time.Time" }}
+        {{ $value.GRPCParam }}: timestamppb.New(*update.{{ $value.GetName }}),
+        {{- else }}
+        {{ $value.GRPCParam }}: {{ $value.GetGRPCWrapper }}({{ $value.GetGRPCWrapperArgumentType }}(*update.{{ $value.GetName }})),
+        {{- end }}
+    {{- end }}
+{{- end }}
+	}
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+    if update.{{ $value.GetName }} != nil {
+        params, err := structpb.NewList(utils.ToAnySlice(*update.{{ $value.GetName }}))
+		if err != nil {
+			return nil
+		}
+		result.{{ $value.GRPCParam }} = params
+	}
+    {{- end }}
+{{- end }}
+	return result
 }

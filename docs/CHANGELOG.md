@@ -2,8 +2,27 @@
 ## [Unreleased]
 
 
-<a name="0.4.0"></a>
-## [0.4.0] - 2023-01-27
+<a name="0.4.1"></a>
+## [0.4.1] - 2023-02-01
+### Feat
+- **apis:** possible to disable grpc or rest api
+- **build:** add task
+- **build:** use task
+- **ci:** update validation rules
+- **di:** extract DI to container package
+- **grpc:** fill update test
+- **grpc:** update proto package
+- **models:** add creation validation
+- **postgres:** add dto
+- **repositories:** separate repositories implementation
+- **repositories:** add args to the test
+
+### Refactor
+- move models to pkg
+
+
+<a name="v0.4.0"></a>
+## [v0.4.0] - 2023-01-27
 ### Docs
 - regenerate example and update readme
 
@@ -157,8 +176,9 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/018bf/creathor/compare/0.4.0...HEAD
-[0.4.0]: https://github.com/018bf/creathor/compare/v0.3.3...0.4.0
+[Unreleased]: https://github.com/018bf/creathor/compare/0.4.1...HEAD
+[0.4.1]: https://github.com/018bf/creathor/compare/v0.4.0...0.4.1
+[v0.4.0]: https://github.com/018bf/creathor/compare/v0.3.3...v0.4.0
 [v0.3.3]: https://github.com/018bf/creathor/compare/v0.3.2...v0.3.3
 [v0.3.2]: https://github.com/018bf/creathor/compare/v0.3.1...v0.3.2
 [v0.3.1]: https://github.com/018bf/creathor/compare/v0.3.0...v0.3.1

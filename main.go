@@ -5,14 +5,16 @@ import (
 	"embed"
 	_ "embed"
 	"fmt"
+	"github.com/018bf/creathor/models"
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 )
 
-const version = "0.4.0"
+var version = "0.4.0"
 
 var (
 	destinationPath = "."
@@ -51,7 +53,7 @@ func main() {
 }
 
 func initProject(ctx *cli.Context) error {
-	project, err := NewProject()
+	project, err := models.NewProject(path.Join(destinationPath, configPath))
 	if err != nil {
 		return err
 	}
@@ -71,21 +73,17 @@ func initProject(ctx *cli.Context) error {
 		return err
 	}
 	for _, model := range project.Models {
-		model.Module = project.Module
-		model.Auth = project.Auth
-		model.ProjectName = project.Name
-		model.ProtoPackage = project.ProtoPackage()
 		if err := CreateCRUD(model); err != nil {
 			return err
 		}
 	}
-	if err := postInit(); err != nil {
+	if err := postInit(project); err != nil {
 		return err
 	}
 	return nil
 }
 
-func postInit() error {
+func postInit(project *models.Project) error {
 	fmt.Println("post init...")
 	var errb bytes.Buffer
 	generate := exec.Command("go", "generate", "./...")
@@ -95,6 +93,31 @@ func postInit() error {
 	if err := generate.Run(); err != nil {
 		fmt.Println(errb.String())
 	}
+	if project.RESTEnabled {
+		swag := exec.Command("swag", "init", "-d", "./internal/interfaces/rest", "-g", "server.go", "--parseDependency", "-o", "./api", "-ot", "yaml")
+		swag.Dir = destinationPath
+		swag.Stderr = &errb
+		fmt.Println(strings.Join(swag.Args, " "))
+		if err := swag.Run(); err != nil {
+			fmt.Println(errb.String())
+		}
+	}
+	if project.GRPCEnabled {
+		bufUpdate := exec.Command("buf", "mod", "update")
+		bufUpdate.Dir = path.Join(destinationPath, "api", "proto")
+		bufUpdate.Stderr = &errb
+		fmt.Println(strings.Join(bufUpdate.Args, " "))
+		if err := bufUpdate.Run(); err != nil {
+			fmt.Println(errb.String())
+		}
+		bufGenerate := exec.Command("buf", "generate")
+		bufGenerate.Dir = destinationPath
+		bufGenerate.Stderr = &errb
+		fmt.Println(strings.Join(bufGenerate.Args, " "))
+		if err := bufGenerate.Run(); err != nil {
+			fmt.Println(errb.String())
+		}
+	}
 	tidy := exec.Command("go", "mod", "tidy")
 	tidy.Dir = destinationPath
 	tidy.Stderr = &errb
@@ -102,23 +125,11 @@ func postInit() error {
 	if err := tidy.Run(); err != nil {
 		fmt.Println(errb.String())
 	}
-	swag := exec.Command("swag", "init", "-d", "./internal/interfaces/rest", "-g", "server.go", "--parseDependency", "-o", "./api", "-ot", "yaml")
-	swag.Dir = destinationPath
-	swag.Stderr = &errb
-	fmt.Println(strings.Join(swag.Args, " "))
-	if err := swag.Run(); err != nil {
-		fmt.Println(errb.String())
-	}
-	buf := exec.Command("buf", "generate")
-	buf.Dir = destinationPath
-	buf.Stderr = &errb
-	fmt.Println(strings.Join(buf.Args, " "))
-	if err := buf.Run(); err != nil {
-		fmt.Println(errb.String())
-	}
 	clean := exec.Command("golangci-lint", "run", "./...", "--fix")
 	clean.Dir = destinationPath
 	fmt.Println(strings.Join(clean.Args, " "))
-	_ = clean.Run()
+	if err := clean.Run(); err != nil {
+		fmt.Println(errb.String())
+	}
 	return nil
 }

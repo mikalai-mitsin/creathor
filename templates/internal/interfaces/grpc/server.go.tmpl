@@ -3,10 +3,12 @@ package grpc
 import (
     "context"
     "errors"
+    "net"
 
+    "{{ .Module }}/internal/configs"
     "{{ .Module }}/internal/domain/errs"
     "{{ .Module }}/pkg/log"
-    "{{ .Module }}/pkg/{{ .ProtoPackage }}"
+    {{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
     "google.golang.org/genproto/googleapis/rpc/errdetails"
     "google.golang.org/grpc/status"
 
@@ -24,14 +26,20 @@ import (
     "google.golang.org/grpc/reflection"
 )
 
+type Server struct {
+    server *grpc.Server
+    config *configs.Config
+}
+
 func NewServer(
     logger log.Logger,
+    config *configs.Config,
 {{- if .Auth }}
     authMiddleware *AuthMiddleware,
     authHandler {{ .ProtoPackage }}.AuthServiceServer,
     userHandler {{ .ProtoPackage }}.UserServiceServer,
 {{- end }}
-) *grpc.Server {
+) *Server {
     server := grpc.NewServer(
         grpc.UnaryInterceptor(
             grpcMiddleware.ChainUnaryServer(
@@ -57,7 +65,23 @@ func NewServer(
     {{ .ProtoPackage }}.RegisterAuthServiceServer(server, authHandler)
     {{ .ProtoPackage }}.RegisterUserServiceServer(server, userHandler)
 {{- end }}
-    return server
+    return &Server{
+        server: server,
+        config: config,
+    }
+}
+
+func (s *Server) Start(_ context.Context) error {
+	listener, err := net.Listen("tcp", s.config.BindAddr)
+	if err != nil {
+		return err
+	}
+	return s.server.Serve(listener)
+}
+
+func (s *Server) Stop(_ context.Context) error {
+	s.server.GracefulStop()
+	return nil
 }
 
 func DefaultMessageProducer(

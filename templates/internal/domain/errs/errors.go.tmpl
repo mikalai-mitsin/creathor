@@ -57,6 +57,13 @@ func (e *Error) WithParam(key, value string) *Error {
     return e
 }
 
+func (e *Error) WithParams(params map[string]string) *Error {
+    for key, value := range params {
+        e.AddParam(key, value)
+    }
+    return e
+}
+
 func (e Error) Error() string {
     data, _ := json.Marshal(e)
     return string(data)

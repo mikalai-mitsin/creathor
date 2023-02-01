@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"github.com/018bf/creathor/models"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -12,7 +13,7 @@ import (
 	"path/filepath"
 )
 
-func CreateDI(data *Project) error {
+func CreateDI(data *models.Project) error {
 	directories := []string{
 		path.Join(destinationPath, "internal", "containers"),
 	}
@@ -27,26 +28,6 @@ func CreateDI(data *Project) error {
 			DestinationPath: path.Join(destinationPath, "internal", "containers", "fx.go"),
 			Name:            "Uber FX DI container",
 		},
-		{
-			SourcePath:      "templates/internal/containers/configs.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "configs", "fx.go"),
-			Name:            "Configs FX module",
-		},
-		{
-			SourcePath:      "templates/internal/containers/repositories.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "repositories", "fx.go"),
-			Name:            "Repositories FX module",
-		},
-		{
-			SourcePath:      "templates/internal/containers/usecases.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "usecases", "fx.go"),
-			Name:            "Use Cases FX module",
-		},
-		{
-			SourcePath:      "templates/internal/containers/interceptors.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interceptors", "fx.go"),
-			Name:            "Interceptors FX module",
-		},
 	}
 	for _, tmpl := range files {
 		if err := tmpl.renderToFile(data); err != nil {
@@ -56,8 +37,8 @@ func CreateDI(data *Project) error {
 	return nil
 }
 
-func addToDI(packageName string, constructors ...string) error {
-	packagePath := filepath.Join(destinationPath, "internal", packageName)
+func addToDI(packageName string, constructor string) error {
+	packagePath := filepath.Join(destinationPath, "internal", "containers")
 	fileset := token.NewFileSet()
 	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
 		return true
@@ -83,21 +64,27 @@ func addToDI(packageName string, constructors ...string) error {
 												if ok {
 													fun, ok := provideFunc.Fun.(*ast.SelectorExpr)
 													if ok && fun.Sel.Name == "Provide" {
-														for _, constructor := range constructors {
-															var exists bool
-															for _, existedArg := range provideFunc.Args {
-																ident := existedArg.(*ast.Ident)
-																if ident.Name == constructor {
-																	exists = true
-																	break
+														var exists bool
+														for _, existedArg := range provideFunc.Args {
+															selector, sOk := existedArg.(*ast.SelectorExpr)
+															if sOk {
+																ident, iOk := selector.X.(*ast.Ident)
+																if iOk {
+																	if ident.Name == packageName && selector.Sel.Name == constructor {
+																		exists = true
+																		break
+																	}
 																}
 															}
-															if !exists {
-																provideFunc.Args = append(provideFunc.Args, &ast.Ident{
-																	Name: constructor,
-																})
-															}
 														}
+														if !exists {
+															provideFunc.Args = append(provideFunc.Args, &ast.SelectorExpr{
+																X:   ast.NewIdent(packageName),
+																Sel: ast.NewIdent(constructor),
+															})
+														}
+													} else {
+														continue
 													}
 													break
 												}

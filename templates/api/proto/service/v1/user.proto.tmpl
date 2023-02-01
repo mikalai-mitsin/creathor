@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package {{ .ProtoPackage }};
+package {{ .ProtoPackage }}.v1;
 
-option go_package = "{{ .Module }}/pkg/{{ .ProtoPackage }}";
+option go_package = "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1";
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
-import "auth.proto";
+import "google/api/annotations.proto";
 
 message User {
   string id = 1;
@@ -57,9 +57,25 @@ message UserDelete {
 }
 
 service UserService {
-  rpc Signup({{ .ProtoPackage }}.Signup) returns ({{ .ProtoPackage }}.User);
-  rpc Update({{ .ProtoPackage }}.UserUpdate) returns ({{ .ProtoPackage }}.User);
-  rpc Get({{ .ProtoPackage }}.UserGet) returns ({{ .ProtoPackage }}.User);
-  rpc List({{ .ProtoPackage }}.UserFilter) returns ({{ .ProtoPackage }}.Users);
-  rpc Delete({{ .ProtoPackage }}.UserDelete) returns (google.protobuf.Empty);
+  rpc Signup({{ .ProtoPackage }}.v1.Signup) returns ({{ .ProtoPackage }}.v1.User) {
+    option (google.api.http) = {
+      post: "/v1/users"
+      body: "*"
+    };
+  }
+  rpc Update({{ .ProtoPackage }}.v1.UserUpdate) returns ({{ .ProtoPackage }}.v1.User) {
+    option (google.api.http) = {
+      patch: "/v1/users/{id}"
+      body: "*"
+    };
+  }
+  rpc Get({{ .ProtoPackage }}.v1.UserGet) returns ({{ .ProtoPackage }}.v1.User){
+    option (google.api.http) = {get: "/v1/users/{id}"};
+  }
+  rpc List({{ .ProtoPackage }}.v1.UserFilter) returns ({{ .ProtoPackage }}.v1.Users) {
+    option (google.api.http) = {get: "/v1/users"};
+  }
+  rpc Delete({{ .ProtoPackage }}.v1.UserDelete) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/v1/users/{id}"};
+  }
 }

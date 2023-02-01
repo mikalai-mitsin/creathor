@@ -3,7 +3,7 @@ package grpc
 import (
     "context"
     "errors"
-    "{{ .Module }}/pkg/{{ .ProtoPackage }}"
+    {{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
     "{{ .Module }}/pkg/utils"
     "reflect"
     "syreclabs.com/go/faker"
@@ -577,21 +577,13 @@ func Test_encodeUserFilter(t *testing.T) {
     }{
         {
             name: "ok",
-            setup: func() {
-
-            },
+            setup: func() {},
             args: args{
                 input: &{{ .ProtoPackage }}.UserFilter{
-                    PageNumber: &wrapperspb.UInt64Value{
-                        Value: 2,
-                    },
-                    PageSize: &wrapperspb.UInt64Value{
-                        Value: 5,
-                    },
-                    Search: &wrapperspb.StringValue{
-                        Value: "my name is",
-                    },
-                    OrderBy: []string{"created_at", "id"},
+                    PageNumber: wrapperspb.UInt64(2),
+                    PageSize:   wrapperspb.UInt64(5),
+                    Search:     wrapperspb.String("my name is"),
+                    OrderBy:    []string{"created_at", "id"},
                 },
             },
             want: &models.UserFilter{

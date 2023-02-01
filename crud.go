@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/018bf/creathor/models"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -13,7 +14,7 @@ import (
 	"path/filepath"
 )
 
-func CreateCRUD(model *Model) error {
+func CreateCRUD(model *models.Model) error {
 	if err := model.Validate(); err != nil {
 		fmt.Printf("invalid model %s: %s\n", model.Model, err)
 		return err
@@ -65,20 +66,16 @@ func CreateCRUD(model *Model) error {
 			Name:            "interceptor test",
 		},
 		{
-			SourcePath:      "templates/internal/repositories/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", model.FileName()),
+			SourcePath:      "templates/internal/repositories/postgres/crud.go.tmpl",
+			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", "postgres", model.FileName()),
 			Name:            "repository",
 		},
 		{
-			SourcePath:      "templates/internal/repositories/crud_test.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", model.TestFileName()),
+			SourcePath:      "templates/internal/repositories/postgres/crud_test.go.tmpl",
+			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", "postgres", model.TestFileName()),
 			Name:            "repository test",
 		},
-		{
-			SourcePath:      "templates/internal/interfaces/rest/crud.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", model.FileName()),
-			Name:            "rest crud",
-		},
+
 		{
 			SourcePath:      "templates/internal/interfaces/postgres/migrations/crud.up.sql.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", model.MigrationUpFileName()),
@@ -89,21 +86,36 @@ func CreateCRUD(model *Model) error {
 			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", model.MigrationDownFileName()),
 			Name:            "migration down",
 		},
-		{
-			SourcePath:      "templates/internal/interfaces/grpc/crud.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", model.FileName()),
-			Name:            "grpc service server",
-		},
-		{
-			SourcePath:      "templates/internal/interfaces/grpc/crud_test.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", model.TestFileName()),
-			Name:            "test grpc service server",
-		},
-		{
-			SourcePath:      "templates/api/proto/crud.proto.tmpl",
-			DestinationPath: path.Join(destinationPath, "api", "proto", model.ProtoFileName()),
-			Name:            "proto def",
-		},
+	}
+	if model.RESTEnabled {
+		files = append(
+			files,
+			&Template{
+				SourcePath:      "templates/internal/interfaces/rest/crud.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", model.FileName()),
+				Name:            "rest crud",
+			},
+		)
+	}
+	if model.GRPCEnabled {
+		files = append(
+			files,
+			&Template{
+				SourcePath:      "templates/internal/interfaces/grpc/crud.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", model.FileName()),
+				Name:            "grpc service server",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/grpc/crud_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", model.TestFileName()),
+				Name:            "test grpc service server",
+			},
+			&Template{
+				SourcePath:      "templates/api/proto/service/v1/crud.proto.tmpl",
+				DestinationPath: path.Join(destinationPath, "api", "proto", model.ProtoPackage, "v1", model.ProtoFileName()),
+				Name:            "proto def",
+			},
+		)
 	}
 	for _, tmpl := range files {
 		if err := tmpl.renderToFile(model); err != nil {
@@ -116,20 +128,25 @@ func CreateCRUD(model *Model) error {
 	if err := addToDI("interceptors", fmt.Sprintf("New%s", model.InterceptorTypeName())); err != nil {
 		return err
 	}
-	if err := addToDI("repositories", fmt.Sprintf("New%s", model.RepositoryTypeName())); err != nil {
+	if err := addToDI("postgresRepositories", fmt.Sprintf("New%s", model.RepositoryTypeName())); err != nil {
 		return err
 	}
-	if err := addToDI("interfaces/rest", fmt.Sprintf("New%s", model.RESTHandlerTypeName())); err != nil {
-		return err
+
+	if model.RESTEnabled {
+		if err := addToDI("restInterface", fmt.Sprintf("New%s", model.RESTHandlerTypeName())); err != nil {
+			return err
+		}
+		if err := registerRESTHandler(model.RESTHandlerVariableName(), model.RESTHandlerTypeName()); err != nil {
+			return err
+		}
 	}
-	if err := addToDI("interfaces/grpc", fmt.Sprintf("New%s", model.GRPCHandlerTypeName())); err != nil {
-		return err
-	}
-	if err := registerRESTHandler(model.RESTHandlerVariableName(), model.RESTHandlerTypeName()); err != nil {
-		return err
-	}
-	if err := registerGRPCHandler(model.RESTHandlerVariableName(), model.ProtoPackage, model.GRPCHandlerTypeName()); err != nil {
-		return err
+	if model.GRPCEnabled {
+		if err := addToDI("grpcInterface", fmt.Sprintf("New%s", model.GRPCHandlerTypeName())); err != nil {
+			return err
+		}
+		if err := registerGRPCHandler(model.GRPCHandlerVariableName(), model.ProtoPackage, model.GRPCHandlerTypeName()); err != nil {
+			return err
+		}
 	}
 	if model.Auth && model.ModelName() != "User" {
 		if err := addPermission(model.PermissionIDList(), "objectAnybody"); err != nil {
@@ -165,7 +182,7 @@ func registerRESTHandler(variableName, typeName string) error {
 			for _, decl := range file.Decls {
 				funcDecl, ok := decl.(*ast.FuncDecl)
 				if ok {
-					if funcDecl.Name.String() == "NewRouter" {
+					if funcDecl.Name.String() == "NewServer" {
 						var exists bool
 						for _, existedParam := range funcDecl.Type.Params.List {
 							selector, ok := existedParam.Type.(*ast.StarExpr)

@@ -96,9 +96,18 @@ func Test{{ .RepositoryTypeName }}_Create(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                // TODO: add args
                 mock.ExpectQuery(query).
-                    WithArgs().
+                    WithArgs(
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+                        pq.Array({{ $.Variable }}.{{ $value.GetName }}),
+    {{- else }}
+                        {{ $.Variable }}.{{ $value.GetName }},
+    {{- end }}
+{{- end }}
+                        {{ $.Variable }}.UpdatedAt,
+                        {{ $.Variable }}.CreatedAt,
+                    ).
                     WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).
                         AddRow({{ .Variable }}.ID, {{ .Variable }}.CreatedAt))
             },
@@ -115,9 +124,18 @@ func Test{{ .RepositoryTypeName }}_Create(t *testing.T) {
         {
             name: "database error",
             setup: func() {
-                // TODO: add args
                 mock.ExpectQuery(query).
-                    WithArgs().
+                    WithArgs(
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+                        pq.Array({{ $.Variable }}.{{ $value.GetName }}),
+    {{- else }}
+                        {{ $.Variable }}.{{ $value.GetName }},
+    {{- end }}
+{{- end }}
+                        {{ $.Variable }}.UpdatedAt,
+                        {{ $.Variable }}.CreatedAt,
+                    ).
                     WillReturnError(errors.New("test error"))
             },
             fields: fields{
@@ -401,8 +419,18 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                // TODO: set args
                 mock.ExpectExec(query).
+                    WithArgs(
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+                        pq.Array({{ $.Variable }}.{{ $value.GetName }}),
+    {{- else }}
+                        {{ $.Variable }}.{{ $value.GetName }},
+    {{- end }}
+{{- end }}
+                        {{ $.Variable }}.UpdatedAt,
+                        {{ $.Variable }}.ID,
+                    ).
                     WillReturnResult(sqlmock.NewResult(0, 1))
             },
             fields: fields{
@@ -418,8 +446,18 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
         {
             name: "not found",
             setup: func() {
-                // TODO: set args
                 mock.ExpectExec(query).
+                    WithArgs(
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+                        pq.Array({{ $.Variable }}.{{ $value.GetName }}),
+    {{- else }}
+                        {{ $.Variable }}.{{ $value.GetName }},
+    {{- end }}
+{{- end }}
+                        {{ $.Variable }}.UpdatedAt,
+                        {{ $.Variable }}.ID,
+                    ).
                     WillReturnResult(sqlmock.NewResult(0, 0))
             },
             fields: fields{
@@ -435,8 +473,18 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
         {
             name: "database error",
             setup: func() {
-                // TODO: set args
                 mock.ExpectExec(query).
+                    WithArgs(
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+                        pq.Array({{ $.Variable }}.{{ $value.GetName }}),
+    {{- else }}
+                        {{ $.Variable }}.{{ $value.GetName }},
+    {{- end }}
+{{- end }}
+                        {{ $.Variable }}.UpdatedAt,
+                        {{ $.Variable }}.ID,
+                    ).
                     WillReturnError(errors.New("test error"))
             },
             fields: fields{
@@ -452,8 +500,18 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
         {
             name: "unexpected error",
             setup: func() {
-                // TODO: set args
                 mock.ExpectExec(query).
+                    WithArgs(
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+                        pq.Array({{ $.Variable }}.{{ $value.GetName }}),
+    {{- else }}
+                        {{ $.Variable }}.{{ $value.GetName }},
+    {{- end }}
+{{- end }}
+                        {{ $.Variable }}.UpdatedAt,
+                        {{ $.Variable }}.ID,
+                    ).
                     WillReturnError(errors.New("test error"))
             },
             fields: fields{
@@ -469,8 +527,18 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
         {
             name: "result error",
             setup: func() {
-                // TODO: set args
                 mock.ExpectExec(query).
+                    WithArgs(
+{{- range $value := .Params }}
+    {{- if $value.IsSlice }}
+                        pq.Array({{ $.Variable }}.{{ $value.GetName }}),
+    {{- else }}
+                        {{ $.Variable }}.{{ $value.GetName }},
+    {{- end }}
+{{- end }}
+                        {{ $.Variable }}.UpdatedAt,
+                        {{ $.Variable }}.ID,
+                    ).
                     WillReturnResult(sqlmock.NewErrorResult(errors.New("test error")))
             },
             fields: fields{

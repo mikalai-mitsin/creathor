@@ -10,22 +10,26 @@ import (
 )
 
 type Project struct {
-	Name      string   `yaml:"name"`
-	Module    string   `yaml:"module"`
-	GoVersion string   `yaml:"goVersion"`
-	Auth      bool     `yaml:"auth"`
-	CI        string   `yaml:"ci"`
-	Models    []*Model `yaml:"models"`
+	Name        string   `yaml:"name"`
+	Module      string   `yaml:"module"`
+	GoVersion   string   `yaml:"goVersion"`
+	Auth        bool     `yaml:"auth"`
+	CI          string   `yaml:"ci"`
+	Models      []*Model `yaml:"models"`
+	GRPCEnabled bool     `yaml:"gRPC"`
+	RESTEnabled bool     `yaml:"REST"`
 }
 
 func NewProject(configPath string) (*Project, error) {
 	project := &Project{
-		Name:      "",
-		Module:    "",
-		GoVersion: "",
-		Auth:      false,
-		CI:        "",
-		Models:    nil,
+		Name:        "",
+		Module:      "",
+		GoVersion:   "1.19",
+		Auth:        true,
+		CI:          "github",
+		Models:      nil,
+		GRPCEnabled: true,
+		RESTEnabled: true,
 	}
 	file, err := os.ReadFile(configPath)
 	if err != nil {
@@ -39,6 +43,8 @@ func NewProject(configPath string) (*Project, error) {
 		model.Auth = project.Auth
 		model.ProjectName = project.Name
 		model.ProtoPackage = project.ProtoPackage()
+		model.GRPCEnabled = project.GRPCEnabled
+		model.RESTEnabled = project.RESTEnabled
 	}
 	return project, nil
 }
@@ -52,6 +58,8 @@ func (p *Project) Validate() error {
 		validation.Field(&p.Auth, validation.Required),
 		validation.Field(&p.CI),
 		validation.Field(&p.Models),
+		validation.Field(&p.RESTEnabled),
+		validation.Field(&p.GRPCEnabled),
 	)
 	if err != nil {
 		return err

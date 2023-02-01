@@ -2,10 +2,13 @@ package containers
 
 import (
     "context"
-
+{{- if .GRPCEnabled }}
 	grpcInterface "{{ .Module }}/internal/interfaces/grpc"
+{{- end }}
 	postgresInterface "{{ .Module }}/internal/interfaces/postgres"
+{{- if .RESTEnabled }}
 	restInterface "{{ .Module }}/internal/interfaces/rest"
+{{- end }}
 	jwtRepositories "{{ .Module }}/internal/repositories/jwt"
 	postgresRepositories "{{ .Module }}/internal/repositories/postgres"
 
@@ -33,8 +36,12 @@ var FXModule = fx.Options(
         clock.NewRealClock,
         postgresInterface.NewDatabase,
         postgresInterface.NewMigrateManager,
+{{- if .GRPCEnabled }}
         grpcInterface.NewServer,
+{{- end }}
+{{- if .RESTEnabled }}
         restInterface.NewServer,
+{{- end }}
         func(config *configs.Config) (log.Logger, error) {
             return log.NewLog(config.LogLevel)
         },
@@ -43,19 +50,24 @@ var FXModule = fx.Options(
         interceptors.NewAuthInterceptor,
         jwtRepositories.NewAuthRepository,
         postgresRepositories.NewPermissionRepository,
+{{- if .GRPCEnabled }}
         grpcInterface.NewAuthMiddleware,
         grpcInterface.NewAuthServiceServer,
+        grpcInterface.NewUserServiceServer,
+{{- end }}
+{{- if .RESTEnabled }}
         restInterface.NewAuthHandler,
         restInterface.NewAuthMiddleware,
+        restInterface.NewUserHandler,
+
+{{- end }}
         usecases.NewUserUseCase,
         interceptors.NewUserInterceptor,
         postgresRepositories.NewPostgresUserRepository,
-        grpcInterface.NewUserServiceServer,
-        restInterface.NewUserHandler,
 {{- end }}
     ),
 )
-
+{{- if .GRPCEnabled }}
 func NewGRPC{{ .Name | Title }}(config string) *fx.App {
     app := fx.New(
         fx.Provide(func() string { return config }),
@@ -69,7 +81,9 @@ func NewGRPC{{ .Name | Title }}(config string) *fx.App {
     )
     return app
 }
+{{- end }}
 
+{{- if .RESTEnabled }}
 func NewREST{{ .Name | Title }}(config string) *fx.App {
     app := fx.New(
         fx.Provide(func() string { return config }),
@@ -83,6 +97,7 @@ func NewREST{{ .Name | Title }}(config string) *fx.App {
     )
     return app
 }
+{{- end }}
 
 func NewMigrate(config string) *fx.App {
 	app := fx.New(

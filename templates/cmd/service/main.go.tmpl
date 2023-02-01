@@ -44,11 +44,18 @@ func main() {
 
 // runApp - run app
 func runApp(context *cli.Context) error {
+{{- if .GRPCEnabled }}
     app := containers.NewGRPC{{ .Name | Title }}(configPath)
-    err := app.Start(context.Context)
-    if err != nil {
+    if err := app.Start(context.Context); err != nil {
         return err
     }
+{{- else if .RESTEnabled }}
+    app := containers.NewREST{{ .Name | Title }}(configPath)
+    if err := app.Start(context.Context); err != nil {
+        return err
+    }
+{{- else }}
+{{- end }}
     return nil
 }
 

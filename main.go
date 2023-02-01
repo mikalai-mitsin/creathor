@@ -77,13 +77,13 @@ func initProject(ctx *cli.Context) error {
 			return err
 		}
 	}
-	if err := postInit(); err != nil {
+	if err := postInit(project); err != nil {
 		return err
 	}
 	return nil
 }
 
-func postInit() error {
+func postInit(project *models.Project) error {
 	fmt.Println("post init...")
 	var errb bytes.Buffer
 	generate := exec.Command("go", "generate", "./...")
@@ -93,26 +93,30 @@ func postInit() error {
 	if err := generate.Run(); err != nil {
 		fmt.Println(errb.String())
 	}
-	swag := exec.Command("swag", "init", "-d", "./internal/interfaces/rest", "-g", "server.go", "--parseDependency", "-o", "./api", "-ot", "yaml")
-	swag.Dir = destinationPath
-	swag.Stderr = &errb
-	fmt.Println(strings.Join(swag.Args, " "))
-	if err := swag.Run(); err != nil {
-		fmt.Println(errb.String())
+	if project.RESTEnabled {
+		swag := exec.Command("swag", "init", "-d", "./internal/interfaces/rest", "-g", "server.go", "--parseDependency", "-o", "./api", "-ot", "yaml")
+		swag.Dir = destinationPath
+		swag.Stderr = &errb
+		fmt.Println(strings.Join(swag.Args, " "))
+		if err := swag.Run(); err != nil {
+			fmt.Println(errb.String())
+		}
 	}
-	bufUpdate := exec.Command("buf", "mod", "update")
-	bufUpdate.Dir = path.Join(destinationPath, "api", "proto")
-	bufUpdate.Stderr = &errb
-	fmt.Println(strings.Join(bufUpdate.Args, " "))
-	if err := bufUpdate.Run(); err != nil {
-		fmt.Println(errb.String())
-	}
-	bufGenerate := exec.Command("buf", "generate")
-	bufGenerate.Dir = destinationPath
-	bufGenerate.Stderr = &errb
-	fmt.Println(strings.Join(bufGenerate.Args, " "))
-	if err := bufGenerate.Run(); err != nil {
-		fmt.Println(errb.String())
+	if project.GRPCEnabled {
+		bufUpdate := exec.Command("buf", "mod", "update")
+		bufUpdate.Dir = path.Join(destinationPath, "api", "proto")
+		bufUpdate.Stderr = &errb
+		fmt.Println(strings.Join(bufUpdate.Args, " "))
+		if err := bufUpdate.Run(); err != nil {
+			fmt.Println(errb.String())
+		}
+		bufGenerate := exec.Command("buf", "generate")
+		bufGenerate.Dir = destinationPath
+		bufGenerate.Stderr = &errb
+		fmt.Println(strings.Join(bufGenerate.Args, " "))
+		if err := bufGenerate.Run(); err != nil {
+			fmt.Println(errb.String())
+		}
 	}
 	tidy := exec.Command("go", "mod", "tidy")
 	tidy.Dir = destinationPath

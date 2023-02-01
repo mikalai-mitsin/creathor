@@ -6,7 +6,7 @@ import (
 	"path"
 )
 
-func CreateLayout(project *models.Project) error {
+func createDirectories(project *models.Project) error {
 	directories := []string{
 		path.Join(destinationPath, "build"),
 		path.Join(destinationPath, "cmd"),
@@ -15,7 +15,6 @@ func CreateLayout(project *models.Project) error {
 		path.Join(destinationPath, "dist"),
 		path.Join(destinationPath, "docs"),
 		path.Join(destinationPath, "docs", ".chglog"),
-		path.Join(destinationPath, "api", "proto", project.ProtoPackage(), "v1"),
 		path.Join(destinationPath, "internal"),
 		path.Join(destinationPath, "internal", "configs"),
 		path.Join(destinationPath, "internal", "domain", "errs"),
@@ -26,8 +25,6 @@ func CreateLayout(project *models.Project) error {
 		path.Join(destinationPath, "internal", "domain", "usecases"),
 		path.Join(destinationPath, "internal", "interceptors"),
 		path.Join(destinationPath, "internal", "interfaces"),
-		path.Join(destinationPath, "internal", "interfaces", "grpc"),
-		path.Join(destinationPath, "internal", "interfaces", "rest"),
 		path.Join(destinationPath, "internal", "interfaces", "postgres"),
 		path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations"),
 		path.Join(destinationPath, "internal", "usecases"),
@@ -40,31 +37,33 @@ func CreateLayout(project *models.Project) error {
 		path.Join(destinationPath, "pkg", "utils"),
 		path.Join(destinationPath, "pkg", "postgresql"),
 	}
+	if project.RESTEnabled {
+		directories = append(directories, path.Join(destinationPath, "internal", "interfaces", "rest"))
+	}
+	if project.GRPCEnabled {
+		directories = append(
+			directories,
+			path.Join(destinationPath, "internal", "interfaces", "grpc"),
+			path.Join(destinationPath, "api", "proto", project.ProtoPackage(), "v1"),
+		)
+	}
 	for _, directory := range directories {
 		if err := os.MkdirAll(directory, 0777); err != nil {
 			return NewUnexpectedBehaviorError(err.Error())
 		}
+	}
+	return nil
+}
+
+func CreateLayout(project *models.Project) error {
+	if err := createDirectories(project); err != nil {
+		return err
 	}
 	files := []*Template{
 		{
 			SourcePath:      "templates/cmd/service/main.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "cmd", project.Name, "main.go"),
 			Name:            "service main",
-		},
-		{
-			SourcePath:      "templates/api/proto/buf.yaml.tmpl",
-			DestinationPath: path.Join(destinationPath, "api", "proto", "buf.yaml"),
-			Name:            "buf.yaml",
-		},
-		{
-			SourcePath:      "templates/buf.gen.yaml.tmpl",
-			DestinationPath: path.Join(destinationPath, "buf.gen.yaml"),
-			Name:            "buf.gen.yaml",
-		},
-		{
-			SourcePath:      "templates/buf.work.yaml.tmpl",
-			DestinationPath: path.Join(destinationPath, "buf.work.yaml"),
-			Name:            "buf.work.yaml",
 		},
 		{
 			SourcePath:      "templates/configs/config.toml.tmpl",
@@ -166,31 +165,7 @@ func CreateLayout(project *models.Project) error {
 			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "000001_init.up.sql"),
 			Name:            "postgres init migration",
 		},
-		{
-			SourcePath:      "templates/internal/interfaces/grpc/middleware.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "middleware.go"),
-			Name:            "grpc middleware",
-		},
-		{
-			SourcePath:      "templates/internal/interfaces/grpc/middleware_test.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "middleware_test.go"),
-			Name:            "grpc middleware test",
-		},
-		{
-			SourcePath:      "templates/internal/interfaces/grpc/server.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "server.go"),
-			Name:            "grpc server",
-		},
-		{
-			SourcePath:      "templates/internal/interfaces/rest/middleware.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "middleware.go"),
-			Name:            "rest middlewares",
-		},
-		{
-			SourcePath:      "templates/internal/interfaces/rest/server.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "server.go"),
-			Name:            "rest server",
-		},
+
 		{
 			SourcePath:      "templates/internal/domain/models/types.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "domain", "models", "types.go"),
@@ -331,16 +306,6 @@ func CreateLayout(project *models.Project) error {
 				Name:            "test auth repository implementation",
 			},
 			&Template{
-				SourcePath:      "templates/internal/interfaces/rest/auth.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "auth.go"),
-				Name:            "rest auth handler",
-			},
-			&Template{
-				SourcePath:      "templates/internal/interfaces/rest/user.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "user.go"),
-				Name:            "rest user handler",
-			},
-			&Template{
 				SourcePath:      "templates/internal/interfaces/postgres/migrations/permissions.up.sql.tmpl",
 				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "000002_permissions.up.sql"),
 				Name:            "postgres permissions migration up",
@@ -380,37 +345,106 @@ func CreateLayout(project *models.Project) error {
 				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", "000005_users.down.sql"),
 				Name:            "postgres users migration down",
 			},
+		)
+	}
+	if project.RESTEnabled {
+		files = append(
+			files,
 			&Template{
-				SourcePath:      "templates/api/proto/service/v1/auth.proto.tmpl",
-				DestinationPath: path.Join(destinationPath, "api", "proto", project.ProtoPackage(), "v1", "auth.proto"),
-				Name:            "auth.proto",
+				SourcePath:      "templates/internal/interfaces/rest/middleware.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "middleware.go"),
+				Name:            "rest middlewares",
 			},
 			&Template{
-				SourcePath:      "templates/api/proto/service/v1/user.proto.tmpl",
-				DestinationPath: path.Join(destinationPath, "api", "proto", project.ProtoPackage(), "v1", "user.proto"),
-				Name:            "user.proto",
-			},
-			&Template{
-				SourcePath:      "templates/internal/interfaces/grpc/auth.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "auth.go"),
-				Name:            "grpc auth",
-			},
-			&Template{
-				SourcePath:      "templates/internal/interfaces/grpc/auth_test.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "auth_test.go"),
-				Name:            "grpc auth test",
-			},
-			&Template{
-				SourcePath:      "templates/internal/interfaces/grpc/user.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "user.go"),
-				Name:            "grpc user",
-			},
-			&Template{
-				SourcePath:      "templates/internal/interfaces/grpc/user_test.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "user_test.go"),
-				Name:            "grpc user test",
+				SourcePath:      "templates/internal/interfaces/rest/server.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "server.go"),
+				Name:            "rest server",
 			},
 		)
+		if project.Auth {
+			files = append(
+				files,
+				&Template{
+					SourcePath:      "templates/internal/interfaces/rest/auth.go.tmpl",
+					DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "auth.go"),
+					Name:            "rest auth handler",
+				},
+				&Template{
+					SourcePath:      "templates/internal/interfaces/rest/user.go.tmpl",
+					DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", "user.go"),
+					Name:            "rest user handler",
+				},
+			)
+		}
+	}
+	if project.GRPCEnabled {
+		files = append(
+			files,
+			&Template{
+				SourcePath:      "templates/internal/interfaces/grpc/server.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "server.go"),
+				Name:            "grpc server",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/grpc/middleware.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "middleware.go"),
+				Name:            "grpc middleware",
+			},
+			&Template{
+				SourcePath:      "templates/internal/interfaces/grpc/middleware_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "middleware_test.go"),
+				Name:            "grpc middleware test",
+			},
+			&Template{
+				SourcePath:      "templates/api/proto/buf.yaml.tmpl",
+				DestinationPath: path.Join(destinationPath, "api", "proto", "buf.yaml"),
+				Name:            "buf.yaml",
+			},
+			&Template{
+				SourcePath:      "templates/buf.gen.yaml.tmpl",
+				DestinationPath: path.Join(destinationPath, "buf.gen.yaml"),
+				Name:            "buf.gen.yaml",
+			},
+			&Template{
+				SourcePath:      "templates/buf.work.yaml.tmpl",
+				DestinationPath: path.Join(destinationPath, "buf.work.yaml"),
+				Name:            "buf.work.yaml",
+			},
+		)
+		if project.Auth {
+			files = append(files,
+				&Template{
+					SourcePath:      "templates/api/proto/service/v1/auth.proto.tmpl",
+					DestinationPath: path.Join(destinationPath, "api", "proto", project.ProtoPackage(), "v1", "auth.proto"),
+					Name:            "auth.proto",
+				},
+				&Template{
+					SourcePath:      "templates/api/proto/service/v1/user.proto.tmpl",
+					DestinationPath: path.Join(destinationPath, "api", "proto", project.ProtoPackage(), "v1", "user.proto"),
+					Name:            "user.proto",
+				},
+				&Template{
+					SourcePath:      "templates/internal/interfaces/grpc/auth.go.tmpl",
+					DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "auth.go"),
+					Name:            "grpc auth",
+				},
+				&Template{
+					SourcePath:      "templates/internal/interfaces/grpc/auth_test.go.tmpl",
+					DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "auth_test.go"),
+					Name:            "grpc auth test",
+				},
+				&Template{
+					SourcePath:      "templates/internal/interfaces/grpc/user.go.tmpl",
+					DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "user.go"),
+					Name:            "grpc user",
+				},
+				&Template{
+					SourcePath:      "templates/internal/interfaces/grpc/user_test.go.tmpl",
+					DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "user_test.go"),
+					Name:            "grpc user test",
+				},
+			)
+		}
 	}
 	for _, file := range files {
 		if err := file.renderToFile(project); err != nil {

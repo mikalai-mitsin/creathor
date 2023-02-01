@@ -18,6 +18,8 @@ type Model struct {
 	ProtoPackage string   `json:"proto_package" yaml:"protoPackage"`
 	Auth         bool     `json:"auth" yaml:"auth"`
 	Params       []*Param `json:"params" yaml:"params"`
+	GRPCEnabled  bool     `yaml:"gRPC"`
+	RESTEnabled  bool     `yaml:"REST"`
 }
 
 func (m *Model) Validate() error {
@@ -84,6 +86,10 @@ func (m *Model) RESTHandlerPath() string {
 }
 
 func (m *Model) RESTHandlerVariableName() string {
+	return fmt.Sprintf("%sHandler", strcase.ToLowerCamel(m.Model))
+}
+
+func (m *Model) GRPCHandlerVariableName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToLowerCamel(m.Model))
 }
 

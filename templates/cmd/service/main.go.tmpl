@@ -6,9 +6,10 @@ import (
     "github.com/urfave/cli/v2"
 )
 
-const version = "0.1.0"
-
-var configPath = ""
+var (
+    version = "unknown"
+    configPath = ""
+)
 
 func main() {
     app := &cli.App{

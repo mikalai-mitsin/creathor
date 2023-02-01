@@ -12,13 +12,27 @@ func CreateBuild(data *models.Project) error {
 			DestinationPath: filepath.Join(destinationPath, "build", "Dockerfile"),
 			Name:            "Dockerfile",
 		},
-		{
-			SourcePath:      "templates/build/Makefile.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "Makefile"),
-			Name:            "Makefile",
-		},
 	}
-
+	if data.MakeEnabled {
+		files = append(
+			files,
+			&Template{
+				SourcePath:      "templates/build/Makefile.tmpl",
+				DestinationPath: filepath.Join(destinationPath, "Makefile"),
+				Name:            "Makefile",
+			},
+		)
+	}
+	if data.TaskEnabled {
+		files = append(
+			files,
+			&Template{
+				SourcePath:      "templates/build/Taskfile.yaml.tmpl",
+				DestinationPath: filepath.Join(destinationPath, "Taskfile.yaml"),
+				Name:            "Taskfile.yaml",
+			},
+		)
+	}
 	for _, tmpl := range files {
 		if err := tmpl.renderToFile(data); err != nil {
 			return err

@@ -18,6 +18,8 @@ type Project struct {
 	Models      []*Model `yaml:"models"`
 	GRPCEnabled bool     `yaml:"gRPC"`
 	RESTEnabled bool     `yaml:"REST"`
+	MakeEnabled bool     `yaml:"make"`
+	TaskEnabled bool     `yaml:"task"`
 }
 
 func NewProject(configPath string) (*Project, error) {
@@ -30,6 +32,8 @@ func NewProject(configPath string) (*Project, error) {
 		Models:      nil,
 		GRPCEnabled: true,
 		RESTEnabled: true,
+		MakeEnabled: false,
+		TaskEnabled: true,
 	}
 	file, err := os.ReadFile(configPath)
 	if err != nil {

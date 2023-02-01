@@ -68,7 +68,7 @@ func (c *{{ .CreateTypeName }}) Validate() error {
     err := validation.ValidateStruct(
         c,
 {{- range $key, $value := .Params }}
-        validation.Field(&c.{{ $value.GetName }}),
+        validation.Field(&c.{{ $value.GetName }}, validation.Required),
 {{- end }}
     )
     if err != nil {

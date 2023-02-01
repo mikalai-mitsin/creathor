@@ -101,8 +101,8 @@ func CreateCRUD(model *models.Model) error {
 			Name:            "test grpc service server",
 		},
 		{
-			SourcePath:      "templates/api/proto/crud.proto.tmpl",
-			DestinationPath: path.Join(destinationPath, "api", "proto", model.ProtoFileName()),
+			SourcePath:      "templates/api/proto/service/v1/crud.proto.tmpl",
+			DestinationPath: path.Join(destinationPath, "api", "proto", model.ProtoPackage, "v1", model.ProtoFileName()),
 			Name:            "proto def",
 		},
 	}

@@ -100,11 +100,18 @@ func postInit() error {
 	if err := swag.Run(); err != nil {
 		fmt.Println(errb.String())
 	}
-	buf := exec.Command("buf", "generate")
-	buf.Dir = destinationPath
-	buf.Stderr = &errb
-	fmt.Println(strings.Join(buf.Args, " "))
-	if err := buf.Run(); err != nil {
+	bufUpdate := exec.Command("buf", "mod", "update")
+	bufUpdate.Dir = path.Join(destinationPath, "api", "proto")
+	bufUpdate.Stderr = &errb
+	fmt.Println(strings.Join(bufUpdate.Args, " "))
+	if err := bufUpdate.Run(); err != nil {
+		fmt.Println(errb.String())
+	}
+	bufGenerate := exec.Command("buf", "generate")
+	bufGenerate.Dir = destinationPath
+	bufGenerate.Stderr = &errb
+	fmt.Println(strings.Join(bufGenerate.Args, " "))
+	if err := bufGenerate.Run(); err != nil {
 		fmt.Println(errb.String())
 	}
 	tidy := exec.Command("go", "mod", "tidy")

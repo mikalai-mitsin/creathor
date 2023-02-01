@@ -15,8 +15,7 @@ func CreateLayout(project *models.Project) error {
 		path.Join(destinationPath, "dist"),
 		path.Join(destinationPath, "docs"),
 		path.Join(destinationPath, "docs", ".chglog"),
-		path.Join(destinationPath, "api"),
-		path.Join(destinationPath, "api", "proto"),
+		path.Join(destinationPath, "api", "proto", project.ProtoPackage(), "v1"),
 		path.Join(destinationPath, "internal"),
 		path.Join(destinationPath, "internal", "configs"),
 		path.Join(destinationPath, "internal", "domain", "errs"),
@@ -382,13 +381,13 @@ func CreateLayout(project *models.Project) error {
 				Name:            "postgres users migration down",
 			},
 			&Template{
-				SourcePath:      "templates/api/proto/auth.proto.tmpl",
-				DestinationPath: path.Join(destinationPath, "api", "proto", "auth.proto"),
+				SourcePath:      "templates/api/proto/service/v1/auth.proto.tmpl",
+				DestinationPath: path.Join(destinationPath, "api", "proto", project.ProtoPackage(), "v1", "auth.proto"),
 				Name:            "auth.proto",
 			},
 			&Template{
-				SourcePath:      "templates/api/proto/user.proto.tmpl",
-				DestinationPath: path.Join(destinationPath, "api", "proto", "user.proto"),
+				SourcePath:      "templates/api/proto/service/v1/user.proto.tmpl",
+				DestinationPath: path.Join(destinationPath, "api", "proto", project.ProtoPackage(), "v1", "user.proto"),
 				Name:            "user.proto",
 			},
 			&Template{

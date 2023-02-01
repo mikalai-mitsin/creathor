@@ -128,6 +128,8 @@ func postInit(project *models.Project) error {
 	clean := exec.Command("golangci-lint", "run", "./...", "--fix")
 	clean.Dir = destinationPath
 	fmt.Println(strings.Join(clean.Args, " "))
-	_ = clean.Run()
+	if err := clean.Run(); err != nil {
+		fmt.Println(errb.String())
+	}
 	return nil
 }

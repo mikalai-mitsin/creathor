@@ -278,11 +278,14 @@ func TestArchUseCase_Create(t *testing.T) {
 					Create(
 						ctx,
 						&models.Arch{
-							Name:      create.Name,
-							Release:   create.Release,
-							Tested:    create.Tested,
-							UpdatedAt: now,
-							CreatedAt: now,
+							Name:        create.Name,
+							Tags:        create.Tags,
+							Versions:    create.Versions,
+							OldVersions: create.OldVersions,
+							Release:     create.Release,
+							Tested:      create.Tested,
+							UpdatedAt:   now,
+							CreatedAt:   now,
 						},
 					).
 					Return(nil)
@@ -297,12 +300,15 @@ func TestArchUseCase_Create(t *testing.T) {
 				create: create,
 			},
 			want: &models.Arch{
-				ID:        "",
-				Name:      create.Name,
-				Release:   create.Release,
-				Tested:    create.Tested,
-				UpdatedAt: now,
-				CreatedAt: now,
+				ID:          "",
+				Name:        create.Name,
+				Tags:        create.Tags,
+				Versions:    create.Versions,
+				OldVersions: create.OldVersions,
+				Release:     create.Release,
+				Tested:      create.Tested,
+				UpdatedAt:   now,
+				CreatedAt:   now,
 			},
 			wantErr: nil,
 		},
@@ -314,12 +320,15 @@ func TestArchUseCase_Create(t *testing.T) {
 					Create(
 						ctx,
 						&models.Arch{
-							ID:        "",
-							Name:      create.Name,
-							Release:   create.Release,
-							Tested:    create.Tested,
-							UpdatedAt: now,
-							CreatedAt: now,
+							ID:          "",
+							Name:        create.Name,
+							Tags:        create.Tags,
+							Versions:    create.Versions,
+							OldVersions: create.OldVersions,
+							Release:     create.Release,
+							Tested:      create.Tested,
+							UpdatedAt:   now,
+							CreatedAt:   now,
 						},
 					).
 					Return(errs.NewUnexpectedBehaviorError("test error"))
@@ -336,22 +345,28 @@ func TestArchUseCase_Create(t *testing.T) {
 			want:    nil,
 			wantErr: errs.NewUnexpectedBehaviorError("test error"),
 		},
-		// TODO: Add validation rules or delete this case
-		// {
-		//     name: "invalid",
-		//     setup: func() {
-		//     },
-		//     fields: fields{
-		//         archRepository: archRepository,
-		//         logger:           logger,
-		//     },
-		//     args: args{
-		//         ctx: ctx,
-		//         create: &models.ArchCreate{},
-		//     },
-		//     want: nil,
-		//     wantErr: errs.NewInvalidFormError().WithParam("set", "it"),
-		// },
+		{
+			name: "invalid",
+			setup: func() {
+			},
+			fields: fields{
+				archRepository: archRepository,
+				logger:         logger,
+			},
+			args: args{
+				ctx:    ctx,
+				create: &models.ArchCreate{},
+			},
+			want: nil,
+			wantErr: errs.NewInvalidFormError().WithParams(map[string]string{
+				"name":         "cannot be blank",
+				"tags":         "cannot be blank",
+				"versions":     "cannot be blank",
+				"old_versions": "cannot be blank",
+				"release":      "cannot be blank",
+				"tested":       "cannot be blank",
+			}),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

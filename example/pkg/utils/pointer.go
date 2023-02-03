@@ -33,3 +33,11 @@ func UpcastSlice[T, V Numeric](in []T) []V {
 	}
 	return out
 }
+
+func ToAnySlice[T any](input []T) []any {
+	b := make([]any, len(input))
+	for i := range input {
+		b[i] = input[i]
+	}
+	return b
+}

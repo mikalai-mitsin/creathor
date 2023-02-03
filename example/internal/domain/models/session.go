@@ -9,11 +9,11 @@ import (
 )
 
 type Session struct {
-	ID          UUID      `json:"id" db:"id,omitempty" form:"id"`
-	Title       string    `json:"title" db:"title" form:"title"`
-	Description string    `json:"description" db:"description" form:"description"`
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at,omitempty" form:"updated_at"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at,omitempty" form:"created_at,omitempty"`
+	ID          UUID      `json:"id" form:"id"`
+	Title       string    `json:"title" form:"title"`
+	Description string    `json:"description" form:"description"`
+	UpdatedAt   time.Time `json:"updated_at" form:"updated_at"`
+	CreatedAt   time.Time `json:"created_at" form:"created_at,omitempty"`
 }
 
 func (c *Session) Validate() error {
@@ -60,8 +60,8 @@ type SessionCreate struct {
 func (c *SessionCreate) Validate() error {
 	err := validation.ValidateStruct(
 		c,
-		validation.Field(&c.Title),
-		validation.Field(&c.Description),
+		validation.Field(&c.Title, validation.Required),
+		validation.Field(&c.Description, validation.Required),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)

@@ -333,22 +333,24 @@ func TestSessionUseCase_Create(t *testing.T) {
 			want:    nil,
 			wantErr: errs.NewUnexpectedBehaviorError("test error"),
 		},
-		// TODO: Add validation rules or delete this case
-		// {
-		//     name: "invalid",
-		//     setup: func() {
-		//     },
-		//     fields: fields{
-		//         sessionRepository: sessionRepository,
-		//         logger:           logger,
-		//     },
-		//     args: args{
-		//         ctx: ctx,
-		//         create: &models.SessionCreate{},
-		//     },
-		//     want: nil,
-		//     wantErr: errs.NewInvalidFormError().WithParam("set", "it"),
-		// },
+		{
+			name: "invalid",
+			setup: func() {
+			},
+			fields: fields{
+				sessionRepository: sessionRepository,
+				logger:            logger,
+			},
+			args: args{
+				ctx:    ctx,
+				create: &models.SessionCreate{},
+			},
+			want: nil,
+			wantErr: errs.NewInvalidFormError().WithParams(map[string]string{
+				"title":       "cannot be blank",
+				"description": "cannot be blank",
+			}),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 	mock_interceptors "github.com/018bf/example/internal/domain/interceptors/mock"
 	"github.com/018bf/example/internal/domain/models"
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
-	"github.com/018bf/example/pkg/examplepb"
+	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/018bf/example/pkg/utils"
@@ -477,10 +477,8 @@ func TestEquipmentServiceServer_Update(t *testing.T) {
 				logger:                              logger,
 			},
 			args: args{
-				ctx: ctx,
-				input: &examplepb.EquipmentUpdate{
-					Id: string(update.ID),
-				}, // TODO: Fill me
+				ctx:   ctx,
+				input: decodeEquipmentUpdate(update),
 			},
 			want:    decodeEquipment(equipment),
 			wantErr: nil,
@@ -497,10 +495,8 @@ func TestEquipmentServiceServer_Update(t *testing.T) {
 				logger:                              logger,
 			},
 			args: args{
-				ctx: ctx,
-				input: &examplepb.EquipmentUpdate{
-					Id: string(update.ID),
-				}, // TODO: Fill me
+				ctx:   ctx,
+				input: decodeEquipmentUpdate(update),
 			},
 			want:    nil,
 			wantErr: decodeError(errs.NewUnexpectedBehaviorError("i error")),
@@ -528,6 +524,14 @@ func TestEquipmentServiceServer_Update(t *testing.T) {
 
 func Test_decodeEquipment(t *testing.T) {
 	equipment := mock_models.NewEquipment(t)
+	result := &examplepb.Equipment{
+		Id:        string(equipment.ID),
+		UpdatedAt: timestamppb.New(equipment.UpdatedAt),
+		CreatedAt: timestamppb.New(equipment.CreatedAt),
+		Name:      string(equipment.Name),
+		Repeat:    int32(equipment.Repeat),
+		Weight:    int32(equipment.Weight),
+	}
 	type args struct {
 		equipment *models.Equipment
 	}
@@ -541,14 +545,7 @@ func Test_decodeEquipment(t *testing.T) {
 			args: args{
 				equipment: equipment,
 			},
-			want: &examplepb.Equipment{
-				Id:        string(equipment.ID),
-				UpdatedAt: timestamppb.New(equipment.UpdatedAt),
-				CreatedAt: timestamppb.New(equipment.CreatedAt),
-				Name:      string(equipment.Name),
-				Repeat:    int32(equipment.Repeat),
-				Weight:    int32(equipment.Weight),
-			},
+			want: result,
 		},
 	}
 	for _, tt := range tests {

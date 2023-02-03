@@ -3,6 +3,9 @@ CREATE TABLE public.arches
     id          uuid                  DEFAULT uuid_generate_v4()
         CONSTRAINT arches_pk PRIMARY KEY,
     name varchar NOT NULL,
+    tags varchar[] NOT NULL,
+    versions bigint[] NOT NULL,
+    old_versions bigint[] NOT NULL,
     release timestamp NOT NULL,
     tested timestamp NOT NULL,
     updated_at  timestamp    NOT NULL DEFAULT (now() at time zone 'utc'),

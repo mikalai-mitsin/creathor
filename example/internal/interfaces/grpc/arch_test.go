@@ -8,7 +8,7 @@ import (
 	mock_interceptors "github.com/018bf/example/internal/domain/interceptors/mock"
 	"github.com/018bf/example/internal/domain/models"
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
-	"github.com/018bf/example/pkg/examplepb"
+	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/018bf/example/pkg/utils"
@@ -477,10 +477,8 @@ func TestArchServiceServer_Update(t *testing.T) {
 				logger:                         logger,
 			},
 			args: args{
-				ctx: ctx,
-				input: &examplepb.ArchUpdate{
-					Id: string(update.ID),
-				}, // TODO: Fill me
+				ctx:   ctx,
+				input: decodeArchUpdate(update),
 			},
 			want:    decodeArch(arch),
 			wantErr: nil,
@@ -497,10 +495,8 @@ func TestArchServiceServer_Update(t *testing.T) {
 				logger:                         logger,
 			},
 			args: args{
-				ctx: ctx,
-				input: &examplepb.ArchUpdate{
-					Id: string(update.ID),
-				}, // TODO: Fill me
+				ctx:   ctx,
+				input: decodeArchUpdate(update),
 			},
 			want:    nil,
 			wantErr: decodeError(errs.NewUnexpectedBehaviorError("i error")),
@@ -528,6 +524,26 @@ func TestArchServiceServer_Update(t *testing.T) {
 
 func Test_decodeArch(t *testing.T) {
 	arch := mock_models.NewArch(t)
+	result := &examplepb.Arch{
+		Id:          string(arch.ID),
+		UpdatedAt:   timestamppb.New(arch.UpdatedAt),
+		CreatedAt:   timestamppb.New(arch.CreatedAt),
+		Name:        string(arch.Name),
+		Tags:        []string{},
+		Versions:    []uint32{},
+		OldVersions: []uint64{},
+		Release:     timestamppb.New(arch.Release),
+		Tested:      timestamppb.New(arch.Tested),
+	}
+	for _, param := range arch.Tags {
+		result.Tags = append(result.Tags, string(param))
+	}
+	for _, param := range arch.Versions {
+		result.Versions = append(result.Versions, uint32(param))
+	}
+	for _, param := range arch.OldVersions {
+		result.OldVersions = append(result.OldVersions, uint64(param))
+	}
 	type args struct {
 		arch *models.Arch
 	}
@@ -541,14 +557,7 @@ func Test_decodeArch(t *testing.T) {
 			args: args{
 				arch: arch,
 			},
-			want: &examplepb.Arch{
-				Id:        string(arch.ID),
-				UpdatedAt: timestamppb.New(arch.UpdatedAt),
-				CreatedAt: timestamppb.New(arch.CreatedAt),
-				Name:      string(arch.Name),
-				Release:   timestamppb.New(arch.Release),
-				Tested:    timestamppb.New(arch.Tested),
-			},
+			want: result,
 		},
 	}
 	for _, tt := range tests {

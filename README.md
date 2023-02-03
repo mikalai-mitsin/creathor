@@ -38,6 +38,8 @@ module: "github.com/018bf/example" // Module name
 goVersion: "1.19"                  // go version
 auth: true                         // Generate auth, permissions and users api
 ci: "github"                       // Add `gitlab` or `github` CI configs
+gRPC: true                         // Generate gRPC API
+REST: false                        // RESTful API
 models:
   - model: "session" // Model name
     params:

@@ -64,12 +64,15 @@ func (u *ArchUseCase) Create(
 	}
 	now := u.clock.Now().UTC()
 	arch := &models.Arch{
-		ID:        "",
-		Name:      create.Name,
-		Release:   create.Release,
-		Tested:    create.Tested,
-		UpdatedAt: now,
-		CreatedAt: now,
+		ID:          "",
+		Name:        create.Name,
+		Tags:        create.Tags,
+		Versions:    create.Versions,
+		OldVersions: create.OldVersions,
+		Release:     create.Release,
+		Tested:      create.Tested,
+		UpdatedAt:   now,
+		CreatedAt:   now,
 	}
 	if err := u.archRepository.Create(ctx, arch); err != nil {
 		return nil, err
@@ -90,6 +93,15 @@ func (u *ArchUseCase) Update(
 	}
 	if update.Name != nil {
 		arch.Name = *update.Name
+	}
+	if update.Tags != nil {
+		arch.Tags = *update.Tags
+	}
+	if update.Versions != nil {
+		arch.Versions = *update.Versions
+	}
+	if update.OldVersions != nil {
+		arch.OldVersions = *update.OldVersions
 	}
 	if update.Release != nil {
 		arch.Release = *update.Release

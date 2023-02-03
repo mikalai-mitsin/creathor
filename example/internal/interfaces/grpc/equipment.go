@@ -4,11 +4,12 @@ import (
 	"context"
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
-	"github.com/018bf/example/pkg/examplepb"
+	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/log"
 	"github.com/018bf/example/pkg/utils"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type EquipmentServiceServer struct {
@@ -173,4 +174,14 @@ func decodeEquipment(equipment *models.Equipment) *examplepb.Equipment {
 		Weight:    int32(equipment.Weight),
 	}
 	return response
+}
+
+func decodeEquipmentUpdate(update *models.EquipmentUpdate) *examplepb.EquipmentUpdate {
+	result := &examplepb.EquipmentUpdate{
+		Id:     string(update.ID),
+		Name:   wrapperspb.String(string(*update.Name)),
+		Repeat: wrapperspb.Int32(int32(*update.Repeat)),
+		Weight: wrapperspb.Int32(int32(*update.Weight)),
+	}
+	return result
 }

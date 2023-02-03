@@ -4,11 +4,12 @@ import (
 	"context"
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
-	"github.com/018bf/example/pkg/examplepb"
+	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/log"
 	"github.com/018bf/example/pkg/utils"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type SessionServiceServer struct {
@@ -167,4 +168,13 @@ func decodeSession(session *models.Session) *examplepb.Session {
 		Description: string(session.Description),
 	}
 	return response
+}
+
+func decodeSessionUpdate(update *models.SessionUpdate) *examplepb.SessionUpdate {
+	result := &examplepb.SessionUpdate{
+		Id:          string(update.ID),
+		Title:       wrapperspb.String(string(*update.Title)),
+		Description: wrapperspb.String(string(*update.Description)),
+	}
+	return result
 }

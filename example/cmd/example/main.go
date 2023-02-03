@@ -6,9 +6,10 @@ import (
 	"os"
 )
 
-const version = "0.1.0"
-
-var configPath = ""
+var (
+	version    = "unknown"
+	configPath = ""
+)
 
 func main() {
 	app := &cli.App{
@@ -45,8 +46,7 @@ func main() {
 // runApp - run app
 func runApp(context *cli.Context) error {
 	app := containers.NewGRPCExample(configPath)
-	err := app.Start(context.Context)
-	if err != nil {
+	if err := app.Start(context.Context); err != nil {
 		return err
 	}
 	return nil

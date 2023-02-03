@@ -3,7 +3,7 @@ module: "github.com/018bf/example"
 goVersion: "1.19"
 auth: true
 ci: "github"
-gRPC: false
+gRPC: true
 REST: false
 models:
   - model: "session"

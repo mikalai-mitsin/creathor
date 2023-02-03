@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 	"errors"
-	"github.com/018bf/example/pkg/examplepb"
+	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/utils"
 	"reflect"
 	"syreclabs.com/go/faker"
@@ -576,22 +576,14 @@ func Test_encodeUserFilter(t *testing.T) {
 		want  *models.UserFilter
 	}{
 		{
-			name: "ok",
-			setup: func() {
-
-			},
+			name:  "ok",
+			setup: func() {},
 			args: args{
 				input: &examplepb.UserFilter{
-					PageNumber: &wrapperspb.UInt64Value{
-						Value: 2,
-					},
-					PageSize: &wrapperspb.UInt64Value{
-						Value: 5,
-					},
-					Search: &wrapperspb.StringValue{
-						Value: "my name is",
-					},
-					OrderBy: []string{"created_at", "id"},
+					PageNumber: wrapperspb.UInt64(2),
+					PageSize:   wrapperspb.UInt64(5),
+					Search:     wrapperspb.String("my name is"),
+					OrderBy:    []string{"created_at", "id"},
 				},
 			},
 			want: &models.UserFilter{

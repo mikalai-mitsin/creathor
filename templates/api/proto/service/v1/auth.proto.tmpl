@@ -30,9 +30,15 @@ message TokenPair {
 
 service AuthService {
   rpc CreateToken({{ .ProtoPackage }}.v1.CreateToken) returns ({{ .ProtoPackage }}.v1.TokenPair) {
-    option (google.api.http) = {post: "/v1/auth"};
+    option (google.api.http) = {
+      post: "/api/v1/auth",
+      body: "*"
+    };
   }
   rpc RefreshToken({{ .ProtoPackage }}.v1.RefreshToken) returns ({{ .ProtoPackage }}.v1.TokenPair) {
-    option (google.api.http) = {patch: "/v1/auth"};
+    option (google.api.http) = {
+      patch: "/api/v1/auth",
+      body: "*"
+    };
   }
 }

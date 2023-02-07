@@ -148,6 +148,11 @@ func CreateCRUD(model *models.Model) error {
 			return err
 		}
 	}
+	if model.GRPCEnabled && model.GatewayEnabled {
+		if err := registerGatewayHandler(model.ProtoPackage, model.GatewayHandlerTypeName()); err != nil {
+			return err
+		}
+	}
 	if model.Auth && model.ModelName() != "User" {
 		if err := addPermission(model.PermissionIDList(), "objectAnybody"); err != nil {
 			return err
@@ -254,6 +259,64 @@ func registerRESTHandler(variableName, typeName string) error {
 							return err
 						}
 						if err := os.WriteFile(filePath, a.Bytes(), 0777); err != nil {
+							return err
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func registerGatewayHandler(typePackage, typeName string) error {
+	packagePath := filepath.Join(destinationPath, "internal", "interfaces", "gateway")
+	fileset := token.NewFileSet()
+	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
+		return true
+	}, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	for _, p := range tree {
+		for filePath, file := range p.Files {
+			for _, decl := range file.Decls {
+				funcDecl, ok := decl.(*ast.FuncDecl)
+				if ok {
+					if funcDecl.Name.String() == "Start" {
+						registerCall := &ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										NamePos: 0,
+										Name:    typePackage,
+										Obj:     nil,
+									},
+									Sel: &ast.Ident{
+										NamePos: 0,
+										Name:    typeName,
+										Obj:     nil,
+									},
+								},
+								Lparen: 0,
+								Args: []ast.Expr{
+									ast.NewIdent("ctx"),
+									ast.NewIdent("s.serve"),
+									ast.NewIdent("s.config.BindAddr"),
+									ast.NewIdent("opts"),
+								},
+								Ellipsis: 0,
+								Rparen:   0,
+							},
+						}
+						le := len(funcDecl.Body.List)
+						newBody := append(funcDecl.Body.List[:le-1], registerCall, funcDecl.Body.List[le-1])
+						funcDecl.Body.List = newBody
+						buff := &bytes.Buffer{}
+						if err := printer.Fprint(buff, fileset, file); err != nil {
+							return err
+						}
+						if err := os.WriteFile(filePath, buff.Bytes(), 0777); err != nil {
 							return err
 						}
 					}

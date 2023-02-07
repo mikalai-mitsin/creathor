@@ -47,6 +47,12 @@ func createDirectories(project *models.Project) error {
 			path.Join(destinationPath, "api", "proto", project.ProtoPackage(), "v1"),
 		)
 	}
+	if project.GRPCEnabled && project.GatewayEnabled {
+		directories = append(
+			directories,
+			path.Join(destinationPath, "internal", "interfaces", "gateway"),
+		)
+	}
 	for _, directory := range directories {
 		if err := os.MkdirAll(directory, 0777); err != nil {
 			return NewUnexpectedBehaviorError(err.Error())
@@ -445,6 +451,16 @@ func CreateLayout(project *models.Project) error {
 				},
 			)
 		}
+	}
+	if project.GRPCEnabled && project.GatewayEnabled {
+		files = append(
+			files,
+			&Template{
+				SourcePath:      "templates/internal/interfaces/gateway/server.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "gateway", "server.go"),
+				Name:            "gateway server",
+			},
+		)
 	}
 	for _, file := range files {
 		if err := file.renderToFile(project); err != nil {

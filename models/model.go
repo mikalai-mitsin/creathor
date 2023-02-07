@@ -12,14 +12,15 @@ import (
 )
 
 type Model struct {
-	Model        string   `json:"model" yaml:"model"`
-	Module       string   `json:"module" yaml:"module"`
-	ProjectName  string   `json:"project_name" yaml:"projectName"`
-	ProtoPackage string   `json:"proto_package" yaml:"protoPackage"`
-	Auth         bool     `json:"auth" yaml:"auth"`
-	Params       []*Param `json:"params" yaml:"params"`
-	GRPCEnabled  bool     `yaml:"gRPC"`
-	RESTEnabled  bool     `yaml:"REST"`
+	Model          string   `json:"model" yaml:"model"`
+	Module         string   `json:"module" yaml:"module"`
+	ProjectName    string   `json:"project_name" yaml:"projectName"`
+	ProtoPackage   string   `json:"proto_package" yaml:"protoPackage"`
+	Auth           bool     `json:"auth" yaml:"auth"`
+	Params         []*Param `json:"params" yaml:"params"`
+	GRPCEnabled    bool     `yaml:"gRPC"`
+	GatewayEnabled bool     `yaml:"gateway"`
+	RESTEnabled    bool     `yaml:"REST"`
 }
 
 func (m *Model) Validate() error {
@@ -79,6 +80,10 @@ func (m *Model) GRPCHandlerTypeName() string {
 
 func (m *Model) RESTHandlerTypeName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Model))
+}
+
+func (m *Model) GatewayHandlerTypeName() string {
+	return fmt.Sprintf("Register%sServiceHandlerFromEndpoint", strcase.ToCamel(m.Model))
 }
 
 func (m *Model) RESTHandlerPath() string {

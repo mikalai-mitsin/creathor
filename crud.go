@@ -413,7 +413,7 @@ func registerGRPCHandler(variableName, typePackage, typeName string) error {
 }
 
 func addPermission(permission, check string) error {
-	packagePath := filepath.Join(destinationPath, "internal", "repositories")
+	packagePath := filepath.Join(destinationPath, "internal", "repositories", "postgres")
 	fileset := token.NewFileSet()
 	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
 		return true

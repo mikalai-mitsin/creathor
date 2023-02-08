@@ -4,6 +4,8 @@ import (
     "context"
     "{{ .Module }}/internal/configs"
     {{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
+    "github.com/gin-contrib/cors"
+    "github.com/gin-gonic/gin"
     "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
     "google.golang.org/grpc"
     "google.golang.org/grpc/credentials/insecure"
@@ -13,7 +15,7 @@ import (
 )
 
 type Server struct {
-    serve  *runtime.ServeMux
+    server  *gin.Engine
     config *configs.Config
     logger log.Logger
 }
@@ -22,11 +24,14 @@ func NewServer(
     logger log.Logger,
     config *configs.Config,
 ) *Server {
-    serve := runtime.NewServeMux()
-    serve.HandlePath(http.MethodGet, "/", func(_ http.ResponseWriter, _ *http.Request, _ map[string]string) {})
-    serve.HandlePath(http.MethodGet, "/health", func(_ http.ResponseWriter, _ *http.Request, _ map[string]string) {})
+    server := gin.Default()
+    corsConfig := cors.DefaultConfig()
+    corsConfig.AllowAllOrigins = true
+    corsConfig.AddAllowHeaders("Grpc-Metadata-Count")
+    corsConfig.AddExposeHeaders("Grpc-Metadata-Count")
+    server.Use(cors.New(corsConfig))
     return &Server{
-        serve: serve,
+        server: server,
         config: config,
         logger: logger,
     }
@@ -35,14 +40,16 @@ func NewServer(
 func(s *Server) Start(ctx context.Context) error {
     ctx, cancel := context.WithCancel(ctx)
     defer cancel()
+    mux := runtime.NewServeMux()
     opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 {{- if .Auth }}
-    examplepb.RegisterAuthServiceHandlerFromEndpoint(ctx, s.serve, s.config.BindAddr, opts)
-    examplepb.RegisterUserServiceHandlerFromEndpoint(ctx, s.serve, s.config.BindAddr, opts)
+    _ = examplepb.RegisterAuthServiceHandlerFromEndpoint(ctx, mux, s.config.BindAddr, opts)
+    _ = examplepb.RegisterUserServiceHandlerFromEndpoint(ctx, mux, s.config.BindAddr, opts)
 {{- else }}
     _ = opts
 {{- end }}
-    return http.ListenAndServe(":8001", s.serve)
+    s.server.Any("/*any", gin.WrapH(mux))
+    return http.ListenAndServe(":8001", s.server)
 }
 
 func(s *Server) Stop(_ context.Context) error {

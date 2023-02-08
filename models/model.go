@@ -5,8 +5,13 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/iancoleman/strcase"
 	"github.com/jinzhu/inflection"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -36,6 +41,33 @@ func (m *Model) Validate() error {
 		return err
 	}
 	return nil
+}
+
+func (m *Model) IsExists() bool {
+	packagePath := filepath.Join("internal", "domain", "models")
+	fileset := token.NewFileSet()
+	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
+		return true
+	}, parser.ParseComments)
+	if err != nil {
+		return false
+	}
+	for _, p := range tree {
+		for _, file := range p.Files {
+			for _, decl := range file.Decls {
+				gen, ok := decl.(*ast.GenDecl)
+				if ok {
+					for _, spec := range gen.Specs {
+						t, ok := spec.(*ast.TypeSpec)
+						if ok && t.Name.String() == m.ModelName() {
+							return true
+						}
+					}
+				}
+			}
+		}
+	}
+	return false
 }
 
 func (m *Model) SearchEnabled() bool {

@@ -19,6 +19,10 @@ func CreateCRUD(model *models.Model) error {
 		fmt.Printf("invalid model %s: %s\n", model.Model, err)
 		return err
 	}
+	if model.IsExists() {
+		fmt.Printf("model exists %s\n", model.Model)
+		return nil
+	}
 	files := []*Template{
 		{
 			SourcePath:      "templates/internal/domain/models/crud.go.tmpl",
@@ -75,7 +79,6 @@ func CreateCRUD(model *models.Model) error {
 			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", "postgres", model.TestFileName()),
 			Name:            "repository test",
 		},
-
 		{
 			SourcePath:      "templates/internal/interfaces/postgres/migrations/crud.up.sql.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", model.MigrationUpFileName()),
@@ -284,33 +287,37 @@ func registerGatewayHandler(typePackage, typeName string) error {
 				funcDecl, ok := decl.(*ast.FuncDecl)
 				if ok {
 					if funcDecl.Name.String() == "Start" {
-						registerCall := &ast.ExprStmt{
-							X: &ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										NamePos: 0,
-										Name:    typePackage,
-										Obj:     nil,
+						registerCall := &ast.AssignStmt{
+							Lhs: []ast.Expr{ast.NewIdent("_")},
+							Tok: token.ASSIGN,
+							Rhs: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											NamePos: 0,
+											Name:    typePackage,
+											Obj:     nil,
+										},
+										Sel: &ast.Ident{
+											NamePos: 0,
+											Name:    typeName,
+											Obj:     nil,
+										},
 									},
-									Sel: &ast.Ident{
-										NamePos: 0,
-										Name:    typeName,
-										Obj:     nil,
+									Lparen: 0,
+									Args: []ast.Expr{
+										ast.NewIdent("ctx"),
+										ast.NewIdent("mux"),
+										ast.NewIdent("s.config.BindAddr"),
+										ast.NewIdent("opts"),
 									},
+									Ellipsis: 0,
+									Rparen:   0,
 								},
-								Lparen: 0,
-								Args: []ast.Expr{
-									ast.NewIdent("ctx"),
-									ast.NewIdent("s.serve"),
-									ast.NewIdent("s.config.BindAddr"),
-									ast.NewIdent("opts"),
-								},
-								Ellipsis: 0,
-								Rparen:   0,
 							},
 						}
 						le := len(funcDecl.Body.List)
-						newBody := append(funcDecl.Body.List[:le-1], registerCall, funcDecl.Body.List[le-1])
+						newBody := append(funcDecl.Body.List[:le-2], registerCall, funcDecl.Body.List[le-2], funcDecl.Body.List[le-1])
 						funcDecl.Body.List = newBody
 						buff := &bytes.Buffer{}
 						if err := printer.Fprint(buff, fileset, file); err != nil {

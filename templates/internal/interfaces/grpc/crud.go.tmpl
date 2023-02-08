@@ -2,12 +2,15 @@ package grpc
 
 import (
     "context"
+    "fmt"
     "{{ .Module }}/internal/domain/interceptors"
     "{{ .Module }}/internal/domain/models"
     {{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
     "{{ .Module }}/pkg/log"
     "{{ .Module }}/pkg/utils"
     "google.golang.org/protobuf/types/known/emptypb"
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/metadata"
 {{- range $value := .Params }}
     {{- if $value.IsSlice }}
     "google.golang.org/protobuf/types/known/structpb"
@@ -82,6 +85,8 @@ func (s *{{ .GRPCHandlerTypeName }}) List(
     if err != nil {
         return nil, decodeError(err)
     }
+    header := metadata.Pairs("count", fmt.Sprint(count))
+    _ = grpc.SendHeader(ctx, header)
     return decodeList{{ .ModelName }}({{ .ListVariable }}, count), nil
 }
 

@@ -2,8 +2,22 @@
 ## [Unreleased]
 
 
-<a name="0.4.2"></a>
-## [0.4.2] - 2023-02-01
+<a name="0.4.3"></a>
+## [0.4.3] - 2023-02-08
+### Docs
+- rebuild example
+- regenerate example
+
+### Feat
+- **gateway:** add count to metadata
+- **gateway:** add gateway generator
+
+### Fix
+- **premissions:** add sub package
+
+
+<a name="v0.4.2"></a>
+## [v0.4.2] - 2023-02-01
 ### Ci
 - **release:** set tag
 
@@ -182,8 +196,9 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/018bf/creathor/compare/0.4.2...HEAD
-[0.4.2]: https://github.com/018bf/creathor/compare/v0.4.1...0.4.2
+[Unreleased]: https://github.com/018bf/creathor/compare/0.4.3...HEAD
+[0.4.3]: https://github.com/018bf/creathor/compare/v0.4.2...0.4.3
+[v0.4.2]: https://github.com/018bf/creathor/compare/v0.4.1...v0.4.2
 [v0.4.1]: https://github.com/018bf/creathor/compare/v0.4.0...v0.4.1
 [v0.4.0]: https://github.com/018bf/creathor/compare/v0.3.3...v0.4.0
 [v0.3.3]: https://github.com/018bf/creathor/compare/v0.3.2...v0.3.3

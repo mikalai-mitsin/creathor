@@ -4,4 +4,7 @@ breaking:
     - FILE
 lint:
   use:
-    - DEFAULT
+    - BASIC
+
+deps:
+- buf.build/googleapis/googleapis

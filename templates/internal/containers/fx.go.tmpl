@@ -5,6 +5,9 @@ import (
 {{- if .GRPCEnabled }}
 	grpcInterface "{{ .Module }}/internal/interfaces/grpc"
 {{- end }}
+{{- if .GatewayEnabled }}
+	gatewayInterface "{{ .Module }}/internal/interfaces/gateway"
+{{- end }}
 	postgresInterface "{{ .Module }}/internal/interfaces/postgres"
 {{- if .RESTEnabled }}
 	restInterface "{{ .Module }}/internal/interfaces/rest"
@@ -59,7 +62,9 @@ var FXModule = fx.Options(
         restInterface.NewAuthHandler,
         restInterface.NewAuthMiddleware,
         restInterface.NewUserHandler,
-
+{{- end }}
+{{- if .GatewayEnabled }}
+        gatewayInterface.NewServer,
 {{- end }}
         usecases.NewUserUseCase,
         interceptors.NewUserInterceptor,
@@ -76,6 +81,21 @@ func NewGRPC{{ .Name | Title }}(config string) *fx.App {
 			lifecycle.Append(fx.Hook{
 				OnStart: server.Start,
 				OnStop:  server.Stop,
+			})
+		}),
+    )
+    return app
+}
+{{- end }}
+
+{{- if .GatewayEnabled }}
+func NewGateway{{ .Name | Title }}(config string) *fx.App {
+    app := fx.New(
+        fx.Provide(func() string { return config }),
+        FXModule,
+		fx.Invoke(func(lifecycle fx.Lifecycle, server *gatewayInterface.Server) {
+			lifecycle.Append(fx.Hook{
+				OnStart: server.Start,
 			})
 		}),
     )

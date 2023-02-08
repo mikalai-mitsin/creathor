@@ -6,7 +6,7 @@ COPY go.sum .
 RUN go mod download
 COPY . .
 ENV CGO_ENABLED=0
-RUN go build -v -o ./dist/example ./cmd/example
+RUN go build -ldflags "-X main.version=$(git describe --tags --abbrev=0)" -v -o ./dist/example ./cmd/example
 
 FROM alpine
 WORKDIR /app

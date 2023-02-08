@@ -8,7 +8,7 @@ import (
 	mock_interceptors "github.com/018bf/example/internal/domain/interceptors/mock"
 	"github.com/018bf/example/internal/domain/models"
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
-	"github.com/018bf/example/pkg/examplepb"
+	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/018bf/example/pkg/utils"
@@ -477,10 +477,8 @@ func TestSessionServiceServer_Update(t *testing.T) {
 				logger:                            logger,
 			},
 			args: args{
-				ctx: ctx,
-				input: &examplepb.SessionUpdate{
-					Id: string(update.ID),
-				}, // TODO: Fill me
+				ctx:   ctx,
+				input: decodeSessionUpdate(update),
 			},
 			want:    decodeSession(session),
 			wantErr: nil,
@@ -497,10 +495,8 @@ func TestSessionServiceServer_Update(t *testing.T) {
 				logger:                            logger,
 			},
 			args: args{
-				ctx: ctx,
-				input: &examplepb.SessionUpdate{
-					Id: string(update.ID),
-				}, // TODO: Fill me
+				ctx:   ctx,
+				input: decodeSessionUpdate(update),
 			},
 			want:    nil,
 			wantErr: decodeError(errs.NewUnexpectedBehaviorError("i error")),
@@ -528,6 +524,13 @@ func TestSessionServiceServer_Update(t *testing.T) {
 
 func Test_decodeSession(t *testing.T) {
 	session := mock_models.NewSession(t)
+	result := &examplepb.Session{
+		Id:          string(session.ID),
+		UpdatedAt:   timestamppb.New(session.UpdatedAt),
+		CreatedAt:   timestamppb.New(session.CreatedAt),
+		Title:       string(session.Title),
+		Description: string(session.Description),
+	}
 	type args struct {
 		session *models.Session
 	}
@@ -541,13 +544,7 @@ func Test_decodeSession(t *testing.T) {
 			args: args{
 				session: session,
 			},
-			want: &examplepb.Session{
-				Id:          string(session.ID),
-				UpdatedAt:   timestamppb.New(session.UpdatedAt),
-				CreatedAt:   timestamppb.New(session.CreatedAt),
-				Title:       string(session.Title),
-				Description: string(session.Description),
-			},
+			want: result,
 		},
 	}
 	for _, tt := range tests {

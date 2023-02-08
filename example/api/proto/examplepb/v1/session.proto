@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package examplepb.v1;
+
+option go_package = "github.com/018bf/example/pkg/examplepb/v1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+
+message SessionCreate {
+  string title = 1;
+  string description = 2;
+}
+
+message SessionGet {
+  string id = 1;
+}
+
+message SessionUpdate {
+  string id = 1;
+  google.protobuf.StringValue title = 2;
+  google.protobuf.StringValue description = 3;
+}
+
+message Session {
+  string id = 1;
+  google.protobuf.Timestamp updated_at = 2;
+  google.protobuf.Timestamp created_at = 3;
+  string title = 4;
+  string description = 5;
+}
+
+message ListSession {
+  repeated Session items = 1;
+  uint64 count = 2;
+}
+
+message SessionDelete {
+  string id = 1;
+}
+
+message SessionFilter {
+  google.protobuf.UInt64Value page_number = 1;
+  google.protobuf.UInt64Value page_size = 2;
+  repeated string order_by = 3;
+  repeated string ids = 4;
+  google.protobuf.StringValue search = 5;
+}
+
+service SessionService {
+  rpc Create(examplepb.v1.SessionCreate) returns (examplepb.v1.Session) {
+    option (google.api.http) = {
+      post: "/api/v1/sessions"
+      body: "*"
+    };
+  }
+  rpc Get(examplepb.v1.SessionGet) returns (examplepb.v1.Session) {
+    option (google.api.http) = {get: "/api/v1/sessions/{id}"};
+  }
+  rpc Update(examplepb.v1.SessionUpdate) returns (examplepb.v1.Session) {
+    option (google.api.http) = {
+      patch: "/api/v1/sessions/{id}"
+      body: "*"
+    };
+  }
+  rpc Delete(examplepb.v1.SessionDelete) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/api/v1/sessions/{id}"};
+  }
+  rpc List(examplepb.v1.SessionFilter) returns (examplepb.v1.ListSession) {
+    option (google.api.http) = {get: "/api/v1/sessions"};
+  }
+}

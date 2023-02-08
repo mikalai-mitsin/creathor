@@ -5,21 +5,27 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/iancoleman/strcase"
 	"github.com/jinzhu/inflection"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
 
 type Model struct {
-	Model        string   `json:"model" yaml:"model"`
-	Module       string   `json:"module" yaml:"module"`
-	ProjectName  string   `json:"project_name" yaml:"projectName"`
-	ProtoPackage string   `json:"proto_package" yaml:"protoPackage"`
-	Auth         bool     `json:"auth" yaml:"auth"`
-	Params       []*Param `json:"params" yaml:"params"`
-	GRPCEnabled  bool     `yaml:"gRPC"`
-	RESTEnabled  bool     `yaml:"REST"`
+	Model          string   `json:"model" yaml:"model"`
+	Module         string   `json:"module" yaml:"module"`
+	ProjectName    string   `json:"project_name" yaml:"projectName"`
+	ProtoPackage   string   `json:"proto_package" yaml:"protoPackage"`
+	Auth           bool     `json:"auth" yaml:"auth"`
+	Params         []*Param `json:"params" yaml:"params"`
+	GRPCEnabled    bool     `yaml:"gRPC"`
+	GatewayEnabled bool     `yaml:"gateway"`
+	RESTEnabled    bool     `yaml:"REST"`
 }
 
 func (m *Model) Validate() error {
@@ -35,6 +41,33 @@ func (m *Model) Validate() error {
 		return err
 	}
 	return nil
+}
+
+func (m *Model) IsExists() bool {
+	packagePath := filepath.Join("internal", "domain", "models")
+	fileset := token.NewFileSet()
+	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
+		return true
+	}, parser.ParseComments)
+	if err != nil {
+		return false
+	}
+	for _, p := range tree {
+		for _, file := range p.Files {
+			for _, decl := range file.Decls {
+				gen, ok := decl.(*ast.GenDecl)
+				if ok {
+					for _, spec := range gen.Specs {
+						t, ok := spec.(*ast.TypeSpec)
+						if ok && t.Name.String() == m.ModelName() {
+							return true
+						}
+					}
+				}
+			}
+		}
+	}
+	return false
 }
 
 func (m *Model) SearchEnabled() bool {
@@ -79,6 +112,10 @@ func (m *Model) GRPCHandlerTypeName() string {
 
 func (m *Model) RESTHandlerTypeName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Model))
+}
+
+func (m *Model) GatewayHandlerTypeName() string {
+	return fmt.Sprintf("Register%sServiceHandlerFromEndpoint", strcase.ToCamel(m.Model))
 }
 
 func (m *Model) RESTHandlerPath() string {

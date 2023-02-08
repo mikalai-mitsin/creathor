@@ -9,12 +9,12 @@ import (
 )
 
 type Day struct {
-	ID          UUID      `json:"id" db:"id,omitempty" form:"id"`
-	Name        string    `json:"name" db:"name" form:"name"`
-	Repeat      int       `json:"repeat" db:"repeat" form:"repeat"`
-	EquipmentID string    `json:"equipment_id" db:"equipment_id" form:"equipment_id"`
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at,omitempty" form:"updated_at"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at,omitempty" form:"created_at,omitempty"`
+	ID          UUID      `json:"id" form:"id"`
+	Name        string    `json:"name" form:"name"`
+	Repeat      int       `json:"repeat" form:"repeat"`
+	EquipmentID string    `json:"equipment_id" form:"equipment_id"`
+	UpdatedAt   time.Time `json:"updated_at" form:"updated_at"`
+	CreatedAt   time.Time `json:"created_at" form:"created_at,omitempty"`
 }
 
 func (c *Day) Validate() error {
@@ -63,9 +63,9 @@ type DayCreate struct {
 func (c *DayCreate) Validate() error {
 	err := validation.ValidateStruct(
 		c,
-		validation.Field(&c.Name),
-		validation.Field(&c.Repeat),
-		validation.Field(&c.EquipmentID),
+		validation.Field(&c.Name, validation.Required),
+		validation.Field(&c.Repeat, validation.Required),
+		validation.Field(&c.EquipmentID, validation.Required),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)

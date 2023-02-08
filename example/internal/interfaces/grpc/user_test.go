@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 	"errors"
-	"github.com/018bf/example/pkg/examplepb"
+	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/utils"
 	"reflect"
 	"syreclabs.com/go/faker"
@@ -248,14 +248,14 @@ func TestUserServiceServer_List(t *testing.T) {
 	userFilter := mock_models.NewUserFilter(t)
 	count := uint64(faker.RandomInt64(1, 100))
 	response := &examplepb.Users{
-		Users: make([]*examplepb.User, 0, int(count)),
+		Items: make([]*examplepb.User, 0, int(count)),
 		Count: count,
 	}
 	users := make([]*models.User, 0, int(count))
 	for i := 0; i < int(count); i++ {
 		u := mock_models.NewUser(t)
 		users = append(users, u)
-		response.Users = append(response.Users, decodeUser(u))
+		response.Items = append(response.Items, decodeUser(u))
 	}
 	type fields struct {
 		UnimplementedUserServiceServer examplepb.UnimplementedUserServiceServer
@@ -576,22 +576,14 @@ func Test_encodeUserFilter(t *testing.T) {
 		want  *models.UserFilter
 	}{
 		{
-			name: "ok",
-			setup: func() {
-
-			},
+			name:  "ok",
+			setup: func() {},
 			args: args{
 				input: &examplepb.UserFilter{
-					PageNumber: &wrapperspb.UInt64Value{
-						Value: 2,
-					},
-					PageSize: &wrapperspb.UInt64Value{
-						Value: 5,
-					},
-					Search: &wrapperspb.StringValue{
-						Value: "my name is",
-					},
-					OrderBy: []string{"created_at", "id"},
+					PageNumber: wrapperspb.UInt64(2),
+					PageSize:   wrapperspb.UInt64(5),
+					Search:     wrapperspb.String("my name is"),
+					OrderBy:    []string{"created_at", "id"},
 				},
 			},
 			want: &models.UserFilter{

@@ -94,7 +94,7 @@ func postInit(project *models.Project) error {
 		fmt.Println(errb.String())
 	}
 	if project.RESTEnabled {
-		swag := exec.Command("swag", "init", "-d", "./internal/interfaces/rest", "-g", "server.go", "--parseDependency", "-o", "./api", "-ot", "yaml")
+		swag := exec.Command("swag", "init", "-d", "./internal/interfaces/rest", "-g", "server.go", "--parseDependency", "-o", "./api/rest", "-ot", "json")
 		swag.Dir = destinationPath
 		swag.Stderr = &errb
 		fmt.Println(strings.Join(swag.Args, " "))

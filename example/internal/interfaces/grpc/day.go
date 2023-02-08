@@ -2,13 +2,17 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
-	"github.com/018bf/example/pkg/examplepb"
+	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/log"
 	"github.com/018bf/example/pkg/utils"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type DayServiceServer struct {
@@ -69,6 +73,8 @@ func (s *DayServiceServer) List(
 	if err != nil {
 		return nil, decodeError(err)
 	}
+	header := metadata.Pairs("count", fmt.Sprint(count))
+	_ = grpc.SendHeader(ctx, header)
 	return decodeListDay(listDays, count), nil
 }
 
@@ -173,4 +179,14 @@ func decodeDay(day *models.Day) *examplepb.Day {
 		EquipmentId: string(day.EquipmentID),
 	}
 	return response
+}
+
+func decodeDayUpdate(update *models.DayUpdate) *examplepb.DayUpdate {
+	result := &examplepb.DayUpdate{
+		Id:          string(update.ID),
+		Name:        wrapperspb.String(string(*update.Name)),
+		Repeat:      wrapperspb.Int32(int32(*update.Repeat)),
+		EquipmentId: wrapperspb.String(string(*update.EquipmentID)),
+	}
+	return result
 }

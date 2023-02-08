@@ -19,6 +19,10 @@ func CreateCRUD(model *models.Model) error {
 		fmt.Printf("invalid model %s: %s\n", model.Model, err)
 		return err
 	}
+	if model.IsExists() {
+		fmt.Printf("model exists %s\n", model.Model)
+		return nil
+	}
 	files := []*Template{
 		{
 			SourcePath:      "templates/internal/domain/models/crud.go.tmpl",
@@ -75,7 +79,6 @@ func CreateCRUD(model *models.Model) error {
 			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", "postgres", model.TestFileName()),
 			Name:            "repository test",
 		},
-
 		{
 			SourcePath:      "templates/internal/interfaces/postgres/migrations/crud.up.sql.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", model.MigrationUpFileName()),
@@ -145,6 +148,11 @@ func CreateCRUD(model *models.Model) error {
 			return err
 		}
 		if err := registerGRPCHandler(model.GRPCHandlerVariableName(), model.ProtoPackage, model.GRPCHandlerTypeName()); err != nil {
+			return err
+		}
+	}
+	if model.GRPCEnabled && model.GatewayEnabled {
+		if err := registerGatewayHandler(model.ProtoPackage, model.GatewayHandlerTypeName()); err != nil {
 			return err
 		}
 	}
@@ -264,6 +272,68 @@ func registerRESTHandler(variableName, typeName string) error {
 	return nil
 }
 
+func registerGatewayHandler(typePackage, typeName string) error {
+	packagePath := filepath.Join(destinationPath, "internal", "interfaces", "gateway")
+	fileset := token.NewFileSet()
+	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
+		return true
+	}, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	for _, p := range tree {
+		for filePath, file := range p.Files {
+			for _, decl := range file.Decls {
+				funcDecl, ok := decl.(*ast.FuncDecl)
+				if ok {
+					if funcDecl.Name.String() == "Start" {
+						registerCall := &ast.AssignStmt{
+							Lhs: []ast.Expr{ast.NewIdent("_")},
+							Tok: token.ASSIGN,
+							Rhs: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											NamePos: 0,
+											Name:    typePackage,
+											Obj:     nil,
+										},
+										Sel: &ast.Ident{
+											NamePos: 0,
+											Name:    typeName,
+											Obj:     nil,
+										},
+									},
+									Lparen: 0,
+									Args: []ast.Expr{
+										ast.NewIdent("ctx"),
+										ast.NewIdent("mux"),
+										ast.NewIdent("s.config.BindAddr"),
+										ast.NewIdent("opts"),
+									},
+									Ellipsis: 0,
+									Rparen:   0,
+								},
+							},
+						}
+						le := len(funcDecl.Body.List)
+						newBody := append(funcDecl.Body.List[:le-2], registerCall, funcDecl.Body.List[le-2], funcDecl.Body.List[le-1])
+						funcDecl.Body.List = newBody
+						buff := &bytes.Buffer{}
+						if err := printer.Fprint(buff, fileset, file); err != nil {
+							return err
+						}
+						if err := os.WriteFile(filePath, buff.Bytes(), 0777); err != nil {
+							return err
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func registerGRPCHandler(variableName, typePackage, typeName string) error {
 	packagePath := filepath.Join(destinationPath, "internal", "interfaces", "grpc")
 	fileset := token.NewFileSet()
@@ -350,7 +420,7 @@ func registerGRPCHandler(variableName, typePackage, typeName string) error {
 }
 
 func addPermission(permission, check string) error {
-	packagePath := filepath.Join(destinationPath, "internal", "repositories")
+	packagePath := filepath.Join(destinationPath, "internal", "repositories", "postgres")
 	fileset := token.NewFileSet()
 	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
 		return true

@@ -10,16 +10,17 @@ import (
 )
 
 type Project struct {
-	Name        string   `yaml:"name"`
-	Module      string   `yaml:"module"`
-	GoVersion   string   `yaml:"goVersion"`
-	Auth        bool     `yaml:"auth"`
-	CI          string   `yaml:"ci"`
-	Models      []*Model `yaml:"models"`
-	GRPCEnabled bool     `yaml:"gRPC"`
-	RESTEnabled bool     `yaml:"REST"`
-	MakeEnabled bool     `yaml:"make"`
-	TaskEnabled bool     `yaml:"task"`
+	Name           string   `yaml:"name"`
+	Module         string   `yaml:"module"`
+	GoVersion      string   `yaml:"goVersion"`
+	Auth           bool     `yaml:"auth"`
+	CI             string   `yaml:"ci"`
+	Models         []*Model `yaml:"models"`
+	GRPCEnabled    bool     `yaml:"gRPC"`
+	GatewayEnabled bool     `yaml:"gateway"`
+	RESTEnabled    bool     `yaml:"REST"`
+	MakeEnabled    bool     `yaml:"make"`
+	TaskEnabled    bool     `yaml:"task"`
 }
 
 func NewProject(configPath string) (*Project, error) {
@@ -48,6 +49,7 @@ func NewProject(configPath string) (*Project, error) {
 		model.ProjectName = project.Name
 		model.ProtoPackage = project.ProtoPackage()
 		model.GRPCEnabled = project.GRPCEnabled
+		model.GatewayEnabled = project.GatewayEnabled
 		model.RESTEnabled = project.RESTEnabled
 	}
 	return project, nil

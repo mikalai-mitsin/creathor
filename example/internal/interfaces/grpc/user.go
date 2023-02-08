@@ -2,12 +2,16 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
-	"github.com/018bf/example/pkg/examplepb"
+	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/log"
 	"github.com/018bf/example/pkg/utils"
 	"strings"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -76,12 +80,14 @@ func (u UserServiceServer) List(ctx context.Context, input *examplepb.UserFilter
 		return nil, decodeError(err)
 	}
 	response := &examplepb.Users{
-		Users: make([]*examplepb.User, 0, len(users)),
+		Items: make([]*examplepb.User, 0, len(users)),
 		Count: count,
 	}
 	for _, user := range users {
-		response.Users = append(response.Users, decodeUser(user))
+		response.Items = append(response.Items, decodeUser(user))
 	}
+	header := metadata.Pairs("count", fmt.Sprint(count))
+	_ = grpc.SendHeader(ctx, header)
 	return response, nil
 }
 

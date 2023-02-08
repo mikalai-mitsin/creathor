@@ -44,7 +44,11 @@ func NewSessionFilter(t *testing.T) *models.SessionFilter {
 		PageSize:   utils.Pointer(uint64(faker.RandomInt64(2, 100))),
 		PageNumber: utils.Pointer(uint64(faker.RandomInt64(2, 100))),
 		OrderBy:    faker.Lorem().Words(5),
-		IDs:        []models.UUID{models.UUID(uuid.NewString()), models.UUID(uuid.NewString()), models.UUID(uuid.NewString())},
-		Search:     utils.Pointer(faker.Lorem().String()),
+		IDs: []models.UUID{
+			models.UUID(uuid.NewString()),
+			models.UUID(uuid.NewString()),
+			models.UUID(uuid.NewString()),
+		},
+		Search: utils.Pointer(faker.Lorem().String()),
 	}
 }

@@ -336,22 +336,25 @@ func TestPlanUseCase_Create(t *testing.T) {
 			want:    nil,
 			wantErr: errs.NewUnexpectedBehaviorError("test error"),
 		},
-		// TODO: Add validation rules or delete this case
-		// {
-		//     name: "invalid",
-		//     setup: func() {
-		//     },
-		//     fields: fields{
-		//         planRepository: planRepository,
-		//         logger:           logger,
-		//     },
-		//     args: args{
-		//         ctx: ctx,
-		//         create: &models.PlanCreate{},
-		//     },
-		//     want: nil,
-		//     wantErr: errs.NewInvalidFormError().WithParam("set", "it"),
-		// },
+		{
+			name: "invalid",
+			setup: func() {
+			},
+			fields: fields{
+				planRepository: planRepository,
+				logger:         logger,
+			},
+			args: args{
+				ctx:    ctx,
+				create: &models.PlanCreate{},
+			},
+			want: nil,
+			wantErr: errs.NewInvalidFormError().WithParams(map[string]string{
+				"name":         "cannot be blank",
+				"repeat":       "cannot be blank",
+				"equipment_id": "cannot be blank",
+			}),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

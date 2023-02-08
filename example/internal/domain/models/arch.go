@@ -9,12 +9,15 @@ import (
 )
 
 type Arch struct {
-	ID        UUID      `json:"id" db:"id,omitempty" form:"id"`
-	Name      string    `json:"name" db:"name" form:"name"`
-	Release   time.Time `json:"release" db:"release" form:"release"`
-	Tested    time.Time `json:"tested" db:"tested" form:"tested"`
-	UpdatedAt time.Time `json:"updated_at" db:"updated_at,omitempty" form:"updated_at"`
-	CreatedAt time.Time `json:"created_at" db:"created_at,omitempty" form:"created_at,omitempty"`
+	ID          UUID      `json:"id" form:"id"`
+	Name        string    `json:"name" form:"name"`
+	Tags        []string  `json:"tags" form:"tags"`
+	Versions    []uint    `json:"versions" form:"versions"`
+	OldVersions []uint64  `json:"old_versions" form:"old_versions"`
+	Release     time.Time `json:"release" form:"release"`
+	Tested      time.Time `json:"tested" form:"tested"`
+	UpdatedAt   time.Time `json:"updated_at" form:"updated_at"`
+	CreatedAt   time.Time `json:"created_at" form:"created_at,omitempty"`
 }
 
 func (c *Arch) Validate() error {
@@ -22,6 +25,9 @@ func (c *Arch) Validate() error {
 		c,
 		validation.Field(&c.ID, is.UUID),
 		validation.Field(&c.Name),
+		validation.Field(&c.Tags),
+		validation.Field(&c.Versions),
+		validation.Field(&c.OldVersions),
 		validation.Field(&c.Release),
 		validation.Field(&c.Tested),
 	)
@@ -55,17 +61,23 @@ func (c *ArchFilter) Validate() error {
 }
 
 type ArchCreate struct {
-	Name    string    `json:"name" form:"name"`
-	Release time.Time `json:"release" form:"release"`
-	Tested  time.Time `json:"tested" form:"tested"`
+	Name        string    `json:"name" form:"name"`
+	Tags        []string  `json:"tags" form:"tags"`
+	Versions    []uint    `json:"versions" form:"versions"`
+	OldVersions []uint64  `json:"old_versions" form:"old_versions"`
+	Release     time.Time `json:"release" form:"release"`
+	Tested      time.Time `json:"tested" form:"tested"`
 }
 
 func (c *ArchCreate) Validate() error {
 	err := validation.ValidateStruct(
 		c,
-		validation.Field(&c.Name),
-		validation.Field(&c.Release),
-		validation.Field(&c.Tested),
+		validation.Field(&c.Name, validation.Required),
+		validation.Field(&c.Tags, validation.Required),
+		validation.Field(&c.Versions, validation.Required),
+		validation.Field(&c.OldVersions, validation.Required),
+		validation.Field(&c.Release, validation.Required),
+		validation.Field(&c.Tested, validation.Required),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -74,10 +86,13 @@ func (c *ArchCreate) Validate() error {
 }
 
 type ArchUpdate struct {
-	ID      UUID       `json:"id"`
-	Name    *string    `json:"name" form:"name"`
-	Release *time.Time `json:"release" form:"release"`
-	Tested  *time.Time `json:"tested" form:"tested"`
+	ID          UUID       `json:"id"`
+	Name        *string    `json:"name" form:"name"`
+	Tags        *[]string  `json:"tags" form:"tags"`
+	Versions    *[]uint    `json:"versions" form:"versions"`
+	OldVersions *[]uint64  `json:"old_versions" form:"old_versions"`
+	Release     *time.Time `json:"release" form:"release"`
+	Tested      *time.Time `json:"tested" form:"tested"`
 }
 
 func (c *ArchUpdate) Validate() error {
@@ -85,6 +100,9 @@ func (c *ArchUpdate) Validate() error {
 		c,
 		validation.Field(&c.ID, validation.Required, is.UUID),
 		validation.Field(&c.Name),
+		validation.Field(&c.Tags),
+		validation.Field(&c.Versions),
+		validation.Field(&c.OldVersions),
 		validation.Field(&c.Release),
 		validation.Field(&c.Tested),
 	)

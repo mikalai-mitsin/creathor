@@ -58,23 +58,23 @@ message {{ .FilterTypeName }} {
 service {{ .ModelName }}Service {
   rpc Create({{ .ProtoPackage }}.v1.{{ .CreateTypeName }}) returns ({{ .ProtoPackage }}.v1.{{ .ModelName }}) {
     option (google.api.http) = {
-      post: "/v1/arches"
+      post: "/api/v1/{{ .RESTHandlerPath }}"
       body: "*"
     };
   }
   rpc Get({{ .ProtoPackage }}.v1.{{ .ModelName}}Get) returns ({{ .ProtoPackage }}.v1.{{ .ModelName }}) {
-    option (google.api.http) = {get: "/v1/arches/{id}"};
+    option (google.api.http) = {get: "/api/v1/{{ .RESTHandlerPath }}/{id}"};
   }
   rpc Update({{ .ProtoPackage }}.v1.{{ .UpdateTypeName }}) returns ({{ .ProtoPackage }}.v1.{{ .ModelName }}) {
     option (google.api.http) = {
-      patch: "/v1/arches/{id}"
+      patch: "/api/v1/{{ .RESTHandlerPath }}/{id}"
       body: "*"
     };
   }
   rpc Delete({{ .ProtoPackage }}.v1.{{ .ModelName }}Delete) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/arches/{id}"};
+    option (google.api.http) = {delete: "/api/v1/{{ .RESTHandlerPath }}/{id}"};
   }
   rpc List({{ .ProtoPackage }}.v1.{{ .FilterTypeName }}) returns ({{ .ProtoPackage }}.v1.List{{ .ModelName }}) {
-    option (google.api.http) = {get: "/v1/arches"};
+    option (google.api.http) = {get: "/api/v1/{{ .RESTHandlerPath }}"};
   }
 }

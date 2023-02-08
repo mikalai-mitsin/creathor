@@ -8,7 +8,7 @@ import (
 	mock_interceptors "github.com/018bf/example/internal/domain/interceptors/mock"
 	"github.com/018bf/example/internal/domain/models"
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
-	"github.com/018bf/example/pkg/examplepb"
+	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/golang/mock/gomock"
 	"reflect"
 	"testing"

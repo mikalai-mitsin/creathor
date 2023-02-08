@@ -8,7 +8,7 @@ import (
 	mock_interceptors "github.com/018bf/example/internal/domain/interceptors/mock"
 	"github.com/018bf/example/internal/domain/models"
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
-	"github.com/018bf/example/pkg/examplepb"
+	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/018bf/example/pkg/utils"
@@ -477,10 +477,8 @@ func TestDayServiceServer_Update(t *testing.T) {
 				logger:                        logger,
 			},
 			args: args{
-				ctx: ctx,
-				input: &examplepb.DayUpdate{
-					Id: string(update.ID),
-				}, // TODO: Fill me
+				ctx:   ctx,
+				input: decodeDayUpdate(update),
 			},
 			want:    decodeDay(day),
 			wantErr: nil,
@@ -497,10 +495,8 @@ func TestDayServiceServer_Update(t *testing.T) {
 				logger:                        logger,
 			},
 			args: args{
-				ctx: ctx,
-				input: &examplepb.DayUpdate{
-					Id: string(update.ID),
-				}, // TODO: Fill me
+				ctx:   ctx,
+				input: decodeDayUpdate(update),
 			},
 			want:    nil,
 			wantErr: decodeError(errs.NewUnexpectedBehaviorError("i error")),
@@ -528,6 +524,14 @@ func TestDayServiceServer_Update(t *testing.T) {
 
 func Test_decodeDay(t *testing.T) {
 	day := mock_models.NewDay(t)
+	result := &examplepb.Day{
+		Id:          string(day.ID),
+		UpdatedAt:   timestamppb.New(day.UpdatedAt),
+		CreatedAt:   timestamppb.New(day.CreatedAt),
+		Name:        string(day.Name),
+		Repeat:      int32(day.Repeat),
+		EquipmentId: string(day.EquipmentID),
+	}
 	type args struct {
 		day *models.Day
 	}
@@ -541,14 +545,7 @@ func Test_decodeDay(t *testing.T) {
 			args: args{
 				day: day,
 			},
-			want: &examplepb.Day{
-				Id:          string(day.ID),
-				UpdatedAt:   timestamppb.New(day.UpdatedAt),
-				CreatedAt:   timestamppb.New(day.CreatedAt),
-				Name:        string(day.Name),
-				Repeat:      int32(day.Repeat),
-				EquipmentId: string(day.EquipmentID),
-			},
+			want: result,
 		},
 	}
 	for _, tt := range tests {

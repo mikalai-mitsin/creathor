@@ -6,9 +6,10 @@ import (
 	"os"
 )
 
-const version = "0.1.0"
-
-var configPath = ""
+var (
+	version    = "unknown"
+	configPath = ""
+)
 
 func main() {
 	app := &cli.App{
@@ -35,6 +36,24 @@ func main() {
 				Action:    runMigrations,
 				ArgsUsage: "",
 			},
+			{
+				Name:      "grpc",
+				Usage:     "Run gRPC server",
+				Action:    runGRPC,
+				ArgsUsage: "",
+			},
+			{
+				Name:      "gateway",
+				Usage:     "Run gateway-grpc server",
+				Action:    runGateway,
+				ArgsUsage: "",
+			},
+			{
+				Name:      "rest",
+				Usage:     "Run rest server",
+				Action:    runREST,
+				ArgsUsage: "",
+			},
 		},
 	}
 	if err := app.Run(os.Args); err != nil {
@@ -45,8 +64,34 @@ func main() {
 // runApp - run app
 func runApp(context *cli.Context) error {
 	app := containers.NewGRPCExample(configPath)
-	err := app.Start(context.Context)
-	if err != nil {
+	if err := app.Start(context.Context); err != nil {
+		return err
+	}
+	return nil
+}
+
+// runGRPC - run grpc api
+func runGRPC(context *cli.Context) error {
+	app := containers.NewGRPCExample(configPath)
+	if err := app.Start(context.Context); err != nil {
+		return err
+	}
+	return nil
+}
+
+// runGateway - run gateway api
+func runGateway(context *cli.Context) error {
+	app := containers.NewGatewayExample(configPath)
+	if err := app.Start(context.Context); err != nil {
+		return err
+	}
+	return nil
+}
+
+// runREST - run REST api
+func runREST(context *cli.Context) error {
+	app := containers.NewRESTExample(configPath)
+	if err := app.Start(context.Context); err != nil {
 		return err
 	}
 	return nil

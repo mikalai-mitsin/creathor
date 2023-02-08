@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package examplepb.v1;
+
+option go_package = "github.com/018bf/example/pkg/examplepb/v1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+
+message EquipmentCreate {
+  string name = 1;
+  int32 repeat = 2;
+  int32 weight = 3;
+}
+
+message EquipmentGet {
+  string id = 1;
+}
+
+message EquipmentUpdate {
+  string id = 1;
+  google.protobuf.StringValue name = 2;
+  google.protobuf.Int32Value repeat = 3;
+  google.protobuf.Int32Value weight = 4;
+}
+
+message Equipment {
+  string id = 1;
+  google.protobuf.Timestamp updated_at = 2;
+  google.protobuf.Timestamp created_at = 3;
+  string name = 4;
+  int32 repeat = 5;
+  int32 weight = 6;
+}
+
+message ListEquipment {
+  repeated Equipment items = 1;
+  uint64 count = 2;
+}
+
+message EquipmentDelete {
+  string id = 1;
+}
+
+message EquipmentFilter {
+  google.protobuf.UInt64Value page_number = 1;
+  google.protobuf.UInt64Value page_size = 2;
+  repeated string order_by = 3;
+  repeated string ids = 4;
+  google.protobuf.StringValue search = 5;
+}
+
+service EquipmentService {
+  rpc Create(examplepb.v1.EquipmentCreate) returns (examplepb.v1.Equipment) {
+    option (google.api.http) = {
+      post: "/api/v1/equipment"
+      body: "*"
+    };
+  }
+  rpc Get(examplepb.v1.EquipmentGet) returns (examplepb.v1.Equipment) {
+    option (google.api.http) = {get: "/api/v1/equipment/{id}"};
+  }
+  rpc Update(examplepb.v1.EquipmentUpdate) returns (examplepb.v1.Equipment) {
+    option (google.api.http) = {
+      patch: "/api/v1/equipment/{id}"
+      body: "*"
+    };
+  }
+  rpc Delete(examplepb.v1.EquipmentDelete) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/api/v1/equipment/{id}"};
+  }
+  rpc List(examplepb.v1.EquipmentFilter) returns (examplepb.v1.ListEquipment) {
+    option (google.api.http) = {get: "/api/v1/equipment"};
+  }
+}

@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package examplepb.v1;
+
+option go_package = "github.com/018bf/example/pkg/examplepb/v1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+
+message PlanCreate {
+  string name = 1;
+  uint64 repeat = 2;
+  string equipment_id = 3;
+}
+
+message PlanGet {
+  string id = 1;
+}
+
+message PlanUpdate {
+  string id = 1;
+  google.protobuf.StringValue name = 2;
+  google.protobuf.UInt64Value repeat = 3;
+  google.protobuf.StringValue equipment_id = 4;
+}
+
+message Plan {
+  string id = 1;
+  google.protobuf.Timestamp updated_at = 2;
+  google.protobuf.Timestamp created_at = 3;
+  string name = 4;
+  uint64 repeat = 5;
+  string equipment_id = 6;
+}
+
+message ListPlan {
+  repeated Plan items = 1;
+  uint64 count = 2;
+}
+
+message PlanDelete {
+  string id = 1;
+}
+
+message PlanFilter {
+  google.protobuf.UInt64Value page_number = 1;
+  google.protobuf.UInt64Value page_size = 2;
+  repeated string order_by = 3;
+  repeated string ids = 4;
+  google.protobuf.StringValue search = 5;
+}
+
+service PlanService {
+  rpc Create(examplepb.v1.PlanCreate) returns (examplepb.v1.Plan) {
+    option (google.api.http) = {
+      post: "/api/v1/plans"
+      body: "*"
+    };
+  }
+  rpc Get(examplepb.v1.PlanGet) returns (examplepb.v1.Plan) {
+    option (google.api.http) = {get: "/api/v1/plans/{id}"};
+  }
+  rpc Update(examplepb.v1.PlanUpdate) returns (examplepb.v1.Plan) {
+    option (google.api.http) = {
+      patch: "/api/v1/plans/{id}"
+      body: "*"
+    };
+  }
+  rpc Delete(examplepb.v1.PlanDelete) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/api/v1/plans/{id}"};
+  }
+  rpc List(examplepb.v1.PlanFilter) returns (examplepb.v1.ListPlan) {
+    option (google.api.http) = {get: "/api/v1/plans"};
+  }
+}

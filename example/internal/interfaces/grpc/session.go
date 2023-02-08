@@ -2,13 +2,17 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
-	"github.com/018bf/example/pkg/examplepb"
+	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/log"
 	"github.com/018bf/example/pkg/utils"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type SessionServiceServer struct {
@@ -69,6 +73,8 @@ func (s *SessionServiceServer) List(
 	if err != nil {
 		return nil, decodeError(err)
 	}
+	header := metadata.Pairs("count", fmt.Sprint(count))
+	_ = grpc.SendHeader(ctx, header)
 	return decodeListSession(listSessions, count), nil
 }
 
@@ -167,4 +173,13 @@ func decodeSession(session *models.Session) *examplepb.Session {
 		Description: string(session.Description),
 	}
 	return response
+}
+
+func decodeSessionUpdate(update *models.SessionUpdate) *examplepb.SessionUpdate {
+	result := &examplepb.SessionUpdate{
+		Id:          string(update.ID),
+		Title:       wrapperspb.String(string(*update.Title)),
+		Description: wrapperspb.String(string(*update.Description)),
+	}
+	return result
 }

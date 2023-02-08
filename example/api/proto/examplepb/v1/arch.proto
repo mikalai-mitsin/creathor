@@ -65,23 +65,23 @@ message ArchFilter {
 service ArchService {
   rpc Create(examplepb.v1.ArchCreate) returns (examplepb.v1.Arch) {
     option (google.api.http) = {
-      post: "/v1/arches"
+      post: "/api/v1/arches"
       body: "*"
     };
   }
   rpc Get(examplepb.v1.ArchGet) returns (examplepb.v1.Arch) {
-    option (google.api.http) = {get: "/v1/arches/{id}"};
+    option (google.api.http) = {get: "/api/v1/arches/{id}"};
   }
   rpc Update(examplepb.v1.ArchUpdate) returns (examplepb.v1.Arch) {
     option (google.api.http) = {
-      patch: "/v1/arches/{id}"
+      patch: "/api/v1/arches/{id}"
       body: "*"
     };
   }
   rpc Delete(examplepb.v1.ArchDelete) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/arches/{id}"};
+    option (google.api.http) = {delete: "/api/v1/arches/{id}"};
   }
   rpc List(examplepb.v1.ArchFilter) returns (examplepb.v1.ListArch) {
-    option (google.api.http) = {get: "/v1/arches"};
+    option (google.api.http) = {get: "/api/v1/arches"};
   }
 }

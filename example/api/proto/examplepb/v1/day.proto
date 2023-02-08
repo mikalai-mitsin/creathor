@@ -56,23 +56,23 @@ message DayFilter {
 service DayService {
   rpc Create(examplepb.v1.DayCreate) returns (examplepb.v1.Day) {
     option (google.api.http) = {
-      post: "/v1/arches"
+      post: "/api/v1/days"
       body: "*"
     };
   }
   rpc Get(examplepb.v1.DayGet) returns (examplepb.v1.Day) {
-    option (google.api.http) = {get: "/v1/arches/{id}"};
+    option (google.api.http) = {get: "/api/v1/days/{id}"};
   }
   rpc Update(examplepb.v1.DayUpdate) returns (examplepb.v1.Day) {
     option (google.api.http) = {
-      patch: "/v1/arches/{id}"
+      patch: "/api/v1/days/{id}"
       body: "*"
     };
   }
   rpc Delete(examplepb.v1.DayDelete) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/arches/{id}"};
+    option (google.api.http) = {delete: "/api/v1/days/{id}"};
   }
   rpc List(examplepb.v1.DayFilter) returns (examplepb.v1.ListDay) {
-    option (google.api.http) = {get: "/v1/arches"};
+    option (google.api.http) = {get: "/api/v1/days"};
   }
 }

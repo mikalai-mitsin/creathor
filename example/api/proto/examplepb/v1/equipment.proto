@@ -56,23 +56,23 @@ message EquipmentFilter {
 service EquipmentService {
   rpc Create(examplepb.v1.EquipmentCreate) returns (examplepb.v1.Equipment) {
     option (google.api.http) = {
-      post: "/v1/arches"
+      post: "/api/v1/equipment"
       body: "*"
     };
   }
   rpc Get(examplepb.v1.EquipmentGet) returns (examplepb.v1.Equipment) {
-    option (google.api.http) = {get: "/v1/arches/{id}"};
+    option (google.api.http) = {get: "/api/v1/equipment/{id}"};
   }
   rpc Update(examplepb.v1.EquipmentUpdate) returns (examplepb.v1.Equipment) {
     option (google.api.http) = {
-      patch: "/v1/arches/{id}"
+      patch: "/api/v1/equipment/{id}"
       body: "*"
     };
   }
   rpc Delete(examplepb.v1.EquipmentDelete) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/arches/{id}"};
+    option (google.api.http) = {delete: "/api/v1/equipment/{id}"};
   }
   rpc List(examplepb.v1.EquipmentFilter) returns (examplepb.v1.ListEquipment) {
-    option (google.api.http) = {get: "/v1/arches"};
+    option (google.api.http) = {get: "/api/v1/equipment"};
   }
 }

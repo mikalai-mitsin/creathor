@@ -287,7 +287,7 @@ func RegisterEquipmentServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Create", runtime.WithHTTPPathPattern("/v1/arches"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Create", runtime.WithHTTPPathPattern("/api/v1/equipment"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -312,7 +312,7 @@ func RegisterEquipmentServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Get", runtime.WithHTTPPathPattern("/v1/arches/{id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Get", runtime.WithHTTPPathPattern("/api/v1/equipment/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -337,7 +337,7 @@ func RegisterEquipmentServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Update", runtime.WithHTTPPathPattern("/v1/arches/{id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Update", runtime.WithHTTPPathPattern("/api/v1/equipment/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -362,7 +362,7 @@ func RegisterEquipmentServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Delete", runtime.WithHTTPPathPattern("/v1/arches/{id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Delete", runtime.WithHTTPPathPattern("/api/v1/equipment/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -387,7 +387,7 @@ func RegisterEquipmentServiceHandlerServer(ctx context.Context, mux *runtime.Ser
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.EquipmentService/List", runtime.WithHTTPPathPattern("/v1/arches"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.EquipmentService/List", runtime.WithHTTPPathPattern("/api/v1/equipment"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -451,7 +451,7 @@ func RegisterEquipmentServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Create", runtime.WithHTTPPathPattern("/v1/arches"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Create", runtime.WithHTTPPathPattern("/api/v1/equipment"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -473,7 +473,7 @@ func RegisterEquipmentServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Get", runtime.WithHTTPPathPattern("/v1/arches/{id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Get", runtime.WithHTTPPathPattern("/api/v1/equipment/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -495,7 +495,7 @@ func RegisterEquipmentServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Update", runtime.WithHTTPPathPattern("/v1/arches/{id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Update", runtime.WithHTTPPathPattern("/api/v1/equipment/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -517,7 +517,7 @@ func RegisterEquipmentServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Delete", runtime.WithHTTPPathPattern("/v1/arches/{id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.EquipmentService/Delete", runtime.WithHTTPPathPattern("/api/v1/equipment/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -539,7 +539,7 @@ func RegisterEquipmentServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.EquipmentService/List", runtime.WithHTTPPathPattern("/v1/arches"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.EquipmentService/List", runtime.WithHTTPPathPattern("/api/v1/equipment"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -559,15 +559,15 @@ func RegisterEquipmentServiceHandlerClient(ctx context.Context, mux *runtime.Ser
 }
 
 var (
-	pattern_EquipmentService_Create_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "arches"}, ""))
+	pattern_EquipmentService_Create_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "equipment"}, ""))
 
-	pattern_EquipmentService_Get_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "arches", "id"}, ""))
+	pattern_EquipmentService_Get_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "equipment", "id"}, ""))
 
-	pattern_EquipmentService_Update_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "arches", "id"}, ""))
+	pattern_EquipmentService_Update_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "equipment", "id"}, ""))
 
-	pattern_EquipmentService_Delete_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "arches", "id"}, ""))
+	pattern_EquipmentService_Delete_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "equipment", "id"}, ""))
 
-	pattern_EquipmentService_List_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "arches"}, ""))
+	pattern_EquipmentService_List_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "equipment"}, ""))
 )
 
 var (

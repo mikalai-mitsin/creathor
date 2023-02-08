@@ -56,23 +56,23 @@ message PlanFilter {
 service PlanService {
   rpc Create(examplepb.v1.PlanCreate) returns (examplepb.v1.Plan) {
     option (google.api.http) = {
-      post: "/v1/arches"
+      post: "/api/v1/plans"
       body: "*"
     };
   }
   rpc Get(examplepb.v1.PlanGet) returns (examplepb.v1.Plan) {
-    option (google.api.http) = {get: "/v1/arches/{id}"};
+    option (google.api.http) = {get: "/api/v1/plans/{id}"};
   }
   rpc Update(examplepb.v1.PlanUpdate) returns (examplepb.v1.Plan) {
     option (google.api.http) = {
-      patch: "/v1/arches/{id}"
+      patch: "/api/v1/plans/{id}"
       body: "*"
     };
   }
   rpc Delete(examplepb.v1.PlanDelete) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/arches/{id}"};
+    option (google.api.http) = {delete: "/api/v1/plans/{id}"};
   }
   rpc List(examplepb.v1.PlanFilter) returns (examplepb.v1.ListPlan) {
-    option (google.api.http) = {get: "/v1/arches"};
+    option (google.api.http) = {get: "/api/v1/plans"};
   }
 }

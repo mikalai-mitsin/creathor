@@ -4,7 +4,8 @@ goVersion: "1.19"
 auth: true
 ci: "github"
 gRPC: true
-REST: false
+gateway: true
+REST: true
 models:
   - model: "session"
     params:

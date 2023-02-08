@@ -21,7 +21,7 @@ message User {
 }
 
 message Users {
-  repeated User users = 1;
+  repeated User items = 1;
   uint64 count = 2;
 }
 
@@ -59,23 +59,23 @@ message UserDelete {
 service UserService {
   rpc Signup(examplepb.v1.Signup) returns (examplepb.v1.User) {
     option (google.api.http) = {
-      post: "/v1/users"
+      post: "/api/v1/users"
       body: "*"
     };
   }
   rpc Update(examplepb.v1.UserUpdate) returns (examplepb.v1.User) {
     option (google.api.http) = {
-      patch: "/v1/users/{id}"
+      patch: "/api/v1/users/{id}"
       body: "*"
     };
   }
   rpc Get(examplepb.v1.UserGet) returns (examplepb.v1.User){
-    option (google.api.http) = {get: "/v1/users/{id}"};
+    option (google.api.http) = {get: "/api/v1/users/{id}"};
   }
   rpc List(examplepb.v1.UserFilter) returns (examplepb.v1.Users) {
-    option (google.api.http) = {get: "/v1/users"};
+    option (google.api.http) = {get: "/api/v1/users"};
   }
   rpc Delete(examplepb.v1.UserDelete) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/users/{id}"};
+    option (google.api.http) = {delete: "/api/v1/users/{id}"};
   }
 }

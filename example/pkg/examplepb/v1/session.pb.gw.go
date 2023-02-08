@@ -287,7 +287,7 @@ func RegisterSessionServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.SessionService/Create", runtime.WithHTTPPathPattern("/v1/arches"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.SessionService/Create", runtime.WithHTTPPathPattern("/api/v1/sessions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -312,7 +312,7 @@ func RegisterSessionServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.SessionService/Get", runtime.WithHTTPPathPattern("/v1/arches/{id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.SessionService/Get", runtime.WithHTTPPathPattern("/api/v1/sessions/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -337,7 +337,7 @@ func RegisterSessionServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.SessionService/Update", runtime.WithHTTPPathPattern("/v1/arches/{id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.SessionService/Update", runtime.WithHTTPPathPattern("/api/v1/sessions/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -362,7 +362,7 @@ func RegisterSessionServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.SessionService/Delete", runtime.WithHTTPPathPattern("/v1/arches/{id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.SessionService/Delete", runtime.WithHTTPPathPattern("/api/v1/sessions/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -387,7 +387,7 @@ func RegisterSessionServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.SessionService/List", runtime.WithHTTPPathPattern("/v1/arches"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/examplepb.v1.SessionService/List", runtime.WithHTTPPathPattern("/api/v1/sessions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -451,7 +451,7 @@ func RegisterSessionServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.SessionService/Create", runtime.WithHTTPPathPattern("/v1/arches"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.SessionService/Create", runtime.WithHTTPPathPattern("/api/v1/sessions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -473,7 +473,7 @@ func RegisterSessionServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.SessionService/Get", runtime.WithHTTPPathPattern("/v1/arches/{id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.SessionService/Get", runtime.WithHTTPPathPattern("/api/v1/sessions/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -495,7 +495,7 @@ func RegisterSessionServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.SessionService/Update", runtime.WithHTTPPathPattern("/v1/arches/{id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.SessionService/Update", runtime.WithHTTPPathPattern("/api/v1/sessions/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -517,7 +517,7 @@ func RegisterSessionServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.SessionService/Delete", runtime.WithHTTPPathPattern("/v1/arches/{id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.SessionService/Delete", runtime.WithHTTPPathPattern("/api/v1/sessions/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -539,7 +539,7 @@ func RegisterSessionServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.SessionService/List", runtime.WithHTTPPathPattern("/v1/arches"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/examplepb.v1.SessionService/List", runtime.WithHTTPPathPattern("/api/v1/sessions"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -559,15 +559,15 @@ func RegisterSessionServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 }
 
 var (
-	pattern_SessionService_Create_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "arches"}, ""))
+	pattern_SessionService_Create_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "sessions"}, ""))
 
-	pattern_SessionService_Get_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "arches", "id"}, ""))
+	pattern_SessionService_Get_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "sessions", "id"}, ""))
 
-	pattern_SessionService_Update_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "arches", "id"}, ""))
+	pattern_SessionService_Update_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "sessions", "id"}, ""))
 
-	pattern_SessionService_Delete_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "arches", "id"}, ""))
+	pattern_SessionService_Delete_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "sessions", "id"}, ""))
 
-	pattern_SessionService_List_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "arches"}, ""))
+	pattern_SessionService_List_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "sessions"}, ""))
 )
 
 var (

@@ -53,23 +53,23 @@ message SessionFilter {
 service SessionService {
   rpc Create(examplepb.v1.SessionCreate) returns (examplepb.v1.Session) {
     option (google.api.http) = {
-      post: "/v1/arches"
+      post: "/api/v1/sessions"
       body: "*"
     };
   }
   rpc Get(examplepb.v1.SessionGet) returns (examplepb.v1.Session) {
-    option (google.api.http) = {get: "/v1/arches/{id}"};
+    option (google.api.http) = {get: "/api/v1/sessions/{id}"};
   }
   rpc Update(examplepb.v1.SessionUpdate) returns (examplepb.v1.Session) {
     option (google.api.http) = {
-      patch: "/v1/arches/{id}"
+      patch: "/api/v1/sessions/{id}"
       body: "*"
     };
   }
   rpc Delete(examplepb.v1.SessionDelete) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/v1/arches/{id}"};
+    option (google.api.http) = {delete: "/api/v1/sessions/{id}"};
   }
   rpc List(examplepb.v1.SessionFilter) returns (examplepb.v1.ListSession) {
-    option (google.api.http) = {get: "/v1/arches"};
+    option (google.api.http) = {get: "/api/v1/sessions"};
   }
 }

@@ -248,14 +248,14 @@ func TestUserServiceServer_List(t *testing.T) {
 	userFilter := mock_models.NewUserFilter(t)
 	count := uint64(faker.RandomInt64(1, 100))
 	response := &examplepb.Users{
-		Users: make([]*examplepb.User, 0, int(count)),
+		Items: make([]*examplepb.User, 0, int(count)),
 		Count: count,
 	}
 	users := make([]*models.User, 0, int(count))
 	for i := 0; i < int(count); i++ {
 		u := mock_models.NewUser(t)
 		users = append(users, u)
-		response.Users = append(response.Users, decodeUser(u))
+		response.Items = append(response.Items, decodeUser(u))
 	}
 	type fields struct {
 		UnimplementedUserServiceServer examplepb.UnimplementedUserServiceServer

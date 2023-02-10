@@ -537,7 +537,7 @@ func TestUserUseCase_List(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	var users []*models.User
-	count := uint64(faker.Number().NumberInt(2))
+	count := faker.New().UInt64()
 	for i := uint64(0); i < count; i++ {
 		users = append(users, mock_models.NewUser(t))
 	}

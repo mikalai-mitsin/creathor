@@ -18,7 +18,7 @@ import (
     "{{ .Module }}/pkg/log"
     mock_log "{{ .Module }}/pkg/log/mock"
     "github.com/golang/mock/gomock"
-    "syreclabs.com/go/faker"
+    "github.com/jaswdr/faker"
 )
 
 func TestNew{{ .UseCaseTypeName }}(t *testing.T) {
@@ -146,7 +146,7 @@ func Test{{ .UseCaseTypeName }}_List(t *testing.T) {
     logger := mock_log.NewMockLogger(ctrl)
     ctx := context.Background()
     var {{ .ListVariable }} []*models.{{ .ModelName }}
-    count := uint64(faker.Number().NumberInt(2))
+    count := faker.New().UInt64Between(2, 20)
     for i := uint64(0); i < count; i++ {
         {{ .ListVariable }} = append({{ .ListVariable }}, mock_models.New{{ .ModelName }}(t))
     }
@@ -476,7 +476,7 @@ func Test{{ .UseCaseTypeName }}_Update(t *testing.T) {
             args: args{
                 ctx: ctx,
                 update: &models.{{ .UpdateTypeName }}{
-                    ID: models.UUID(faker.Number().Number(1)),
+                    ID: models.UUID("baduuid"),
                 },
             },
             want: nil,

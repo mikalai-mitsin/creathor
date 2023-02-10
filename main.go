@@ -6,6 +6,7 @@ import (
 	_ "embed"
 	"fmt"
 	"github.com/018bf/creathor/models"
+	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
@@ -47,6 +48,7 @@ func main() {
 		},
 		Action: initProject,
 	}
+	strcase.ConfigureAcronym("UUID", "uuid")
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}

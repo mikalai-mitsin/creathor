@@ -75,8 +75,8 @@ func (p *Param) Fake() string {
 		fake = "faker.Lorem().String()"
 	case "[]string":
 		return "faker.Lorem().Words(5)"
-	case "uuid":
-		fake = "uuid.NewString()"
+	case "uuid", "UUID":
+		fake = "models.UUID(uuid.NewString())"
 	case "time.Time":
 		fake = "faker.Time().Backward(40 * time.Hour).UTC()"
 	default:
@@ -359,6 +359,9 @@ func (p *Param) ProtoWrapType() string {
 }
 
 func (p *Param) GetName() string {
+	if strings.ToLower(p.Name) == "id" {
+		return "ID"
+	}
 	return strcase.ToCamel(p.Name)
 }
 

@@ -114,7 +114,7 @@ func (u *UserUpdate) Validate() error {
         validation.Field(&u.ID, validation.Required, is.UUID),
         validation.Field(&u.FirstName),
         validation.Field(&u.LastName),
-        validation.Field(&u.Password, validation.Length(8, 100)),
+        validation.Field(&u.Password, validation.Length(6, 100)),
         validation.Field(&u.Email, is.EmailFormat),
     )
     if err != nil {
@@ -132,7 +132,7 @@ func (u *SetPassword) Validate() error {
     err := validation.ValidateStruct(
         u,
         validation.Field(&u.UserID, validation.Required, is.UUID),
-        validation.Field(&u.Password, validation.Required, validation.Length(8, 100)),
+        validation.Field(&u.Password, validation.Required, validation.Length(6, 100)),
     )
     if err != nil {
         return errs.FromValidationError(err)

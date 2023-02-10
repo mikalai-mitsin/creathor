@@ -19,7 +19,7 @@ import (
     mock_log "{{ .Module }}/pkg/log/mock"
     "github.com/DATA-DOG/go-sqlmock"
     "github.com/golang/mock/gomock"
-    "syreclabs.com/go/faker"
+    "github.com/jaswdr/faker"
 
     "{{ .Module }}/internal/domain/models"
     "{{ .Module }}/internal/domain/repositories"
@@ -274,7 +274,7 @@ func Test{{ .RepositoryTypeName }}_List(t *testing.T) {
     logger := mock_log.NewMockLogger(ctrl)
     ctx := context.Background()
     var {{ .ListVariable }} []*models.{{ .ModelName }}
-    for i := 0; i < faker.RandomInt(1, 20); i++ {
+    for i := 0; i < faker.New().IntBetween(2, 20); i++ {
         {{ .ListVariable }} = append({{ .ListVariable }}, mock_models.New{{ .ModelName }}(t))
     }
     filter := mock_models.New{{ .FilterTypeName }}(t)

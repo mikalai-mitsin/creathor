@@ -11,7 +11,7 @@ import (
     mock_usecases "{{ .Module }}/internal/domain/usecases/mock"
     mock_log "{{ .Module }}/pkg/log/mock"
     "github.com/golang/mock/gomock"
-    "syreclabs.com/go/faker"
+    "github.com/jaswdr/faker"
 
     "{{ .Module }}/internal/domain/interceptors"
     "{{ .Module }}/internal/domain/models"
@@ -788,7 +788,7 @@ func Test{{ .InterceptorTypeName }}_List(t *testing.T) {
     logger := mock_log.NewMockLogger(ctrl)
     ctx := context.Background()
     filter := mock_models.New{{ .FilterTypeName }}(t)
-    count := uint64(faker.Number().NumberInt64(2))
+    count := faker.New().UInt64Between(2, 20)
     {{ .ListVariable }} := make([]*models.{{ .ModelName }}, 0, count)
     for i := uint64(0); i < count; i++ {
         {{ .ListVariable }} = append({{ .ListVariable }}, mock_models.New{{ .ModelName }}(t))

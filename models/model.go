@@ -70,6 +70,105 @@ func (m *Model) IsExists() bool {
 	return false
 }
 
+func (m *Model) SyncModel() error {
+	modelFilePath := filepath.Join("internal", "domain", "models", m.FileName())
+	modelParams := []*Param{
+		{
+			Name:   "ID",
+			Type:   "UUID",
+			Search: false,
+		},
+		{
+			Name:   "UpdatedAt",
+			Type:   "time.Time",
+			Search: false,
+		},
+		{
+			Name:   "CreatedAt",
+			Type:   "time.Time",
+			Search: false,
+		},
+	}
+	modelParams = append(modelParams, m.Params...)
+	if err := SyncStruct(modelFilePath, m.ModelName(), modelParams); err != nil {
+		return err
+	}
+	if err := SyncValidate(modelFilePath, m.ModelName(), modelParams); err != nil {
+		return err
+	}
+	mockFilePath := filepath.Join("internal", "domain", "models", "mock", m.FileName())
+	if err := SyncMock(mockFilePath, m.ModelName(), modelParams); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Model) SyncCreate() error {
+	filePath := filepath.Join("internal", "domain", "models", m.FileName())
+	var createParams []*Param
+	for _, param := range m.Params {
+		createParams = append(createParams, &Param{
+			Name:   param.GetName(),
+			Type:   param.Type,
+			Search: false,
+		})
+	}
+	if err := SyncStruct(filePath, m.CreateTypeName(), createParams); err != nil {
+		return err
+	}
+
+	if err := SyncValidate(filePath, m.CreateTypeName(), createParams); err != nil {
+		return err
+	}
+	mockFilePath := filepath.Join("internal", "domain", "models", "mock", m.FileName())
+	if err := SyncMock(mockFilePath, m.CreateTypeName(), createParams); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Model) SyncUpdate() error {
+	filePath := filepath.Join("internal", "domain", "models", m.FileName())
+	updateParams := []*Param{
+		{
+			Name:   "ID",
+			Type:   "UUID",
+			Search: false,
+		},
+	}
+	for _, param := range m.Params {
+		updateParams = append(updateParams, &Param{
+			Name:   param.GetName(),
+			Type:   fmt.Sprintf("*%s", param.Type),
+			Search: false,
+		})
+	}
+	if err := SyncStruct(filePath, m.UpdateTypeName(), updateParams); err != nil {
+		return err
+	}
+	if err := SyncValidate(filePath, m.UpdateTypeName(), updateParams); err != nil {
+		return err
+	}
+	mockFilePath := filepath.Join("internal", "domain", "models", "mock", m.FileName())
+	if err := SyncMock(mockFilePath, m.UpdateTypeName(), updateParams); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Model) SyncModels() error {
+	if err := m.SyncModel(); err != nil {
+		return err
+	}
+	if err := m.SyncCreate(); err != nil {
+		return err
+	}
+	if err := m.SyncUpdate(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *Model) SearchEnabled() bool {
 	for _, param := range m.Params {
 		if param.Search {

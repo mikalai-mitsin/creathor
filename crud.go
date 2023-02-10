@@ -19,10 +19,10 @@ func CreateCRUD(model *models.Model) error {
 		fmt.Printf("invalid model %s: %s\n", model.Model, err)
 		return err
 	}
-	if model.IsExists() {
-		fmt.Printf("model exists %s\n", model.Model)
-		return nil
-	}
+	//if model.IsExists() {
+	//	fmt.Printf("model exists %s\n", model.Model)
+	//	return nil
+	//}
 	files := []*Template{
 		{
 			SourcePath:      "templates/internal/domain/models/crud.go.tmpl",
@@ -124,6 +124,9 @@ func CreateCRUD(model *models.Model) error {
 		if err := tmpl.renderToFile(model); err != nil {
 			return err
 		}
+	}
+	if err := model.SyncModels(); err != nil {
+		return err
 	}
 	if err := addToDI("usecases", fmt.Sprintf("New%s", model.UseCaseTypeName())); err != nil {
 		return err

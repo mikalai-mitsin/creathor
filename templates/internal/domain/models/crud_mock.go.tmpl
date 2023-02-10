@@ -6,54 +6,23 @@ import (
 
     "{{ .Module }}/internal/domain/models"
     "{{ .Module }}/pkg/utils"
+    "github.com/jaswdr/faker"
     "github.com/google/uuid"
-    "syreclabs.com/go/faker"
 )
-
-func New{{ .ModelName }}(t *testing.T) *models.{{ .ModelName }} {
-    t.Helper()
-    return &models.{{ .ModelName }}{
-        ID:         models.UUID(uuid.NewString()),
-{{- range $key, $value := .Params }}
-        {{ $value.GetName }}: {{ $value.Fake }},
-{{- end }}
-        UpdatedAt:  faker.Time().Backward(40 * time.Hour).UTC(),
-        CreatedAt:  faker.Time().Backward(40 * time.Hour).UTC(),
-    }
-}
-
-func New{{ .CreateTypeName }}(t *testing.T) *models.{{ .CreateTypeName }} {
-    t.Helper()
-    return &models.{{ .CreateTypeName }}{
-{{- range $key, $value := .Params }}
-        {{ $value.GetName }}: {{ $value.Fake }},
-{{- end }}
-    }
-}
-
-func New{{ .UpdateTypeName }}(t *testing.T) *models.{{ .UpdateTypeName }} {
-    t.Helper()
-    return &models.{{ .UpdateTypeName }}{
-        ID: models.UUID(uuid.NewString()),
-{{- range $key, $value := .Params }}
-        {{ $value.GetName }}:  utils.Pointer({{ $value.Fake }}),
-{{- end }}
-    }
-}
 
 func New{{ .FilterTypeName }}(t *testing.T) *models.{{ .FilterTypeName }} {
     t.Helper()
     return &models.{{ .FilterTypeName }}{
-        PageSize:   utils.Pointer(uint64(faker.RandomInt64(2, 100))),
-        PageNumber: utils.Pointer(uint64(faker.RandomInt64(2, 100))),
-        OrderBy:    faker.Lorem().Words(5),
+        PageSize:   utils.Pointer(faker.New().UInt64()),
+        PageNumber: utils.Pointer(faker.New().UInt64()),
+        OrderBy:    faker.New().Lorem().Words(5),
         IDs: []models.UUID{
 			models.UUID(uuid.NewString()),
 			models.UUID(uuid.NewString()),
 			models.UUID(uuid.NewString()),
 		},
 {{- if .SearchEnabled }}
-        Search: utils.Pointer(faker.Lorem().String()),
+        Search: utils.Pointer(faker.New().Lorem().Text(27)),
 {{- end }}
     }
 }

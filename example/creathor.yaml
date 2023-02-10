@@ -15,6 +15,9 @@ models:
       - name: "description"
         type: "string"
         search: true
+      - name: "weight"
+        type: "uint64"
+        search: true
   - model: "equipment"
     params:
       - name: "name"

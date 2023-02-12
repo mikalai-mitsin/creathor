@@ -12,16 +12,16 @@ import (
 	"strings"
 )
 
-func SyncStruct(filePath string, structName string, params []*Param) error {
+func SyncStruct(strc *Struct) error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, filePath, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, strc.Path, nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == structName {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == strc.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -31,7 +31,7 @@ func SyncStruct(filePath string, structName string, params []*Param) error {
 	if structure == nil {
 		structure = &ast.TypeSpec{
 			Doc:        nil,
-			Name:       ast.NewIdent(structName),
+			Name:       ast.NewIdent(strc.Name),
 			TypeParams: nil,
 			Assign:     0,
 			Type: &ast.StructType{
@@ -46,7 +46,7 @@ func SyncStruct(filePath string, structName string, params []*Param) error {
 			Comment: nil,
 		}
 	}
-	for _, param := range params {
+	for _, param := range strc.Params {
 		ast.Inspect(structure, func(node ast.Node) bool {
 			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
 				for _, field := range st.Fields.List {
@@ -86,15 +86,15 @@ func SyncStruct(filePath string, structName string, params []*Param) error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(filePath, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(strc.Path, buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func SyncValidate(filePath string, structName string, params []*Param) error {
+func SyncValidate(strc *Struct) error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, filePath, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, strc.Path, nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func SyncValidate(filePath string, structName string, params []*Param) error {
 			for _, field := range fun.Recv.List {
 				if expr, ok := field.Type.(*ast.StarExpr); ok {
 					ident, ok := expr.X.(*ast.Ident)
-					if ok && ident.Name == structName {
+					if ok && ident.Name == strc.Name {
 						validator = fun
 						validatorExists = true
 						return false
@@ -127,7 +127,7 @@ func SyncValidate(filePath string, structName string, params []*Param) error {
 						},
 						Type: &ast.StarExpr{
 							Star: 0,
-							X:    ast.NewIdent(structName),
+							X:    ast.NewIdent(strc.Name),
 						},
 						Tag:     nil,
 						Comment: nil,
@@ -211,7 +211,7 @@ func SyncValidate(filePath string, structName string, params []*Param) error {
 			},
 		}
 	}
-	for _, param := range params {
+	for _, param := range strc.Params {
 		ast.Inspect(validator.Body, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.Name == "ValidateStruct" {
@@ -275,19 +275,19 @@ func SyncValidate(filePath string, structName string, params []*Param) error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(filePath, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(strc.Path, buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func SyncMock(filePath string, structName string, params []*Param) error {
+func SyncMock(filePath string, strc *Struct) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, filePath, nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
-	mockName := fmt.Sprintf("New%s", structName)
+	mockName := fmt.Sprintf("New%s", strc.Name)
 	var mockExists bool
 	var mock *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
@@ -335,7 +335,7 @@ func SyncMock(filePath string, structName string, params []*Param) error {
 								Star: 0,
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(structName),
+									Sel: ast.NewIdent(strc.Name),
 								},
 							},
 							Tag:     nil,
@@ -371,7 +371,7 @@ func SyncMock(filePath string, structName string, params []*Param) error {
 								X: &ast.CompositeLit{
 									Type: &ast.SelectorExpr{
 										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(structName),
+										Sel: ast.NewIdent(strc.Name),
 									},
 									Lbrace:     0,
 									Elts:       nil,
@@ -393,11 +393,11 @@ func SyncMock(filePath string, structName string, params []*Param) error {
 	if !mockExists {
 		file.Decls = append(file.Decls, mock)
 	}
-	for _, param := range params {
+	for _, param := range strc.Params {
 		ast.Inspect(mock.Body, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
 				if sel, ok := cl.Type.(*ast.SelectorExpr); ok {
-					if sel.Sel.Name != structName {
+					if sel.Sel.Name != strc.Name {
 						return true
 					}
 				}
@@ -655,4 +655,110 @@ func FakeNumberFunc(t string) string {
 	default:
 		return "Todo"
 	}
+}
+
+func SyncInterface(inter *Interface) error {
+	fileset := token.NewFileSet()
+	file, err := parser.ParseFile(fileset, inter.Path, nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	var structureExists bool
+	var structure *ast.TypeSpec
+	_ = structureExists
+	_ = structure
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == inter.Name {
+			structure = t
+			structureExists = true
+			return false
+		}
+		return true
+	})
+	if structure == nil {
+		structure = &ast.TypeSpec{
+			Doc:        nil,
+			Name:       ast.NewIdent(inter.Name),
+			TypeParams: nil,
+			Assign:     0,
+			Type: &ast.InterfaceType{
+				Interface:  0,
+				Methods:    &ast.FieldList{},
+				Incomplete: false,
+			},
+			Comment: nil,
+		}
+	}
+	for _, method := range inter.Methods {
+		ast.Inspect(structure, func(node ast.Node) bool {
+			if st, ok := node.(*ast.InterfaceType); ok && st.Methods != nil {
+				for _, meth := range st.Methods.List {
+					for _, fieldName := range meth.Names {
+						if fieldName.Name == method.Name {
+							return false
+						}
+					}
+				}
+				fn := &ast.FuncType{
+					Func:       0,
+					TypeParams: nil,
+					Params: &ast.FieldList{
+						Opening: 0,
+						List:    []*ast.Field{},
+					},
+					Results: &ast.FieldList{
+						Opening: 0,
+						List:    nil,
+						Closing: 0,
+					},
+				}
+				for _, par := range method.Args {
+					fn.Params.List = append(fn.Params.List, &ast.Field{
+						Doc:     nil,
+						Names:   []*ast.Ident{ast.NewIdent(par.Name)},
+						Type:    ast.NewIdent(par.Type),
+						Tag:     nil,
+						Comment: nil,
+					})
+				}
+				for _, res := range method.Results {
+					fn.Results.List = append(fn.Results.List, &ast.Field{
+						Doc:     nil,
+						Names:   nil,
+						Type:    ast.NewIdent(res.Type),
+						Tag:     nil,
+						Comment: nil,
+					})
+				}
+				st.Methods.List = append(st.Methods.List, &ast.Field{
+					Doc:     nil,
+					Names:   []*ast.Ident{ast.NewIdent(method.Name)},
+					Type:    fn,
+					Tag:     nil,
+					Comment: nil,
+				})
+				return true
+			}
+			return true
+		})
+	}
+	if !structureExists {
+		gd := &ast.GenDecl{
+			Doc:    nil,
+			TokPos: 0,
+			Tok:    token.TYPE,
+			Lparen: 0,
+			Specs:  []ast.Spec{structure},
+			Rparen: 0,
+		}
+		file.Decls = append(file.Decls, gd)
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(inter.Path, buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
 }

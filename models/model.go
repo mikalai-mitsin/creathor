@@ -70,100 +70,586 @@ func (m *Model) IsExists() bool {
 	return false
 }
 
-func (m *Model) SyncModel() error {
-	modelFilePath := filepath.Join("internal", "domain", "models", m.FileName())
-	modelParams := []*Param{
-		{
-			Name:   "ID",
-			Type:   "UUID",
-			Search: false,
-		},
-		{
-			Name:   "UpdatedAt",
-			Type:   "time.Time",
-			Search: false,
-		},
-		{
-			Name:   "CreatedAt",
-			Type:   "time.Time",
-			Search: false,
+func (m *Model) SyncModelStruct() error {
+	model := &Struct{
+		Path: filepath.Join("internal", "domain", "models", m.FileName()),
+		Name: m.ModelName(),
+		Params: []*Param{
+			{
+				Name:   "ID",
+				Type:   "UUID",
+				Search: false,
+			},
+			{
+				Name:   "UpdatedAt",
+				Type:   "time.Time",
+				Search: false,
+			},
+			{
+				Name:   "CreatedAt",
+				Type:   "time.Time",
+				Search: false,
+			},
 		},
 	}
-	modelParams = append(modelParams, m.Params...)
-	if err := SyncStruct(modelFilePath, m.ModelName(), modelParams); err != nil {
+	model.Params = append(model.Params, m.Params...)
+	if err := SyncStruct(model); err != nil {
 		return err
 	}
-	if err := SyncValidate(modelFilePath, m.ModelName(), modelParams); err != nil {
+	if err := SyncValidate(model); err != nil {
 		return err
 	}
 	mockFilePath := filepath.Join("internal", "domain", "models", "mock", m.FileName())
-	if err := SyncMock(mockFilePath, m.ModelName(), modelParams); err != nil {
+	if err := SyncMock(mockFilePath, model); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *Model) SyncCreate() error {
-	filePath := filepath.Join("internal", "domain", "models", m.FileName())
-	var createParams []*Param
+func (m *Model) SyncCreateStruct() error {
+	create := &Struct{
+		Path:   filepath.Join("internal", "domain", "models", m.FileName()),
+		Name:   m.CreateTypeName(),
+		Params: []*Param{},
+	}
 	for _, param := range m.Params {
-		createParams = append(createParams, &Param{
+		create.Params = append(create.Params, &Param{
 			Name:   param.GetName(),
 			Type:   param.Type,
 			Search: false,
 		})
 	}
-	if err := SyncStruct(filePath, m.CreateTypeName(), createParams); err != nil {
+	if err := SyncStruct(create); err != nil {
 		return err
 	}
 
-	if err := SyncValidate(filePath, m.CreateTypeName(), createParams); err != nil {
+	if err := SyncValidate(create); err != nil {
 		return err
 	}
 	mockFilePath := filepath.Join("internal", "domain", "models", "mock", m.FileName())
-	if err := SyncMock(mockFilePath, m.CreateTypeName(), createParams); err != nil {
+	if err := SyncMock(mockFilePath, create); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *Model) SyncUpdate() error {
-	filePath := filepath.Join("internal", "domain", "models", m.FileName())
-	updateParams := []*Param{
-		{
-			Name:   "ID",
-			Type:   "UUID",
-			Search: false,
+func (m *Model) SyncUpdateStruct() error {
+	update := &Struct{
+		Path: filepath.Join("internal", "domain", "models", m.FileName()),
+		Name: m.UpdateTypeName(),
+		Params: []*Param{
+			{
+				Name:   "ID",
+				Type:   "UUID",
+				Search: false,
+			},
 		},
 	}
 	for _, param := range m.Params {
-		updateParams = append(updateParams, &Param{
+		update.Params = append(update.Params, &Param{
 			Name:   param.GetName(),
 			Type:   fmt.Sprintf("*%s", param.Type),
 			Search: false,
 		})
 	}
-	if err := SyncStruct(filePath, m.UpdateTypeName(), updateParams); err != nil {
+	if err := SyncStruct(update); err != nil {
 		return err
 	}
-	if err := SyncValidate(filePath, m.UpdateTypeName(), updateParams); err != nil {
+	if err := SyncValidate(update); err != nil {
 		return err
 	}
 	mockFilePath := filepath.Join("internal", "domain", "models", "mock", m.FileName())
-	if err := SyncMock(mockFilePath, m.UpdateTypeName(), updateParams); err != nil {
+	if err := SyncMock(mockFilePath, update); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Model) SyncRepositoryInterface() error {
+	usecase := &Interface{
+		Path:     filepath.Join("internal", "domain", "repositories", m.FileName()),
+		Name:     m.RepositoryTypeName(),
+		Comments: nil,
+		Methods: []*Method{
+			{
+				Name: "Get",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "id",
+						Type:   "models.UUID",
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   fmt.Sprintf("*models.%s", m.ModelName()),
+						Search: false,
+					},
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+			{
+				Name: "List",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "filter",
+						Type:   fmt.Sprintf("*models.%s", m.FilterTypeName()),
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   fmt.Sprintf("[]*models.%s", m.ModelName()),
+						Search: false,
+					},
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+			{
+				Name: "Count",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "filter",
+						Type:   fmt.Sprintf("*models.%s", m.FilterTypeName()),
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   "uint64",
+						Search: false,
+					},
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+			{
+				Name: "Update",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "update",
+						Type:   fmt.Sprintf("*models.%s", m.ModelName()),
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+			{
+				Name: "Create",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "create",
+						Type:   fmt.Sprintf("*models.%s", m.ModelName()),
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+			{
+				Name: "Delete",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "id",
+						Type:   "models.UUID",
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+		},
+	}
+	if err := SyncInterface(usecase); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Model) SyncUsecaseInterface() error {
+	usecase := &Interface{
+		Path:     filepath.Join("internal", "domain", "usecases", m.FileName()),
+		Name:     m.UseCaseTypeName(),
+		Comments: nil,
+		Methods: []*Method{
+			{
+				Name: "Get",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "id",
+						Type:   "models.UUID",
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   fmt.Sprintf("*models.%s", m.ModelName()),
+						Search: false,
+					},
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+			{
+				Name: "List",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "filter",
+						Type:   fmt.Sprintf("*models.%s", m.FilterTypeName()),
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   fmt.Sprintf("[]*models.%s", m.ModelName()),
+						Search: false,
+					},
+					{
+						Name:   "",
+						Type:   "uint64",
+						Search: false,
+					},
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+			{
+				Name: "Update",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "update",
+						Type:   fmt.Sprintf("*models.%s", m.UpdateTypeName()),
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   fmt.Sprintf("*models.%s", m.ModelName()),
+						Search: false,
+					},
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+			{
+				Name: "Create",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "create",
+						Type:   fmt.Sprintf("*models.%s", m.CreateTypeName()),
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   fmt.Sprintf("*models.%s", m.ModelName()),
+						Search: false,
+					},
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+			{
+				Name: "Delete",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "id",
+						Type:   "models.UUID",
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+		},
+	}
+	if err := SyncInterface(usecase); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Model) SyncInterceptorInterface() error {
+	interceptor := &Interface{
+		Path:     filepath.Join("internal", "domain", "interceptors", m.FileName()),
+		Name:     m.InterceptorTypeName(),
+		Comments: nil,
+		Methods: []*Method{
+			{
+				Name: "Get",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "id",
+						Type:   "models.UUID",
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   fmt.Sprintf("*models.%s", m.ModelName()),
+						Search: false,
+					},
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+			{
+				Name: "List",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "filter",
+						Type:   fmt.Sprintf("*models.%s", m.FilterTypeName()),
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   fmt.Sprintf("[]*models.%s", m.ModelName()),
+						Search: false,
+					},
+					{
+						Name:   "",
+						Type:   "uint64",
+						Search: false,
+					},
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+			{
+				Name: "Update",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "update",
+						Type:   fmt.Sprintf("*models.%s", m.UpdateTypeName()),
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   fmt.Sprintf("*models.%s", m.ModelName()),
+						Search: false,
+					},
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+			{
+				Name: "Create",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "create",
+						Type:   fmt.Sprintf("*models.%s", m.CreateTypeName()),
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   fmt.Sprintf("*models.%s", m.ModelName()),
+						Search: false,
+					},
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+			{
+				Name: "Delete",
+				Args: []*Param{
+					{
+						Name:   "ctx",
+						Type:   "context.Context",
+						Search: false,
+					},
+					{
+						Name:   "id",
+						Type:   "models.UUID",
+						Search: false,
+					},
+				},
+				Results: []*Param{
+					{
+						Name:   "",
+						Type:   "error",
+						Search: false,
+					},
+				},
+			},
+		},
+	}
+	if m.Auth {
+		for _, method := range interceptor.Methods {
+			method.Args = append(method.Args, &Param{
+				Name:   "requestUser",
+				Type:   "models.User",
+				Search: false,
+			})
+		}
+	}
+	if err := SyncInterface(interceptor); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (m *Model) SyncModels() error {
-	if err := m.SyncModel(); err != nil {
+	if err := m.SyncModelStruct(); err != nil {
 		return err
 	}
-	if err := m.SyncCreate(); err != nil {
+	if err := m.SyncCreateStruct(); err != nil {
 		return err
 	}
-	if err := m.SyncUpdate(); err != nil {
+	if err := m.SyncUpdateStruct(); err != nil {
+		return err
+	}
+	if err := m.SyncRepositoryInterface(); err != nil {
+		return err
+	}
+	if err := m.SyncUsecaseInterface(); err != nil {
+		return err
+	}
+	if err := m.SyncInterceptorInterface(); err != nil {
 		return err
 	}
 	return nil
@@ -253,16 +739,8 @@ func (m *Model) FilterTypeName() string {
 	return fmt.Sprintf("%sFilter", strcase.ToCamel(m.Model))
 }
 
-func (m *Model) FilterVariableName() string {
-	return fmt.Sprintf("%sFilter", strcase.ToLowerCamel(m.Model))
-}
-
 func (m *Model) UpdateTypeName() string {
 	return fmt.Sprintf("%sUpdate", strcase.ToCamel(m.Model))
-}
-
-func (m *Model) UpdateVariableName() string {
-	return fmt.Sprintf("%sUpdate", strcase.ToLowerCamel(m.Model))
 }
 
 func (m *Model) CreateTypeName() string {
@@ -275,10 +753,6 @@ func (m *Model) PostgresDTOTypeName() string {
 
 func (m *Model) PostgresDTOListTypeName() string {
 	return fmt.Sprintf("%sListDTO", strcase.ToCamel(m.Model))
-}
-
-func (m *Model) CreateVariableName() string {
-	return fmt.Sprintf("%sCreate", strcase.ToLowerCamel(m.Model))
 }
 
 func (m *Model) KeyName() string {

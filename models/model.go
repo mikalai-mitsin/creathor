@@ -622,12 +622,59 @@ func (m *Model) SyncInterceptorInterface() error {
 		for _, method := range interceptor.Methods {
 			method.Args = append(method.Args, &Param{
 				Name:   "requestUser",
-				Type:   "models.User",
+				Type:   "*models.User",
 				Search: false,
 			})
 		}
 	}
 	if err := SyncInterface(interceptor); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Model) SyncUseCaseImplementation() error {
+	useCase := &UseCase{
+		Path:  filepath.Join("internal", "usecases", m.FileName()),
+		Name:  m.UseCaseTypeName(),
+		Model: m,
+		Params: []*Param{
+			{
+				Name:   m.RepositoryVariableName(),
+				Type:   fmt.Sprintf("repositories.%s", m.RepositoryTypeName()),
+				Search: false,
+			},
+			{
+				Name:   "clock",
+				Type:   "clock.Clock",
+				Search: false,
+			},
+			{
+				Name:   "logger",
+				Type:   "log.Logger",
+				Search: false,
+			},
+		},
+	}
+	if err := useCase.SyncStruct(); err != nil {
+		return err
+	}
+	if err := useCase.SyncConstructor(); err != nil {
+		return err
+	}
+	if err := useCase.SyncCreateMethod(); err != nil {
+		return err
+	}
+	if err := useCase.SyncGetMethod(); err != nil {
+		return err
+	}
+	if err := useCase.SyncListMethod(); err != nil {
+		return err
+	}
+	if err := useCase.SyncUpdateMethod(); err != nil {
+		return err
+	}
+	if err := useCase.SyncDeleteMethod(); err != nil {
 		return err
 	}
 	return nil
@@ -650,6 +697,9 @@ func (m *Model) SyncModels() error {
 		return err
 	}
 	if err := m.SyncInterceptorInterface(); err != nil {
+		return err
+	}
+	if err := m.SyncUseCaseImplementation(); err != nil {
 		return err
 	}
 	return nil

@@ -364,6 +364,12 @@ func (p *Param) GetName() string {
 	}
 	return strcase.ToCamel(p.Name)
 }
+func (p *Param) GetPrivateName() string {
+	if strings.ToLower(p.Name) == "id" {
+		return "ID"
+	}
+	return strcase.ToLowerCamel(p.Name)
+}
 
 func (p *Param) Tag() string {
 	return strcase.ToSnake(p.Name)

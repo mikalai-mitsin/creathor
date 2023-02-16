@@ -7,7 +7,6 @@ import (
 	"go/parser"
 	"go/printer"
 	"go/token"
-	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -38,69 +37,64 @@ func CreateDI(data *models.Project) error {
 }
 
 func addToDI(packageName string, constructor string) error {
-	packagePath := filepath.Join(destinationPath, "internal", "containers")
+	filePath := filepath.Join(destinationPath, "internal", "containers", "fx.go")
 	fileset := token.NewFileSet()
-	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
-		return true
-	}, parser.SkipObjectResolution)
+	file, err := parser.ParseFile(fileset, filePath, nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
-	for _, p := range tree {
-		for filePath, file := range p.Files {
-			for _, decl := range file.Decls {
-				genDecl, ok := decl.(*ast.GenDecl)
+	for _, decl := range file.Decls {
+		genDecl, ok := decl.(*ast.GenDecl)
+		if ok {
+			for _, spec := range genDecl.Specs {
+				variable, ok := spec.(*ast.ValueSpec)
 				if ok {
-					for _, spec := range genDecl.Specs {
-						variable, ok := spec.(*ast.ValueSpec)
-						if ok {
-							for _, name := range variable.Names {
-								if name.Name == "FXModule" {
-									for _, values := range variable.Values {
-										optionsFunc, ok := values.(*ast.CallExpr)
+					for _, name := range variable.Names {
+						if name.Name == "FXModule" {
+							for _, values := range variable.Values {
+								optionsFunc, ok := values.(*ast.CallExpr)
+								if ok {
+									for _, arg := range optionsFunc.Args {
+										provideFunc, ok := arg.(*ast.CallExpr)
 										if ok {
-											for _, arg := range optionsFunc.Args {
-												provideFunc, ok := arg.(*ast.CallExpr)
-												if ok {
-													fun, ok := provideFunc.Fun.(*ast.SelectorExpr)
-													if ok && fun.Sel.Name == "Provide" {
-														var exists bool
-														for _, existedArg := range provideFunc.Args {
-															selector, sOk := existedArg.(*ast.SelectorExpr)
-															if sOk {
-																ident, iOk := selector.X.(*ast.Ident)
-																if iOk {
-																	if ident.Name == packageName && selector.Sel.Name == constructor {
-																		exists = true
-																		break
-																	}
-																}
+											fun, ok := provideFunc.Fun.(*ast.SelectorExpr)
+											if ok && fun.Sel.Name == "Provide" {
+												var exists bool
+												for _, existedArg := range provideFunc.Args {
+													selector, sOk := existedArg.(*ast.SelectorExpr)
+													if sOk {
+														ident, iOk := selector.X.(*ast.Ident)
+														if iOk {
+															if ident.Name == packageName && selector.Sel.Name == constructor {
+																exists = true
+																break
 															}
 														}
-														if !exists {
-															provideFunc.Args = append(provideFunc.Args, &ast.SelectorExpr{
-																X:   ast.NewIdent(packageName),
-																Sel: ast.NewIdent(constructor),
-															})
-														}
-													} else {
-														continue
 													}
-													break
 												}
+												if !exists {
+													provideFunc.Args = append(provideFunc.Args, &ast.SelectorExpr{
+														X:   ast.NewIdent(packageName),
+														Sel: ast.NewIdent(constructor),
+													})
+												}
+											} else {
+												continue
 											}
-											buff := &bytes.Buffer{}
-											if err := printer.Fprint(buff, fileset, file); err != nil {
-												return err
-											}
-											if err := os.WriteFile(filePath, buff.Bytes(), 0777); err != nil {
-												return err
-											}
+											break
 										}
 									}
-
+									buff := &bytes.Buffer{}
+									if err := printer.Fprint(buff, fileset, file); err != nil {
+										return err
+									}
+									if err := os.WriteFile(filePath, buff.Bytes(), 0777); err != nil {
+										return err
+									}
+									return nil
 								}
 							}
+
 						}
 					}
 				}

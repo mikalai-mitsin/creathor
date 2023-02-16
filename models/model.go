@@ -680,6 +680,48 @@ func (m *Model) SyncUseCaseImplementation() error {
 	return nil
 }
 
+func (m *Model) SyncRepositoryImplementation() error {
+	repository := &Repository{
+		Path:  filepath.Join("internal", "repositories", "postgres", m.FileName()),
+		Name:  m.RepositoryTypeName(),
+		Model: m,
+		Params: []*Param{
+			{
+				Name:   "database",
+				Type:   "*sqlx.DB",
+				Search: false,
+			},
+			{
+				Name:   "logger",
+				Type:   "log.Logger",
+				Search: false,
+			},
+		},
+	}
+	if err := repository.SyncStruct(); err != nil {
+		return err
+	}
+	if err := repository.SyncConstructor(); err != nil {
+		return err
+	}
+	if err := repository.SyncCreateMethod(); err != nil {
+		return err
+	}
+	//if err := repository.SyncGetMethod(); err != nil {
+	//	return err
+	//}
+	//if err := repository.SyncListMethod(); err != nil {
+	//	return err
+	//}
+	//if err := repository.SyncUpdateMethod(); err != nil {
+	//	return err
+	//}
+	//if err := repository.SyncDeleteMethod(); err != nil {
+	//	return err
+	//}
+	return nil
+}
+
 func (m *Model) SyncInterceptorImplementation() error {
 	interceptor := &Interceptor{
 		Path:  filepath.Join("internal", "interceptors", m.FileName()),
@@ -752,6 +794,9 @@ func (m *Model) SyncModels() error {
 		return err
 	}
 	if err := m.SyncUseCaseImplementation(); err != nil {
+		return err
+	}
+	if err := m.SyncRepositoryImplementation(); err != nil {
 		return err
 	}
 	if err := m.SyncInterceptorImplementation(); err != nil {

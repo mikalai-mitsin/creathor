@@ -79,9 +79,9 @@ func initProject(ctx *cli.Context) error {
 			return err
 		}
 	}
-	if err := postInit(project); err != nil {
-		return err
-	}
+	//if err := postInit(project); err != nil {
+	//	return err
+	//}
 	return nil
 }
 

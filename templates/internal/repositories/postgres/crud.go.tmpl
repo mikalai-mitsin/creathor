@@ -92,53 +92,6 @@ func (list {{ .PostgresDTOListTypeName }}) ToModels() []*models.{{ .ModelName }}
 	return {{ .ListVariable }}
 }
 
-type {{ .RepositoryTypeName }} struct {
-    database *sqlx.DB
-    logger   log.Logger
-}
-
-func New{{ .RepositoryTypeName }}(
-    database *sqlx.DB,
-    logger log.Logger,
-) repositories.{{ .RepositoryTypeName }} {
-    return &{{ .RepositoryTypeName }}{
-        database: database,
-        logger:   logger,
-    }
-}
-
-func (r *{{ .RepositoryTypeName }}) Create(
-    ctx context.Context,
-    {{ .Variable }} *models.{{ .ModelName }},
-) error {
-    ctx, cancel := context.WithTimeout(ctx, time.Second)
-    defer cancel()
-    dto := New{{ .PostgresDTOTypeName }}FromModel({{ .Variable }})
-    q := sq.Insert("public.{{ .TableName }}").
-        Columns(
-{{- range $value := .Params }}
-            "{{ $value.Tag }}",
-{{- end }}
-            "updated_at",
-            "created_at",
-        ).
-        Values(
-{{- range $value := .Params }}
-            dto.{{ $value.GetName }},
-{{- end }}
-            dto.UpdatedAt,
-            dto.CreatedAt,
-        ).
-        Suffix("RETURNING id")
-    query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-    if err := r.database.QueryRowxContext(ctx, query, args...).StructScan(dto); err != nil {
-        e := errs.FromPostgresError(err)
-        return e
-    }
-    {{ .Variable }}.ID = models.UUID(dto.ID)
-    return nil
-}
-
 func (r *{{ .RepositoryTypeName }}) Get(
     ctx context.Context,
     id models.UUID,

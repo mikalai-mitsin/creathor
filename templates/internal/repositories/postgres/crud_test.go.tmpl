@@ -98,6 +98,8 @@ func Test{{ .RepositoryTypeName }}_Create(t *testing.T) {
             setup: func() {
                 mock.ExpectQuery(query).
                     WithArgs(
+                        {{ $.Variable }}.UpdatedAt,
+                        {{ $.Variable }}.CreatedAt,
 {{- range $value := .Params }}
     {{- if $value.IsSlice }}
                         pq.Array({{ $.Variable }}.{{ $value.GetName }}),
@@ -105,8 +107,6 @@ func Test{{ .RepositoryTypeName }}_Create(t *testing.T) {
                         {{ $.Variable }}.{{ $value.GetName }},
     {{- end }}
 {{- end }}
-                        {{ $.Variable }}.UpdatedAt,
-                        {{ $.Variable }}.CreatedAt,
                     ).
                     WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).
                         AddRow({{ .Variable }}.ID, {{ .Variable }}.CreatedAt))
@@ -126,6 +126,8 @@ func Test{{ .RepositoryTypeName }}_Create(t *testing.T) {
             setup: func() {
                 mock.ExpectQuery(query).
                     WithArgs(
+                        {{ $.Variable }}.UpdatedAt,
+                        {{ $.Variable }}.CreatedAt,
 {{- range $value := .Params }}
     {{- if $value.IsSlice }}
                         pq.Array({{ $.Variable }}.{{ $value.GetName }}),
@@ -133,8 +135,6 @@ func Test{{ .RepositoryTypeName }}_Create(t *testing.T) {
                         {{ $.Variable }}.{{ $value.GetName }},
     {{- end }}
 {{- end }}
-                        {{ $.Variable }}.UpdatedAt,
-                        {{ $.Variable }}.CreatedAt,
                     ).
                     WillReturnError(errors.New("test error"))
             },

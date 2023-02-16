@@ -12,10 +12,9 @@ import (
     "google.golang.org/genproto/googleapis/rpc/errdetails"
     "google.golang.org/grpc/status"
 
-    grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
     grpcZap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
     "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
-    grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+    "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
     "go.uber.org/zap"
     "go.uber.org/zap/zapcore"
@@ -41,17 +40,16 @@ func NewServer(
 {{- end }}
 ) *Server {
     server := grpc.NewServer(
-        grpc.UnaryInterceptor(
-            grpcMiddleware.ChainUnaryServer(
-                grpc_prometheus.UnaryServerInterceptor,
+        grpc.ChainStreamInterceptor(otelgrpc.StreamServerInterceptor()),
+        grpc.ChainUnaryInterceptor(
+            otelgrpc.UnaryServerInterceptor(),
 {{- if .Auth }}
-                authMiddleware.UnaryServerInterceptorAuth,
+            authMiddleware.UnaryServerInterceptorAuth,
 {{- end }}
-                RequestIDUnaryServerInterceptor,
-                grpcZap.UnaryServerInterceptor(
-                    logger.Logger(),
-                    grpcZap.WithMessageProducer(DefaultMessageProducer),
-                ),
+            RequestIDUnaryServerInterceptor,
+            grpcZap.UnaryServerInterceptor(
+                logger.Logger(),
+                grpcZap.WithMessageProducer(DefaultMessageProducer),
             ),
         ),
     )

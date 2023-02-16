@@ -680,6 +680,58 @@ func (m *Model) SyncUseCaseImplementation() error {
 	return nil
 }
 
+func (m *Model) SyncInterceptorImplementation() error {
+	interceptor := &Interceptor{
+		Path:  filepath.Join("internal", "interceptors", m.FileName()),
+		Name:  m.InterceptorTypeName(),
+		Model: m,
+		Params: []*Param{
+			{
+				Name:   m.UseCaseTypeName(),
+				Type:   fmt.Sprintf("usecases.%s", m.UseCaseTypeName()),
+				Search: false,
+			},
+			{
+				Name:   "logger",
+				Type:   "log.Logger",
+				Search: false,
+			},
+		},
+	}
+	if m.Auth {
+		interceptor.Params = append(
+			interceptor.Params,
+			&Param{
+				Name:   "authUseCase",
+				Type:   "usecases.AuthUseCase",
+				Search: false,
+			},
+		)
+	}
+	if err := interceptor.SyncStruct(); err != nil {
+		return err
+	}
+	if err := interceptor.SyncConstructor(); err != nil {
+		return err
+	}
+	if err := interceptor.SyncCreateMethod(); err != nil {
+		return err
+	}
+	if err := interceptor.SyncGetMethod(); err != nil {
+		return err
+	}
+	if err := interceptor.SyncListMethod(); err != nil {
+		return err
+	}
+	if err := interceptor.SyncUpdateMethod(); err != nil {
+		return err
+	}
+	if err := interceptor.SyncDeleteMethod(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *Model) SyncModels() error {
 	if err := m.SyncModelStruct(); err != nil {
 		return err
@@ -700,6 +752,9 @@ func (m *Model) SyncModels() error {
 		return err
 	}
 	if err := m.SyncUseCaseImplementation(); err != nil {
+		return err
+	}
+	if err := m.SyncInterceptorImplementation(); err != nil {
 		return err
 	}
 	return nil

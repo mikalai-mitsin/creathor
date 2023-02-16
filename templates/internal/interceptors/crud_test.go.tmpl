@@ -62,7 +62,7 @@ func TestNew{{ .InterceptorTypeName }}(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
-            if got := New{{ .InterceptorTypeName }}(tt.args.{{ .UseCaseVariableName }},{{if .Auth}} tt.args.authUseCase,{{end}} tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+            if got := New{{ .InterceptorTypeName }}(tt.args.{{ .UseCaseVariableName }}, tt.args.logger{{if .Auth}}, tt.args.authUseCase{{end}}); !reflect.DeepEqual(got, tt.want) {
                 t.Errorf("New{{ .InterceptorTypeName }}() = %v, want %v", got, tt.want)
             }
         })

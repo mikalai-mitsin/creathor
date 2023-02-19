@@ -173,7 +173,7 @@ func Test{{ .RepositoryTypeName }}_Get(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     logger := mock_log.NewMockLogger(ctrl)
-    query := "SELECT {{ .TableName }}.id,{{ range $key, $value := .Params }} {{ $.TableName }}.{{ $value.Tag }},{{ end }} {{ .TableName }}.updated_at, {{ .TableName }}.created_at FROM public.{{ .TableName }} WHERE id = \\$1 LIMIT 1"
+    query := "SELECT {{ .TableName }}.id, {{ .TableName }}.updated_at, {{ .TableName }}.created_at{{ range $key, $value := .Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }} WHERE id = \\$1 LIMIT 1"
     {{ .Variable }} := mock_models.New{{ .ModelName }}(t)
     ctx := context.Background()
     type fields struct {
@@ -278,7 +278,7 @@ func Test{{ .RepositoryTypeName }}_List(t *testing.T) {
         {{ .ListVariable }} = append({{ .ListVariable }}, mock_models.New{{ .ModelName }}(t))
     }
     filter := mock_models.New{{ .FilterTypeName }}(t)
-    query := "SELECT {{ .TableName }}.id,{{ range $key, $value := .Params }} {{ $.TableName }}.{{ $value.Tag }},{{ end }} {{ .TableName }}.updated_at, {{ .TableName }}.created_at FROM public.{{ .TableName }}"
+    query := "SELECT {{ .TableName }}.id, {{ .TableName }}.updated_at, {{ .TableName }}.created_at{{ range $key, $value := .Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }}"
     type fields struct {
         database *sqlx.DB
         logger   log.Logger
@@ -421,6 +421,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
             setup: func() {
                 mock.ExpectExec(query).
                     WithArgs(
+                        {{ $.Variable }}.UpdatedAt,
 {{- range $value := .Params }}
     {{- if $value.IsSlice }}
                         pq.Array({{ $.Variable }}.{{ $value.GetName }}),
@@ -428,7 +429,6 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
                         {{ $.Variable }}.{{ $value.GetName }},
     {{- end }}
 {{- end }}
-                        {{ $.Variable }}.UpdatedAt,
                         {{ $.Variable }}.ID,
                     ).
                     WillReturnResult(sqlmock.NewResult(0, 1))
@@ -448,6 +448,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
             setup: func() {
                 mock.ExpectExec(query).
                     WithArgs(
+                        {{ $.Variable }}.UpdatedAt,
 {{- range $value := .Params }}
     {{- if $value.IsSlice }}
                         pq.Array({{ $.Variable }}.{{ $value.GetName }}),
@@ -455,7 +456,6 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
                         {{ $.Variable }}.{{ $value.GetName }},
     {{- end }}
 {{- end }}
-                        {{ $.Variable }}.UpdatedAt,
                         {{ $.Variable }}.ID,
                     ).
                     WillReturnResult(sqlmock.NewResult(0, 0))
@@ -475,6 +475,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
             setup: func() {
                 mock.ExpectExec(query).
                     WithArgs(
+                        {{ $.Variable }}.UpdatedAt,
 {{- range $value := .Params }}
     {{- if $value.IsSlice }}
                         pq.Array({{ $.Variable }}.{{ $value.GetName }}),
@@ -482,7 +483,6 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
                         {{ $.Variable }}.{{ $value.GetName }},
     {{- end }}
 {{- end }}
-                        {{ $.Variable }}.UpdatedAt,
                         {{ $.Variable }}.ID,
                     ).
                     WillReturnError(errors.New("test error"))
@@ -502,6 +502,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
             setup: func() {
                 mock.ExpectExec(query).
                     WithArgs(
+                        {{ $.Variable }}.UpdatedAt,
 {{- range $value := .Params }}
     {{- if $value.IsSlice }}
                         pq.Array({{ $.Variable }}.{{ $value.GetName }}),
@@ -509,7 +510,6 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
                         {{ $.Variable }}.{{ $value.GetName }},
     {{- end }}
 {{- end }}
-                        {{ $.Variable }}.UpdatedAt,
                         {{ $.Variable }}.ID,
                     ).
                     WillReturnError(errors.New("test error"))
@@ -529,6 +529,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
             setup: func() {
                 mock.ExpectExec(query).
                     WithArgs(
+                        {{ $.Variable }}.UpdatedAt,
 {{- range $value := .Params }}
     {{- if $value.IsSlice }}
                         pq.Array({{ $.Variable }}.{{ $value.GetName }}),
@@ -536,7 +537,6 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
                         {{ $.Variable }}.{{ $value.GetName }},
     {{- end }}
 {{- end }}
-                        {{ $.Variable }}.UpdatedAt,
                         {{ $.Variable }}.ID,
                     ).
                     WillReturnResult(sqlmock.NewErrorResult(errors.New("test error")))

@@ -62,7 +62,7 @@ func SyncStruct(strc *Struct) error {
 					Type:  ast.NewIdent(param.Type),
 					Tag: &ast.BasicLit{
 						Kind:  token.STRING,
-						Value: fmt.Sprintf("`json:\"%s\" form:\"%s\"`", param.Tag(), param.Tag()),
+						Value: fmt.Sprintf("`db:\"%s\"`", param.Tag()),
 					},
 					Comment: nil,
 				})

@@ -698,6 +698,21 @@ func (m *Model) SyncRepositoryImplementation() error {
 			},
 		},
 	}
+	if err := repository.SyncDTOStruct(); err != nil {
+		return err
+	}
+	if err := repository.SyncDTOListType(); err != nil {
+		return err
+	}
+	if err := repository.SyncDTOListToModels(); err != nil {
+		return err
+	}
+	if err := repository.SyncDTOConstructor(); err != nil {
+		return err
+	}
+	if err := repository.SyncDTOToModel(); err != nil {
+		return err
+	}
 	if err := repository.SyncStruct(); err != nil {
 		return err
 	}
@@ -707,18 +722,21 @@ func (m *Model) SyncRepositoryImplementation() error {
 	if err := repository.SyncCreateMethod(); err != nil {
 		return err
 	}
-	//if err := repository.SyncGetMethod(); err != nil {
-	//	return err
-	//}
-	//if err := repository.SyncListMethod(); err != nil {
-	//	return err
-	//}
-	//if err := repository.SyncUpdateMethod(); err != nil {
-	//	return err
-	//}
-	//if err := repository.SyncDeleteMethod(); err != nil {
-	//	return err
-	//}
+	if err := repository.SyncGetMethod(); err != nil {
+		return err
+	}
+	if err := repository.SyncListMethod(); err != nil {
+		return err
+	}
+	if err := repository.SyncCountMethod(); err != nil {
+		return err
+	}
+	if err := repository.SyncUpdateMethod(); err != nil {
+		return err
+	}
+	if err := repository.SyncDeleteMethod(); err != nil {
+		return err
+	}
 	return nil
 }
 

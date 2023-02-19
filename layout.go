@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/018bf/creathor/models"
+	"github.com/018bf/creathor/internal/models"
 	"os"
 	"path"
 )

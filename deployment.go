@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/models"
+	"github.com/018bf/creathor/internal/models"
 	"github.com/iancoleman/strcase"
 	"os"
 	"os/exec"

@@ -1,8 +1,9 @@
-package models
+package generators
 
 import (
 	"bytes"
 	"fmt"
+	"github.com/018bf/creathor/internal/models"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -13,7 +14,7 @@ import (
 type Repository struct {
 	Path   string
 	Name   string
-	Model  *Model
+	Model  *models.ModelConfig
 	Params []*Param
 }
 

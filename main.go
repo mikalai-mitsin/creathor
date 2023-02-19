@@ -5,7 +5,7 @@ import (
 	"embed"
 	_ "embed"
 	"fmt"
-	"github.com/018bf/creathor/models"
+	"github.com/018bf/creathor/internal/models"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 	"log"

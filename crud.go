@@ -3,7 +3,8 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/models"
+	"github.com/018bf/creathor/internal/generators"
+	"github.com/018bf/creathor/internal/models"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -14,15 +15,674 @@ import (
 	"path/filepath"
 )
 
-func CreateCRUD(model *models.Model) error {
+func SyncModelStruct(m *models.ModelConfig) error {
+	model := &generators.Model{
+		Name:        m.ModelName(),
+		ModelConfig: m,
+		Params: []*generators.Param{
+			{
+				Name: "ID",
+				Type: "UUID",
+			},
+			{
+				Name: "UpdatedAt",
+				Type: "time.Time",
+			},
+			{
+				Name: "CreatedAt",
+				Type: "time.Time",
+			},
+		},
+	}
+	for _, param := range m.Params {
+		model.Params = append(
+			model.Params,
+			&generators.Param{
+				Name: param.GetName(),
+				Type: param.Type,
+			},
+		)
+	}
+	if err := model.Sync(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func SyncCreateStruct(m *models.ModelConfig) error {
+	create := &generators.Model{
+		Name:        m.CreateTypeName(),
+		ModelConfig: m,
+		Params:      []*generators.Param{},
+	}
+	for _, param := range m.Params {
+		create.Params = append(create.Params, &generators.Param{
+			Name: param.GetName(),
+			Type: param.Type,
+		})
+	}
+	if err := create.Sync(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func SyncUpdateStruct(m *models.ModelConfig) error {
+	update := &generators.Model{
+		Name:        m.UpdateTypeName(),
+		ModelConfig: m,
+		Params: []*generators.Param{
+			{
+				Name: "ID",
+				Type: "UUID",
+			},
+		},
+	}
+	for _, param := range m.Params {
+		update.Params = append(update.Params, &generators.Param{
+			Name: param.GetName(),
+			Type: fmt.Sprintf("*%s", param.Type),
+		})
+	}
+	if err := update.Sync(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func SyncRepositoryInterface(m *models.ModelConfig) error {
+	usecase := &generators.Interface{
+		Path:     filepath.Join("internal", "domain", "repositories", m.FileName()),
+		Name:     m.RepositoryTypeName(),
+		Comments: nil,
+		Methods: []*generators.Method{
+			{
+				Name: "Get",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "id",
+						Type: "models.UUID",
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: fmt.Sprintf("*models.%s", m.ModelName()),
+					},
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+			{
+				Name: "List",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "filter",
+						Type: fmt.Sprintf("*models.%s", m.FilterTypeName()),
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: fmt.Sprintf("[]*models.%s", m.ModelName()),
+					},
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+			{
+				Name: "Count",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "filter",
+						Type: fmt.Sprintf("*models.%s", m.FilterTypeName()),
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: "uint64",
+					},
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+			{
+				Name: "Update",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "update",
+						Type: fmt.Sprintf("*models.%s", m.ModelName()),
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+			{
+				Name: "Create",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "create",
+						Type: fmt.Sprintf("*models.%s", m.ModelName()),
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+			{
+				Name: "Delete",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "id",
+						Type: "models.UUID",
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+		},
+	}
+	if err := usecase.SyncInterface(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func SyncUsecaseInterface(m *models.ModelConfig) error {
+	usecase := &generators.Interface{
+		Path:     filepath.Join("internal", "domain", "usecases", m.FileName()),
+		Name:     m.UseCaseTypeName(),
+		Comments: nil,
+		Methods: []*generators.Method{
+			{
+				Name: "Get",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "id",
+						Type: "models.UUID",
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: fmt.Sprintf("*models.%s", m.ModelName()),
+					},
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+			{
+				Name: "List",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "filter",
+						Type: fmt.Sprintf("*models.%s", m.FilterTypeName()),
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: fmt.Sprintf("[]*models.%s", m.ModelName()),
+					},
+					{
+						Name: "",
+						Type: "uint64",
+					},
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+			{
+				Name: "Update",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "update",
+						Type: fmt.Sprintf("*models.%s", m.UpdateTypeName()),
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: fmt.Sprintf("*models.%s", m.ModelName()),
+					},
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+			{
+				Name: "Create",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "create",
+						Type: fmt.Sprintf("*models.%s", m.CreateTypeName()),
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: fmt.Sprintf("*models.%s", m.ModelName()),
+					},
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+			{
+				Name: "Delete",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "id",
+						Type: "models.UUID",
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+		},
+	}
+	if err := usecase.SyncInterface(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func SyncInterceptorInterface(m *models.ModelConfig) error {
+	interceptor := &generators.Interface{
+		Path:     filepath.Join("internal", "domain", "interceptors", m.FileName()),
+		Name:     m.InterceptorTypeName(),
+		Comments: nil,
+		Methods: []*generators.Method{
+			{
+				Name: "Get",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "id",
+						Type: "models.UUID",
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: fmt.Sprintf("*models.%s", m.ModelName()),
+					},
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+			{
+				Name: "List",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "filter",
+						Type: fmt.Sprintf("*models.%s", m.FilterTypeName()),
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: fmt.Sprintf("[]*models.%s", m.ModelName()),
+					},
+					{
+						Name: "",
+						Type: "uint64",
+					},
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+			{
+				Name: "Update",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "update",
+						Type: fmt.Sprintf("*models.%s", m.UpdateTypeName()),
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: fmt.Sprintf("*models.%s", m.ModelName()),
+					},
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+			{
+				Name: "Create",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "create",
+						Type: fmt.Sprintf("*models.%s", m.CreateTypeName()),
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: fmt.Sprintf("*models.%s", m.ModelName()),
+					},
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+			{
+				Name: "Delete",
+				Args: []*generators.Param{
+					{
+						Name: "ctx",
+						Type: "context.Context",
+					},
+					{
+						Name: "id",
+						Type: "models.UUID",
+					},
+				},
+				Results: []*generators.Param{
+					{
+						Name: "",
+						Type: "error",
+					},
+				},
+			},
+		},
+	}
+	if m.Auth {
+		for _, method := range interceptor.Methods {
+			method.Args = append(method.Args, &generators.Param{
+				Name: "requestUser",
+				Type: "*models.User",
+			})
+		}
+	}
+	if err := interceptor.SyncInterface(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func SyncUseCaseImplementation(m *models.ModelConfig) error {
+	useCase := &generators.UseCase{
+		Path:  filepath.Join("internal", "usecases", m.FileName()),
+		Name:  m.UseCaseTypeName(),
+		Model: m,
+		Params: []*generators.Param{
+			{
+				Name: m.RepositoryVariableName(),
+				Type: fmt.Sprintf("repositories.%s", m.RepositoryTypeName()),
+			},
+			{
+				Name: "clock",
+				Type: "clock.Clock",
+			},
+			{
+				Name: "logger",
+				Type: "log.Logger",
+			},
+		},
+	}
+	if err := useCase.SyncStruct(); err != nil {
+		return err
+	}
+	if err := useCase.SyncConstructor(); err != nil {
+		return err
+	}
+	if err := useCase.SyncCreateMethod(); err != nil {
+		return err
+	}
+	if err := useCase.SyncGetMethod(); err != nil {
+		return err
+	}
+	if err := useCase.SyncListMethod(); err != nil {
+		return err
+	}
+	if err := useCase.SyncUpdateMethod(); err != nil {
+		return err
+	}
+	if err := useCase.SyncDeleteMethod(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func SyncRepositoryImplementation(m *models.ModelConfig) error {
+	repository := &generators.Repository{
+		Path:  filepath.Join("internal", "repositories", "postgres", m.FileName()),
+		Name:  m.RepositoryTypeName(),
+		Model: m,
+		Params: []*generators.Param{
+			{
+				Name: "database",
+				Type: "*sqlx.DB",
+			},
+			{
+				Name: "logger",
+				Type: "log.Logger",
+			},
+		},
+	}
+	if err := repository.SyncDTOStruct(); err != nil {
+		return err
+	}
+	if err := repository.SyncDTOListType(); err != nil {
+		return err
+	}
+	if err := repository.SyncDTOListToModels(); err != nil {
+		return err
+	}
+	if err := repository.SyncDTOConstructor(); err != nil {
+		return err
+	}
+	if err := repository.SyncDTOToModel(); err != nil {
+		return err
+	}
+	if err := repository.SyncStruct(); err != nil {
+		return err
+	}
+	if err := repository.SyncConstructor(); err != nil {
+		return err
+	}
+	if err := repository.SyncCreateMethod(); err != nil {
+		return err
+	}
+	if err := repository.SyncGetMethod(); err != nil {
+		return err
+	}
+	if err := repository.SyncListMethod(); err != nil {
+		return err
+	}
+	if err := repository.SyncCountMethod(); err != nil {
+		return err
+	}
+	if err := repository.SyncUpdateMethod(); err != nil {
+		return err
+	}
+	if err := repository.SyncDeleteMethod(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func SyncInterceptorImplementation(m *models.ModelConfig) error {
+	interceptor := &generators.Interceptor{
+		Path:  filepath.Join("internal", "interceptors", m.FileName()),
+		Name:  m.InterceptorTypeName(),
+		Model: m,
+		Params: []*generators.Param{
+			{
+				Name: m.UseCaseTypeName(),
+				Type: fmt.Sprintf("usecases.%s", m.UseCaseTypeName()),
+			},
+			{
+				Name: "logger",
+				Type: "log.Logger",
+			},
+		},
+	}
+	if m.Auth {
+		interceptor.Params = append(
+			interceptor.Params,
+			&generators.Param{
+				Name: "authUseCase",
+				Type: "usecases.AuthUseCase",
+			},
+		)
+	}
+	if err := interceptor.SyncStruct(); err != nil {
+		return err
+	}
+	if err := interceptor.SyncConstructor(); err != nil {
+		return err
+	}
+	if err := interceptor.SyncCreateMethod(); err != nil {
+		return err
+	}
+	if err := interceptor.SyncGetMethod(); err != nil {
+		return err
+	}
+	if err := interceptor.SyncListMethod(); err != nil {
+		return err
+	}
+	if err := interceptor.SyncUpdateMethod(); err != nil {
+		return err
+	}
+	if err := interceptor.SyncDeleteMethod(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func SyncModel(m *models.ModelConfig) error {
+	if err := SyncModelStruct(m); err != nil {
+		return err
+	}
+	if err := SyncCreateStruct(m); err != nil {
+		return err
+	}
+	if err := SyncUpdateStruct(m); err != nil {
+		return err
+	}
+	if err := SyncRepositoryInterface(m); err != nil {
+		return err
+	}
+	if err := SyncUsecaseInterface(m); err != nil {
+		return err
+	}
+	if err := SyncInterceptorInterface(m); err != nil {
+		return err
+	}
+	if err := SyncUseCaseImplementation(m); err != nil {
+		return err
+	}
+	if err := SyncRepositoryImplementation(m); err != nil {
+		return err
+	}
+	if err := SyncInterceptorImplementation(m); err != nil {
+		return err
+	}
+	return nil
+}
+
+func CreateCRUD(model *models.ModelConfig) error {
 	if err := model.Validate(); err != nil {
 		fmt.Printf("invalid model %s: %s\n", model.Model, err)
 		return err
 	}
-	//if model.IsExists() {
-	//	fmt.Printf("model exists %s\n", model.Model)
-	//	return nil
-	//}
 	files := []*Template{
 		{
 			SourcePath:      "templates/internal/domain/models/crud.go.tmpl",
@@ -125,7 +785,7 @@ func CreateCRUD(model *models.Model) error {
 			return err
 		}
 	}
-	if err := model.SyncModels(); err != nil {
+	if err := SyncModel(model); err != nil {
 		return err
 	}
 	if err := addToDI("usecases", fmt.Sprintf("New%s", model.UseCaseTypeName())); err != nil {

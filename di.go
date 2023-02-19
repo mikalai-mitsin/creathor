@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"github.com/018bf/creathor/models"
+	"github.com/018bf/creathor/internal/models"
 	"go/ast"
 	"go/parser"
 	"go/printer"

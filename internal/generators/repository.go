@@ -1410,6 +1410,116 @@ func (r Repository) SyncCreateMethod() error {
 	return nil
 }
 
+func (r Repository) search() ast.Stmt {
+	if !r.Model.SearchEnabled() {
+		return &ast.EmptyStmt{
+			Semicolon: 0,
+			Implicit:  false,
+		}
+	}
+	var columns []ast.Expr
+	for _, param := range r.Model.Params {
+		if param.Search {
+			columns = append(columns, &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf("\"%s\"", param.Tag()),
+			})
+		}
+	}
+	stmt := &ast.IfStmt{
+		Cond: &ast.BinaryExpr{
+			X: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "filter",
+				},
+				Sel: &ast.Ident{
+					Name: "Search",
+				},
+			},
+			Op: token.NEQ,
+			Y: &ast.Ident{
+				Name: "nil",
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						&ast.Ident{
+							Name: "q",
+						},
+					},
+					Tok: token.ASSIGN,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "q",
+								},
+								Sel: &ast.Ident{
+									Name: "Where",
+								},
+							},
+							Args: []ast.Expr{
+								&ast.CompositeLit{
+									Type: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "postgresql",
+										},
+										Sel: &ast.Ident{
+											Name: "Search",
+										},
+									},
+									Elts: []ast.Expr{
+										&ast.KeyValueExpr{
+											Key: &ast.Ident{
+												Name: "Lang",
+											},
+											Value: &ast.BasicLit{
+												Kind:  token.STRING,
+												Value: "\"english\"",
+											},
+										},
+										&ast.KeyValueExpr{
+											Key: &ast.Ident{
+												Name: "Query",
+											},
+											Value: &ast.StarExpr{
+												X: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "filter",
+													},
+													Sel: &ast.Ident{
+														Name: "Search",
+													},
+												},
+											},
+										},
+										&ast.KeyValueExpr{
+											Key: &ast.Ident{
+												Name: "Fields",
+											},
+											Value: &ast.CompositeLit{
+												Type: &ast.ArrayType{
+													Elt: &ast.Ident{
+														Name: "string",
+													},
+												},
+												Elts: columns,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	return stmt
+}
+
 func (r Repository) AstListMethod() *ast.FuncDecl {
 	tableName := r.Model.TableName()
 	columns := []ast.Expr{
@@ -1701,19 +1811,28 @@ func (r Repository) AstListMethod() *ast.FuncDecl {
 						},
 					},
 				},
+				r.search(),
 				&ast.IfStmt{
 					Cond: &ast.BinaryExpr{
-						X: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "filter",
+						X: &ast.CallExpr{
+							Fun: &ast.Ident{
+								Name: "len",
 							},
-							Sel: &ast.Ident{
-								Name: "Search",
+							Args: []ast.Expr{
+								&ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "filter",
+									},
+									Sel: &ast.Ident{
+										Name: "IDs",
+									},
+								},
 							},
 						},
-						Op: token.NEQ,
-						Y: &ast.Ident{
-							Name: "nil",
+						Op: token.GTR,
+						Y: &ast.BasicLit{
+							Kind:  token.INT,
+							Value: "0",
 						},
 					},
 					Body: &ast.BlockStmt{
@@ -1739,57 +1858,21 @@ func (r Repository) AstListMethod() *ast.FuncDecl {
 											&ast.CompositeLit{
 												Type: &ast.SelectorExpr{
 													X: &ast.Ident{
-														Name: "postgresql",
+														Name: "sq",
 													},
 													Sel: &ast.Ident{
-														Name: "Search",
+														Name: "Eq",
 													},
 												},
 												Elts: []ast.Expr{
 													&ast.KeyValueExpr{
-														Key: &ast.Ident{
-															Name: "Lang",
-														},
-														Value: &ast.BasicLit{
+														Key: &ast.BasicLit{
 															Kind:  token.STRING,
-															Value: "\"english\"",
+															Value: "\"id\"",
 														},
-													},
-													&ast.KeyValueExpr{
-														Key: &ast.Ident{
-															Name: "Query",
-														},
-														Value: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "filter",
-																},
-																Sel: &ast.Ident{
-																	Name: "Search",
-																},
-															},
-														},
-													},
-													&ast.KeyValueExpr{
-														Key: &ast.Ident{
-															Name: "Fields",
-														},
-														Value: &ast.CompositeLit{
-															Type: &ast.ArrayType{
-																Elt: &ast.Ident{
-																	Name: "string",
-																},
-															},
-															Elts: []ast.Expr{
-																&ast.BasicLit{
-																	Kind:  token.STRING,
-																	Value: "\"name\"",
-																},
-																&ast.BasicLit{
-																	Kind:  token.STRING,
-																	Value: "\"subtitle\"",
-																},
-															},
+														Value: &ast.SelectorExpr{
+															X:   ast.NewIdent("filter"),
+															Sel: ast.NewIdent("IDs"),
 														},
 													},
 												},
@@ -2371,6 +2454,79 @@ func (r Repository) AstCountMethod() *ast.FuncDecl {
 								&ast.BasicLit{
 									Kind:  token.STRING,
 									Value: fmt.Sprintf("\"public.%s\"", r.Model.TableName()),
+								},
+							},
+						},
+					},
+				},
+				r.search(),
+				&ast.IfStmt{
+					Cond: &ast.BinaryExpr{
+						X: &ast.CallExpr{
+							Fun: &ast.Ident{
+								Name: "len",
+							},
+							Args: []ast.Expr{
+								&ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "filter",
+									},
+									Sel: &ast.Ident{
+										Name: "IDs",
+									},
+								},
+							},
+						},
+						Op: token.GTR,
+						Y: &ast.BasicLit{
+							Kind:  token.INT,
+							Value: "0",
+						},
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.AssignStmt{
+								Lhs: []ast.Expr{
+									&ast.Ident{
+										Name: "q",
+									},
+								},
+								Tok: token.ASSIGN,
+								Rhs: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "q",
+											},
+											Sel: &ast.Ident{
+												Name: "Where",
+											},
+										},
+										Args: []ast.Expr{
+											&ast.CompositeLit{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "sq",
+													},
+													Sel: &ast.Ident{
+														Name: "Eq",
+													},
+												},
+												Elts: []ast.Expr{
+													&ast.KeyValueExpr{
+														Key: &ast.BasicLit{
+															Kind:  token.STRING,
+															Value: "\"id\"",
+														},
+														Value: &ast.SelectorExpr{
+															X:   ast.NewIdent("filter"),
+															Sel: ast.NewIdent("IDs"),
+														},
+													},
+												},
+											},
+										},
+									},
 								},
 							},
 						},

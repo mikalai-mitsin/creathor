@@ -8,16 +8,6 @@ import (
     "github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
-type {{ .FilterTypeName }} struct {
-    IDs        []UUID `json:"ids" form:"ids"`
-    PageSize   *uint64  `json:"page_size" form:"page_size"`
-    PageNumber *uint64  `json:"page_number" form:"page_number"`
-    OrderBy    []string `json:"order_by" form:"order_by"`
-{{- if .SearchEnabled }}
-    Search     *string  `json:"search" form:"search"`
-{{- end }}
-}
-
 {{ if .Auth }}
 const (
     {{ .PermissionIDList }} PermissionID = "{{ .KeyName }}_list"

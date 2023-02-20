@@ -49,6 +49,44 @@ func SyncModelStruct(m *models.ModelConfig) error {
 	return nil
 }
 
+func SyncFilterStruct(m *models.ModelConfig) error {
+	create := &generators.Model{
+		Name:        m.FilterTypeName(),
+		ModelConfig: m,
+		Params: []*generators.Param{
+			{
+				Name: "IDs",
+				Type: "[]UUID",
+			},
+			{
+				Name: "PageSize",
+				Type: "*uint64",
+			},
+			{
+				Name: "PageNumber",
+				Type: "*uint64",
+			},
+			{
+				Name: "OrderBy",
+				Type: "[]string",
+			},
+		},
+	}
+	if m.SearchEnabled() {
+		create.Params = append(
+			create.Params,
+			&generators.Param{
+				Name: "Search",
+				Type: "*string",
+			},
+		)
+	}
+	if err := create.Sync(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func SyncCreateStruct(m *models.ModelConfig) error {
 	create := &generators.Model{
 		Name:        m.CreateTypeName(),
@@ -649,6 +687,9 @@ func SyncInterceptorImplementation(m *models.ModelConfig) error {
 
 func SyncModel(m *models.ModelConfig) error {
 	if err := SyncModelStruct(m); err != nil {
+		return err
+	}
+	if err := SyncFilterStruct(m); err != nil {
 		return err
 	}
 	if err := SyncCreateStruct(m); err != nil {

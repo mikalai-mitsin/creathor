@@ -1,15 +1,10 @@
 package main
 
 import (
-	"bytes"
+	"github.com/018bf/creathor/internal/generators"
 	"github.com/018bf/creathor/internal/models"
-	"go/ast"
-	"go/parser"
-	"go/printer"
-	"go/token"
 	"os"
 	"path"
-	"path/filepath"
 )
 
 func CreateDI(data *models.Project) error {
@@ -33,72 +28,26 @@ func CreateDI(data *models.Project) error {
 			return err
 		}
 	}
-	return nil
-}
-
-func addToDI(packageName string, constructor string) error {
-	filePath := filepath.Join(destinationPath, "internal", "containers", "fx.go")
-	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, filePath, nil, parser.ParseComments)
-	if err != nil {
+	fx := generators.FxContainer{Project: data}
+	if err := fx.SyncFxModule(); err != nil {
 		return err
 	}
-	for _, decl := range file.Decls {
-		genDecl, ok := decl.(*ast.GenDecl)
-		if ok {
-			for _, spec := range genDecl.Specs {
-				variable, ok := spec.(*ast.ValueSpec)
-				if ok {
-					for _, name := range variable.Names {
-						if name.Name == "FXModule" {
-							for _, values := range variable.Values {
-								optionsFunc, ok := values.(*ast.CallExpr)
-								if ok {
-									for _, arg := range optionsFunc.Args {
-										provideFunc, ok := arg.(*ast.CallExpr)
-										if ok {
-											fun, ok := provideFunc.Fun.(*ast.SelectorExpr)
-											if ok && fun.Sel.Name == "Provide" {
-												var exists bool
-												for _, existedArg := range provideFunc.Args {
-													selector, sOk := existedArg.(*ast.SelectorExpr)
-													if sOk {
-														ident, iOk := selector.X.(*ast.Ident)
-														if iOk {
-															if ident.Name == packageName && selector.Sel.Name == constructor {
-																exists = true
-																break
-															}
-														}
-													}
-												}
-												if !exists {
-													provideFunc.Args = append(provideFunc.Args, &ast.SelectorExpr{
-														X:   ast.NewIdent(packageName),
-														Sel: ast.NewIdent(constructor),
-													})
-												}
-											} else {
-												continue
-											}
-											break
-										}
-									}
-									buff := &bytes.Buffer{}
-									if err := printer.Fprint(buff, fileset, file); err != nil {
-										return err
-									}
-									if err := os.WriteFile(filePath, buff.Bytes(), 0777); err != nil {
-										return err
-									}
-									return nil
-								}
-							}
-
-						}
-					}
-				}
-			}
+	if err := fx.SyncMigrateContainer(); err != nil {
+		return err
+	}
+	if data.GRPCEnabled {
+		if err := fx.SyncGrpcContainer(); err != nil {
+			return err
+		}
+	}
+	if data.GatewayEnabled {
+		if err := fx.SyncGatewayContainer(); err != nil {
+			return err
+		}
+	}
+	if data.RESTEnabled {
+		if err := fx.SyncRestContainer(); err != nil {
+			return err
 		}
 	}
 	return nil

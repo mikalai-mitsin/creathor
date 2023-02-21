@@ -829,32 +829,6 @@ func CreateCRUD(model *models.ModelConfig) error {
 	if err := SyncModel(model); err != nil {
 		return err
 	}
-	if err := addToDI("usecases", fmt.Sprintf("New%s", model.UseCaseTypeName())); err != nil {
-		return err
-	}
-	if err := addToDI("interceptors", fmt.Sprintf("New%s", model.InterceptorTypeName())); err != nil {
-		return err
-	}
-	if err := addToDI("postgresRepositories", fmt.Sprintf("New%s", model.RepositoryTypeName())); err != nil {
-		return err
-	}
-
-	if model.RESTEnabled {
-		if err := addToDI("restInterface", fmt.Sprintf("New%s", model.RESTHandlerTypeName())); err != nil {
-			return err
-		}
-		if err := registerRESTHandler(model.RESTHandlerVariableName(), model.RESTHandlerTypeName()); err != nil {
-			return err
-		}
-	}
-	if model.GRPCEnabled {
-		if err := addToDI("grpcInterface", fmt.Sprintf("New%s", model.GRPCHandlerTypeName())); err != nil {
-			return err
-		}
-		if err := registerGRPCHandler(model.GRPCHandlerVariableName(), model.ProtoPackage, model.GRPCHandlerTypeName()); err != nil {
-			return err
-		}
-	}
 	if model.GRPCEnabled && model.GatewayEnabled {
 		if err := registerGatewayHandler(model.ProtoPackage, model.GatewayHandlerTypeName()); err != nil {
 			return err

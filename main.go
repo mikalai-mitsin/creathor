@@ -127,6 +127,12 @@ func postInit(project *models.Project) error {
 	if err := tidy.Run(); err != nil {
 		fmt.Println(errb.String())
 	}
+	goLines := exec.Command("golines", ".", "-w", "--ignore-generated")
+	goLines.Dir = destinationPath
+	fmt.Println(strings.Join(goLines.Args, " "))
+	if err := goLines.Run(); err != nil {
+		fmt.Println(errb.String())
+	}
 	clean := exec.Command("golangci-lint", "run", "./...", "--fix")
 	clean.Dir = destinationPath
 	fmt.Println(strings.Join(clean.Args, " "))

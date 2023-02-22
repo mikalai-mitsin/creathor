@@ -501,9 +501,9 @@ func (f FxContainer) AstGrpcContainer() *ast.FuncDecl {
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
-					{
+					&ast.Field{
 						Names: []*ast.Ident{
-							{
+							&ast.Ident{
 								Name: "config",
 							},
 						},
@@ -515,7 +515,7 @@ func (f FxContainer) AstGrpcContainer() *ast.FuncDecl {
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
-					{
+					&ast.Field{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
@@ -565,7 +565,7 @@ func (f FxContainer) AstGrpcContainer() *ast.FuncDecl {
 												Params: &ast.FieldList{},
 												Results: &ast.FieldList{
 													List: []*ast.Field{
-														{
+														&ast.Field{
 															Type: &ast.Ident{
 																Name: "string",
 															},
@@ -604,9 +604,9 @@ func (f FxContainer) AstGrpcContainer() *ast.FuncDecl {
 											Type: &ast.FuncType{
 												Params: &ast.FieldList{
 													List: []*ast.Field{
-														{
+														&ast.Field{
 															Names: []*ast.Ident{
-																{
+																&ast.Ident{
 																	Name: "lifecycle",
 																},
 															},
@@ -619,9 +619,24 @@ func (f FxContainer) AstGrpcContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														{
+														&ast.Field{
 															Names: []*ast.Ident{
-																{
+																&ast.Ident{
+																	Name: "logger",
+																},
+															},
+															Type: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "log",
+																},
+																Sel: &ast.Ident{
+																	Name: "Logger",
+																},
+															},
+														},
+														&ast.Field{
+															Names: []*ast.Ident{
+																&ast.Ident{
 																	Name: "server",
 																},
 															},
@@ -633,6 +648,21 @@ func (f FxContainer) AstGrpcContainer() *ast.FuncDecl {
 																	Sel: &ast.Ident{
 																		Name: "Server",
 																	},
+																},
+															},
+														},
+														&ast.Field{
+															Names: []*ast.Ident{
+																&ast.Ident{
+																	Name: "shutdowner",
+																},
+															},
+															Type: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "fx",
+																},
+																Sel: &ast.Ident{
+																	Name: "Shutdowner",
 																},
 															},
 														},
@@ -666,12 +696,157 @@ func (f FxContainer) AstGrpcContainer() *ast.FuncDecl {
 																			Key: &ast.Ident{
 																				Name: "OnStart",
 																			},
-																			Value: &ast.SelectorExpr{
-																				X: &ast.Ident{
-																					Name: "server",
+																			Value: &ast.FuncLit{
+																				Type: &ast.FuncType{
+																					Params: &ast.FieldList{
+																						List: []*ast.Field{
+																							&ast.Field{
+																								Names: []*ast.Ident{
+																									&ast.Ident{
+																										Name: "ctx",
+																									},
+																								},
+																								Type: &ast.SelectorExpr{
+																									X: &ast.Ident{
+																										Name: "context",
+																									},
+																									Sel: &ast.Ident{
+																										Name: "Context",
+																									},
+																								},
+																							},
+																						},
+																					},
+																					Results: &ast.FieldList{
+																						List: []*ast.Field{
+																							&ast.Field{
+																								Type: &ast.Ident{
+																									Name: "error",
+																								},
+																							},
+																						},
+																					},
 																				},
-																				Sel: &ast.Ident{
-																					Name: "Start",
+																				Body: &ast.BlockStmt{
+																					List: []ast.Stmt{
+																						&ast.GoStmt{
+																							Call: &ast.CallExpr{
+																								Fun: &ast.FuncLit{
+																									Type: &ast.FuncType{
+																										Params: &ast.FieldList{},
+																									},
+																									Body: &ast.BlockStmt{
+																										List: []ast.Stmt{
+																											&ast.AssignStmt{
+																												Lhs: []ast.Expr{
+																													&ast.Ident{
+																														Name: "err",
+																													},
+																												},
+																												Tok: token.DEFINE,
+																												Rhs: []ast.Expr{
+																													&ast.CallExpr{
+																														Fun: &ast.SelectorExpr{
+																															X: &ast.Ident{
+																																Name: "server",
+																															},
+																															Sel: &ast.Ident{
+																																Name: "Start",
+																															},
+																														},
+																														Args: []ast.Expr{
+																															&ast.Ident{
+																																Name: "ctx",
+																															},
+																														},
+																													},
+																												},
+																											},
+																											&ast.IfStmt{
+																												Cond: &ast.BinaryExpr{
+																													X: &ast.Ident{
+																														Name: "err",
+																													},
+																													Op: token.NEQ,
+																													Y: &ast.Ident{
+																														Name: "nil",
+																													},
+																												},
+																												Body: &ast.BlockStmt{
+																													List: []ast.Stmt{
+																														&ast.ExprStmt{
+																															X: &ast.CallExpr{
+																																Fun: &ast.SelectorExpr{
+																																	X: &ast.Ident{
+																																		Name: "logger",
+																																	},
+																																	Sel: &ast.Ident{
+																																		Name: "Error",
+																																	},
+																																},
+																																Args: []ast.Expr{
+																																	&ast.BasicLit{
+																																		Kind:  token.STRING,
+																																		Value: "\"shutdown\"",
+																																	},
+																																	&ast.CallExpr{
+																																		Fun: &ast.SelectorExpr{
+																																			X: &ast.Ident{
+																																				Name: "log",
+																																			},
+																																			Sel: &ast.Ident{
+																																				Name: "Any",
+																																			},
+																																		},
+																																		Args: []ast.Expr{
+																																			&ast.BasicLit{
+																																				Kind:  token.STRING,
+																																				Value: "\"error\"",
+																																			},
+																																			&ast.Ident{
+																																				Name: "err",
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																														&ast.AssignStmt{
+																															Lhs: []ast.Expr{
+																																&ast.Ident{
+																																	Name: "_",
+																																},
+																															},
+																															Tok: token.ASSIGN,
+																															Rhs: []ast.Expr{
+																																&ast.CallExpr{
+																																	Fun: &ast.SelectorExpr{
+																																		X: &ast.Ident{
+																																			Name: "shutdowner",
+																																		},
+																																		Sel: &ast.Ident{
+																																			Name: "Shutdown",
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																						&ast.ReturnStmt{
+																							Results: []ast.Expr{
+																								&ast.Ident{
+																									Name: "nil",
+																								},
+																							},
+																						},
+																					},
 																				},
 																			},
 																		},
@@ -755,9 +930,9 @@ func (f FxContainer) AstGatewayContainer() *ast.FuncDecl {
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
-					{
+					&ast.Field{
 						Names: []*ast.Ident{
-							{
+							&ast.Ident{
 								Name: "config",
 							},
 						},
@@ -769,7 +944,7 @@ func (f FxContainer) AstGatewayContainer() *ast.FuncDecl {
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
-					{
+					&ast.Field{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
@@ -819,7 +994,7 @@ func (f FxContainer) AstGatewayContainer() *ast.FuncDecl {
 												Params: &ast.FieldList{},
 												Results: &ast.FieldList{
 													List: []*ast.Field{
-														{
+														&ast.Field{
 															Type: &ast.Ident{
 																Name: "string",
 															},
@@ -858,9 +1033,9 @@ func (f FxContainer) AstGatewayContainer() *ast.FuncDecl {
 											Type: &ast.FuncType{
 												Params: &ast.FieldList{
 													List: []*ast.Field{
-														{
+														&ast.Field{
 															Names: []*ast.Ident{
-																{
+																&ast.Ident{
 																	Name: "lifecycle",
 																},
 															},
@@ -873,9 +1048,24 @@ func (f FxContainer) AstGatewayContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														{
+														&ast.Field{
 															Names: []*ast.Ident{
-																{
+																&ast.Ident{
+																	Name: "logger",
+																},
+															},
+															Type: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "log",
+																},
+																Sel: &ast.Ident{
+																	Name: "Logger",
+																},
+															},
+														},
+														&ast.Field{
+															Names: []*ast.Ident{
+																&ast.Ident{
 																	Name: "server",
 																},
 															},
@@ -887,6 +1077,21 @@ func (f FxContainer) AstGatewayContainer() *ast.FuncDecl {
 																	Sel: &ast.Ident{
 																		Name: "Server",
 																	},
+																},
+															},
+														},
+														&ast.Field{
+															Names: []*ast.Ident{
+																&ast.Ident{
+																	Name: "shutdowner",
+																},
+															},
+															Type: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "fx",
+																},
+																Sel: &ast.Ident{
+																	Name: "Shutdowner",
 																},
 															},
 														},
@@ -920,12 +1125,157 @@ func (f FxContainer) AstGatewayContainer() *ast.FuncDecl {
 																			Key: &ast.Ident{
 																				Name: "OnStart",
 																			},
-																			Value: &ast.SelectorExpr{
-																				X: &ast.Ident{
-																					Name: "server",
+																			Value: &ast.FuncLit{
+																				Type: &ast.FuncType{
+																					Params: &ast.FieldList{
+																						List: []*ast.Field{
+																							&ast.Field{
+																								Names: []*ast.Ident{
+																									&ast.Ident{
+																										Name: "ctx",
+																									},
+																								},
+																								Type: &ast.SelectorExpr{
+																									X: &ast.Ident{
+																										Name: "context",
+																									},
+																									Sel: &ast.Ident{
+																										Name: "Context",
+																									},
+																								},
+																							},
+																						},
+																					},
+																					Results: &ast.FieldList{
+																						List: []*ast.Field{
+																							&ast.Field{
+																								Type: &ast.Ident{
+																									Name: "error",
+																								},
+																							},
+																						},
+																					},
 																				},
-																				Sel: &ast.Ident{
-																					Name: "Start",
+																				Body: &ast.BlockStmt{
+																					List: []ast.Stmt{
+																						&ast.GoStmt{
+																							Call: &ast.CallExpr{
+																								Fun: &ast.FuncLit{
+																									Type: &ast.FuncType{
+																										Params: &ast.FieldList{},
+																									},
+																									Body: &ast.BlockStmt{
+																										List: []ast.Stmt{
+																											&ast.AssignStmt{
+																												Lhs: []ast.Expr{
+																													&ast.Ident{
+																														Name: "err",
+																													},
+																												},
+																												Tok: token.DEFINE,
+																												Rhs: []ast.Expr{
+																													&ast.CallExpr{
+																														Fun: &ast.SelectorExpr{
+																															X: &ast.Ident{
+																																Name: "server",
+																															},
+																															Sel: &ast.Ident{
+																																Name: "Start",
+																															},
+																														},
+																														Args: []ast.Expr{
+																															&ast.Ident{
+																																Name: "ctx",
+																															},
+																														},
+																													},
+																												},
+																											},
+																											&ast.IfStmt{
+																												Cond: &ast.BinaryExpr{
+																													X: &ast.Ident{
+																														Name: "err",
+																													},
+																													Op: token.NEQ,
+																													Y: &ast.Ident{
+																														Name: "nil",
+																													},
+																												},
+																												Body: &ast.BlockStmt{
+																													List: []ast.Stmt{
+																														&ast.ExprStmt{
+																															X: &ast.CallExpr{
+																																Fun: &ast.SelectorExpr{
+																																	X: &ast.Ident{
+																																		Name: "logger",
+																																	},
+																																	Sel: &ast.Ident{
+																																		Name: "Error",
+																																	},
+																																},
+																																Args: []ast.Expr{
+																																	&ast.BasicLit{
+																																		Kind:  token.STRING,
+																																		Value: "\"shutdown\"",
+																																	},
+																																	&ast.CallExpr{
+																																		Fun: &ast.SelectorExpr{
+																																			X: &ast.Ident{
+																																				Name: "log",
+																																			},
+																																			Sel: &ast.Ident{
+																																				Name: "Any",
+																																			},
+																																		},
+																																		Args: []ast.Expr{
+																																			&ast.BasicLit{
+																																				Kind:  token.STRING,
+																																				Value: "\"error\"",
+																																			},
+																																			&ast.Ident{
+																																				Name: "err",
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																														&ast.AssignStmt{
+																															Lhs: []ast.Expr{
+																																&ast.Ident{
+																																	Name: "_",
+																																},
+																															},
+																															Tok: token.ASSIGN,
+																															Rhs: []ast.Expr{
+																																&ast.CallExpr{
+																																	Fun: &ast.SelectorExpr{
+																																		X: &ast.Ident{
+																																			Name: "shutdowner",
+																																		},
+																																		Sel: &ast.Ident{
+																																			Name: "Shutdown",
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																						&ast.ReturnStmt{
+																							Results: []ast.Expr{
+																								&ast.Ident{
+																									Name: "nil",
+																								},
+																							},
+																						},
+																					},
 																				},
 																			},
 																		},
@@ -996,9 +1346,9 @@ func (f FxContainer) AstRestContainer() *ast.FuncDecl {
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
-					{
+					&ast.Field{
 						Names: []*ast.Ident{
-							{
+							&ast.Ident{
 								Name: "config",
 							},
 						},
@@ -1010,7 +1360,7 @@ func (f FxContainer) AstRestContainer() *ast.FuncDecl {
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
-					{
+					&ast.Field{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
@@ -1060,7 +1410,7 @@ func (f FxContainer) AstRestContainer() *ast.FuncDecl {
 												Params: &ast.FieldList{},
 												Results: &ast.FieldList{
 													List: []*ast.Field{
-														{
+														&ast.Field{
 															Type: &ast.Ident{
 																Name: "string",
 															},
@@ -1099,9 +1449,9 @@ func (f FxContainer) AstRestContainer() *ast.FuncDecl {
 											Type: &ast.FuncType{
 												Params: &ast.FieldList{
 													List: []*ast.Field{
-														{
+														&ast.Field{
 															Names: []*ast.Ident{
-																{
+																&ast.Ident{
 																	Name: "lifecycle",
 																},
 															},
@@ -1114,9 +1464,24 @@ func (f FxContainer) AstRestContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														{
+														&ast.Field{
 															Names: []*ast.Ident{
-																{
+																&ast.Ident{
+																	Name: "logger",
+																},
+															},
+															Type: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "log",
+																},
+																Sel: &ast.Ident{
+																	Name: "Logger",
+																},
+															},
+														},
+														&ast.Field{
+															Names: []*ast.Ident{
+																&ast.Ident{
 																	Name: "server",
 																},
 															},
@@ -1128,6 +1493,21 @@ func (f FxContainer) AstRestContainer() *ast.FuncDecl {
 																	Sel: &ast.Ident{
 																		Name: "Server",
 																	},
+																},
+															},
+														},
+														&ast.Field{
+															Names: []*ast.Ident{
+																&ast.Ident{
+																	Name: "shutdowner",
+																},
+															},
+															Type: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "fx",
+																},
+																Sel: &ast.Ident{
+																	Name: "Shutdowner",
 																},
 															},
 														},
@@ -1161,12 +1541,157 @@ func (f FxContainer) AstRestContainer() *ast.FuncDecl {
 																			Key: &ast.Ident{
 																				Name: "OnStart",
 																			},
-																			Value: &ast.SelectorExpr{
-																				X: &ast.Ident{
-																					Name: "server",
+																			Value: &ast.FuncLit{
+																				Type: &ast.FuncType{
+																					Params: &ast.FieldList{
+																						List: []*ast.Field{
+																							&ast.Field{
+																								Names: []*ast.Ident{
+																									&ast.Ident{
+																										Name: "ctx",
+																									},
+																								},
+																								Type: &ast.SelectorExpr{
+																									X: &ast.Ident{
+																										Name: "context",
+																									},
+																									Sel: &ast.Ident{
+																										Name: "Context",
+																									},
+																								},
+																							},
+																						},
+																					},
+																					Results: &ast.FieldList{
+																						List: []*ast.Field{
+																							&ast.Field{
+																								Type: &ast.Ident{
+																									Name: "error",
+																								},
+																							},
+																						},
+																					},
 																				},
-																				Sel: &ast.Ident{
-																					Name: "Start",
+																				Body: &ast.BlockStmt{
+																					List: []ast.Stmt{
+																						&ast.GoStmt{
+																							Call: &ast.CallExpr{
+																								Fun: &ast.FuncLit{
+																									Type: &ast.FuncType{
+																										Params: &ast.FieldList{},
+																									},
+																									Body: &ast.BlockStmt{
+																										List: []ast.Stmt{
+																											&ast.AssignStmt{
+																												Lhs: []ast.Expr{
+																													&ast.Ident{
+																														Name: "err",
+																													},
+																												},
+																												Tok: token.DEFINE,
+																												Rhs: []ast.Expr{
+																													&ast.CallExpr{
+																														Fun: &ast.SelectorExpr{
+																															X: &ast.Ident{
+																																Name: "server",
+																															},
+																															Sel: &ast.Ident{
+																																Name: "Start",
+																															},
+																														},
+																														Args: []ast.Expr{
+																															&ast.Ident{
+																																Name: "ctx",
+																															},
+																														},
+																													},
+																												},
+																											},
+																											&ast.IfStmt{
+																												Cond: &ast.BinaryExpr{
+																													X: &ast.Ident{
+																														Name: "err",
+																													},
+																													Op: token.NEQ,
+																													Y: &ast.Ident{
+																														Name: "nil",
+																													},
+																												},
+																												Body: &ast.BlockStmt{
+																													List: []ast.Stmt{
+																														&ast.ExprStmt{
+																															X: &ast.CallExpr{
+																																Fun: &ast.SelectorExpr{
+																																	X: &ast.Ident{
+																																		Name: "logger",
+																																	},
+																																	Sel: &ast.Ident{
+																																		Name: "Error",
+																																	},
+																																},
+																																Args: []ast.Expr{
+																																	&ast.BasicLit{
+																																		Kind:  token.STRING,
+																																		Value: "\"shutdown\"",
+																																	},
+																																	&ast.CallExpr{
+																																		Fun: &ast.SelectorExpr{
+																																			X: &ast.Ident{
+																																				Name: "log",
+																																			},
+																																			Sel: &ast.Ident{
+																																				Name: "Any",
+																																			},
+																																		},
+																																		Args: []ast.Expr{
+																																			&ast.BasicLit{
+																																				Kind:  token.STRING,
+																																				Value: "\"error\"",
+																																			},
+																																			&ast.Ident{
+																																				Name: "err",
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																														&ast.AssignStmt{
+																															Lhs: []ast.Expr{
+																																&ast.Ident{
+																																	Name: "_",
+																																},
+																															},
+																															Tok: token.ASSIGN,
+																															Rhs: []ast.Expr{
+																																&ast.CallExpr{
+																																	Fun: &ast.SelectorExpr{
+																																		X: &ast.Ident{
+																																			Name: "shutdowner",
+																																		},
+																																		Sel: &ast.Ident{
+																																			Name: "Shutdown",
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																						&ast.ReturnStmt{
+																							Results: []ast.Expr{
+																								&ast.Ident{
+																									Name: "nil",
+																								},
+																							},
+																						},
+																					},
 																				},
 																			},
 																		},
@@ -1250,9 +1775,9 @@ func (f FxContainer) AstMigrateContainer() *ast.FuncDecl {
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
-					{
+					&ast.Field{
 						Names: []*ast.Ident{
-							{
+							&ast.Ident{
 								Name: "config",
 							},
 						},
@@ -1264,7 +1789,7 @@ func (f FxContainer) AstMigrateContainer() *ast.FuncDecl {
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
-					{
+					&ast.Field{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
@@ -1314,7 +1839,7 @@ func (f FxContainer) AstMigrateContainer() *ast.FuncDecl {
 												Params: &ast.FieldList{},
 												Results: &ast.FieldList{
 													List: []*ast.Field{
-														{
+														&ast.Field{
 															Type: &ast.Ident{
 																Name: "string",
 															},
@@ -1353,9 +1878,9 @@ func (f FxContainer) AstMigrateContainer() *ast.FuncDecl {
 											Type: &ast.FuncType{
 												Params: &ast.FieldList{
 													List: []*ast.Field{
-														{
+														&ast.Field{
 															Names: []*ast.Ident{
-																{
+																&ast.Ident{
 																	Name: "lifecycle",
 																},
 															},
@@ -1368,9 +1893,24 @@ func (f FxContainer) AstMigrateContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														{
+														&ast.Field{
 															Names: []*ast.Ident{
-																{
+																&ast.Ident{
+																	Name: "logger",
+																},
+															},
+															Type: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "log",
+																},
+																Sel: &ast.Ident{
+																	Name: "Logger",
+																},
+															},
+														},
+														&ast.Field{
+															Names: []*ast.Ident{
+																&ast.Ident{
 																	Name: "manager",
 																},
 															},
@@ -1382,6 +1922,21 @@ func (f FxContainer) AstMigrateContainer() *ast.FuncDecl {
 																	Sel: &ast.Ident{
 																		Name: "MigrateManager",
 																	},
+																},
+															},
+														},
+														&ast.Field{
+															Names: []*ast.Ident{
+																&ast.Ident{
+																	Name: "shutdowner",
+																},
+															},
+															Type: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "fx",
+																},
+																Sel: &ast.Ident{
+																	Name: "Shutdowner",
 																},
 															},
 														},
@@ -1415,12 +1970,157 @@ func (f FxContainer) AstMigrateContainer() *ast.FuncDecl {
 																			Key: &ast.Ident{
 																				Name: "OnStart",
 																			},
-																			Value: &ast.SelectorExpr{
-																				X: &ast.Ident{
-																					Name: "manager",
+																			Value: &ast.FuncLit{
+																				Type: &ast.FuncType{
+																					Params: &ast.FieldList{
+																						List: []*ast.Field{
+																							&ast.Field{
+																								Names: []*ast.Ident{
+																									&ast.Ident{
+																										Name: "ctx",
+																									},
+																								},
+																								Type: &ast.SelectorExpr{
+																									X: &ast.Ident{
+																										Name: "context",
+																									},
+																									Sel: &ast.Ident{
+																										Name: "Context",
+																									},
+																								},
+																							},
+																						},
+																					},
+																					Results: &ast.FieldList{
+																						List: []*ast.Field{
+																							&ast.Field{
+																								Type: &ast.Ident{
+																									Name: "error",
+																								},
+																							},
+																						},
+																					},
 																				},
-																				Sel: &ast.Ident{
-																					Name: "Up",
+																				Body: &ast.BlockStmt{
+																					List: []ast.Stmt{
+																						&ast.GoStmt{
+																							Call: &ast.CallExpr{
+																								Fun: &ast.FuncLit{
+																									Type: &ast.FuncType{
+																										Params: &ast.FieldList{},
+																									},
+																									Body: &ast.BlockStmt{
+																										List: []ast.Stmt{
+																											&ast.AssignStmt{
+																												Lhs: []ast.Expr{
+																													&ast.Ident{
+																														Name: "err",
+																													},
+																												},
+																												Tok: token.DEFINE,
+																												Rhs: []ast.Expr{
+																													&ast.CallExpr{
+																														Fun: &ast.SelectorExpr{
+																															X: &ast.Ident{
+																																Name: "manager",
+																															},
+																															Sel: &ast.Ident{
+																																Name: "Up",
+																															},
+																														},
+																														Args: []ast.Expr{
+																															&ast.Ident{
+																																Name: "ctx",
+																															},
+																														},
+																													},
+																												},
+																											},
+																											&ast.IfStmt{
+																												Cond: &ast.BinaryExpr{
+																													X: &ast.Ident{
+																														Name: "err",
+																													},
+																													Op: token.NEQ,
+																													Y: &ast.Ident{
+																														Name: "nil",
+																													},
+																												},
+																												Body: &ast.BlockStmt{
+																													List: []ast.Stmt{
+																														&ast.ExprStmt{
+																															X: &ast.CallExpr{
+																																Fun: &ast.SelectorExpr{
+																																	X: &ast.Ident{
+																																		Name: "logger",
+																																	},
+																																	Sel: &ast.Ident{
+																																		Name: "Error",
+																																	},
+																																},
+																																Args: []ast.Expr{
+																																	&ast.BasicLit{
+																																		Kind:  token.STRING,
+																																		Value: "\"shutdown\"",
+																																	},
+																																	&ast.CallExpr{
+																																		Fun: &ast.SelectorExpr{
+																																			X: &ast.Ident{
+																																				Name: "log",
+																																			},
+																																			Sel: &ast.Ident{
+																																				Name: "Any",
+																																			},
+																																		},
+																																		Args: []ast.Expr{
+																																			&ast.BasicLit{
+																																				Kind:  token.STRING,
+																																				Value: "\"error\"",
+																																			},
+																																			&ast.Ident{
+																																				Name: "err",
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																														&ast.AssignStmt{
+																															Lhs: []ast.Expr{
+																																&ast.Ident{
+																																	Name: "_",
+																																},
+																															},
+																															Tok: token.ASSIGN,
+																															Rhs: []ast.Expr{
+																																&ast.CallExpr{
+																																	Fun: &ast.SelectorExpr{
+																																		X: &ast.Ident{
+																																			Name: "shutdowner",
+																																		},
+																																		Sel: &ast.Ident{
+																																			Name: "Shutdown",
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																						&ast.ReturnStmt{
+																							Results: []ast.Expr{
+																								&ast.Ident{
+																									Name: "nil",
+																								},
+																							},
+																						},
+																					},
 																				},
 																			},
 																		},

@@ -71,14 +71,10 @@ func main() {
 func runApp(context *cli.Context) error {
 {{- if .GRPCEnabled }}
     app := containers.NewGRPCContainer(configPath)
-    if err := app.Start(context.Context); err != nil {
-        return err
-    }
+    app.Run()
 {{- else if .RESTEnabled }}
     app := containers.NewRESTContainer(configPath)
-    if err := app.Start(context.Context); err != nil {
-        return err
-    }
+    app.Run()
 {{- else }}
 {{- end }}
     return nil
@@ -88,9 +84,7 @@ func runApp(context *cli.Context) error {
 // runGRPC - run grpc api
 func runGRPC(context *cli.Context) error {
     app := containers.NewGRPCContainer(configPath)
-    if err := app.Start(context.Context); err != nil {
-        return err
-    }
+    app.Run()
     return nil
 }
 {{- end }}
@@ -99,9 +93,7 @@ func runGRPC(context *cli.Context) error {
 // runGateway - run gateway api
 func runGateway(context *cli.Context) error {
     app := containers.NewGatewayContainer(configPath)
-    if err := app.Start(context.Context); err != nil {
-        return err
-    }
+    app.Run()
     return nil
 }
 {{- end }}
@@ -111,9 +103,7 @@ func runGateway(context *cli.Context) error {
 // runREST - run REST api
 func runREST(context *cli.Context) error {
     app := containers.NewRESTContainer(configPath)
-    if err := app.Start(context.Context); err != nil {
-        return err
-    }
+    app.Run()
     return nil
 }
 {{- end }}
@@ -121,9 +111,6 @@ func runREST(context *cli.Context) error {
 // runMigrations - migrate database
 func runMigrations(context *cli.Context) error {
 	app := containers.NewMigrateContainer(configPath)
-	err := app.Start(context.Context)
-	if err != nil {
-		return err
-	}
+    app.Run()
 	return nil
 }

@@ -5,8 +5,8 @@ import (
 	"embed"
 	_ "embed"
 	"fmt"
+	"github.com/018bf/creathor/internal/configs"
 	generatorsInterfacesGrpc "github.com/018bf/creathor/internal/generators/interfaces/grpc"
-	"github.com/018bf/creathor/internal/models"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 	"log"
@@ -56,7 +56,7 @@ func main() {
 }
 
 func initProject(ctx *cli.Context) error {
-	project, err := models.NewProject(path.Join(destinationPath, configPath))
+	project, err := configs.NewProject(path.Join(destinationPath, configPath))
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func initProject(ctx *cli.Context) error {
 	return nil
 }
 
-func postInit(project *models.Project) error {
+func postInit(project *configs.Project) error {
 	fmt.Println("post init...")
 	var errb bytes.Buffer
 	generate := exec.Command("go", "generate", "./...")

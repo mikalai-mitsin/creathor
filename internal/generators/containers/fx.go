@@ -3,7 +3,7 @@ package containers
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/models"
+	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -13,7 +13,7 @@ import (
 )
 
 type FxContainer struct {
-	Project *models.Project
+	Project *configs.Project
 }
 
 func (f FxContainer) toProvide() []ast.Expr {

@@ -3,8 +3,8 @@ package models
 import (
 	"bytes"
 	"fmt"
+	"github.com/018bf/creathor/internal/configs"
 	"github.com/018bf/creathor/internal/generators"
-	"github.com/018bf/creathor/internal/models"
 	"github.com/iancoleman/strcase"
 	"go/ast"
 	"go/parser"
@@ -40,7 +40,7 @@ func (p Param) GetTag() string {
 
 type Model struct {
 	Name        string
-	ModelConfig *models.ModelConfig
+	ModelConfig *configs.ModelConfig
 	Params      []*Param
 }
 

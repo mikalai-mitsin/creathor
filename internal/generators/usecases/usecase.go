@@ -3,74 +3,109 @@ package usecases
 import (
 	"bytes"
 	"fmt"
-	models2 "github.com/018bf/creathor/internal/generators/domain/models"
-	"github.com/018bf/creathor/internal/models"
+	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
+	"path/filepath"
 )
 
 type UseCase struct {
-	Path   string
-	Name   string
-	Model  *models.ModelConfig
-	Params []*models2.Param
+	Model *configs.ModelConfig
 }
 
-func (u UseCase) AstStruct() *ast.TypeSpec {
+func (u UseCase) Sync() error {
+	if err := u.syncStruct(); err != nil {
+		return err
+	}
+	if err := u.syncConstructor(); err != nil {
+		return err
+	}
+	if err := u.syncCreateMethod(); err != nil {
+		return err
+	}
+	if err := u.syncGetMethod(); err != nil {
+		return err
+	}
+	if err := u.syncListMethod(); err != nil {
+		return err
+	}
+	if err := u.syncUpdateMethod(); err != nil {
+		return err
+	}
+	if err := u.syncDeleteMethod(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u UseCase) filename() string {
+	return filepath.Join("internal", "usecases", u.Model.FileName())
+}
+
+func (u UseCase) astStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Doc:        nil,
-		Name:       ast.NewIdent(u.Name),
+		Name:       ast.NewIdent(u.Model.UseCaseTypeName()),
 		TypeParams: nil,
 		Assign:     0,
 		Type: &ast.StructType{
 			Struct: 0,
 			Fields: &ast.FieldList{
 				Opening: 0,
-				List:    nil,
+				List: []*ast.Field{
+					{
+						Doc:   nil,
+						Names: []*ast.Ident{ast.NewIdent(u.Model.RepositoryVariableName())},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("repositories"),
+							Sel: ast.NewIdent(u.Model.RepositoryTypeName()),
+						},
+						Tag:     nil,
+						Comment: nil,
+					},
+					{
+						Doc:   nil,
+						Names: []*ast.Ident{ast.NewIdent("clock")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("clock"),
+							Sel: ast.NewIdent("Clock"),
+						},
+						Tag:     nil,
+						Comment: nil,
+					},
+					{
+						Doc:   nil,
+						Names: []*ast.Ident{ast.NewIdent("logger")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("log"),
+							Sel: ast.NewIdent("Logger"),
+						},
+						Tag:     nil,
+						Comment: nil,
+					},
+				},
 				Closing: 0,
 			},
 			Incomplete: false,
 		},
 		Comment: nil,
 	}
-	for _, param := range u.Params {
-		ast.Inspect(structure, func(node ast.Node) bool {
-			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
-				for _, field := range st.Fields.List {
-					for _, fieldName := range field.Names {
-						if fieldName.Name == param.GetPrivateName() {
-							return false
-						}
-					}
-				}
-				st.Fields.List = append(st.Fields.List, &ast.Field{
-					Doc:     nil,
-					Names:   []*ast.Ident{ast.NewIdent(param.GetPrivateName())},
-					Type:    ast.NewIdent(param.Type),
-					Tag:     nil,
-					Comment: nil,
-				})
-				return false
-			}
-			return true
-		})
-	}
 	return structure
 }
 
-func (u UseCase) SyncStruct() error {
+func (u UseCase) syncStruct() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, u.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == u.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == u.Model.UseCaseTypeName() {
 			structure = t
 			structureExists = true
 			return false
@@ -78,29 +113,7 @@ func (u UseCase) SyncStruct() error {
 		return true
 	})
 	if structure == nil {
-		structure = u.AstStruct()
-	}
-	for _, param := range u.Params {
-		ast.Inspect(structure, func(node ast.Node) bool {
-			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
-				for _, field := range st.Fields.List {
-					for _, fieldName := range field.Names {
-						if fieldName.Name == param.GetPrivateName() {
-							return false
-						}
-					}
-				}
-				st.Fields.List = append(st.Fields.List, &ast.Field{
-					Doc:     nil,
-					Names:   []*ast.Ident{ast.NewIdent(param.GetPrivateName())},
-					Type:    ast.NewIdent(param.Type),
-					Tag:     nil,
-					Comment: nil,
-				})
-				return false
-			}
-			return true
-		})
+		structure = u.astStruct()
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
@@ -117,57 +130,66 @@ func (u UseCase) SyncStruct() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(u.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u UseCase) AstConstructor() *ast.FuncDecl {
-	var args []*ast.Field
-	cl := &ast.CompositeLit{
-		Type:       ast.NewIdent(u.Name),
-		Lbrace:     0,
-		Elts:       nil,
-		Rbrace:     0,
-		Incomplete: false,
-	}
-	for _, param := range u.Params {
-		args = append(
-			args,
-			&ast.Field{
-				Doc:     nil,
-				Names:   []*ast.Ident{ast.NewIdent(param.GetPrivateName())},
-				Type:    ast.NewIdent(param.Type),
-				Tag:     nil,
-				Comment: nil,
-			},
-		)
-		cl.Elts = append(cl.Elts, &ast.KeyValueExpr{
-			Key:   ast.NewIdent(param.GetPrivateName()),
-			Colon: 0,
-			Value: ast.NewIdent(param.GetPrivateName()),
-		})
-	}
+func (u UseCase) astConstructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
 		Doc:  nil,
 		Recv: nil,
-		Name: ast.NewIdent(fmt.Sprintf("New%s", u.Name)),
+		Name: ast.NewIdent(fmt.Sprintf("New%s", u.Model.UseCaseTypeName())),
 		Type: &ast.FuncType{
 			Func:       0,
 			TypeParams: nil,
 			Params: &ast.FieldList{
 				Opening: 0,
-				List:    args,
+				List: []*ast.Field{
+					{
+						Doc:   nil,
+						Names: []*ast.Ident{ast.NewIdent(u.Model.RepositoryVariableName())},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("repositories"),
+							Sel: ast.NewIdent(u.Model.RepositoryTypeName()),
+						},
+						Tag:     nil,
+						Comment: nil,
+					},
+					{
+						Doc:   nil,
+						Names: []*ast.Ident{ast.NewIdent("clock")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("clock"),
+							Sel: ast.NewIdent("Clock"),
+						},
+						Tag:     nil,
+						Comment: nil,
+					},
+					{
+						Doc:   nil,
+						Names: []*ast.Ident{ast.NewIdent("logger")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("log"),
+							Sel: ast.NewIdent("Logger"),
+						},
+						Tag:     nil,
+						Comment: nil,
+					},
+				},
 				Closing: 0,
 			},
 			Results: &ast.FieldList{
 				Opening: 0,
 				List: []*ast.Field{
 					{
-						Doc:     nil,
-						Names:   nil,
-						Type:    ast.NewIdent(fmt.Sprintf("usecases.%s", u.Name)),
+						Doc:   nil,
+						Names: nil,
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("usecases"),
+							Sel: ast.NewIdent(u.Model.UseCaseTypeName()),
+						},
 						Tag:     nil,
 						Comment: nil,
 					},
@@ -182,29 +204,56 @@ func (u UseCase) AstConstructor() *ast.FuncDecl {
 					Return: 0,
 					Results: []ast.Expr{
 						&ast.UnaryExpr{
-							OpPos: 0,
-							Op:    token.AND,
-							X:     cl,
+							Op: token.AND,
+							X: &ast.CompositeLit{
+								Type:   ast.NewIdent(u.Model.UseCaseTypeName()),
+								Lbrace: 0,
+								Elts: []ast.Expr{
+									&ast.KeyValueExpr{
+										Key: &ast.Ident{
+											Name: u.Model.RepositoryVariableName(),
+										},
+										Value: &ast.Ident{
+											Name: u.Model.RepositoryVariableName(),
+										},
+									},
+									&ast.KeyValueExpr{
+										Key: &ast.Ident{
+											Name: "clock",
+										},
+										Value: &ast.Ident{
+											Name: "clock",
+										},
+									},
+									&ast.KeyValueExpr{
+										Key: &ast.Ident{
+											Name: "logger",
+										},
+										Value: &ast.Ident{
+											Name: "logger",
+										},
+									},
+								},
+							},
 						},
 					},
 				},
 			},
-			Rbrace: 0,
 		},
 	}
 	return constructor
 }
 
-func (u UseCase) SyncConstructor() error {
+func (u UseCase) syncConstructor() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, u.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 	var structureConstructorExists bool
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("New%s", u.Name) {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("New%s", u.Model.UseCaseTypeName()) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -212,50 +261,7 @@ func (u UseCase) SyncConstructor() error {
 		return true
 	})
 	if structureConstructor == nil {
-		structureConstructor = u.AstConstructor()
-	}
-	for _, param := range u.Params {
-		param := param
-		var argExists bool
-		for _, arg := range structureConstructor.Type.Params.List {
-			for _, fieldName := range arg.Names {
-				if fieldName.Name == param.GetPrivateName() {
-					argExists = true
-				}
-			}
-		}
-		ast.Inspect(structureConstructor.Body, func(node ast.Node) bool {
-			if cl, ok := node.(*ast.CompositeLit); ok {
-				if t, ok := cl.Type.(*ast.Ident); ok && t.String() == u.Name {
-					for _, elt := range cl.Elts {
-						if kv, ok := elt.(*ast.KeyValueExpr); ok {
-							if key, ok := kv.Key.(*ast.Ident); ok && key.String() == param.GetPrivateName() {
-								return false
-							}
-						}
-					}
-					cl.Elts = append(cl.Elts, &ast.KeyValueExpr{
-						Key:   ast.NewIdent(param.GetPrivateName()),
-						Colon: 0,
-						Value: ast.NewIdent(param.GetPrivateName()),
-					})
-					return false
-				}
-			}
-			return true
-		})
-		if !argExists {
-			structureConstructor.Type.Params.List = append(
-				structureConstructor.Type.Params.List,
-				&ast.Field{
-					Doc:     nil,
-					Names:   []*ast.Ident{ast.NewIdent(param.GetPrivateName())},
-					Type:    ast.NewIdent(param.Type),
-					Tag:     nil,
-					Comment: nil,
-				},
-			)
-		}
+		structureConstructor = u.astConstructor()
 	}
 	if !structureConstructorExists {
 		file.Decls = append(file.Decls, structureConstructor)
@@ -264,13 +270,13 @@ func (u UseCase) SyncConstructor() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(u.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u UseCase) AstCreateMethod() *ast.FuncDecl {
+func (u UseCase) astCreateMethod() *ast.FuncDecl {
 	params := []ast.Expr{
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("ID"),
@@ -308,7 +314,7 @@ func (u UseCase) AstCreateMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.Name),
+						X: ast.NewIdent(u.Model.UseCaseTypeName()),
 					},
 				},
 			},
@@ -478,9 +484,9 @@ func (u UseCase) AstCreateMethod() *ast.FuncDecl {
 	return fun
 }
 
-func (u UseCase) SyncCreateMethod() error {
+func (u UseCase) syncCreateMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, u.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -495,7 +501,7 @@ func (u UseCase) SyncCreateMethod() error {
 		return true
 	})
 	if method == nil {
-		method = u.AstCreateMethod()
+		method = u.astCreateMethod()
 	}
 	for _, param := range u.Model.Params {
 		param := param
@@ -531,13 +537,13 @@ func (u UseCase) SyncCreateMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(u.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u UseCase) AstListMethod() *ast.FuncDecl {
+func (u UseCase) astListMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Doc: nil,
 		Recv: &ast.FieldList{
@@ -548,7 +554,7 @@ func (u UseCase) AstListMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.Name),
+						X: ast.NewIdent(u.Model.UseCaseTypeName()),
 					},
 				},
 			},
@@ -694,9 +700,9 @@ func (u UseCase) AstListMethod() *ast.FuncDecl {
 	}
 }
 
-func (u UseCase) SyncListMethod() error {
+func (u UseCase) syncListMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, u.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -711,7 +717,7 @@ func (u UseCase) SyncListMethod() error {
 		return true
 	})
 	if method == nil {
-		method = u.AstListMethod()
+		method = u.astListMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -720,13 +726,13 @@ func (u UseCase) SyncListMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(u.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u UseCase) AstGetMethod() *ast.FuncDecl {
+func (u UseCase) astGetMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Doc: nil,
 		Recv: &ast.FieldList{
@@ -737,7 +743,7 @@ func (u UseCase) AstGetMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.Name),
+						X: ast.NewIdent(u.Model.UseCaseTypeName()),
 					},
 				},
 			},
@@ -829,9 +835,9 @@ func (u UseCase) AstGetMethod() *ast.FuncDecl {
 	}
 }
 
-func (u UseCase) SyncGetMethod() error {
+func (u UseCase) syncGetMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, u.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -846,7 +852,7 @@ func (u UseCase) SyncGetMethod() error {
 		return true
 	})
 	if method == nil {
-		method = u.AstGetMethod()
+		method = u.astGetMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -855,13 +861,13 @@ func (u UseCase) SyncGetMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(u.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u UseCase) AstUpdateMethod() *ast.FuncDecl {
+func (u UseCase) astUpdateMethod() *ast.FuncDecl {
 	block := &ast.BlockStmt{
 		Lbrace: 0,
 		List:   []ast.Stmt{},
@@ -910,7 +916,7 @@ func (u UseCase) AstUpdateMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.Name),
+						X: ast.NewIdent(u.Model.UseCaseTypeName()),
 					},
 				},
 			},
@@ -1112,9 +1118,9 @@ func (u UseCase) AstUpdateMethod() *ast.FuncDecl {
 	return fun
 }
 
-func (u UseCase) SyncUpdateMethod() error {
+func (u UseCase) syncUpdateMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, u.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -1129,7 +1135,7 @@ func (u UseCase) SyncUpdateMethod() error {
 		return true
 	})
 	if method == nil {
-		method = u.AstUpdateMethod()
+		method = u.astUpdateMethod()
 	}
 	for _, param := range u.Model.Params {
 		param := param
@@ -1194,13 +1200,13 @@ func (u UseCase) SyncUpdateMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(u.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u UseCase) AstDeleteMethod() *ast.FuncDecl {
+func (u UseCase) astDeleteMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Doc: nil,
 		Recv: &ast.FieldList{
@@ -1211,7 +1217,7 @@ func (u UseCase) AstDeleteMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.Name),
+						X: ast.NewIdent(u.Model.UseCaseTypeName()),
 					},
 				},
 			},
@@ -1291,9 +1297,9 @@ func (u UseCase) AstDeleteMethod() *ast.FuncDecl {
 	}
 }
 
-func (u UseCase) SyncDeleteMethod() error {
+func (u UseCase) syncDeleteMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, u.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -1308,7 +1314,7 @@ func (u UseCase) SyncDeleteMethod() error {
 		return true
 	})
 	if method == nil {
-		method = u.AstDeleteMethod()
+		method = u.astDeleteMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -1317,7 +1323,7 @@ func (u UseCase) SyncDeleteMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(u.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil

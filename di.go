@@ -1,13 +1,13 @@
 package main
 
 import (
+	"github.com/018bf/creathor/internal/configs"
 	"github.com/018bf/creathor/internal/generators/containers"
-	"github.com/018bf/creathor/internal/models"
 	"os"
 	"path"
 )
 
-func CreateDI(data *models.Project) error {
+func CreateDI(data *configs.Project) error {
 	directories := []string{
 		path.Join(destinationPath, "internal", "containers"),
 	}

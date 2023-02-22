@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/018bf/creathor/internal/models"
+	"github.com/018bf/creathor/internal/configs"
 	"os"
 	"path"
 )
 
-func createDirectories(project *models.Project) error {
+func createDirectories(project *configs.Project) error {
 	directories := []string{
 		path.Join(destinationPath, "build"),
 		path.Join(destinationPath, "cmd"),
@@ -61,7 +61,7 @@ func createDirectories(project *models.Project) error {
 	return nil
 }
 
-func CreateLayout(project *models.Project) error {
+func CreateLayout(project *configs.Project) error {
 	if err := createDirectories(project); err != nil {
 		return err
 	}

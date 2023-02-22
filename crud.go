@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/018bf/creathor/internal/configs"
 	generatorsIntercepstorInterfaces "github.com/018bf/creathor/internal/generators/domain/interceptors"
 	generatorsModels "github.com/018bf/creathor/internal/generators/domain/models"
 	generatorsRepositoriesInterfaces "github.com/018bf/creathor/internal/generators/domain/repositories"
@@ -10,7 +11,6 @@ import (
 	"github.com/018bf/creathor/internal/generators/interceptors"
 	"github.com/018bf/creathor/internal/generators/repositories/postgres"
 	"github.com/018bf/creathor/internal/generators/usecases"
-	"github.com/018bf/creathor/internal/models"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 )
 
-func SyncModelStruct(m *models.ModelConfig) error {
+func SyncModelStruct(m *configs.ModelConfig) error {
 	model := &generatorsModels.Model{
 		Name:        m.ModelName(),
 		ModelConfig: m,
@@ -55,7 +55,7 @@ func SyncModelStruct(m *models.ModelConfig) error {
 	return nil
 }
 
-func SyncFilterStruct(m *models.ModelConfig) error {
+func SyncFilterStruct(m *configs.ModelConfig) error {
 	create := &generatorsModels.Model{
 		Name:        m.FilterTypeName(),
 		ModelConfig: m,
@@ -93,7 +93,7 @@ func SyncFilterStruct(m *models.ModelConfig) error {
 	return nil
 }
 
-func SyncCreateStruct(m *models.ModelConfig) error {
+func SyncCreateStruct(m *configs.ModelConfig) error {
 	create := &generatorsModels.Model{
 		Name:        m.CreateTypeName(),
 		ModelConfig: m,
@@ -111,7 +111,7 @@ func SyncCreateStruct(m *models.ModelConfig) error {
 	return nil
 }
 
-func SyncUpdateStruct(m *models.ModelConfig) error {
+func SyncUpdateStruct(m *configs.ModelConfig) error {
 	update := &generatorsModels.Model{
 		Name:        m.UpdateTypeName(),
 		ModelConfig: m,
@@ -134,51 +134,17 @@ func SyncUpdateStruct(m *models.ModelConfig) error {
 	return nil
 }
 
-func SyncUseCaseImplementation(m *models.ModelConfig) error {
+func SyncUseCaseImplementation(m *configs.ModelConfig) error {
 	useCase := &usecases.UseCase{
-		Path:  filepath.Join("internal", "usecases", m.FileName()),
-		Name:  m.UseCaseTypeName(),
 		Model: m,
-		Params: []*generatorsModels.Param{
-			{
-				Name: m.RepositoryVariableName(),
-				Type: fmt.Sprintf("repositories.%s", m.RepositoryTypeName()),
-			},
-			{
-				Name: "clock",
-				Type: "clock.Clock",
-			},
-			{
-				Name: "logger",
-				Type: "log.Logger",
-			},
-		},
 	}
-	if err := useCase.SyncStruct(); err != nil {
-		return err
-	}
-	if err := useCase.SyncConstructor(); err != nil {
-		return err
-	}
-	if err := useCase.SyncCreateMethod(); err != nil {
-		return err
-	}
-	if err := useCase.SyncGetMethod(); err != nil {
-		return err
-	}
-	if err := useCase.SyncListMethod(); err != nil {
-		return err
-	}
-	if err := useCase.SyncUpdateMethod(); err != nil {
-		return err
-	}
-	if err := useCase.SyncDeleteMethod(); err != nil {
+	if err := useCase.Sync(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func SyncRepositoryImplementation(m *models.ModelConfig) error {
+func SyncRepositoryImplementation(m *configs.ModelConfig) error {
 	repository := &postgres.Repository{
 		Path:  filepath.Join("internal", "repositories", "postgres", m.FileName()),
 		Name:  m.RepositoryTypeName(),
@@ -236,7 +202,7 @@ func SyncRepositoryImplementation(m *models.ModelConfig) error {
 	return nil
 }
 
-func SyncInterceptorImplementation(m *models.ModelConfig) error {
+func SyncInterceptorImplementation(m *configs.ModelConfig) error {
 	interceptor := &interceptors.Interceptor{
 		Path:  filepath.Join("internal", "interceptors", m.FileName()),
 		Name:  m.InterceptorTypeName(),
@@ -285,7 +251,7 @@ func SyncInterceptorImplementation(m *models.ModelConfig) error {
 	return nil
 }
 
-func SyncModel(m *models.ModelConfig) error {
+func SyncModel(m *configs.ModelConfig) error {
 	if err := SyncModelStruct(m); err != nil {
 		return err
 	}
@@ -322,7 +288,7 @@ func SyncModel(m *models.ModelConfig) error {
 	return nil
 }
 
-func CreateCRUD(model *models.ModelConfig) error {
+func CreateCRUD(model *configs.ModelConfig) error {
 	if err := model.Validate(); err != nil {
 		fmt.Printf("invalid model %s: %s\n", model.Model, err)
 		return err

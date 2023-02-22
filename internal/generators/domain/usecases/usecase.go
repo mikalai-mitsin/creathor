@@ -2,7 +2,7 @@ package usecases
 
 import (
 	"bytes"
-	"github.com/018bf/creathor/internal/models"
+	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -12,7 +12,7 @@ import (
 )
 
 type UseCaseInterface struct {
-	Config *models.ModelConfig
+	Config *configs.ModelConfig
 }
 
 func (i UseCaseInterface) Sync() error {

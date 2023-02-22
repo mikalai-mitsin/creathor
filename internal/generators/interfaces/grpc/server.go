@@ -3,7 +3,7 @@ package grpc
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/models"
+	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -13,7 +13,7 @@ import (
 )
 
 type Server struct {
-	Config *models.Project
+	Config *configs.Project
 }
 
 func (s Server) Sync() error {

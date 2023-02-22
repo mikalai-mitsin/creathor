@@ -15,7 +15,7 @@ type UseCaseInterface struct {
 	Config *models.ModelConfig
 }
 
-func (i UseCaseInterface) SyncInterface() error {
+func (i UseCaseInterface) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "domain", "usecases", i.Config.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)

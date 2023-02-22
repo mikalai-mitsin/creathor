@@ -298,17 +298,16 @@ func SyncModel(m *models.ModelConfig) error {
 	if err := SyncUpdateStruct(m); err != nil {
 		return err
 	}
-
 	repositoryInterface := generatorsRepositoriesInterfaces.RepositoryInterface{Config: m}
-	if err := repositoryInterface.SyncInterface(); err != nil {
+	if err := repositoryInterface.Sync(); err != nil {
 		return err
 	}
 	useCaseInterface := generatorsUseCasesInterfaces.UseCaseInterface{Config: m}
-	if err := useCaseInterface.SyncInterface(); err != nil {
+	if err := useCaseInterface.Sync(); err != nil {
 		return err
 	}
-	interceptor := generatorsIntercepstorInterfaces.InterceptorInterface{Config: m}
-	if err := interceptor.SyncInterface(); err != nil {
+	interceptorInterface := generatorsIntercepstorInterfaces.InterceptorInterface{Config: m}
+	if err := interceptorInterface.Sync(); err != nil {
 		return err
 	}
 	if err := SyncUseCaseImplementation(m); err != nil {

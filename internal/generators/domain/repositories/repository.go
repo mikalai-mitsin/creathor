@@ -15,7 +15,7 @@ type RepositoryInterface struct {
 	Config *models.ModelConfig
 }
 
-func (i RepositoryInterface) SyncInterface() error {
+func (i RepositoryInterface) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "domain", "repositories", i.Config.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)

@@ -5,6 +5,7 @@ import (
 	"embed"
 	_ "embed"
 	"fmt"
+	generatorsInterfacesGrpc "github.com/018bf/creathor/internal/generators/interfaces/grpc"
 	"github.com/018bf/creathor/internal/models"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
@@ -78,6 +79,10 @@ func initProject(ctx *cli.Context) error {
 		if err := CreateCRUD(model); err != nil {
 			return err
 		}
+	}
+	interfaceGrpcServer := generatorsInterfacesGrpc.Server{Config: project}
+	if err := interfaceGrpcServer.Sync(); err != nil {
+		return err
 	}
 	if err := postInit(project); err != nil {
 		return err

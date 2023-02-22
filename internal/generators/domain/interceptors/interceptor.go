@@ -15,7 +15,7 @@ type InterceptorInterface struct {
 	Config *models.ModelConfig
 }
 
-func (i InterceptorInterface) SyncInterface() error {
+func (i InterceptorInterface) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "domain", "interceptors", i.Config.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)

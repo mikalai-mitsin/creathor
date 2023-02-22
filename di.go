@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/018bf/creathor/internal/generators"
+	"github.com/018bf/creathor/internal/generators/containers"
 	"github.com/018bf/creathor/internal/models"
 	"os"
 	"path"
@@ -28,7 +28,7 @@ func CreateDI(data *models.Project) error {
 			return err
 		}
 	}
-	fx := generators.FxContainer{Project: data}
+	fx := containers.FxContainer{Project: data}
 	if err := fx.SyncFxModule(); err != nil {
 		return err
 	}

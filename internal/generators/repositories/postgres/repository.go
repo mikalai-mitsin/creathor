@@ -1,8 +1,9 @@
-package generators
+package postgres
 
 import (
 	"bytes"
 	"fmt"
+	models2 "github.com/018bf/creathor/internal/generators/domain/models"
 	"github.com/018bf/creathor/internal/models"
 	"go/ast"
 	"go/parser"
@@ -15,7 +16,7 @@ type Repository struct {
 	Path   string
 	Name   string
 	Model  *models.ModelConfig
-	Params []*Param
+	Params []*models2.Param
 }
 
 func (r Repository) AstDTOStruct() *ast.TypeSpec {

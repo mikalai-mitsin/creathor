@@ -3,7 +3,13 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/generators"
+	generatorsIntercepstorInterfaces "github.com/018bf/creathor/internal/generators/domain/interceptors"
+	generatorsModels "github.com/018bf/creathor/internal/generators/domain/models"
+	generatorsRepositoriesInterfaces "github.com/018bf/creathor/internal/generators/domain/repositories"
+	generatorsUseCasesInterfaces "github.com/018bf/creathor/internal/generators/domain/usecases"
+	"github.com/018bf/creathor/internal/generators/interceptors"
+	"github.com/018bf/creathor/internal/generators/repositories/postgres"
+	"github.com/018bf/creathor/internal/generators/usecases"
 	"github.com/018bf/creathor/internal/models"
 	"go/ast"
 	"go/parser"
@@ -16,10 +22,10 @@ import (
 )
 
 func SyncModelStruct(m *models.ModelConfig) error {
-	model := &generators.Model{
+	model := &generatorsModels.Model{
 		Name:        m.ModelName(),
 		ModelConfig: m,
-		Params: []*generators.Param{
+		Params: []*generatorsModels.Param{
 			{
 				Name: "ID",
 				Type: "UUID",
@@ -37,7 +43,7 @@ func SyncModelStruct(m *models.ModelConfig) error {
 	for _, param := range m.Params {
 		model.Params = append(
 			model.Params,
-			&generators.Param{
+			&generatorsModels.Param{
 				Name: param.GetName(),
 				Type: param.Type,
 			},
@@ -50,10 +56,10 @@ func SyncModelStruct(m *models.ModelConfig) error {
 }
 
 func SyncFilterStruct(m *models.ModelConfig) error {
-	create := &generators.Model{
+	create := &generatorsModels.Model{
 		Name:        m.FilterTypeName(),
 		ModelConfig: m,
-		Params: []*generators.Param{
+		Params: []*generatorsModels.Param{
 			{
 				Name: "IDs",
 				Type: "[]UUID",
@@ -75,7 +81,7 @@ func SyncFilterStruct(m *models.ModelConfig) error {
 	if m.SearchEnabled() {
 		create.Params = append(
 			create.Params,
-			&generators.Param{
+			&generatorsModels.Param{
 				Name: "Search",
 				Type: "*string",
 			},
@@ -88,13 +94,13 @@ func SyncFilterStruct(m *models.ModelConfig) error {
 }
 
 func SyncCreateStruct(m *models.ModelConfig) error {
-	create := &generators.Model{
+	create := &generatorsModels.Model{
 		Name:        m.CreateTypeName(),
 		ModelConfig: m,
-		Params:      []*generators.Param{},
+		Params:      []*generatorsModels.Param{},
 	}
 	for _, param := range m.Params {
-		create.Params = append(create.Params, &generators.Param{
+		create.Params = append(create.Params, &generatorsModels.Param{
 			Name: param.GetName(),
 			Type: param.Type,
 		})
@@ -106,10 +112,10 @@ func SyncCreateStruct(m *models.ModelConfig) error {
 }
 
 func SyncUpdateStruct(m *models.ModelConfig) error {
-	update := &generators.Model{
+	update := &generatorsModels.Model{
 		Name:        m.UpdateTypeName(),
 		ModelConfig: m,
-		Params: []*generators.Param{
+		Params: []*generatorsModels.Param{
 			{
 				Name: "ID",
 				Type: "UUID",
@@ -117,7 +123,7 @@ func SyncUpdateStruct(m *models.ModelConfig) error {
 		},
 	}
 	for _, param := range m.Params {
-		update.Params = append(update.Params, &generators.Param{
+		update.Params = append(update.Params, &generatorsModels.Param{
 			Name: param.GetName(),
 			Type: fmt.Sprintf("*%s", param.Type),
 		})
@@ -128,418 +134,12 @@ func SyncUpdateStruct(m *models.ModelConfig) error {
 	return nil
 }
 
-func SyncRepositoryInterface(m *models.ModelConfig) error {
-	usecase := &generators.Interface{
-		Path:     filepath.Join("internal", "domain", "repositories", m.FileName()),
-		Name:     m.RepositoryTypeName(),
-		Comments: nil,
-		Methods: []*generators.Method{
-			{
-				Name: "Get",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "id",
-						Type: "models.UUID",
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: fmt.Sprintf("*models.%s", m.ModelName()),
-					},
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-			{
-				Name: "List",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "filter",
-						Type: fmt.Sprintf("*models.%s", m.FilterTypeName()),
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: fmt.Sprintf("[]*models.%s", m.ModelName()),
-					},
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-			{
-				Name: "Count",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "filter",
-						Type: fmt.Sprintf("*models.%s", m.FilterTypeName()),
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: "uint64",
-					},
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-			{
-				Name: "Update",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "update",
-						Type: fmt.Sprintf("*models.%s", m.ModelName()),
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-			{
-				Name: "Create",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "create",
-						Type: fmt.Sprintf("*models.%s", m.ModelName()),
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-			{
-				Name: "Delete",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "id",
-						Type: "models.UUID",
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-		},
-	}
-	if err := usecase.SyncInterface(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func SyncUsecaseInterface(m *models.ModelConfig) error {
-	usecase := &generators.Interface{
-		Path:     filepath.Join("internal", "domain", "usecases", m.FileName()),
-		Name:     m.UseCaseTypeName(),
-		Comments: nil,
-		Methods: []*generators.Method{
-			{
-				Name: "Get",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "id",
-						Type: "models.UUID",
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: fmt.Sprintf("*models.%s", m.ModelName()),
-					},
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-			{
-				Name: "List",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "filter",
-						Type: fmt.Sprintf("*models.%s", m.FilterTypeName()),
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: fmt.Sprintf("[]*models.%s", m.ModelName()),
-					},
-					{
-						Name: "",
-						Type: "uint64",
-					},
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-			{
-				Name: "Update",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "update",
-						Type: fmt.Sprintf("*models.%s", m.UpdateTypeName()),
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: fmt.Sprintf("*models.%s", m.ModelName()),
-					},
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-			{
-				Name: "Create",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "create",
-						Type: fmt.Sprintf("*models.%s", m.CreateTypeName()),
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: fmt.Sprintf("*models.%s", m.ModelName()),
-					},
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-			{
-				Name: "Delete",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "id",
-						Type: "models.UUID",
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-		},
-	}
-	if err := usecase.SyncInterface(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func SyncInterceptorInterface(m *models.ModelConfig) error {
-	interceptor := &generators.Interface{
-		Path:     filepath.Join("internal", "domain", "interceptors", m.FileName()),
-		Name:     m.InterceptorTypeName(),
-		Comments: nil,
-		Methods: []*generators.Method{
-			{
-				Name: "Get",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "id",
-						Type: "models.UUID",
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: fmt.Sprintf("*models.%s", m.ModelName()),
-					},
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-			{
-				Name: "List",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "filter",
-						Type: fmt.Sprintf("*models.%s", m.FilterTypeName()),
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: fmt.Sprintf("[]*models.%s", m.ModelName()),
-					},
-					{
-						Name: "",
-						Type: "uint64",
-					},
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-			{
-				Name: "Update",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "update",
-						Type: fmt.Sprintf("*models.%s", m.UpdateTypeName()),
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: fmt.Sprintf("*models.%s", m.ModelName()),
-					},
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-			{
-				Name: "Create",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "create",
-						Type: fmt.Sprintf("*models.%s", m.CreateTypeName()),
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: fmt.Sprintf("*models.%s", m.ModelName()),
-					},
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-			{
-				Name: "Delete",
-				Args: []*generators.Param{
-					{
-						Name: "ctx",
-						Type: "context.Context",
-					},
-					{
-						Name: "id",
-						Type: "models.UUID",
-					},
-				},
-				Results: []*generators.Param{
-					{
-						Name: "",
-						Type: "error",
-					},
-				},
-			},
-		},
-	}
-	if m.Auth {
-		for _, method := range interceptor.Methods {
-			method.Args = append(method.Args, &generators.Param{
-				Name: "requestUser",
-				Type: "*models.User",
-			})
-		}
-	}
-	if err := interceptor.SyncInterface(); err != nil {
-		return err
-	}
-	return nil
-}
-
 func SyncUseCaseImplementation(m *models.ModelConfig) error {
-	useCase := &generators.UseCase{
+	useCase := &usecases.UseCase{
 		Path:  filepath.Join("internal", "usecases", m.FileName()),
 		Name:  m.UseCaseTypeName(),
 		Model: m,
-		Params: []*generators.Param{
+		Params: []*generatorsModels.Param{
 			{
 				Name: m.RepositoryVariableName(),
 				Type: fmt.Sprintf("repositories.%s", m.RepositoryTypeName()),
@@ -579,11 +179,11 @@ func SyncUseCaseImplementation(m *models.ModelConfig) error {
 }
 
 func SyncRepositoryImplementation(m *models.ModelConfig) error {
-	repository := &generators.Repository{
+	repository := &postgres.Repository{
 		Path:  filepath.Join("internal", "repositories", "postgres", m.FileName()),
 		Name:  m.RepositoryTypeName(),
 		Model: m,
-		Params: []*generators.Param{
+		Params: []*generatorsModels.Param{
 			{
 				Name: "database",
 				Type: "*sqlx.DB",
@@ -637,11 +237,11 @@ func SyncRepositoryImplementation(m *models.ModelConfig) error {
 }
 
 func SyncInterceptorImplementation(m *models.ModelConfig) error {
-	interceptor := &generators.Interceptor{
+	interceptor := &interceptors.Interceptor{
 		Path:  filepath.Join("internal", "interceptors", m.FileName()),
 		Name:  m.InterceptorTypeName(),
 		Model: m,
-		Params: []*generators.Param{
+		Params: []*generatorsModels.Param{
 			{
 				Name: m.UseCaseTypeName(),
 				Type: fmt.Sprintf("usecases.%s", m.UseCaseTypeName()),
@@ -655,7 +255,7 @@ func SyncInterceptorImplementation(m *models.ModelConfig) error {
 	if m.Auth {
 		interceptor.Params = append(
 			interceptor.Params,
-			&generators.Param{
+			&generatorsModels.Param{
 				Name: "authUseCase",
 				Type: "usecases.AuthUseCase",
 			},
@@ -698,13 +298,17 @@ func SyncModel(m *models.ModelConfig) error {
 	if err := SyncUpdateStruct(m); err != nil {
 		return err
 	}
-	if err := SyncRepositoryInterface(m); err != nil {
+
+	repositoryInterface := generatorsRepositoriesInterfaces.RepositoryInterface{Config: m}
+	if err := repositoryInterface.SyncInterface(); err != nil {
 		return err
 	}
-	if err := SyncUsecaseInterface(m); err != nil {
+	useCaseInterface := generatorsUseCasesInterfaces.UseCaseInterface{Config: m}
+	if err := useCaseInterface.SyncInterface(); err != nil {
 		return err
 	}
-	if err := SyncInterceptorInterface(m); err != nil {
+	interceptor := generatorsIntercepstorInterfaces.InterceptorInterface{Config: m}
+	if err := interceptor.SyncInterface(); err != nil {
 		return err
 	}
 	if err := SyncUseCaseImplementation(m); err != nil {
@@ -829,11 +433,6 @@ func CreateCRUD(model *models.ModelConfig) error {
 	if err := SyncModel(model); err != nil {
 		return err
 	}
-	if model.GRPCEnabled && model.GatewayEnabled {
-		if err := registerGatewayHandler(model.ProtoPackage, model.GatewayHandlerTypeName()); err != nil {
-			return err
-		}
-	}
 	if model.Auth && model.ModelName() != "User" {
 		if err := addPermission(model.PermissionIDList(), "objectAnybody"); err != nil {
 			return err
@@ -849,249 +448,6 @@ func CreateCRUD(model *models.ModelConfig) error {
 		}
 		if err := addPermission(model.PermissionIDDelete(), "objectAnybody"); err != nil {
 			return err
-		}
-	}
-	return nil
-}
-
-func registerRESTHandler(variableName, typeName string) error {
-	packagePath := filepath.Join(destinationPath, "internal", "interfaces", "rest")
-	fileset := token.NewFileSet()
-	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
-		return true
-	}, parser.ParseComments)
-	if err != nil {
-		return err
-	}
-	for _, p := range tree {
-		for filePath, file := range p.Files {
-			for _, decl := range file.Decls {
-				funcDecl, ok := decl.(*ast.FuncDecl)
-				if ok {
-					if funcDecl.Name.String() == "NewServer" {
-						var exists bool
-						for _, existedParam := range funcDecl.Type.Params.List {
-							selector, ok := existedParam.Type.(*ast.StarExpr)
-							if ok {
-								t, ok := selector.X.(*ast.Ident)
-								if ok && t.Name == typeName {
-									exists = true
-									break
-								}
-							}
-						}
-						if exists {
-							continue
-						}
-						field := &ast.Field{
-							Doc: &ast.CommentGroup{
-								List: nil,
-							},
-							Names: []*ast.Ident{
-								{
-									NamePos: 0,
-									Name:    variableName,
-									Obj:     nil,
-								},
-							},
-							Type: &ast.StarExpr{
-								Star: 0,
-								X: &ast.Ident{
-									Name: typeName,
-								},
-							},
-							Tag: nil,
-							Comment: &ast.CommentGroup{
-								List: nil,
-							},
-						}
-						funcDecl.Type.Params.List = append(funcDecl.Type.Params.List, field)
-						registerCall := &ast.ExprStmt{
-							X: &ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										NamePos: 0,
-										Name:    variableName,
-										Obj:     nil,
-									},
-									Sel: &ast.Ident{
-										NamePos: 0,
-										Name:    "Register",
-										Obj:     nil,
-									},
-								},
-								Lparen: 0,
-								Args: []ast.Expr{
-									&ast.Ident{
-										NamePos: 0,
-										Name:    "apiV1",
-										Obj:     nil,
-									},
-								},
-								Ellipsis: 0,
-								Rparen:   0,
-							},
-						}
-						le := len(funcDecl.Body.List)
-						newBody := append(funcDecl.Body.List[:le-1], registerCall, funcDecl.Body.List[le-1])
-						funcDecl.Body.List = newBody
-						a := &bytes.Buffer{}
-						if err := printer.Fprint(a, fileset, file); err != nil {
-							return err
-						}
-						if err := os.WriteFile(filePath, a.Bytes(), 0777); err != nil {
-							return err
-						}
-					}
-				}
-			}
-		}
-	}
-	return nil
-}
-
-func registerGatewayHandler(typePackage, typeName string) error {
-	packagePath := filepath.Join(destinationPath, "internal", "interfaces", "gateway")
-	fileset := token.NewFileSet()
-	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
-		return true
-	}, parser.ParseComments)
-	if err != nil {
-		return err
-	}
-	for _, p := range tree {
-		for filePath, file := range p.Files {
-			for _, decl := range file.Decls {
-				funcDecl, ok := decl.(*ast.FuncDecl)
-				if ok {
-					if funcDecl.Name.String() == "Start" {
-						registerCall := &ast.AssignStmt{
-							Lhs: []ast.Expr{ast.NewIdent("_")},
-							Tok: token.ASSIGN,
-							Rhs: []ast.Expr{
-								&ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											NamePos: 0,
-											Name:    typePackage,
-											Obj:     nil,
-										},
-										Sel: &ast.Ident{
-											NamePos: 0,
-											Name:    typeName,
-											Obj:     nil,
-										},
-									},
-									Lparen: 0,
-									Args: []ast.Expr{
-										ast.NewIdent("ctx"),
-										ast.NewIdent("mux"),
-										ast.NewIdent("s.config.BindAddr"),
-										ast.NewIdent("opts"),
-									},
-									Ellipsis: 0,
-									Rparen:   0,
-								},
-							},
-						}
-						le := len(funcDecl.Body.List)
-						newBody := append(funcDecl.Body.List[:le-2], registerCall, funcDecl.Body.List[le-2], funcDecl.Body.List[le-1])
-						funcDecl.Body.List = newBody
-						buff := &bytes.Buffer{}
-						if err := printer.Fprint(buff, fileset, file); err != nil {
-							return err
-						}
-						if err := os.WriteFile(filePath, buff.Bytes(), 0777); err != nil {
-							return err
-						}
-					}
-				}
-			}
-		}
-	}
-	return nil
-}
-
-func registerGRPCHandler(variableName, typePackage, typeName string) error {
-	packagePath := filepath.Join(destinationPath, "internal", "interfaces", "grpc")
-	fileset := token.NewFileSet()
-	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
-		return true
-	}, parser.ParseComments)
-	if err != nil {
-		return err
-	}
-	for _, p := range tree {
-		for filePath, file := range p.Files {
-			for _, decl := range file.Decls {
-				funcDecl, ok := decl.(*ast.FuncDecl)
-				if ok {
-					if funcDecl.Name.String() == "NewServer" {
-						var exists bool
-						for _, existedParam := range funcDecl.Type.Params.List {
-							selector, ok := existedParam.Type.(*ast.SelectorExpr)
-							if ok && selector.Sel.Name == typeName {
-								exists = true
-								break
-							}
-						}
-						if exists {
-							continue
-						}
-						field := &ast.Field{
-							Doc: &ast.CommentGroup{
-								List: nil,
-							},
-							Names: []*ast.Ident{
-								ast.NewIdent(variableName),
-							},
-							Type: &ast.SelectorExpr{
-								X:   ast.NewIdent(typePackage),
-								Sel: ast.NewIdent(typeName),
-							},
-							Tag: nil,
-							Comment: &ast.CommentGroup{
-								List: nil,
-							},
-						}
-						_ = field
-						funcDecl.Type.Params.List = append(funcDecl.Type.Params.List, field)
-						registerCall := &ast.ExprStmt{
-							X: &ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										NamePos: 0,
-										Name:    typePackage,
-										Obj:     nil,
-									},
-									Sel: &ast.Ident{
-										NamePos: 0,
-										Name:    fmt.Sprintf("Register%s", typeName),
-										Obj:     nil,
-									},
-								},
-								Lparen: 0,
-								Args: []ast.Expr{
-									ast.NewIdent("server"),
-									ast.NewIdent(variableName),
-								},
-								Ellipsis: 0,
-								Rparen:   0,
-							},
-						}
-						le := len(funcDecl.Body.List)
-						newBody := append(funcDecl.Body.List[:le-1], registerCall, funcDecl.Body.List[le-1])
-						funcDecl.Body.List = newBody
-						buff := &bytes.Buffer{}
-						if err := printer.Fprint(buff, fileset, file); err != nil {
-							return err
-						}
-						if err := os.WriteFile(filePath, buff.Bytes(), 0777); err != nil {
-							return err
-						}
-					}
-				}
-			}
 		}
 	}
 	return nil

@@ -1,8 +1,9 @@
-package generators
+package models
 
 import (
 	"bytes"
 	"fmt"
+	"github.com/018bf/creathor/internal/generators"
 	"github.com/018bf/creathor/internal/models"
 	"github.com/iancoleman/strcase"
 	"go/ast"
@@ -445,7 +446,7 @@ func (m *Model) SyncMock() error {
 				cl.Elts = append(cl.Elts, &ast.KeyValueExpr{
 					Key:   ast.NewIdent(param.GetPublicName()),
 					Colon: 0,
-					Value: FakeAst(param.Type),
+					Value: generators.FakeAst(param.Type),
 				})
 				return false
 			}

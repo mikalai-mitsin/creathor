@@ -8,9 +8,9 @@ import (
 	generatorsModels "github.com/018bf/creathor/internal/generators/domain/models"
 	generatorsRepositoriesInterfaces "github.com/018bf/creathor/internal/generators/domain/repositories"
 	generatorsUseCasesInterfaces "github.com/018bf/creathor/internal/generators/domain/usecases"
-	"github.com/018bf/creathor/internal/generators/interceptors"
-	"github.com/018bf/creathor/internal/generators/repositories/postgres"
-	"github.com/018bf/creathor/internal/generators/usecases"
+	generatorsIntercepstorImpl "github.com/018bf/creathor/internal/generators/interceptors"
+	generatorsRepositoriesImpl "github.com/018bf/creathor/internal/generators/repositories/postgres"
+	generatorsUseCasesImpl "github.com/018bf/creathor/internal/generators/usecases"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -21,268 +21,133 @@ import (
 	"path/filepath"
 )
 
-func SyncModelStruct(m *configs.ModelConfig) error {
-	model := &generatorsModels.Model{
-		Name:        m.ModelName(),
-		ModelConfig: m,
-		Params: []*generatorsModels.Param{
-			{
-				Name: "ID",
-				Type: "UUID",
-			},
-			{
-				Name: "UpdatedAt",
-				Type: "time.Time",
-			},
-			{
-				Name: "CreatedAt",
-				Type: "time.Time",
-			},
-		},
-	}
-	for _, param := range m.Params {
-		model.Params = append(
-			model.Params,
-			&generatorsModels.Param{
-				Name: param.GetName(),
-				Type: param.Type,
-			},
-		)
-	}
+//func SyncFilterStruct(m *configs.ModelConfig) error {
+//	create := &generatorsModels.Model{
+//		Name:        m.FilterTypeName(),
+//		ModelConfig: m,
+//		Params: []*generatorsModels.Param{
+//			{
+//				Name: "IDs",
+//				Type: "[]UUID",
+//			},
+//			{
+//				Name: "PageSize",
+//				Type: "*uint64",
+//			},
+//			{
+//				Name: "PageNumber",
+//				Type: "*uint64",
+//			},
+//			{
+//				Name: "OrderBy",
+//				Type: "[]string",
+//			},
+//		},
+//	}
+//	if m.SearchEnabled() {
+//		create.Params = append(
+//			create.Params,
+//			&generatorsModels.Param{
+//				Name: "Search",
+//				Type: "*string",
+//			},
+//		)
+//	}
+//	if err := create.Sync(); err != nil {
+//		return err
+//	}
+//	return nil
+//}
+//
+//func SyncCreateStruct(m *configs.ModelConfig) error {
+//	create := &generatorsModels.Model{
+//		Name:        m.CreateTypeName(),
+//		ModelConfig: m,
+//		Params:      []*generatorsModels.Param{},
+//	}
+//	for _, param := range m.Params {
+//		create.Params = append(create.Params, &generatorsModels.Param{
+//			Name: param.GetName(),
+//			Type: param.Type,
+//		})
+//	}
+//	if err := create.Sync(); err != nil {
+//		return err
+//	}
+//	return nil
+//}
+//
+//func SyncUpdateStruct(m *configs.ModelConfig) error {
+//	update := &generatorsModels.Model{
+//		Name:        m.UpdateTypeName(),
+//		ModelConfig: m,
+//		Params: []*generatorsModels.Param{
+//			{
+//				Name: "ID",
+//				Type: "UUID",
+//			},
+//		},
+//	}
+//	for _, param := range m.Params {
+//		update.Params = append(update.Params, &generatorsModels.Param{
+//			Name: param.GetName(),
+//			Type: fmt.Sprintf("*%s", param.Type),
+//		})
+//	}
+//	if err := update.Sync(); err != nil {
+//		return err
+//	}
+//	return nil
+//}
+
+func SyncModel(m *configs.ModelConfig) error {
+	model := generatorsModels.NewModel(m)
 	if err := model.Sync(); err != nil {
 		return err
 	}
-	return nil
-}
-
-func SyncFilterStruct(m *configs.ModelConfig) error {
-	create := &generatorsModels.Model{
-		Name:        m.FilterTypeName(),
-		ModelConfig: m,
-		Params: []*generatorsModels.Param{
-			{
-				Name: "IDs",
-				Type: "[]UUID",
-			},
-			{
-				Name: "PageSize",
-				Type: "*uint64",
-			},
-			{
-				Name: "PageNumber",
-				Type: "*uint64",
-			},
-			{
-				Name: "OrderBy",
-				Type: "[]string",
-			},
-		},
-	}
-	if m.SearchEnabled() {
-		create.Params = append(
-			create.Params,
-			&generatorsModels.Param{
-				Name: "Search",
-				Type: "*string",
-			},
-		)
-	}
+	create := generatorsModels.NewCreate(m)
 	if err := create.Sync(); err != nil {
 		return err
 	}
-	return nil
-}
-
-func SyncCreateStruct(m *configs.ModelConfig) error {
-	create := &generatorsModels.Model{
-		Name:        m.CreateTypeName(),
-		ModelConfig: m,
-		Params:      []*generatorsModels.Param{},
-	}
-	for _, param := range m.Params {
-		create.Params = append(create.Params, &generatorsModels.Param{
-			Name: param.GetName(),
-			Type: param.Type,
-		})
-	}
-	if err := create.Sync(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func SyncUpdateStruct(m *configs.ModelConfig) error {
-	update := &generatorsModels.Model{
-		Name:        m.UpdateTypeName(),
-		ModelConfig: m,
-		Params: []*generatorsModels.Param{
-			{
-				Name: "ID",
-				Type: "UUID",
-			},
-		},
-	}
-	for _, param := range m.Params {
-		update.Params = append(update.Params, &generatorsModels.Param{
-			Name: param.GetName(),
-			Type: fmt.Sprintf("*%s", param.Type),
-		})
-	}
+	update := generatorsModels.NewUpdate(m)
 	if err := update.Sync(); err != nil {
 		return err
 	}
-	return nil
-}
-
-func SyncUseCaseImplementation(m *configs.ModelConfig) error {
-	useCase := &usecases.UseCase{
-		Model: m,
-	}
-	if err := useCase.Sync(); err != nil {
+	filter := generatorsModels.NewFilter(m)
+	if err := filter.Sync(); err != nil {
 		return err
 	}
-	return nil
-}
-
-func SyncRepositoryImplementation(m *configs.ModelConfig) error {
-	repository := &postgres.Repository{
-		Path:  filepath.Join("internal", "repositories", "postgres", m.FileName()),
-		Name:  m.RepositoryTypeName(),
-		Model: m,
-		Params: []*generatorsModels.Param{
-			{
-				Name: "database",
-				Type: "*sqlx.DB",
-			},
-			{
-				Name: "logger",
-				Type: "log.Logger",
-			},
-		},
-	}
-	if err := repository.SyncDTOStruct(); err != nil {
-		return err
-	}
-	if err := repository.SyncDTOListType(); err != nil {
-		return err
-	}
-	if err := repository.SyncDTOListToModels(); err != nil {
-		return err
-	}
-	if err := repository.SyncDTOConstructor(); err != nil {
-		return err
-	}
-	if err := repository.SyncDTOToModel(); err != nil {
-		return err
-	}
-	if err := repository.SyncStruct(); err != nil {
-		return err
-	}
-	if err := repository.SyncConstructor(); err != nil {
-		return err
-	}
-	if err := repository.SyncCreateMethod(); err != nil {
-		return err
-	}
-	if err := repository.SyncGetMethod(); err != nil {
-		return err
-	}
-	if err := repository.SyncListMethod(); err != nil {
-		return err
-	}
-	if err := repository.SyncCountMethod(); err != nil {
-		return err
-	}
-	if err := repository.SyncUpdateMethod(); err != nil {
-		return err
-	}
-	if err := repository.SyncDeleteMethod(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func SyncInterceptorImplementation(m *configs.ModelConfig) error {
-	interceptor := &interceptors.Interceptor{
-		Path:  filepath.Join("internal", "interceptors", m.FileName()),
-		Name:  m.InterceptorTypeName(),
-		Model: m,
-		Params: []*generatorsModels.Param{
-			{
-				Name: m.UseCaseTypeName(),
-				Type: fmt.Sprintf("usecases.%s", m.UseCaseTypeName()),
-			},
-			{
-				Name: "logger",
-				Type: "log.Logger",
-			},
-		},
-	}
-	if m.Auth {
-		interceptor.Params = append(
-			interceptor.Params,
-			&generatorsModels.Param{
-				Name: "authUseCase",
-				Type: "usecases.AuthUseCase",
-			},
-		)
-	}
-	if err := interceptor.SyncStruct(); err != nil {
-		return err
-	}
-	if err := interceptor.SyncConstructor(); err != nil {
-		return err
-	}
-	if err := interceptor.SyncCreateMethod(); err != nil {
-		return err
-	}
-	if err := interceptor.SyncGetMethod(); err != nil {
-		return err
-	}
-	if err := interceptor.SyncListMethod(); err != nil {
-		return err
-	}
-	if err := interceptor.SyncUpdateMethod(); err != nil {
-		return err
-	}
-	if err := interceptor.SyncDeleteMethod(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func SyncModel(m *configs.ModelConfig) error {
-	if err := SyncModelStruct(m); err != nil {
-		return err
-	}
-	if err := SyncFilterStruct(m); err != nil {
-		return err
-	}
-	if err := SyncCreateStruct(m); err != nil {
-		return err
-	}
-	if err := SyncUpdateStruct(m); err != nil {
-		return err
-	}
-	repositoryInterface := generatorsRepositoriesInterfaces.RepositoryInterface{Config: m}
+	//if err := SyncFilterStruct(m); err != nil {
+	//	return err
+	//}
+	//if err := SyncCreateStruct(m); err != nil {
+	//	return err
+	//}
+	//if err := SyncUpdateStruct(m); err != nil {
+	//	return err
+	//}
+	repositoryInterface := generatorsRepositoriesInterfaces.NewRepositoryInterface(m)
 	if err := repositoryInterface.Sync(); err != nil {
 		return err
 	}
-	useCaseInterface := generatorsUseCasesInterfaces.UseCaseInterface{Config: m}
+	useCaseInterface := generatorsUseCasesInterfaces.NewUseCaseInterface(m)
 	if err := useCaseInterface.Sync(); err != nil {
 		return err
 	}
-	interceptorInterface := generatorsIntercepstorInterfaces.InterceptorInterface{Config: m}
+	interceptorInterface := generatorsIntercepstorInterfaces.NewInterceptorInterface(m)
 	if err := interceptorInterface.Sync(); err != nil {
 		return err
 	}
-	if err := SyncUseCaseImplementation(m); err != nil {
+	useCaseImpl := generatorsUseCasesImpl.NewUseCase(m)
+	if err := useCaseImpl.Sync(); err != nil {
 		return err
 	}
-	if err := SyncRepositoryImplementation(m); err != nil {
+	repositoryImpl := generatorsRepositoriesImpl.NewRepository(m)
+	if err := repositoryImpl.Sync(); err != nil {
 		return err
 	}
-	if err := SyncInterceptorImplementation(m); err != nil {
+	interceptorImpl := generatorsIntercepstorImpl.NewInterceptor(m)
+	if err := interceptorImpl.Sync(); err != nil {
 		return err
 	}
 	return nil

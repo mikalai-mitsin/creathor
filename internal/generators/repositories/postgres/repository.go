@@ -4,25 +4,73 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/018bf/creathor/internal/configs"
-	models2 "github.com/018bf/creathor/internal/generators/domain/models"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
+	"path/filepath"
 )
 
 type Repository struct {
-	Path   string
-	Name   string
-	Model  *configs.ModelConfig
-	Params []*models2.Param
+	model *configs.ModelConfig
 }
 
-func (r Repository) AstDTOStruct() *ast.TypeSpec {
+func NewRepository(config *configs.ModelConfig) *Repository {
+	return &Repository{model: config}
+}
+
+func (r Repository) filename() string {
+	return filepath.Join("internal", "repositories", "postgres", r.model.FileName())
+}
+
+func (r Repository) Sync() error {
+	if err := r.syncDTOStruct(); err != nil {
+		return err
+	}
+	if err := r.syncDTOListType(); err != nil {
+		return err
+	}
+	if err := r.syncDTOListToModels(); err != nil {
+		return err
+	}
+	if err := r.syncDTOConstructor(); err != nil {
+		return err
+	}
+	if err := r.syncDTOToModel(); err != nil {
+		return err
+	}
+	if err := r.syncStruct(); err != nil {
+		return err
+	}
+	if err := r.syncConstructor(); err != nil {
+		return err
+	}
+	if err := r.syncCreateMethod(); err != nil {
+		return err
+	}
+	if err := r.syncGetMethod(); err != nil {
+		return err
+	}
+	if err := r.syncListMethod(); err != nil {
+		return err
+	}
+	if err := r.syncCountMethod(); err != nil {
+		return err
+	}
+	if err := r.syncUpdateMethod(); err != nil {
+		return err
+	}
+	if err := r.syncDeleteMethod(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r Repository) astDTOStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Name: &ast.Ident{
-			Name: r.Model.PostgresDTOTypeName(),
+			Name: r.model.PostgresDTOTypeName(),
 		},
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
@@ -83,7 +131,7 @@ func (r Repository) AstDTOStruct() *ast.TypeSpec {
 			},
 		},
 	}
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		ast.Inspect(structure, func(node ast.Node) bool {
 			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
 				for _, field := range st.Fields.List {
@@ -111,16 +159,16 @@ func (r Repository) AstDTOStruct() *ast.TypeSpec {
 	return structure
 }
 
-func (r Repository) SyncDTOStruct() error {
+func (r Repository) syncDTOStruct() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, r.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.Model.PostgresDTOTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.model.PostgresDTOTypeName() {
 			structure = t
 			structureExists = true
 			return false
@@ -128,9 +176,9 @@ func (r Repository) SyncDTOStruct() error {
 		return true
 	})
 	if structure == nil {
-		structure = r.AstDTOStruct()
+		structure = r.astDTOStruct()
 	}
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		ast.Inspect(structure, func(node ast.Node) bool {
 			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
 				for _, field := range st.Fields.List {
@@ -170,16 +218,16 @@ func (r Repository) SyncDTOStruct() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(r.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r Repository) AstDTOConstructor() *ast.FuncDecl {
+func (r Repository) astDTOConstructor() *ast.FuncDecl {
 	dto := &ast.CompositeLit{
 		Type: &ast.Ident{
-			Name: r.Model.PostgresDTOTypeName(),
+			Name: r.model.PostgresDTOTypeName(),
 		},
 		Elts: []ast.Expr{
 			&ast.KeyValueExpr{
@@ -193,7 +241,7 @@ func (r Repository) AstDTOConstructor() *ast.FuncDecl {
 					Args: []ast.Expr{
 						&ast.SelectorExpr{
 							X: &ast.Ident{
-								Name: r.Model.Variable(),
+								Name: r.model.Variable(),
 							},
 							Sel: &ast.Ident{
 								Name: "ID",
@@ -208,7 +256,7 @@ func (r Repository) AstDTOConstructor() *ast.FuncDecl {
 				},
 				Value: &ast.SelectorExpr{
 					X: &ast.Ident{
-						Name: r.Model.Variable(),
+						Name: r.model.Variable(),
 					},
 					Sel: &ast.Ident{
 						Name: "UpdatedAt",
@@ -221,7 +269,7 @@ func (r Repository) AstDTOConstructor() *ast.FuncDecl {
 				},
 				Value: &ast.SelectorExpr{
 					X: &ast.Ident{
-						Name: r.Model.Variable(),
+						Name: r.model.Variable(),
 					},
 					Sel: &ast.Ident{
 						Name: "CreatedAt",
@@ -230,7 +278,7 @@ func (r Repository) AstDTOConstructor() *ast.FuncDecl {
 			},
 		},
 	}
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		elt := &ast.KeyValueExpr{
 			Key: &ast.Ident{
 				Name: param.GetName(),
@@ -245,7 +293,7 @@ func (r Repository) AstDTOConstructor() *ast.FuncDecl {
 			if param.PostgresDTOType() == param.Type {
 				elt.Value = &ast.SelectorExpr{
 					X: &ast.Ident{
-						Name: r.Model.Variable(),
+						Name: r.model.Variable(),
 					},
 					Sel: &ast.Ident{
 						Name: param.GetName(),
@@ -259,7 +307,7 @@ func (r Repository) AstDTOConstructor() *ast.FuncDecl {
 					Args: []ast.Expr{
 						&ast.SelectorExpr{
 							X: &ast.Ident{
-								Name: r.Model.Variable(),
+								Name: r.model.Variable(),
 							},
 							Sel: &ast.Ident{
 								Name: param.GetName(),
@@ -273,7 +321,7 @@ func (r Repository) AstDTOConstructor() *ast.FuncDecl {
 	}
 	constructor := &ast.FuncDecl{
 		Name: &ast.Ident{
-			Name: fmt.Sprintf("New%sFromModel", r.Model.PostgresDTOTypeName()),
+			Name: fmt.Sprintf("New%sFromModel", r.model.PostgresDTOTypeName()),
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
@@ -281,7 +329,7 @@ func (r Repository) AstDTOConstructor() *ast.FuncDecl {
 					{
 						Names: []*ast.Ident{
 							{
-								Name: r.Model.Variable(),
+								Name: r.model.Variable(),
 							},
 						},
 						Type: &ast.StarExpr{
@@ -290,7 +338,7 @@ func (r Repository) AstDTOConstructor() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.Model.ModelName(),
+									Name: r.model.ModelName(),
 								},
 							},
 						},
@@ -302,7 +350,7 @@ func (r Repository) AstDTOConstructor() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.Ident{
-								Name: r.Model.PostgresDTOTypeName(),
+								Name: r.model.PostgresDTOTypeName(),
 							},
 						},
 					},
@@ -328,7 +376,7 @@ func (r Repository) AstDTOConstructor() *ast.FuncDecl {
 			},
 		},
 	}
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		if !param.IsSlice() {
 			continue
 		}
@@ -357,7 +405,7 @@ func (r Repository) AstDTOConstructor() *ast.FuncDecl {
 			Tok: token.DEFINE,
 			X: &ast.SelectorExpr{
 				X: &ast.Ident{
-					Name: r.Model.Variable(),
+					Name: r.model.Variable(),
 				},
 				Sel: &ast.Ident{
 					Name: param.GetName(),
@@ -412,16 +460,16 @@ func (r Repository) AstDTOConstructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (r Repository) SyncDTOConstructor() error {
+func (r Repository) syncDTOConstructor() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, r.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 	var structureConstructorExists bool
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("New%sFromModel", r.Model.PostgresDTOTypeName()) {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("New%sFromModel", r.model.PostgresDTOTypeName()) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -429,13 +477,13 @@ func (r Repository) SyncDTOConstructor() error {
 		return true
 	})
 	if structureConstructor == nil {
-		structureConstructor = r.AstDTOConstructor()
+		structureConstructor = r.astDTOConstructor()
 	}
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		param := param
 		ast.Inspect(structureConstructor, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
-				if i, ok := cl.Type.(*ast.Ident); ok && i.String() == r.Model.PostgresDTOTypeName() {
+				if i, ok := cl.Type.(*ast.Ident); ok && i.String() == r.model.PostgresDTOTypeName() {
 					_ = i
 					for _, elt := range cl.Elts {
 						elt := elt
@@ -459,7 +507,7 @@ func (r Repository) SyncDTOConstructor() error {
 						if param.PostgresDTOType() == param.Type {
 							elt.Value = &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: r.Model.Variable(),
+									Name: r.model.Variable(),
 								},
 								Sel: &ast.Ident{
 									Name: param.GetName(),
@@ -473,7 +521,7 @@ func (r Repository) SyncDTOConstructor() error {
 								Args: []ast.Expr{
 									&ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: r.Model.Variable(),
+											Name: r.model.Variable(),
 										},
 										Sel: &ast.Ident{
 											Name: param.GetName(),
@@ -498,20 +546,20 @@ func (r Repository) SyncDTOConstructor() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(r.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r Repository) AstDTOToModel() *ast.FuncDecl {
+func (r Repository) astDTOToModel() *ast.FuncDecl {
 	model := &ast.CompositeLit{
 		Type: &ast.SelectorExpr{
 			X: &ast.Ident{
 				Name: "models",
 			},
 			Sel: &ast.Ident{
-				Name: r.Model.ModelName(),
+				Name: r.model.ModelName(),
 			},
 		},
 		Elts: []ast.Expr{
@@ -568,7 +616,7 @@ func (r Repository) AstDTOToModel() *ast.FuncDecl {
 			},
 		},
 	}
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		par := &ast.KeyValueExpr{
 			Key: &ast.Ident{
 				Name: param.GetName(),
@@ -624,7 +672,7 @@ func (r Repository) AstDTOToModel() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.Model.PostgresDTOTypeName(),
+							Name: r.model.PostgresDTOTypeName(),
 						},
 					},
 				},
@@ -644,7 +692,7 @@ func (r Repository) AstDTOToModel() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.Model.ModelName(),
+									Name: r.model.ModelName(),
 								},
 							},
 						},
@@ -671,7 +719,7 @@ func (r Repository) AstDTOToModel() *ast.FuncDecl {
 			},
 		},
 	}
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		if !param.IsSlice() {
 			continue
 		}
@@ -757,9 +805,9 @@ func (r Repository) AstDTOToModel() *ast.FuncDecl {
 	return method
 }
 
-func (r Repository) SyncDTOToModel() error {
+func (r Repository) syncDTOToModel() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, r.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -774,7 +822,7 @@ func (r Repository) SyncDTOToModel() error {
 		return true
 	})
 	if method == nil {
-		method = r.AstDTOToModel()
+		method = r.astDTOToModel()
 	}
 	// TODO: add range sync
 	if !methodExists {
@@ -784,64 +832,63 @@ func (r Repository) SyncDTOToModel() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(r.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r Repository) AstStruct() *ast.TypeSpec {
+func (r Repository) astStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Doc:        nil,
-		Name:       ast.NewIdent(r.Name),
+		Name:       ast.NewIdent(r.model.RepositoryTypeName()),
 		TypeParams: nil,
 		Assign:     0,
 		Type: &ast.StructType{
 			Struct: 0,
 			Fields: &ast.FieldList{
 				Opening: 0,
-				List:    nil,
-				Closing: 0,
+				List: []*ast.Field{
+					{
+						Doc:   nil,
+						Names: []*ast.Ident{ast.NewIdent("database")},
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("sqlx"),
+								Sel: ast.NewIdent("DB"),
+							},
+						},
+						Tag:     nil,
+						Comment: nil,
+					},
+					{
+						Doc:   nil,
+						Names: []*ast.Ident{ast.NewIdent("logger")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("log"),
+							Sel: ast.NewIdent("Logger"),
+						},
+						Tag:     nil,
+						Comment: nil,
+					},
+				},
 			},
-			Incomplete: false,
 		},
 		Comment: nil,
-	}
-	for _, param := range r.Params {
-		ast.Inspect(structure, func(node ast.Node) bool {
-			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
-				for _, field := range st.Fields.List {
-					for _, fieldName := range field.Names {
-						if fieldName.Name == param.GetPrivateName() {
-							return false
-						}
-					}
-				}
-				st.Fields.List = append(st.Fields.List, &ast.Field{
-					Doc:     nil,
-					Names:   []*ast.Ident{ast.NewIdent(param.GetPrivateName())},
-					Type:    ast.NewIdent(param.Type),
-					Tag:     nil,
-					Comment: nil,
-				})
-				return false
-			}
-			return true
-		})
 	}
 	return structure
 }
 
-func (r Repository) SyncStruct() error {
+func (r Repository) syncStruct() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, r.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.model.RepositoryTypeName() {
 			structure = t
 			structureExists = true
 			return false
@@ -849,29 +896,7 @@ func (r Repository) SyncStruct() error {
 		return true
 	})
 	if structure == nil {
-		structure = r.AstStruct()
-	}
-	for _, param := range r.Params {
-		ast.Inspect(structure, func(node ast.Node) bool {
-			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
-				for _, field := range st.Fields.List {
-					for _, fieldName := range field.Names {
-						if fieldName.Name == param.GetPrivateName() {
-							return false
-						}
-					}
-				}
-				st.Fields.List = append(st.Fields.List, &ast.Field{
-					Doc:     nil,
-					Names:   []*ast.Ident{ast.NewIdent(param.GetPrivateName())},
-					Type:    ast.NewIdent(param.Type),
-					Tag:     nil,
-					Comment: nil,
-				})
-				return false
-			}
-			return true
-		})
+		structure = r.astStruct()
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
@@ -888,49 +913,45 @@ func (r Repository) SyncStruct() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(r.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r Repository) AstConstructor() *ast.FuncDecl {
-	var args []*ast.Field
-	cl := &ast.CompositeLit{
-		Type:       ast.NewIdent(r.Name),
-		Lbrace:     0,
-		Elts:       nil,
-		Rbrace:     0,
-		Incomplete: false,
-	}
-	for _, param := range r.Params {
-		args = append(
-			args,
-			&ast.Field{
-				Doc:     nil,
-				Names:   []*ast.Ident{ast.NewIdent(param.GetPrivateName())},
-				Type:    ast.NewIdent(param.Type),
-				Tag:     nil,
-				Comment: nil,
-			},
-		)
-		cl.Elts = append(cl.Elts, &ast.KeyValueExpr{
-			Key:   ast.NewIdent(param.GetPrivateName()),
-			Colon: 0,
-			Value: ast.NewIdent(param.GetPrivateName()),
-		})
-	}
+func (r Repository) astConstructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
 		Doc:  nil,
 		Recv: nil,
-		Name: ast.NewIdent(fmt.Sprintf("New%s", r.Name)),
+		Name: ast.NewIdent(fmt.Sprintf("New%s", r.model.RepositoryTypeName())),
 		Type: &ast.FuncType{
 			Func:       0,
 			TypeParams: nil,
 			Params: &ast.FieldList{
-				Opening: 0,
-				List:    args,
-				Closing: 0,
+				List: []*ast.Field{
+					{
+						Doc:   nil,
+						Names: []*ast.Ident{ast.NewIdent("database")},
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("sqlx"),
+								Sel: ast.NewIdent("DB"),
+							},
+						},
+						Tag:     nil,
+						Comment: nil,
+					},
+					{
+						Doc:   nil,
+						Names: []*ast.Ident{ast.NewIdent("logger")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("log"),
+							Sel: ast.NewIdent("Logger"),
+						},
+						Tag:     nil,
+						Comment: nil,
+					},
+				},
 			},
 			Results: &ast.FieldList{
 				Opening: 0,
@@ -940,7 +961,7 @@ func (r Repository) AstConstructor() *ast.FuncDecl {
 						Names: nil,
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("repositories"),
-							Sel: ast.NewIdent(r.Name),
+							Sel: ast.NewIdent(r.model.RepositoryTypeName()),
 						},
 						Tag:     nil,
 						Comment: nil,
@@ -958,7 +979,27 @@ func (r Repository) AstConstructor() *ast.FuncDecl {
 						&ast.UnaryExpr{
 							OpPos: 0,
 							Op:    token.AND,
-							X:     cl,
+							X: &ast.CompositeLit{
+								Type: ast.NewIdent(r.model.RepositoryTypeName()),
+								Elts: []ast.Expr{
+									&ast.KeyValueExpr{
+										Key: &ast.Ident{
+											Name: "database",
+										},
+										Value: &ast.Ident{
+											Name: "database",
+										},
+									},
+									&ast.KeyValueExpr{
+										Key: &ast.Ident{
+											Name: "logger",
+										},
+										Value: &ast.Ident{
+											Name: "logger",
+										},
+									},
+								},
+							},
 						},
 					},
 				},
@@ -969,16 +1010,16 @@ func (r Repository) AstConstructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (r Repository) SyncConstructor() error {
+func (r Repository) syncConstructor() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, r.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 	var structureConstructorExists bool
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("New%s", r.Name) {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("New%s", r.model.RepositoryTypeName()) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -986,50 +1027,7 @@ func (r Repository) SyncConstructor() error {
 		return true
 	})
 	if structureConstructor == nil {
-		structureConstructor = r.AstConstructor()
-	}
-	for _, param := range r.Params {
-		param := param
-		var argExists bool
-		for _, arg := range structureConstructor.Type.Params.List {
-			for _, fieldName := range arg.Names {
-				if fieldName.Name == param.GetPrivateName() {
-					argExists = true
-				}
-			}
-		}
-		ast.Inspect(structureConstructor.Body, func(node ast.Node) bool {
-			if cl, ok := node.(*ast.CompositeLit); ok {
-				if t, ok := cl.Type.(*ast.Ident); ok && t.String() == r.Name {
-					for _, elt := range cl.Elts {
-						if kv, ok := elt.(*ast.KeyValueExpr); ok {
-							if key, ok := kv.Key.(*ast.Ident); ok && key.String() == param.GetPrivateName() {
-								return false
-							}
-						}
-					}
-					cl.Elts = append(cl.Elts, &ast.KeyValueExpr{
-						Key:   ast.NewIdent(param.GetPrivateName()),
-						Colon: 0,
-						Value: ast.NewIdent(param.GetPrivateName()),
-					})
-					return false
-				}
-			}
-			return true
-		})
-		if !argExists {
-			structureConstructor.Type.Params.List = append(
-				structureConstructor.Type.Params.List,
-				&ast.Field{
-					Doc:     nil,
-					Names:   []*ast.Ident{ast.NewIdent(param.GetPrivateName())},
-					Type:    ast.NewIdent(param.Type),
-					Tag:     nil,
-					Comment: nil,
-				},
-			)
-		}
+		structureConstructor = r.astConstructor()
 	}
 	if !structureConstructorExists {
 		file.Decls = append(file.Decls, structureConstructor)
@@ -1038,13 +1036,13 @@ func (r Repository) SyncConstructor() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(r.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r Repository) AstCreateMethod() *ast.FuncDecl {
+func (r Repository) astCreateMethod() *ast.FuncDecl {
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
@@ -1065,7 +1063,7 @@ func (r Repository) AstCreateMethod() *ast.FuncDecl {
 			Sel: ast.NewIdent("CreatedAt"),
 		},
 	}
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		columns = append(columns, &ast.BasicLit{
 			Kind:  token.STRING,
 			Value: fmt.Sprintf("\"%s\"", param.Tag()),
@@ -1085,7 +1083,7 @@ func (r Repository) AstCreateMethod() *ast.FuncDecl {
 						ast.NewIdent("r"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(r.Name),
+						X: ast.NewIdent(r.model.RepositoryTypeName()),
 					},
 				},
 			},
@@ -1102,11 +1100,11 @@ func (r Repository) AstCreateMethod() *ast.FuncDecl {
 						Type:  ast.NewIdent("context.Context"),
 					},
 					{
-						Names: []*ast.Ident{ast.NewIdent(r.Model.Variable())},
+						Names: []*ast.Ident{ast.NewIdent(r.model.Variable())},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(r.Model.ModelName()),
+								Sel: ast.NewIdent(r.model.ModelName()),
 							},
 						},
 					},
@@ -1161,9 +1159,9 @@ func (r Repository) AstCreateMethod() *ast.FuncDecl {
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
-							Fun: ast.NewIdent(fmt.Sprintf("New%sDTOFromModel", r.Model.ModelName())),
+							Fun: ast.NewIdent(fmt.Sprintf("New%sDTOFromModel", r.model.ModelName())),
 							Args: []ast.Expr{
-								ast.NewIdent(r.Model.Variable()),
+								ast.NewIdent(r.model.Variable()),
 							},
 						},
 					},
@@ -1189,7 +1187,7 @@ func (r Repository) AstCreateMethod() *ast.FuncDecl {
 													Args: []ast.Expr{
 														&ast.BasicLit{
 															Kind:  token.STRING,
-															Value: fmt.Sprintf("\"public.%s\"", r.Model.TableName()),
+															Value: fmt.Sprintf("\"public.%s\"", r.model.TableName()),
 														},
 													},
 												},
@@ -1308,7 +1306,7 @@ func (r Repository) AstCreateMethod() *ast.FuncDecl {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.SelectorExpr{
-							X:   ast.NewIdent(r.Model.Variable()),
+							X:   ast.NewIdent(r.model.Variable()),
 							Sel: ast.NewIdent("ID"),
 						},
 					},
@@ -1339,9 +1337,9 @@ func (r Repository) AstCreateMethod() *ast.FuncDecl {
 	return fun
 }
 
-func (r Repository) SyncCreateMethod() error {
+func (r Repository) syncCreateMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, r.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -1356,9 +1354,9 @@ func (r Repository) SyncCreateMethod() error {
 		return true
 	})
 	if method == nil {
-		method = r.AstCreateMethod()
+		method = r.astCreateMethod()
 	}
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		param := param
 		ast.Inspect(method, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
@@ -1405,21 +1403,21 @@ func (r Repository) SyncCreateMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(r.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (r Repository) search() ast.Stmt {
-	if !r.Model.SearchEnabled() {
+	if !r.model.SearchEnabled() {
 		return &ast.EmptyStmt{
 			Semicolon: 0,
 			Implicit:  false,
 		}
 	}
 	var columns []ast.Expr
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		if param.Search {
 			columns = append(columns, &ast.BasicLit{
 				Kind:  token.STRING,
@@ -1521,8 +1519,8 @@ func (r Repository) search() ast.Stmt {
 	return stmt
 }
 
-func (r Repository) AstListMethod() *ast.FuncDecl {
-	tableName := r.Model.TableName()
+func (r Repository) astListMethod() *ast.FuncDecl {
+	tableName := r.model.TableName()
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
@@ -1537,7 +1535,7 @@ func (r Repository) AstListMethod() *ast.FuncDecl {
 			Value: fmt.Sprintf("\"%s.created_at\"", tableName),
 		},
 	}
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		columns = append(
 			columns,
 			&ast.BasicLit{
@@ -1557,7 +1555,7 @@ func (r Repository) AstListMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.Name,
+							Name: r.model.RepositoryTypeName(),
 						},
 					},
 				},
@@ -1596,7 +1594,7 @@ func (r Repository) AstListMethod() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.Model.FilterTypeName(),
+									Name: r.model.FilterTypeName(),
 								},
 							},
 						},
@@ -1613,7 +1611,7 @@ func (r Repository) AstListMethod() *ast.FuncDecl {
 										Name: "models",
 									},
 									Sel: &ast.Ident{
-										Name: r.Model.ModelName(),
+										Name: r.model.ModelName(),
 									},
 								},
 							},
@@ -1683,7 +1681,7 @@ func (r Repository) AstListMethod() *ast.FuncDecl {
 									},
 								},
 								Type: &ast.Ident{
-									Name: r.Model.PostgresDTOListTypeName(),
+									Name: r.model.PostgresDTOListTypeName(),
 								},
 							},
 						},
@@ -2225,9 +2223,9 @@ func (r Repository) AstListMethod() *ast.FuncDecl {
 	}
 }
 
-func (r Repository) SyncListMethod() error {
+func (r Repository) syncListMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, r.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -2242,11 +2240,11 @@ func (r Repository) SyncListMethod() error {
 		return true
 	})
 	if method == nil {
-		method = r.AstListMethod()
+		method = r.astListMethod()
 	}
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		param := param
-		column := fmt.Sprintf("\"%s.%s\"", r.Model.TableName(), param.Tag())
+		column := fmt.Sprintf("\"%s.%s\"", r.model.TableName(), param.Tag())
 		ast.Inspect(method, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Select" {
@@ -2273,14 +2271,14 @@ func (r Repository) SyncListMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(r.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r Repository) AstCountMethod() *ast.FuncDecl {
-	tableName := r.Model.TableName()
+func (r Repository) astCountMethod() *ast.FuncDecl {
+	tableName := r.model.TableName()
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
@@ -2295,7 +2293,7 @@ func (r Repository) AstCountMethod() *ast.FuncDecl {
 			Value: fmt.Sprintf("\"%s.created_at\"", tableName),
 		},
 	}
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		columns = append(
 			columns,
 			&ast.BasicLit{
@@ -2315,7 +2313,7 @@ func (r Repository) AstCountMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.Name,
+							Name: r.model.RepositoryTypeName(),
 						},
 					},
 				},
@@ -2354,7 +2352,7 @@ func (r Repository) AstCountMethod() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.Model.FilterTypeName(),
+									Name: r.model.FilterTypeName(),
 								},
 							},
 						},
@@ -2454,7 +2452,7 @@ func (r Repository) AstCountMethod() *ast.FuncDecl {
 							Args: []ast.Expr{
 								&ast.BasicLit{
 									Kind:  token.STRING,
-									Value: fmt.Sprintf("\"public.%s\"", r.Model.TableName()),
+									Value: fmt.Sprintf("\"public.%s\"", r.model.TableName()),
 								},
 							},
 						},
@@ -2792,9 +2790,9 @@ func (r Repository) AstCountMethod() *ast.FuncDecl {
 	}
 }
 
-func (r Repository) SyncCountMethod() error {
+func (r Repository) syncCountMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, r.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -2809,7 +2807,7 @@ func (r Repository) SyncCountMethod() error {
 		return true
 	})
 	if method == nil {
-		method = r.AstCountMethod()
+		method = r.astCountMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -2818,14 +2816,14 @@ func (r Repository) SyncCountMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(r.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r Repository) AstGetMethod() *ast.FuncDecl {
-	tableName := r.Model.TableName()
+func (r Repository) astGetMethod() *ast.FuncDecl {
+	tableName := r.model.TableName()
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
@@ -2840,7 +2838,7 @@ func (r Repository) AstGetMethod() *ast.FuncDecl {
 			Value: fmt.Sprintf("\"%s.created_at\"", tableName),
 		},
 	}
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		columns = append(
 			columns,
 			&ast.BasicLit{
@@ -2860,7 +2858,7 @@ func (r Repository) AstGetMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.Name,
+							Name: r.model.RepositoryTypeName(),
 						},
 					},
 				},
@@ -2913,7 +2911,7 @@ func (r Repository) AstGetMethod() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.Model.ModelName(),
+									Name: r.model.ModelName(),
 								},
 							},
 						},
@@ -2983,7 +2981,7 @@ func (r Repository) AstGetMethod() *ast.FuncDecl {
 							Op: token.AND,
 							X: &ast.CompositeLit{
 								Type: &ast.Ident{
-									Name: r.Model.PostgresDTOTypeName(),
+									Name: r.model.PostgresDTOTypeName(),
 								},
 							},
 						},
@@ -3190,7 +3188,7 @@ func (r Repository) AstGetMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.Model.KeyName()),
+												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.Ident{
@@ -3241,9 +3239,9 @@ func (r Repository) AstGetMethod() *ast.FuncDecl {
 	}
 }
 
-func (r Repository) SyncGetMethod() error {
+func (r Repository) syncGetMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, r.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -3258,11 +3256,11 @@ func (r Repository) SyncGetMethod() error {
 		return true
 	})
 	if method == nil {
-		method = r.AstGetMethod()
+		method = r.astGetMethod()
 	}
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		param := param
-		column := fmt.Sprintf("\"%s.%s\"", r.Model.TableName(), param.Tag())
+		column := fmt.Sprintf("\"%s.%s\"", r.model.TableName(), param.Tag())
 		ast.Inspect(method, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Select" {
@@ -3289,14 +3287,14 @@ func (r Repository) SyncGetMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(r.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r Repository) AstUpdateMethod() *ast.FuncDecl {
-	tableName := r.Model.TableName()
+func (r Repository) astUpdateMethod() *ast.FuncDecl {
+	tableName := r.model.TableName()
 	updateBlock := &ast.BlockStmt{
 		List: []ast.Stmt{
 			&ast.AssignStmt{
@@ -3335,7 +3333,7 @@ func (r Repository) AstUpdateMethod() *ast.FuncDecl {
 			},
 		},
 	}
-	for _, param := range r.Model.Params {
+	for _, param := range r.model.Params {
 		updateBlock.List = append(updateBlock.List, &ast.AssignStmt{
 			Lhs: []ast.Expr{
 				&ast.Ident{
@@ -3382,7 +3380,7 @@ func (r Repository) AstUpdateMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.Name,
+							Name: r.model.RepositoryTypeName(),
 						},
 					},
 				},
@@ -3412,7 +3410,7 @@ func (r Repository) AstUpdateMethod() *ast.FuncDecl {
 					{
 						Names: []*ast.Ident{
 							{
-								Name: r.Model.Variable(),
+								Name: r.model.Variable(),
 							},
 						},
 						Type: &ast.StarExpr{
@@ -3421,7 +3419,7 @@ func (r Repository) AstUpdateMethod() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.Model.ModelName(),
+									Name: r.model.ModelName(),
 								},
 							},
 						},
@@ -3493,11 +3491,11 @@ func (r Repository) AstUpdateMethod() *ast.FuncDecl {
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.Ident{
-								Name: fmt.Sprintf("New%sFromModel", r.Model.PostgresDTOTypeName()),
+								Name: fmt.Sprintf("New%sFromModel", r.model.PostgresDTOTypeName()),
 							},
 							Args: []ast.Expr{
 								&ast.Ident{
-									Name: r.Model.Variable(),
+									Name: r.model.Variable(),
 								},
 							},
 						},
@@ -3551,7 +3549,7 @@ func (r Repository) AstUpdateMethod() *ast.FuncDecl {
 											},
 											Value: &ast.SelectorExpr{
 												X: &ast.Ident{
-													Name: r.Model.Variable(),
+													Name: r.model.Variable(),
 												},
 												Sel: &ast.Ident{
 													Name: "ID",
@@ -3689,7 +3687,7 @@ func (r Repository) AstUpdateMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.Model.KeyName()),
+												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -3703,7 +3701,7 @@ func (r Repository) AstUpdateMethod() *ast.FuncDecl {
 												Args: []ast.Expr{
 													&ast.SelectorExpr{
 														X: &ast.Ident{
-															Name: r.Model.Variable(),
+															Name: r.model.Variable(),
 														},
 														Sel: &ast.Ident{
 															Name: "ID",
@@ -3786,7 +3784,7 @@ func (r Repository) AstUpdateMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.Model.KeyName()),
+												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -3800,7 +3798,7 @@ func (r Repository) AstUpdateMethod() *ast.FuncDecl {
 												Args: []ast.Expr{
 													&ast.SelectorExpr{
 														X: &ast.Ident{
-															Name: r.Model.Variable(),
+															Name: r.model.Variable(),
 														},
 														Sel: &ast.Ident{
 															Name: "ID",
@@ -3855,7 +3853,7 @@ func (r Repository) AstUpdateMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.Model.KeyName()),
+												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -3869,7 +3867,7 @@ func (r Repository) AstUpdateMethod() *ast.FuncDecl {
 												Args: []ast.Expr{
 													&ast.SelectorExpr{
 														X: &ast.Ident{
-															Name: r.Model.Variable(),
+															Name: r.model.Variable(),
 														},
 														Sel: &ast.Ident{
 															Name: "ID",
@@ -3904,9 +3902,9 @@ func (r Repository) AstUpdateMethod() *ast.FuncDecl {
 	return method
 }
 
-func (r Repository) SyncUpdateMethod() error {
+func (r Repository) syncUpdateMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, r.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -3921,10 +3919,10 @@ func (r Repository) SyncUpdateMethod() error {
 		return true
 	})
 	if method == nil {
-		method = r.AstUpdateMethod()
+		method = r.astUpdateMethod()
 	}
-	tableName := r.Model.TableName()
-	for _, param := range r.Model.Params {
+	tableName := r.model.TableName()
+	for _, param := range r.model.Params {
 		param := param
 		exists := false
 		_ = param
@@ -3994,13 +3992,13 @@ func (r Repository) SyncUpdateMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(r.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r Repository) AstDeleteMethod() *ast.FuncDecl {
+func (r Repository) astDeleteMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -4012,7 +4010,7 @@ func (r Repository) AstDeleteMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.Name,
+							Name: r.model.RepositoryTypeName(),
 						},
 					},
 				},
@@ -4133,7 +4131,7 @@ func (r Repository) AstDeleteMethod() *ast.FuncDecl {
 									Args: []ast.Expr{
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: fmt.Sprintf("\"public.%s\"", r.Model.TableName()),
+											Value: fmt.Sprintf("\"public.%s\"", r.model.TableName()),
 										},
 									},
 								},
@@ -4291,7 +4289,7 @@ func (r Repository) AstDeleteMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.Model.KeyName()),
+												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -4389,7 +4387,7 @@ func (r Repository) AstDeleteMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.Model.KeyName()),
+												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -4460,7 +4458,7 @@ func (r Repository) AstDeleteMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.Model.KeyName()),
+												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -4503,9 +4501,9 @@ func (r Repository) AstDeleteMethod() *ast.FuncDecl {
 	}
 }
 
-func (r Repository) SyncDeleteMethod() error {
+func (r Repository) syncDeleteMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, r.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -4520,7 +4518,7 @@ func (r Repository) SyncDeleteMethod() error {
 		return true
 	})
 	if method == nil {
-		method = r.AstDeleteMethod()
+		method = r.astDeleteMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -4529,37 +4527,37 @@ func (r Repository) SyncDeleteMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(r.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r Repository) AstDTOListType() *ast.TypeSpec {
+func (r Repository) astDTOListType() *ast.TypeSpec {
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
-			Name: r.Model.PostgresDTOListTypeName(),
+			Name: r.model.PostgresDTOListTypeName(),
 		},
 		Type: &ast.ArrayType{
 			Elt: &ast.StarExpr{
 				X: &ast.Ident{
-					Name: r.Model.PostgresDTOTypeName(),
+					Name: r.model.PostgresDTOTypeName(),
 				},
 			},
 		},
 	}
 }
 
-func (r Repository) SyncDTOListType() error {
+func (r Repository) syncDTOListType() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, r.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 	var structureExists bool
 	var dtoListType *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.Model.PostgresDTOListTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.model.PostgresDTOListTypeName() {
 			dtoListType = t
 			structureExists = true
 			return false
@@ -4567,7 +4565,7 @@ func (r Repository) SyncDTOListType() error {
 		return true
 	})
 	if dtoListType == nil {
-		dtoListType = r.AstDTOListType()
+		dtoListType = r.astDTOListType()
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
@@ -4584,13 +4582,13 @@ func (r Repository) SyncDTOListType() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(r.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r Repository) AstDTOToModels() *ast.FuncDecl {
+func (r Repository) astDTOToModels() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -4601,7 +4599,7 @@ func (r Repository) AstDTOToModels() *ast.FuncDecl {
 						},
 					},
 					Type: &ast.Ident{
-						Name: r.Model.PostgresDTOListTypeName(),
+						Name: r.model.PostgresDTOListTypeName(),
 					},
 				},
 			},
@@ -4621,7 +4619,7 @@ func (r Repository) AstDTOToModels() *ast.FuncDecl {
 										Name: "models",
 									},
 									Sel: &ast.Ident{
-										Name: r.Model.ModelName(),
+										Name: r.model.ModelName(),
 									},
 								},
 							},
@@ -4635,7 +4633,7 @@ func (r Repository) AstDTOToModels() *ast.FuncDecl {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.Ident{
-							Name: r.Model.ListVariable(),
+							Name: r.model.ListVariable(),
 						},
 					},
 					Tok: token.DEFINE,
@@ -4652,7 +4650,7 @@ func (r Repository) AstDTOToModels() *ast.FuncDecl {
 												Name: "models",
 											},
 											Sel: &ast.Ident{
-												Name: r.Model.ModelName(),
+												Name: r.model.ModelName(),
 											},
 										},
 									},
@@ -4685,7 +4683,7 @@ func (r Repository) AstDTOToModels() *ast.FuncDecl {
 								Lhs: []ast.Expr{
 									&ast.IndexExpr{
 										X: &ast.Ident{
-											Name: r.Model.ListVariable(),
+											Name: r.model.ListVariable(),
 										},
 										Index: &ast.Ident{
 											Name: "i",
@@ -4717,7 +4715,7 @@ func (r Repository) AstDTOToModels() *ast.FuncDecl {
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
 						&ast.Ident{
-							Name: r.Model.ListVariable(),
+							Name: r.model.ListVariable(),
 						},
 					},
 				},
@@ -4726,9 +4724,9 @@ func (r Repository) AstDTOToModels() *ast.FuncDecl {
 	}
 }
 
-func (r Repository) SyncDTOListToModels() error {
+func (r Repository) syncDTOListToModels() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, r.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -4743,7 +4741,7 @@ func (r Repository) SyncDTOListToModels() error {
 		return true
 	})
 	if method == nil {
-		method = r.AstDTOToModels()
+		method = r.astDTOToModels()
 	}
 	if !methodExists {
 		file.Decls = append(file.Decls, method)
@@ -4752,7 +4750,7 @@ func (r Repository) SyncDTOListToModels() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(r.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil

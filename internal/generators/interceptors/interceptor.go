@@ -4,73 +4,107 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/018bf/creathor/internal/configs"
-	models2 "github.com/018bf/creathor/internal/generators/domain/models"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
+	"path/filepath"
 )
 
 type Interceptor struct {
-	Path   string
-	Name   string
-	Model  *configs.ModelConfig
-	Params []*models2.Param
+	model *configs.ModelConfig
 }
 
-func (i Interceptor) AstStruct() *ast.TypeSpec {
-	structure := &ast.TypeSpec{
-		Doc:        nil,
-		Name:       ast.NewIdent(i.Name),
-		TypeParams: nil,
-		Assign:     0,
-		Type: &ast.StructType{
-			Struct: 0,
-			Fields: &ast.FieldList{
-				Opening: 0,
-				List:    nil,
-				Closing: 0,
-			},
-			Incomplete: false,
-		},
-		Comment: nil,
+func NewInterceptor(model *configs.ModelConfig) *Interceptor {
+	return &Interceptor{model: model}
+}
+
+func (i Interceptor) Sync() error {
+	if err := i.syncStruct(); err != nil {
+		return err
 	}
-	for _, param := range i.Params {
-		ast.Inspect(structure, func(node ast.Node) bool {
-			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
-				for _, field := range st.Fields.List {
-					for _, fieldName := range field.Names {
-						if fieldName.Name == param.GetPrivateName() {
-							return false
-						}
-					}
-				}
-				st.Fields.List = append(st.Fields.List, &ast.Field{
-					Doc:     nil,
-					Names:   []*ast.Ident{ast.NewIdent(param.GetPrivateName())},
-					Type:    ast.NewIdent(param.Type),
-					Tag:     nil,
-					Comment: nil,
-				})
-				return false
-			}
-			return true
-		})
+	if err := i.syncConstructor(); err != nil {
+		return err
+	}
+	if err := i.syncCreateMethod(); err != nil {
+		return err
+	}
+	if err := i.syncGetMethod(); err != nil {
+		return err
+	}
+	if err := i.syncListMethod(); err != nil {
+		return err
+	}
+	if err := i.syncUpdateMethod(); err != nil {
+		return err
+	}
+	if err := i.syncDeleteMethod(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (i Interceptor) filename() string {
+	return filepath.Join("internal", "interceptors", i.model.FileName())
+}
+
+func (i Interceptor) astStruct() *ast.TypeSpec {
+	fields := []*ast.Field{
+		{
+			Doc:   nil,
+			Names: []*ast.Ident{ast.NewIdent(i.model.UseCaseVariableName())},
+			Type: &ast.SelectorExpr{
+				X:   ast.NewIdent("usecases"),
+				Sel: ast.NewIdent(i.model.UseCaseTypeName()),
+			},
+			Tag:     nil,
+			Comment: nil,
+		},
+		{
+			Doc:   nil,
+			Names: []*ast.Ident{ast.NewIdent("logger")},
+			Type: &ast.SelectorExpr{
+				X:   ast.NewIdent("log"),
+				Sel: ast.NewIdent("Logger"),
+			},
+			Tag:     nil,
+			Comment: nil,
+		},
+	}
+	if i.model.Auth {
+		fields = append(
+			fields,
+			&ast.Field{
+				Names: []*ast.Ident{ast.NewIdent("authUseCase")},
+				Type: &ast.SelectorExpr{
+					X:   ast.NewIdent("usecases"),
+					Sel: ast.NewIdent("AuthUseCase"),
+				},
+			},
+		)
+	}
+	structure := &ast.TypeSpec{
+		Name: ast.NewIdent(i.model.InterceptorTypeName()),
+		Type: &ast.StructType{
+			Fields: &ast.FieldList{
+				List: fields,
+			},
+		},
 	}
 	return structure
 }
 
-func (i Interceptor) SyncStruct() error {
+func (i Interceptor) syncStruct() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, i.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.model.InterceptorTypeName() {
 			structure = t
 			structureExists = true
 			return false
@@ -78,29 +112,7 @@ func (i Interceptor) SyncStruct() error {
 		return true
 	})
 	if structure == nil {
-		structure = i.AstStruct()
-	}
-	for _, param := range i.Params {
-		ast.Inspect(structure, func(node ast.Node) bool {
-			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
-				for _, field := range st.Fields.List {
-					for _, fieldName := range field.Names {
-						if fieldName.Name == param.GetPrivateName() {
-							return false
-						}
-					}
-				}
-				st.Fields.List = append(st.Fields.List, &ast.Field{
-					Doc:     nil,
-					Names:   []*ast.Ident{ast.NewIdent(param.GetPrivateName())},
-					Type:    ast.NewIdent(param.Type),
-					Tag:     nil,
-					Comment: nil,
-				})
-				return false
-			}
-			return true
-		})
+		structure = i.astStruct()
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
@@ -117,48 +129,82 @@ func (i Interceptor) SyncStruct() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(i.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(i.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i Interceptor) AstConstructor() *ast.FuncDecl {
-	var args []*ast.Field
-	cl := &ast.CompositeLit{
-		Type:       ast.NewIdent(i.Name),
-		Lbrace:     0,
-		Elts:       nil,
-		Rbrace:     0,
-		Incomplete: false,
+func (i Interceptor) astConstructor() *ast.FuncDecl {
+	fields := []*ast.Field{
+		{
+			Doc:   nil,
+			Names: []*ast.Ident{ast.NewIdent(i.model.UseCaseVariableName())},
+			Type: &ast.SelectorExpr{
+				X:   ast.NewIdent("usecases"),
+				Sel: ast.NewIdent(i.model.UseCaseTypeName()),
+			},
+			Tag:     nil,
+			Comment: nil,
+		},
+		{
+			Doc:   nil,
+			Names: []*ast.Ident{ast.NewIdent("logger")},
+			Type: &ast.SelectorExpr{
+				X:   ast.NewIdent("log"),
+				Sel: ast.NewIdent("Logger"),
+			},
+			Tag:     nil,
+			Comment: nil,
+		},
 	}
-	for _, param := range i.Params {
-		args = append(
-			args,
+	exprs := []ast.Expr{
+		&ast.KeyValueExpr{
+			Key: &ast.Ident{
+				Name: i.model.UseCaseVariableName(),
+			},
+			Value: &ast.Ident{
+				Name: i.model.UseCaseVariableName(),
+			},
+		},
+		&ast.KeyValueExpr{
+			Key: &ast.Ident{
+				Name: "logger",
+			},
+			Value: &ast.Ident{
+				Name: "logger",
+			},
+		},
+	}
+	if i.model.Auth {
+		fields = append(
+			fields,
 			&ast.Field{
-				Doc:     nil,
-				Names:   []*ast.Ident{ast.NewIdent(param.GetPrivateName())},
-				Type:    ast.NewIdent(param.Type),
-				Tag:     nil,
-				Comment: nil,
+				Names: []*ast.Ident{ast.NewIdent("authUseCase")},
+				Type: &ast.SelectorExpr{
+					X:   ast.NewIdent("usecases"),
+					Sel: ast.NewIdent("AuthUseCase"),
+				},
 			},
 		)
-		cl.Elts = append(cl.Elts, &ast.KeyValueExpr{
-			Key:   ast.NewIdent(param.GetPrivateName()),
-			Colon: 0,
-			Value: ast.NewIdent(param.GetPrivateName()),
-		})
+		exprs = append(
+			exprs,
+			&ast.KeyValueExpr{
+				Key:   ast.NewIdent("authUseCase"),
+				Value: ast.NewIdent("authUseCase"),
+			},
+		)
 	}
 	constructor := &ast.FuncDecl{
 		Doc:  nil,
 		Recv: nil,
-		Name: ast.NewIdent(fmt.Sprintf("New%s", i.Name)),
+		Name: ast.NewIdent(fmt.Sprintf("New%s", i.model.InterceptorTypeName())),
 		Type: &ast.FuncType{
 			Func:       0,
 			TypeParams: nil,
 			Params: &ast.FieldList{
 				Opening: 0,
-				List:    args,
+				List:    fields,
 				Closing: 0,
 			},
 			Results: &ast.FieldList{
@@ -167,7 +213,7 @@ func (i Interceptor) AstConstructor() *ast.FuncDecl {
 					{
 						Doc:     nil,
 						Names:   nil,
-						Type:    ast.NewIdent(fmt.Sprintf("interceptors.%s", i.Name)),
+						Type:    ast.NewIdent(fmt.Sprintf("interceptors.%s", i.model.InterceptorTypeName())),
 						Tag:     nil,
 						Comment: nil,
 					},
@@ -184,7 +230,13 @@ func (i Interceptor) AstConstructor() *ast.FuncDecl {
 						&ast.UnaryExpr{
 							OpPos: 0,
 							Op:    token.AND,
-							X:     cl,
+							X: &ast.CompositeLit{
+								Type:       ast.NewIdent(i.model.InterceptorTypeName()),
+								Lbrace:     0,
+								Elts:       exprs,
+								Rbrace:     0,
+								Incomplete: false,
+							},
 						},
 					},
 				},
@@ -195,16 +247,16 @@ func (i Interceptor) AstConstructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (i Interceptor) SyncConstructor() error {
+func (i Interceptor) syncConstructor() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, i.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 	var structureConstructorExists bool
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("New%s", i.Name) {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("New%s", i.model.InterceptorTypeName()) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -212,50 +264,7 @@ func (i Interceptor) SyncConstructor() error {
 		return true
 	})
 	if structureConstructor == nil {
-		structureConstructor = i.AstConstructor()
-	}
-	for _, param := range i.Params {
-		param := param
-		var argExists bool
-		for _, arg := range structureConstructor.Type.Params.List {
-			for _, fieldName := range arg.Names {
-				if fieldName.Name == param.GetPrivateName() {
-					argExists = true
-				}
-			}
-		}
-		ast.Inspect(structureConstructor.Body, func(node ast.Node) bool {
-			if cl, ok := node.(*ast.CompositeLit); ok {
-				if t, ok := cl.Type.(*ast.Ident); ok && t.String() == i.Name {
-					for _, elt := range cl.Elts {
-						if kv, ok := elt.(*ast.KeyValueExpr); ok {
-							if key, ok := kv.Key.(*ast.Ident); ok && key.String() == param.GetPrivateName() {
-								return false
-							}
-						}
-					}
-					cl.Elts = append(cl.Elts, &ast.KeyValueExpr{
-						Key:   ast.NewIdent(param.GetPrivateName()),
-						Colon: 0,
-						Value: ast.NewIdent(param.GetPrivateName()),
-					})
-					return false
-				}
-			}
-			return true
-		})
-		if !argExists {
-			structureConstructor.Type.Params.List = append(
-				structureConstructor.Type.Params.List,
-				&ast.Field{
-					Doc:     nil,
-					Names:   []*ast.Ident{ast.NewIdent(param.GetPrivateName())},
-					Type:    ast.NewIdent(param.Type),
-					Tag:     nil,
-					Comment: nil,
-				},
-			)
-		}
+		structureConstructor = i.astConstructor()
 	}
 	if !structureConstructorExists {
 		file.Decls = append(file.Decls, structureConstructor)
@@ -264,13 +273,13 @@ func (i Interceptor) SyncConstructor() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(i.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(i.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i Interceptor) AstCreateMethod() *ast.FuncDecl {
+func (i Interceptor) astCreateMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Doc: nil,
 		Recv: &ast.FieldList{
@@ -281,7 +290,7 @@ func (i Interceptor) AstCreateMethod() *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.Name),
+						X: ast.NewIdent(i.model.InterceptorTypeName()),
 					},
 				},
 			},
@@ -302,7 +311,7 @@ func (i Interceptor) AstCreateMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(i.Model.CreateTypeName()),
+								Sel: ast.NewIdent(i.model.CreateTypeName()),
 							},
 						},
 					},
@@ -323,7 +332,7 @@ func (i Interceptor) AstCreateMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(i.Model.ModelName()),
+								Sel: ast.NewIdent(i.model.ModelName()),
 							},
 						},
 					},
@@ -357,7 +366,7 @@ func (i Interceptor) AstCreateMethod() *ast.FuncDecl {
 									ast.NewIdent("requestUser"),
 									&ast.SelectorExpr{
 										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.Model.PermissionIDCreate()),
+										Sel: ast.NewIdent(i.model.PermissionIDCreate()),
 									},
 								},
 							},
@@ -401,7 +410,7 @@ func (i Interceptor) AstCreateMethod() *ast.FuncDecl {
 									ast.NewIdent("requestUser"),
 									&ast.SelectorExpr{
 										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.Model.PermissionIDCreate()),
+										Sel: ast.NewIdent(i.model.PermissionIDCreate()),
 									},
 									ast.NewIdent("create"),
 								},
@@ -427,7 +436,7 @@ func (i Interceptor) AstCreateMethod() *ast.FuncDecl {
 				// Try to create model at use case
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(i.Model.Variable()),
+						ast.NewIdent(i.model.Variable()),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -436,7 +445,7 @@ func (i Interceptor) AstCreateMethod() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("i"),
-									Sel: ast.NewIdent(i.Model.UseCaseVariableName()),
+									Sel: ast.NewIdent(i.model.UseCaseVariableName()),
 								},
 								Sel: ast.NewIdent("Create"),
 							},
@@ -470,7 +479,7 @@ func (i Interceptor) AstCreateMethod() *ast.FuncDecl {
 				// Return created model and nil error
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(i.Model.Variable()),
+						ast.NewIdent(i.model.Variable()),
 						ast.NewIdent("nil"),
 					},
 				},
@@ -479,9 +488,9 @@ func (i Interceptor) AstCreateMethod() *ast.FuncDecl {
 	}
 }
 
-func (i Interceptor) SyncCreateMethod() error {
+func (i Interceptor) syncCreateMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, i.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -496,13 +505,13 @@ func (i Interceptor) SyncCreateMethod() error {
 		return true
 	})
 	if method == nil {
-		method = i.AstCreateMethod()
+		method = i.astCreateMethod()
 	}
-	for _, param := range i.Model.Params {
+	for _, param := range i.model.Params {
 		param := param
 		ast.Inspect(method, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
-				if t, ok := cl.Type.(*ast.SelectorExpr); ok && t.Sel.String() == i.Model.ModelName() {
+				if t, ok := cl.Type.(*ast.SelectorExpr); ok && t.Sel.String() == i.model.ModelName() {
 					for _, elt := range cl.Elts {
 						if kv, ok := elt.(*ast.KeyValueExpr); ok {
 							if key, ok := kv.Key.(*ast.Ident); ok && key.String() == param.GetName() {
@@ -532,13 +541,13 @@ func (i Interceptor) SyncCreateMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(i.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(i.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i Interceptor) AstListMethod() *ast.FuncDecl {
+func (i Interceptor) astListMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Doc: nil,
 		Recv: &ast.FieldList{
@@ -549,7 +558,7 @@ func (i Interceptor) AstListMethod() *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.Name),
+						X: ast.NewIdent(i.model.InterceptorTypeName()),
 					},
 				},
 			},
@@ -570,7 +579,7 @@ func (i Interceptor) AstListMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(i.Model.FilterTypeName()),
+								Sel: ast.NewIdent(i.model.FilterTypeName()),
 							},
 						},
 					},
@@ -592,7 +601,7 @@ func (i Interceptor) AstListMethod() *ast.FuncDecl {
 							Elt: &ast.StarExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(i.Model.ModelName()),
+									Sel: ast.NewIdent(i.model.ModelName()),
 								},
 							},
 						},
@@ -630,7 +639,7 @@ func (i Interceptor) AstListMethod() *ast.FuncDecl {
 									ast.NewIdent("requestUser"),
 									&ast.SelectorExpr{
 										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.Model.PermissionIDList()),
+										Sel: ast.NewIdent(i.model.PermissionIDList()),
 									},
 								},
 							},
@@ -675,7 +684,7 @@ func (i Interceptor) AstListMethod() *ast.FuncDecl {
 									ast.NewIdent("requestUser"),
 									&ast.SelectorExpr{
 										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.Model.PermissionIDList()),
+										Sel: ast.NewIdent(i.model.PermissionIDList()),
 									},
 									ast.NewIdent("filter"),
 								},
@@ -702,7 +711,7 @@ func (i Interceptor) AstListMethod() *ast.FuncDecl {
 				// Try to update model at use case
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(i.Model.ListVariable()),
+						ast.NewIdent(i.model.ListVariable()),
 						ast.NewIdent("count"),
 						ast.NewIdent("err"),
 					},
@@ -712,7 +721,7 @@ func (i Interceptor) AstListMethod() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("i"),
-									Sel: ast.NewIdent(i.Model.UseCaseVariableName()),
+									Sel: ast.NewIdent(i.model.UseCaseVariableName()),
 								},
 								Sel: ast.NewIdent("List"),
 							},
@@ -747,7 +756,7 @@ func (i Interceptor) AstListMethod() *ast.FuncDecl {
 				// Return created model and nil error
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(i.Model.ListVariable()),
+						ast.NewIdent(i.model.ListVariable()),
 						ast.NewIdent("count"),
 						ast.NewIdent("nil"),
 					},
@@ -757,9 +766,9 @@ func (i Interceptor) AstListMethod() *ast.FuncDecl {
 	}
 }
 
-func (i Interceptor) SyncListMethod() error {
+func (i Interceptor) syncListMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, i.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -774,7 +783,7 @@ func (i Interceptor) SyncListMethod() error {
 		return true
 	})
 	if method == nil {
-		method = i.AstListMethod()
+		method = i.astListMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -783,13 +792,13 @@ func (i Interceptor) SyncListMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(i.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(i.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i Interceptor) AstGetMethod() *ast.FuncDecl {
+func (i Interceptor) astGetMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Doc: nil,
 		Recv: &ast.FieldList{
@@ -800,7 +809,7 @@ func (i Interceptor) AstGetMethod() *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.Name),
+						X: ast.NewIdent(i.model.InterceptorTypeName()),
 					},
 				},
 			},
@@ -840,7 +849,7 @@ func (i Interceptor) AstGetMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(i.Model.ModelName()),
+								Sel: ast.NewIdent(i.model.ModelName()),
 							},
 						},
 					},
@@ -874,7 +883,7 @@ func (i Interceptor) AstGetMethod() *ast.FuncDecl {
 									ast.NewIdent("requestUser"),
 									&ast.SelectorExpr{
 										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.Model.PermissionIDDetail()),
+										Sel: ast.NewIdent(i.model.PermissionIDDetail()),
 									},
 								},
 							},
@@ -899,7 +908,7 @@ func (i Interceptor) AstGetMethod() *ast.FuncDecl {
 				// Try to get model from use case
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(i.Model.Variable()),
+						ast.NewIdent(i.model.Variable()),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -908,7 +917,7 @@ func (i Interceptor) AstGetMethod() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("i"),
-									Sel: ast.NewIdent(i.Model.UseCaseVariableName()),
+									Sel: ast.NewIdent(i.model.UseCaseVariableName()),
 								},
 								Sel: ast.NewIdent("Get"),
 							},
@@ -961,9 +970,9 @@ func (i Interceptor) AstGetMethod() *ast.FuncDecl {
 									ast.NewIdent("requestUser"),
 									&ast.SelectorExpr{
 										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.Model.PermissionIDDetail()),
+										Sel: ast.NewIdent(i.model.PermissionIDDetail()),
 									},
-									ast.NewIdent(i.Model.Variable()),
+									ast.NewIdent(i.model.Variable()),
 								},
 							},
 						},
@@ -987,7 +996,7 @@ func (i Interceptor) AstGetMethod() *ast.FuncDecl {
 				// Return created model and nil error
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(i.Model.Variable()),
+						ast.NewIdent(i.model.Variable()),
 						ast.NewIdent("nil"),
 					},
 				},
@@ -996,9 +1005,9 @@ func (i Interceptor) AstGetMethod() *ast.FuncDecl {
 	}
 }
 
-func (i Interceptor) SyncGetMethod() error {
+func (i Interceptor) syncGetMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, i.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -1013,7 +1022,7 @@ func (i Interceptor) SyncGetMethod() error {
 		return true
 	})
 	if method == nil {
-		method = i.AstGetMethod()
+		method = i.astGetMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -1022,13 +1031,13 @@ func (i Interceptor) SyncGetMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(i.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(i.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i Interceptor) AstUpdateMethod() *ast.FuncDecl {
+func (i Interceptor) astUpdateMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Doc: nil,
 		Recv: &ast.FieldList{
@@ -1039,7 +1048,7 @@ func (i Interceptor) AstUpdateMethod() *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.Name),
+						X: ast.NewIdent(i.model.InterceptorTypeName()),
 					},
 				},
 			},
@@ -1060,7 +1069,7 @@ func (i Interceptor) AstUpdateMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(i.Model.UpdateTypeName()),
+								Sel: ast.NewIdent(i.model.UpdateTypeName()),
 							},
 						},
 					},
@@ -1081,7 +1090,7 @@ func (i Interceptor) AstUpdateMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(i.Model.ModelName()),
+								Sel: ast.NewIdent(i.model.ModelName()),
 							},
 						},
 					},
@@ -1115,7 +1124,7 @@ func (i Interceptor) AstUpdateMethod() *ast.FuncDecl {
 									ast.NewIdent("requestUser"),
 									&ast.SelectorExpr{
 										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.Model.PermissionIDUpdate()),
+										Sel: ast.NewIdent(i.model.PermissionIDUpdate()),
 									},
 								},
 							},
@@ -1140,7 +1149,7 @@ func (i Interceptor) AstUpdateMethod() *ast.FuncDecl {
 				// Try to get model from use case
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(i.Model.Variable()),
+						ast.NewIdent(i.model.Variable()),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -1149,7 +1158,7 @@ func (i Interceptor) AstUpdateMethod() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("i"),
-									Sel: ast.NewIdent(i.Model.UseCaseVariableName()),
+									Sel: ast.NewIdent(i.model.UseCaseVariableName()),
 								},
 								Sel: ast.NewIdent("Get"),
 							},
@@ -1205,9 +1214,9 @@ func (i Interceptor) AstUpdateMethod() *ast.FuncDecl {
 									ast.NewIdent("requestUser"),
 									&ast.SelectorExpr{
 										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.Model.PermissionIDUpdate()),
+										Sel: ast.NewIdent(i.model.PermissionIDUpdate()),
 									},
-									ast.NewIdent(i.Model.Variable()),
+									ast.NewIdent(i.model.Variable()),
 								},
 							},
 						},
@@ -1240,7 +1249,7 @@ func (i Interceptor) AstUpdateMethod() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("i"),
-									Sel: ast.NewIdent(i.Model.UseCaseVariableName()),
+									Sel: ast.NewIdent(i.model.UseCaseVariableName()),
 								},
 								Sel: ast.NewIdent("Update"),
 							},
@@ -1283,9 +1292,9 @@ func (i Interceptor) AstUpdateMethod() *ast.FuncDecl {
 	}
 }
 
-func (i Interceptor) SyncUpdateMethod() error {
+func (i Interceptor) syncUpdateMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, i.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -1300,7 +1309,7 @@ func (i Interceptor) SyncUpdateMethod() error {
 		return true
 	})
 	if method == nil {
-		method = i.AstUpdateMethod()
+		method = i.astUpdateMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -1309,13 +1318,13 @@ func (i Interceptor) SyncUpdateMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(i.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(i.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i Interceptor) AstDeleteMethod() *ast.FuncDecl {
+func (i Interceptor) astDeleteMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Doc: nil,
 		Recv: &ast.FieldList{
@@ -1326,7 +1335,7 @@ func (i Interceptor) AstDeleteMethod() *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.Name),
+						X: ast.NewIdent(i.model.InterceptorTypeName()),
 					},
 				},
 			},
@@ -1391,7 +1400,7 @@ func (i Interceptor) AstDeleteMethod() *ast.FuncDecl {
 									ast.NewIdent("requestUser"),
 									&ast.SelectorExpr{
 										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.Model.PermissionIDDelete()),
+										Sel: ast.NewIdent(i.model.PermissionIDDelete()),
 									},
 								},
 							},
@@ -1415,7 +1424,7 @@ func (i Interceptor) AstDeleteMethod() *ast.FuncDecl {
 				// Try to get model from use case
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(i.Model.Variable()),
+						ast.NewIdent(i.model.Variable()),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -1424,7 +1433,7 @@ func (i Interceptor) AstDeleteMethod() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("i"),
-									Sel: ast.NewIdent(i.Model.UseCaseVariableName()),
+									Sel: ast.NewIdent(i.model.UseCaseVariableName()),
 								},
 								Sel: ast.NewIdent("Get"),
 							},
@@ -1476,9 +1485,9 @@ func (i Interceptor) AstDeleteMethod() *ast.FuncDecl {
 									ast.NewIdent("requestUser"),
 									&ast.SelectorExpr{
 										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.Model.PermissionIDDelete()),
+										Sel: ast.NewIdent(i.model.PermissionIDDelete()),
 									},
-									ast.NewIdent(i.Model.Variable()),
+									ast.NewIdent(i.model.Variable()),
 								},
 							},
 						},
@@ -1510,7 +1519,7 @@ func (i Interceptor) AstDeleteMethod() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("i"),
-										Sel: ast.NewIdent(i.Model.UseCaseVariableName()),
+										Sel: ast.NewIdent(i.model.UseCaseVariableName()),
 									},
 									Sel: ast.NewIdent("Delete"),
 								},
@@ -1547,9 +1556,9 @@ func (i Interceptor) AstDeleteMethod() *ast.FuncDecl {
 	}
 }
 
-func (i Interceptor) SyncDeleteMethod() error {
+func (i Interceptor) syncDeleteMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, i.Path, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
@@ -1564,7 +1573,7 @@ func (i Interceptor) SyncDeleteMethod() error {
 		return true
 	})
 	if method == nil {
-		method = i.AstDeleteMethod()
+		method = i.astDeleteMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -1573,7 +1582,7 @@ func (i Interceptor) SyncDeleteMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(i.Path, buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(i.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil

@@ -13,7 +13,36 @@ import (
 )
 
 type FxContainer struct {
-	Project *configs.Project
+	project *configs.Project
+}
+
+func NewFxContainer(project *configs.Project) *FxContainer {
+	return &FxContainer{project: project}
+}
+
+func (f FxContainer) Sync() error {
+	if err := f.syncFxModule(); err != nil {
+		return err
+	}
+	if err := f.syncMigrateContainer(); err != nil {
+		return err
+	}
+	if f.project.GRPCEnabled {
+		if err := f.syncGrpcContainer(); err != nil {
+			return err
+		}
+	}
+	if f.project.GatewayEnabled {
+		if err := f.syncGatewayContainer(); err != nil {
+			return err
+		}
+	}
+	if f.project.RESTEnabled {
+		if err := f.syncRestContainer(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (f FxContainer) toProvide() []ast.Expr {
@@ -59,7 +88,7 @@ func (f FxContainer) toProvide() []ast.Expr {
 			},
 		},
 	}
-	if f.Project.GRPCEnabled {
+	if f.project.GRPCEnabled {
 		toProvide = append(toProvide, &ast.SelectorExpr{
 			X: &ast.Ident{
 				Name: "grpcInterface",
@@ -68,7 +97,7 @@ func (f FxContainer) toProvide() []ast.Expr {
 				Name: "NewServer",
 			},
 		})
-		if f.Project.Auth {
+		if f.project.Auth {
 			toProvide = append(
 				toProvide,
 				&ast.SelectorExpr{
@@ -98,7 +127,7 @@ func (f FxContainer) toProvide() []ast.Expr {
 			)
 		}
 	}
-	if f.Project.RESTEnabled {
+	if f.project.RESTEnabled {
 		toProvide = append(toProvide, &ast.SelectorExpr{
 			X: &ast.Ident{
 				Name: "restInterface",
@@ -107,7 +136,7 @@ func (f FxContainer) toProvide() []ast.Expr {
 				Name: "NewServer",
 			},
 		})
-		if f.Project.Auth {
+		if f.project.Auth {
 			toProvide = append(
 				toProvide,
 				&ast.SelectorExpr{
@@ -137,7 +166,7 @@ func (f FxContainer) toProvide() []ast.Expr {
 			)
 		}
 	}
-	if f.Project.GatewayEnabled {
+	if f.project.GatewayEnabled {
 		toProvide = append(toProvide, &ast.SelectorExpr{
 			X: &ast.Ident{
 				Name: "gatewayInterface",
@@ -147,7 +176,7 @@ func (f FxContainer) toProvide() []ast.Expr {
 			},
 		})
 	}
-	if f.Project.Auth {
+	if f.project.Auth {
 		toProvide = append(
 			toProvide,
 			&ast.SelectorExpr{
@@ -208,7 +237,7 @@ func (f FxContainer) toProvide() []ast.Expr {
 			},
 		)
 	}
-	for _, model := range f.Project.Models {
+	for _, model := range f.project.Models {
 		toProvide = append(
 			toProvide,
 			&ast.SelectorExpr{
@@ -256,7 +285,7 @@ func (f FxContainer) toProvide() []ast.Expr {
 	return toProvide
 }
 
-func (f FxContainer) AstFxModule() *ast.ValueSpec {
+func (f FxContainer) astFxModule() *ast.ValueSpec {
 	toProvide := []ast.Expr{
 		&ast.FuncLit{
 			Type: &ast.FuncType{
@@ -426,7 +455,7 @@ func (f FxContainer) AstFxModule() *ast.ValueSpec {
 	}
 }
 
-func (f FxContainer) SyncFxModule() error {
+func (f FxContainer) syncFxModule() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "containers", "fx.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -448,7 +477,7 @@ func (f FxContainer) SyncFxModule() error {
 		return true
 	})
 	if fxModule == nil {
-		fxModule = f.AstFxModule()
+		fxModule = f.astFxModule()
 	}
 	for _, expr := range f.toProvide() {
 		expr, ok := expr.(*ast.SelectorExpr)
@@ -493,7 +522,7 @@ func (f FxContainer) SyncFxModule() error {
 	return nil
 }
 
-func (f FxContainer) AstGrpcContainer() *ast.FuncDecl {
+func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
 			Name: "NewGRPCContainer",
@@ -889,7 +918,7 @@ func (f FxContainer) AstGrpcContainer() *ast.FuncDecl {
 	}
 }
 
-func (f FxContainer) SyncGrpcContainer() error {
+func (f FxContainer) syncGrpcContainer() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "containers", "fx.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -907,7 +936,7 @@ func (f FxContainer) SyncGrpcContainer() error {
 		return true
 	})
 	if function == nil {
-		function = f.AstGrpcContainer()
+		function = f.astGrpcContainer()
 	}
 	if !functionExists {
 		file.Decls = append(file.Decls, function)
@@ -922,7 +951,7 @@ func (f FxContainer) SyncGrpcContainer() error {
 	return nil
 }
 
-func (f FxContainer) AstGatewayContainer() *ast.FuncDecl {
+func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
 			Name: "NewGatewayContainer",
@@ -1305,7 +1334,7 @@ func (f FxContainer) AstGatewayContainer() *ast.FuncDecl {
 	}
 }
 
-func (f FxContainer) SyncGatewayContainer() error {
+func (f FxContainer) syncGatewayContainer() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "containers", "fx.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -1323,7 +1352,7 @@ func (f FxContainer) SyncGatewayContainer() error {
 		return true
 	})
 	if function == nil {
-		function = f.AstGatewayContainer()
+		function = f.astGatewayContainer()
 	}
 	if !functionExists {
 		file.Decls = append(file.Decls, function)
@@ -1338,7 +1367,7 @@ func (f FxContainer) SyncGatewayContainer() error {
 	return nil
 }
 
-func (f FxContainer) AstRestContainer() *ast.FuncDecl {
+func (f FxContainer) astRestContainer() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
 			Name: "NewRESTContainer",
@@ -1734,7 +1763,7 @@ func (f FxContainer) AstRestContainer() *ast.FuncDecl {
 	}
 }
 
-func (f FxContainer) SyncRestContainer() error {
+func (f FxContainer) syncRestContainer() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "containers", "fx.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -1752,7 +1781,7 @@ func (f FxContainer) SyncRestContainer() error {
 		return true
 	})
 	if function == nil {
-		function = f.AstRestContainer()
+		function = f.astRestContainer()
 	}
 	if !functionExists {
 		file.Decls = append(file.Decls, function)
@@ -1767,7 +1796,7 @@ func (f FxContainer) SyncRestContainer() error {
 	return nil
 }
 
-func (f FxContainer) AstMigrateContainer() *ast.FuncDecl {
+func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
 			Name: "NewMigrateContainer",
@@ -2150,7 +2179,7 @@ func (f FxContainer) AstMigrateContainer() *ast.FuncDecl {
 	}
 }
 
-func (f FxContainer) SyncMigrateContainer() error {
+func (f FxContainer) syncMigrateContainer() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "containers", "fx.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -2168,7 +2197,7 @@ func (f FxContainer) SyncMigrateContainer() error {
 		return true
 	})
 	if function == nil {
-		function = f.AstMigrateContainer()
+		function = f.astMigrateContainer()
 	}
 	if !functionExists {
 		file.Decls = append(file.Decls, function)

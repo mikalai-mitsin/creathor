@@ -12,12 +12,16 @@ import (
 )
 
 type RepositoryInterface struct {
-	Config *configs.ModelConfig
+	model *configs.ModelConfig
+}
+
+func NewRepositoryInterface(config *configs.ModelConfig) *RepositoryInterface {
+	return &RepositoryInterface{model: config}
 }
 
 func (i RepositoryInterface) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "domain", "repositories", i.Config.FileName())
+	filename := path.Join("internal", "domain", "repositories", i.model.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err
@@ -25,7 +29,7 @@ func (i RepositoryInterface) Sync() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.Config.RepositoryTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.model.RepositoryTypeName() {
 			structure = t
 			structureExists = true
 			return false
@@ -33,7 +37,7 @@ func (i RepositoryInterface) Sync() error {
 		return true
 	})
 	if structure == nil {
-		structure = i.AstInterface()
+		structure = i.astInterface()
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
@@ -56,10 +60,10 @@ func (i RepositoryInterface) Sync() error {
 	return nil
 }
 
-func (i RepositoryInterface) AstInterface() *ast.TypeSpec {
+func (i RepositoryInterface) astInterface() *ast.TypeSpec {
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
-			Name: i.Config.RepositoryTypeName(),
+			Name: i.model.RepositoryTypeName(),
 		},
 		Type: &ast.InterfaceType{
 			Methods: &ast.FieldList{
@@ -114,7 +118,7 @@ func (i RepositoryInterface) AstInterface() *ast.TypeSpec {
 													Name: "models",
 												},
 												Sel: &ast.Ident{
-													Name: i.Config.ModelName(),
+													Name: i.model.ModelName(),
 												},
 											},
 										},
@@ -164,7 +168,7 @@ func (i RepositoryInterface) AstInterface() *ast.TypeSpec {
 													Name: "models",
 												},
 												Sel: &ast.Ident{
-													Name: i.Config.FilterTypeName(),
+													Name: i.model.FilterTypeName(),
 												},
 											},
 										},
@@ -181,7 +185,7 @@ func (i RepositoryInterface) AstInterface() *ast.TypeSpec {
 														Name: "models",
 													},
 													Sel: &ast.Ident{
-														Name: i.Config.ModelName(),
+														Name: i.model.ModelName(),
 													},
 												},
 											},
@@ -232,7 +236,7 @@ func (i RepositoryInterface) AstInterface() *ast.TypeSpec {
 													Name: "models",
 												},
 												Sel: &ast.Ident{
-													Name: i.Config.FilterTypeName(),
+													Name: i.model.FilterTypeName(),
 												},
 											},
 										},
@@ -291,7 +295,7 @@ func (i RepositoryInterface) AstInterface() *ast.TypeSpec {
 													Name: "models",
 												},
 												Sel: &ast.Ident{
-													Name: i.Config.ModelName(),
+													Name: i.model.ModelName(),
 												},
 											},
 										},
@@ -345,7 +349,7 @@ func (i RepositoryInterface) AstInterface() *ast.TypeSpec {
 													Name: "models",
 												},
 												Sel: &ast.Ident{
-													Name: i.Config.ModelName(),
+													Name: i.model.ModelName(),
 												},
 											},
 										},

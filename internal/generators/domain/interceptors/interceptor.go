@@ -12,12 +12,16 @@ import (
 )
 
 type InterceptorInterface struct {
-	Config *configs.ModelConfig
+	model *configs.ModelConfig
+}
+
+func NewInterceptorInterface(config *configs.ModelConfig) *InterceptorInterface {
+	return &InterceptorInterface{model: config}
 }
 
 func (i InterceptorInterface) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "domain", "interceptors", i.Config.FileName())
+	filename := path.Join("internal", "domain", "interceptors", i.model.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err
@@ -25,7 +29,7 @@ func (i InterceptorInterface) Sync() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.Config.InterceptorTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.model.InterceptorTypeName() {
 			structure = t
 			structureExists = true
 			return false
@@ -33,7 +37,7 @@ func (i InterceptorInterface) Sync() error {
 		return true
 	})
 	if structure == nil {
-		structure = i.AstInterface()
+		structure = i.astInterface()
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
@@ -56,7 +60,7 @@ func (i InterceptorInterface) Sync() error {
 	return nil
 }
 
-func (i InterceptorInterface) AstInterface() *ast.TypeSpec {
+func (i InterceptorInterface) astInterface() *ast.TypeSpec {
 	requestUser := &ast.Field{
 		Names: []*ast.Ident{
 			{
@@ -125,7 +129,7 @@ func (i InterceptorInterface) AstInterface() *ast.TypeSpec {
 										Name: "models",
 									},
 									Sel: &ast.Ident{
-										Name: i.Config.ModelName(),
+										Name: i.model.ModelName(),
 									},
 								},
 							},
@@ -175,7 +179,7 @@ func (i InterceptorInterface) AstInterface() *ast.TypeSpec {
 										Name: "models",
 									},
 									Sel: &ast.Ident{
-										Name: i.Config.FilterTypeName(),
+										Name: i.model.FilterTypeName(),
 									},
 								},
 							},
@@ -192,7 +196,7 @@ func (i InterceptorInterface) AstInterface() *ast.TypeSpec {
 											Name: "models",
 										},
 										Sel: &ast.Ident{
-											Name: i.Config.ModelName(),
+											Name: i.model.ModelName(),
 										},
 									},
 								},
@@ -248,7 +252,7 @@ func (i InterceptorInterface) AstInterface() *ast.TypeSpec {
 										Name: "models",
 									},
 									Sel: &ast.Ident{
-										Name: i.Config.UpdateTypeName(),
+										Name: i.model.UpdateTypeName(),
 									},
 								},
 							},
@@ -264,7 +268,7 @@ func (i InterceptorInterface) AstInterface() *ast.TypeSpec {
 										Name: "models",
 									},
 									Sel: &ast.Ident{
-										Name: i.Config.ModelName(),
+										Name: i.model.ModelName(),
 									},
 								},
 							},
@@ -314,7 +318,7 @@ func (i InterceptorInterface) AstInterface() *ast.TypeSpec {
 										Name: "models",
 									},
 									Sel: &ast.Ident{
-										Name: i.Config.CreateTypeName(),
+										Name: i.model.CreateTypeName(),
 									},
 								},
 							},
@@ -330,7 +334,7 @@ func (i InterceptorInterface) AstInterface() *ast.TypeSpec {
 										Name: "models",
 									},
 									Sel: &ast.Ident{
-										Name: i.Config.ModelName(),
+										Name: i.model.ModelName(),
 									},
 								},
 							},
@@ -397,7 +401,7 @@ func (i InterceptorInterface) AstInterface() *ast.TypeSpec {
 			},
 		},
 	}
-	if i.Config.Auth {
+	if i.model.Auth {
 		for _, method := range methods {
 			ast.Inspect(method, func(node ast.Node) bool {
 				if fun, ok := node.(*ast.FuncType); ok {
@@ -410,7 +414,7 @@ func (i InterceptorInterface) AstInterface() *ast.TypeSpec {
 	}
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
-			Name: i.Config.InterceptorTypeName(),
+			Name: i.model.InterceptorTypeName(),
 		},
 		Type: &ast.InterfaceType{
 			Methods: &ast.FieldList{

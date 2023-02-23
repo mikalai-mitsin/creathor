@@ -13,32 +13,38 @@ import (
 )
 
 type Server struct {
-	Config *configs.Project
+	project *configs.Project
+}
+
+func NewServer(project *configs.Project) *Server {
+	return &Server{
+		project: project,
+	}
 }
 
 func (s Server) Sync() error {
-	if err := s.SyncServerStruct(); err != nil {
+	if err := s.syncServerStruct(); err != nil {
 		return err
 	}
-	if err := s.SyncServerConstructor(); err != nil {
+	if err := s.syncServerConstructor(); err != nil {
 		return err
 	}
-	if err := s.SyncServerStart(); err != nil {
+	if err := s.syncServerStart(); err != nil {
 		return err
 	}
-	if err := s.SyncServerStop(); err != nil {
+	if err := s.syncServerStop(); err != nil {
 		return err
 	}
-	if err := s.SyncMessageProducer(); err != nil {
+	if err := s.syncMessageProducer(); err != nil {
 		return err
 	}
-	if err := s.SyncDecodeError(); err != nil {
+	if err := s.syncDecodeError(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s Server) AstServerStruct() *ast.TypeSpec {
+func (s Server) astServerStruct() *ast.TypeSpec {
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
 			Name: "Server",
@@ -86,7 +92,7 @@ func (s Server) AstServerStruct() *ast.TypeSpec {
 	}
 }
 
-func (s Server) SyncServerStruct() error {
+func (s Server) syncServerStruct() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "interfaces", "grpc", "server.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -104,33 +110,8 @@ func (s Server) SyncServerStruct() error {
 		return true
 	})
 	if structure == nil {
-		structure = s.AstServerStruct()
+		structure = s.astServerStruct()
 	}
-	//for _, param := range m.Params {
-	//	ast.Inspect(structure, func(node ast.Node) bool {
-	//		if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
-	//			for _, field := range st.Fields.List {
-	//				for _, fieldName := range field.Names {
-	//					if fieldName.Name == param.GetPublicName() {
-	//						return false
-	//					}
-	//				}
-	//			}
-	//			st.Fields.List = append(st.Fields.List, &ast.Field{
-	//				Doc:   nil,
-	//				Names: []*ast.Ident{ast.NewIdent(param.GetPublicName())},
-	//				Type:  ast.NewIdent(param.Type),
-	//				Tag: &ast.BasicLit{
-	//					Kind:  token.STRING,
-	//					Value: fmt.Sprintf("`json:\"%s\"`", param.GetTag()),
-	//				},
-	//				Comment: nil,
-	//			})
-	//			return true
-	//		}
-	//		return true
-	//	})
-	//}
 	if !structureExists {
 		gd := &ast.GenDecl{
 			Doc:    nil,
@@ -152,7 +133,7 @@ func (s Server) SyncServerStruct() error {
 	return nil
 }
 
-func (s Server) AstServerConstructor() *ast.FuncDecl {
+func (s Server) astServerConstructor() *ast.FuncDecl {
 	fields := []*ast.Field{
 		{
 			Names: []*ast.Ident{
@@ -187,8 +168,8 @@ func (s Server) AstServerConstructor() *ast.FuncDecl {
 			},
 		},
 	}
-	registerStmts := []ast.Stmt{}
-	if s.Config.Auth {
+	var registerStmts []ast.Stmt
+	if s.project.Auth {
 		fields = append(
 			fields,
 			&ast.Field{
@@ -211,7 +192,7 @@ func (s Server) AstServerConstructor() *ast.FuncDecl {
 				},
 				Type: &ast.SelectorExpr{
 					X: &ast.Ident{
-						Name: s.Config.ProtoPackage(),
+						Name: s.project.ProtoPackage(),
 					},
 					Sel: &ast.Ident{
 						Name: "AuthServiceServer",
@@ -226,7 +207,7 @@ func (s Server) AstServerConstructor() *ast.FuncDecl {
 				},
 				Type: &ast.SelectorExpr{
 					X: &ast.Ident{
-						Name: s.Config.ProtoPackage(),
+						Name: s.project.ProtoPackage(),
 					},
 					Sel: &ast.Ident{
 						Name: "UserServiceServer",
@@ -278,7 +259,7 @@ func (s Server) AstServerConstructor() *ast.FuncDecl {
 			},
 		)
 	}
-	for _, modelConfig := range s.Config.Models {
+	for _, modelConfig := range s.project.Models {
 		fields = append(
 			fields,
 			&ast.Field{
@@ -289,7 +270,7 @@ func (s Server) AstServerConstructor() *ast.FuncDecl {
 				},
 				Type: &ast.SelectorExpr{
 					X: &ast.Ident{
-						Name: s.Config.ProtoPackage(),
+						Name: s.project.ProtoPackage(),
 					},
 					Sel: &ast.Ident{
 						Name: fmt.Sprintf("%sServiceServer", modelConfig.ModelName()),
@@ -303,7 +284,7 @@ func (s Server) AstServerConstructor() *ast.FuncDecl {
 				X: &ast.CallExpr{
 					Fun: &ast.SelectorExpr{
 						X: &ast.Ident{
-							Name: s.Config.ProtoPackage(),
+							Name: s.project.ProtoPackage(),
 						},
 						Sel: &ast.Ident{
 							Name: fmt.Sprintf("Register%sServiceServer", modelConfig.ModelName()),
@@ -597,7 +578,7 @@ func (s Server) AstServerConstructor() *ast.FuncDecl {
 	}
 }
 
-func (s Server) SyncServerConstructor() error {
+func (s Server) syncServerConstructor() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "interfaces", "grpc", "server.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -615,7 +596,7 @@ func (s Server) SyncServerConstructor() error {
 		return true
 	})
 	if method == nil {
-		method = s.AstServerConstructor()
+		method = s.astServerConstructor()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -630,7 +611,7 @@ func (s Server) SyncServerConstructor() error {
 	return nil
 }
 
-func (s Server) AstServerStart() *ast.FuncDecl {
+func (s Server) astServerStart() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -776,7 +757,7 @@ func (s Server) AstServerStart() *ast.FuncDecl {
 	}
 }
 
-func (s Server) SyncServerStart() error {
+func (s Server) syncServerStart() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "interfaces", "grpc", "server.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -794,7 +775,7 @@ func (s Server) SyncServerStart() error {
 		return true
 	})
 	if method == nil {
-		method = s.AstServerStart()
+		method = s.astServerStart()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -809,7 +790,7 @@ func (s Server) SyncServerStart() error {
 	return nil
 }
 
-func (s Server) AstServerStop() *ast.FuncDecl {
+func (s Server) astServerStop() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -891,7 +872,7 @@ func (s Server) AstServerStop() *ast.FuncDecl {
 	}
 }
 
-func (s Server) SyncServerStop() error {
+func (s Server) syncServerStop() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "interfaces", "grpc", "server.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -909,7 +890,7 @@ func (s Server) SyncServerStop() error {
 		return true
 	})
 	if method == nil {
-		method = s.AstServerStop()
+		method = s.astServerStop()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -924,7 +905,7 @@ func (s Server) SyncServerStop() error {
 	return nil
 }
 
-func (s Server) AstMessageProducer() *ast.FuncDecl {
+func (s Server) astMessageProducer() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
 			Name: "DefaultMessageProducer",
@@ -1481,7 +1462,7 @@ func (s Server) AstMessageProducer() *ast.FuncDecl {
 	}
 }
 
-func (s Server) SyncMessageProducer() error {
+func (s Server) syncMessageProducer() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "interfaces", "grpc", "server.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -1499,7 +1480,7 @@ func (s Server) SyncMessageProducer() error {
 		return true
 	})
 	if method == nil {
-		method = s.AstMessageProducer()
+		method = s.astMessageProducer()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -1514,7 +1495,7 @@ func (s Server) SyncMessageProducer() error {
 	return nil
 }
 
-func (s Server) AstDecodeError() *ast.FuncDecl {
+func (s Server) astDecodeError() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
 			Name: "decodeError",
@@ -2075,7 +2056,7 @@ func (s Server) AstDecodeError() *ast.FuncDecl {
 	}
 }
 
-func (s Server) SyncDecodeError() error {
+func (s Server) syncDecodeError() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "interfaces", "grpc", "server.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -2093,7 +2074,7 @@ func (s Server) SyncDecodeError() error {
 		return true
 	})
 	if method == nil {
-		method = s.AstDecodeError()
+		method = s.astDecodeError()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)

@@ -15,57 +15,20 @@ import (
 	"strings"
 )
 
-type Model struct {
+type Create struct {
 	ModelConfig *configs.ModelConfig
 }
 
-func NewModel(modelConfig *configs.ModelConfig) *Model {
-	return &Model{ModelConfig: modelConfig}
+func NewCreate(modelConfig *configs.ModelConfig) *Create {
+	return &Create{ModelConfig: modelConfig}
 }
 
-func (m *Model) filename() string {
+func (m *Create) filename() string {
 	return filepath.Join("internal", "domain", "models", m.ModelConfig.FileName())
 }
 
-func (m *Model) params() []*ast.Field {
-	fields := []*ast.Field{
-		{
-			Doc:   nil,
-			Names: []*ast.Ident{ast.NewIdent("ID")},
-			Type:  ast.NewIdent("UUID"),
-			Tag: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: "`json:\"id\"`",
-			},
-			Comment: nil,
-		},
-		{
-			Doc:   nil,
-			Names: []*ast.Ident{ast.NewIdent("UpdatedAt")},
-			Type: &ast.SelectorExpr{
-				X:   ast.NewIdent("time"),
-				Sel: ast.NewIdent("Time"),
-			},
-			Tag: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: "`json:\"updated_at\"`",
-			},
-			Comment: nil,
-		},
-		{
-			Doc:   nil,
-			Names: []*ast.Ident{ast.NewIdent("CreatedAt")},
-			Type: &ast.SelectorExpr{
-				X:   ast.NewIdent("time"),
-				Sel: ast.NewIdent("Time"),
-			},
-			Tag: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: "`json:\"created_at\"`",
-			},
-			Comment: nil,
-		},
-	}
+func (m *Create) params() []*ast.Field {
+	var fields []*ast.Field
 	for _, param := range m.ModelConfig.Params {
 		fields = append(fields, &ast.Field{
 			Doc:   nil,
@@ -81,71 +44,8 @@ func (m *Model) params() []*ast.Field {
 	return fields
 }
 
-func (m *Model) toValidate() []*ast.CallExpr {
-	fields := []*ast.CallExpr{
-		{
-			Fun: &ast.SelectorExpr{
-				X:   ast.NewIdent("validation"),
-				Sel: ast.NewIdent("Field"),
-			},
-			Args: []ast.Expr{
-				&ast.UnaryExpr{
-					Op: token.AND,
-					X: &ast.SelectorExpr{
-						X:   ast.NewIdent("m"),
-						Sel: ast.NewIdent("ID"),
-					},
-				},
-				&ast.SelectorExpr{
-					X:   ast.NewIdent("validation"),
-					Sel: ast.NewIdent("Required"),
-				},
-				&ast.SelectorExpr{
-					X:   ast.NewIdent("is"),
-					Sel: ast.NewIdent("UUID"),
-				},
-			},
-		},
-		{
-			Fun: &ast.SelectorExpr{
-				X:   ast.NewIdent("validation"),
-				Sel: ast.NewIdent("Field"),
-			},
-			Args: []ast.Expr{
-				&ast.UnaryExpr{
-					Op: token.AND,
-					X: &ast.SelectorExpr{
-						X:   ast.NewIdent("m"),
-						Sel: ast.NewIdent("UpdatedAt"),
-					},
-				},
-				&ast.SelectorExpr{
-					X:   ast.NewIdent("validation"),
-					Sel: ast.NewIdent("Required"),
-				},
-			},
-		},
-		{
-			Fun: &ast.SelectorExpr{
-				X:   ast.NewIdent("validation"),
-				Sel: ast.NewIdent("Field"),
-			},
-			Args: []ast.Expr{
-				&ast.UnaryExpr{
-					Op: token.AND,
-					X: &ast.SelectorExpr{
-						X:   ast.NewIdent("m"),
-						Sel: ast.NewIdent("CreatedAt"),
-					},
-				},
-				&ast.SelectorExpr{
-					X:   ast.NewIdent("validation"),
-					Sel: ast.NewIdent("Required"),
-				},
-			},
-		},
-	}
-
+func (m *Create) toValidate() []*ast.CallExpr {
+	var fields []*ast.CallExpr
 	for _, param := range m.ModelConfig.Params {
 		call := &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
@@ -185,7 +85,7 @@ func (m *Model) toValidate() []*ast.CallExpr {
 	return fields
 }
 
-func (m *Model) syncStruct() error {
+func (m *Create) syncStruct() error {
 	fileset := token.NewFileSet()
 	filename := m.filename()
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -195,7 +95,7 @@ func (m *Model) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == m.ModelConfig.ModelName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == m.ModelConfig.CreateTypeName() {
 			structure = t
 			structureExists = true
 			return false
@@ -245,10 +145,10 @@ func (m *Model) syncStruct() error {
 	return nil
 }
 
-func (m *Model) astStruct() *ast.TypeSpec {
+func (m *Create) astStruct() *ast.TypeSpec {
 	return &ast.TypeSpec{
+		Name:       ast.NewIdent(m.ModelConfig.CreateTypeName()),
 		Doc:        nil,
-		Name:       ast.NewIdent(m.ModelConfig.ModelName()),
 		TypeParams: nil,
 		Assign:     0,
 		Type: &ast.StructType{
@@ -264,7 +164,7 @@ func (m *Model) astStruct() *ast.TypeSpec {
 	}
 }
 
-func (m *Model) astValidate() *ast.FuncDecl {
+func (m *Create) astValidate() *ast.FuncDecl {
 	exprs := []ast.Expr{
 		ast.NewIdent("m"),
 	}
@@ -282,7 +182,7 @@ func (m *Model) astValidate() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						Star: 0,
-						X:    ast.NewIdent(m.ModelConfig.ModelName()),
+						X:    ast.NewIdent(m.ModelConfig.CreateTypeName()),
 					},
 					Tag:     nil,
 					Comment: nil,
@@ -365,7 +265,7 @@ func (m *Model) astValidate() *ast.FuncDecl {
 	}
 }
 
-func (m *Model) syncValidate() error {
+func (m *Create) syncValidate() error {
 	fileset := token.NewFileSet()
 	filename := m.filename()
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -379,7 +279,7 @@ func (m *Model) syncValidate() error {
 			for _, field := range fun.Recv.List {
 				if expr, ok := field.Type.(*ast.StarExpr); ok {
 					ident, ok := expr.X.(*ast.Ident)
-					if ok && ident.Name == m.ModelConfig.ModelName() {
+					if ok && ident.Name == m.ModelConfig.CreateTypeName() {
 						validator = fun
 						validatorExists = true
 						return false
@@ -435,21 +335,8 @@ func (m *Model) syncValidate() error {
 	return nil
 }
 
-func (m *Model) astFakeValues() []*ast.KeyValueExpr {
-	kvs := []*ast.KeyValueExpr{
-		{
-			Key:   ast.NewIdent("ID"),
-			Value: generators.FakeAst("UUID"),
-		},
-		{
-			Key:   ast.NewIdent("UpdatedAt"),
-			Value: generators.FakeAst("time.Time"),
-		},
-		{
-			Key:   ast.NewIdent("CreatedAt"),
-			Value: generators.FakeAst("time.Time"),
-		},
-	}
+func (m *Create) astFakeValues() []*ast.KeyValueExpr {
+	var kvs []*ast.KeyValueExpr
 	for _, param := range m.ModelConfig.Params {
 		kvs = append(kvs, &ast.KeyValueExpr{
 			Key:   ast.NewIdent(param.GetName()),
@@ -460,14 +347,14 @@ func (m *Model) astFakeValues() []*ast.KeyValueExpr {
 	return kvs
 }
 
-func (m *Model) syncMock() error {
+func (m *Create) syncMock() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "domain", "models", "mock", m.ModelConfig.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
-	mockName := fmt.Sprintf("New%s", m.ModelConfig.ModelName())
+	mockName := fmt.Sprintf("New%s", m.ModelConfig.CreateTypeName())
 	var mockExists bool
 	var mock *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
@@ -515,7 +402,7 @@ func (m *Model) syncMock() error {
 								Star: 0,
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(m.ModelConfig.ModelName()),
+									Sel: ast.NewIdent(m.ModelConfig.CreateTypeName()),
 								},
 							},
 							Tag:     nil,
@@ -551,7 +438,7 @@ func (m *Model) syncMock() error {
 								X: &ast.CompositeLit{
 									Type: &ast.SelectorExpr{
 										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(m.ModelConfig.ModelName()),
+										Sel: ast.NewIdent(m.ModelConfig.CreateTypeName()),
 									},
 									Lbrace:     0,
 									Elts:       nil,
@@ -577,7 +464,7 @@ func (m *Model) syncMock() error {
 		ast.Inspect(mock.Body, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
 				if sel, ok := cl.Type.(*ast.SelectorExpr); ok {
-					if sel.Sel.Name != m.ModelConfig.ModelName() {
+					if sel.Sel.Name != m.ModelConfig.CreateTypeName() {
 						return true
 					}
 				}
@@ -606,7 +493,7 @@ func (m *Model) syncMock() error {
 	return nil
 }
 
-func (m *Model) Sync() error {
+func (m *Create) Sync() error {
 	if err := m.syncStruct(); err != nil {
 		return err
 	}

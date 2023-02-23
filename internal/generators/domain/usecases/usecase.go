@@ -12,12 +12,16 @@ import (
 )
 
 type UseCaseInterface struct {
-	Config *configs.ModelConfig
+	model *configs.ModelConfig
+}
+
+func NewUseCaseInterface(config *configs.ModelConfig) *UseCaseInterface {
+	return &UseCaseInterface{model: config}
 }
 
 func (i UseCaseInterface) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "domain", "usecases", i.Config.FileName())
+	filename := path.Join("internal", "domain", "usecases", i.model.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err
@@ -25,7 +29,7 @@ func (i UseCaseInterface) Sync() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.Config.UseCaseTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.model.UseCaseTypeName() {
 			structure = t
 			structureExists = true
 			return false
@@ -33,7 +37,7 @@ func (i UseCaseInterface) Sync() error {
 		return true
 	})
 	if structure == nil {
-		structure = i.AstInterface()
+		structure = i.astInterface()
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
@@ -56,10 +60,10 @@ func (i UseCaseInterface) Sync() error {
 	return nil
 }
 
-func (i UseCaseInterface) AstInterface() *ast.TypeSpec {
+func (i UseCaseInterface) astInterface() *ast.TypeSpec {
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
-			Name: i.Config.UseCaseTypeName(),
+			Name: i.model.UseCaseTypeName(),
 		},
 		Type: &ast.InterfaceType{
 			Methods: &ast.FieldList{
@@ -114,7 +118,7 @@ func (i UseCaseInterface) AstInterface() *ast.TypeSpec {
 													Name: "models",
 												},
 												Sel: &ast.Ident{
-													Name: i.Config.ModelName(),
+													Name: i.model.ModelName(),
 												},
 											},
 										},
@@ -164,7 +168,7 @@ func (i UseCaseInterface) AstInterface() *ast.TypeSpec {
 													Name: "models",
 												},
 												Sel: &ast.Ident{
-													Name: i.Config.FilterTypeName(),
+													Name: i.model.FilterTypeName(),
 												},
 											},
 										},
@@ -181,7 +185,7 @@ func (i UseCaseInterface) AstInterface() *ast.TypeSpec {
 														Name: "models",
 													},
 													Sel: &ast.Ident{
-														Name: i.Config.ModelName(),
+														Name: i.model.ModelName(),
 													},
 												},
 											},
@@ -237,7 +241,7 @@ func (i UseCaseInterface) AstInterface() *ast.TypeSpec {
 													Name: "models",
 												},
 												Sel: &ast.Ident{
-													Name: i.Config.UpdateTypeName(),
+													Name: i.model.UpdateTypeName(),
 												},
 											},
 										},
@@ -253,7 +257,7 @@ func (i UseCaseInterface) AstInterface() *ast.TypeSpec {
 													Name: "models",
 												},
 												Sel: &ast.Ident{
-													Name: i.Config.ModelName(),
+													Name: i.model.ModelName(),
 												},
 											},
 										},
@@ -303,7 +307,7 @@ func (i UseCaseInterface) AstInterface() *ast.TypeSpec {
 													Name: "models",
 												},
 												Sel: &ast.Ident{
-													Name: i.Config.CreateTypeName(),
+													Name: i.model.CreateTypeName(),
 												},
 											},
 										},
@@ -319,7 +323,7 @@ func (i UseCaseInterface) AstInterface() *ast.TypeSpec {
 													Name: "models",
 												},
 												Sel: &ast.Ident{
-													Name: i.Config.ModelName(),
+													Name: i.model.ModelName(),
 												},
 											},
 										},

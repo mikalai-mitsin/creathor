@@ -13,7 +13,11 @@ import (
 )
 
 type UseCase struct {
-	Model *configs.ModelConfig
+	model *configs.ModelConfig
+}
+
+func NewUseCase(model *configs.ModelConfig) *UseCase {
+	return &UseCase{model: model}
 }
 
 func (u UseCase) Sync() error {
@@ -42,26 +46,21 @@ func (u UseCase) Sync() error {
 }
 
 func (u UseCase) filename() string {
-	return filepath.Join("internal", "usecases", u.Model.FileName())
+	return filepath.Join("internal", "usecases", u.model.FileName())
 }
 
 func (u UseCase) astStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
-		Doc:        nil,
-		Name:       ast.NewIdent(u.Model.UseCaseTypeName()),
-		TypeParams: nil,
-		Assign:     0,
+		Name: ast.NewIdent(u.model.UseCaseTypeName()),
 		Type: &ast.StructType{
-			Struct: 0,
 			Fields: &ast.FieldList{
-				Opening: 0,
 				List: []*ast.Field{
 					{
 						Doc:   nil,
-						Names: []*ast.Ident{ast.NewIdent(u.Model.RepositoryVariableName())},
+						Names: []*ast.Ident{ast.NewIdent(u.model.RepositoryVariableName())},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("repositories"),
-							Sel: ast.NewIdent(u.Model.RepositoryTypeName()),
+							Sel: ast.NewIdent(u.model.RepositoryTypeName()),
 						},
 						Tag:     nil,
 						Comment: nil,
@@ -87,11 +86,8 @@ func (u UseCase) astStruct() *ast.TypeSpec {
 						Comment: nil,
 					},
 				},
-				Closing: 0,
 			},
-			Incomplete: false,
 		},
-		Comment: nil,
 	}
 	return structure
 }
@@ -105,7 +101,7 @@ func (u UseCase) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == u.Model.UseCaseTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == u.model.UseCaseTypeName() {
 			structure = t
 			structureExists = true
 			return false
@@ -140,7 +136,7 @@ func (u UseCase) astConstructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
 		Doc:  nil,
 		Recv: nil,
-		Name: ast.NewIdent(fmt.Sprintf("New%s", u.Model.UseCaseTypeName())),
+		Name: ast.NewIdent(fmt.Sprintf("New%s", u.model.UseCaseTypeName())),
 		Type: &ast.FuncType{
 			Func:       0,
 			TypeParams: nil,
@@ -149,10 +145,10 @@ func (u UseCase) astConstructor() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Doc:   nil,
-						Names: []*ast.Ident{ast.NewIdent(u.Model.RepositoryVariableName())},
+						Names: []*ast.Ident{ast.NewIdent(u.model.RepositoryVariableName())},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("repositories"),
-							Sel: ast.NewIdent(u.Model.RepositoryTypeName()),
+							Sel: ast.NewIdent(u.model.RepositoryTypeName()),
 						},
 						Tag:     nil,
 						Comment: nil,
@@ -188,7 +184,7 @@ func (u UseCase) astConstructor() *ast.FuncDecl {
 						Names: nil,
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("usecases"),
-							Sel: ast.NewIdent(u.Model.UseCaseTypeName()),
+							Sel: ast.NewIdent(u.model.UseCaseTypeName()),
 						},
 						Tag:     nil,
 						Comment: nil,
@@ -206,15 +202,15 @@ func (u UseCase) astConstructor() *ast.FuncDecl {
 						&ast.UnaryExpr{
 							Op: token.AND,
 							X: &ast.CompositeLit{
-								Type:   ast.NewIdent(u.Model.UseCaseTypeName()),
+								Type:   ast.NewIdent(u.model.UseCaseTypeName()),
 								Lbrace: 0,
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
 										Key: &ast.Ident{
-											Name: u.Model.RepositoryVariableName(),
+											Name: u.model.RepositoryVariableName(),
 										},
 										Value: &ast.Ident{
-											Name: u.Model.RepositoryVariableName(),
+											Name: u.model.RepositoryVariableName(),
 										},
 									},
 									&ast.KeyValueExpr{
@@ -253,7 +249,7 @@ func (u UseCase) syncConstructor() error {
 	var structureConstructorExists bool
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("New%s", u.Model.UseCaseTypeName()) {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("New%s", u.model.UseCaseTypeName()) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -294,7 +290,7 @@ func (u UseCase) astCreateMethod() *ast.FuncDecl {
 			Value: ast.NewIdent("now"),
 		},
 	}
-	for _, param := range u.Model.Params {
+	for _, param := range u.model.Params {
 		params = append(params, &ast.KeyValueExpr{
 			Key:   ast.NewIdent(param.GetName()),
 			Colon: 0,
@@ -314,7 +310,7 @@ func (u UseCase) astCreateMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.Model.UseCaseTypeName()),
+						X: ast.NewIdent(u.model.UseCaseTypeName()),
 					},
 				},
 			},
@@ -335,7 +331,7 @@ func (u UseCase) astCreateMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(u.Model.CreateTypeName()),
+								Sel: ast.NewIdent(u.model.CreateTypeName()),
 							},
 						},
 					},
@@ -347,7 +343,7 @@ func (u UseCase) astCreateMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(u.Model.ModelName()),
+								Sel: ast.NewIdent(u.model.ModelName()),
 							},
 						},
 					},
@@ -416,7 +412,7 @@ func (u UseCase) astCreateMethod() *ast.FuncDecl {
 				},
 				// Fill model struct from create form
 				&ast.AssignStmt{
-					Lhs: []ast.Expr{ast.NewIdent(u.Model.Variable())},
+					Lhs: []ast.Expr{ast.NewIdent(u.model.Variable())},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.UnaryExpr{
@@ -424,7 +420,7 @@ func (u UseCase) astCreateMethod() *ast.FuncDecl {
 							X: &ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(u.Model.ModelName()),
+									Sel: ast.NewIdent(u.model.ModelName()),
 								},
 								Elts: params,
 							},
@@ -443,13 +439,13 @@ func (u UseCase) astCreateMethod() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("u"),
-										Sel: ast.NewIdent(u.Model.RepositoryVariableName()),
+										Sel: ast.NewIdent(u.model.RepositoryVariableName()),
 									},
 									Sel: ast.NewIdent("Create"),
 								},
 								Args: []ast.Expr{
 									ast.NewIdent("ctx"),
-									ast.NewIdent(u.Model.Variable()),
+									ast.NewIdent(u.model.Variable()),
 								},
 							},
 						},
@@ -474,7 +470,7 @@ func (u UseCase) astCreateMethod() *ast.FuncDecl {
 				// Return created model and nil error
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(u.Model.Variable()),
+						ast.NewIdent(u.model.Variable()),
 						ast.NewIdent("nil"),
 					},
 				},
@@ -503,11 +499,11 @@ func (u UseCase) syncCreateMethod() error {
 	if method == nil {
 		method = u.astCreateMethod()
 	}
-	for _, param := range u.Model.Params {
+	for _, param := range u.model.Params {
 		param := param
 		ast.Inspect(method, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
-				if t, ok := cl.Type.(*ast.SelectorExpr); ok && t.Sel.String() == u.Model.ModelName() {
+				if t, ok := cl.Type.(*ast.SelectorExpr); ok && t.Sel.String() == u.model.ModelName() {
 					for _, elt := range cl.Elts {
 						if kv, ok := elt.(*ast.KeyValueExpr); ok {
 							if key, ok := kv.Key.(*ast.Ident); ok && key.String() == param.GetName() {
@@ -554,7 +550,7 @@ func (u UseCase) astListMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.Model.UseCaseTypeName()),
+						X: ast.NewIdent(u.model.UseCaseTypeName()),
 					},
 				},
 			},
@@ -575,7 +571,7 @@ func (u UseCase) astListMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(u.Model.FilterTypeName()),
+								Sel: ast.NewIdent(u.model.FilterTypeName()),
 							},
 						},
 					},
@@ -588,7 +584,7 @@ func (u UseCase) astListMethod() *ast.FuncDecl {
 							Elt: &ast.StarExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(u.Model.ModelName()),
+									Sel: ast.NewIdent(u.model.ModelName()),
 								},
 							},
 						},
@@ -606,7 +602,7 @@ func (u UseCase) astListMethod() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(u.Model.Variable()),
+						ast.NewIdent(u.model.Variable()),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -615,7 +611,7 @@ func (u UseCase) astListMethod() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("u"),
-									Sel: ast.NewIdent(u.Model.RepositoryVariableName()),
+									Sel: ast.NewIdent(u.model.RepositoryVariableName()),
 								},
 								Sel: ast.NewIdent("List"),
 							},
@@ -657,7 +653,7 @@ func (u UseCase) astListMethod() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("u"),
-									Sel: ast.NewIdent(u.Model.RepositoryVariableName()),
+									Sel: ast.NewIdent(u.model.RepositoryVariableName()),
 								},
 								Sel: ast.NewIdent("Count"),
 							},
@@ -690,7 +686,7 @@ func (u UseCase) astListMethod() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(u.Model.Variable()),
+						ast.NewIdent(u.model.Variable()),
 						ast.NewIdent("count"),
 						ast.NewIdent("nil"),
 					},
@@ -743,7 +739,7 @@ func (u UseCase) astGetMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.Model.UseCaseTypeName()),
+						X: ast.NewIdent(u.model.UseCaseTypeName()),
 					},
 				},
 			},
@@ -771,7 +767,7 @@ func (u UseCase) astGetMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(u.Model.ModelName()),
+								Sel: ast.NewIdent(u.model.ModelName()),
 							},
 						},
 					},
@@ -785,7 +781,7 @@ func (u UseCase) astGetMethod() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(u.Model.Variable()),
+						ast.NewIdent(u.model.Variable()),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -794,7 +790,7 @@ func (u UseCase) astGetMethod() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("u"),
-									Sel: ast.NewIdent(u.Model.RepositoryVariableName()),
+									Sel: ast.NewIdent(u.model.RepositoryVariableName()),
 								},
 								Sel: ast.NewIdent("Get"),
 							},
@@ -826,7 +822,7 @@ func (u UseCase) astGetMethod() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(u.Model.Variable()),
+						ast.NewIdent(u.model.Variable()),
 						ast.NewIdent("nil"),
 					},
 				},
@@ -873,7 +869,7 @@ func (u UseCase) astUpdateMethod() *ast.FuncDecl {
 		List:   []ast.Stmt{},
 		Rbrace: 0,
 	}
-	for _, param := range u.Model.Params {
+	for _, param := range u.model.Params {
 		block.List = append(block.List, &ast.IfStmt{
 			Cond: &ast.BinaryExpr{
 				X: &ast.SelectorExpr{
@@ -888,7 +884,7 @@ func (u UseCase) astUpdateMethod() *ast.FuncDecl {
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
 							&ast.SelectorExpr{
-								X:   ast.NewIdent(u.Model.Variable()),
+								X:   ast.NewIdent(u.model.Variable()),
 								Sel: ast.NewIdent(param.GetName()),
 							},
 						},
@@ -916,7 +912,7 @@ func (u UseCase) astUpdateMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.Model.UseCaseTypeName()),
+						X: ast.NewIdent(u.model.UseCaseTypeName()),
 					},
 				},
 			},
@@ -937,7 +933,7 @@ func (u UseCase) astUpdateMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(u.Model.UpdateTypeName()),
+								Sel: ast.NewIdent(u.model.UpdateTypeName()),
 							},
 						},
 					},
@@ -949,7 +945,7 @@ func (u UseCase) astUpdateMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(u.Model.ModelName()),
+								Sel: ast.NewIdent(u.model.ModelName()),
 							},
 						},
 					},
@@ -997,7 +993,7 @@ func (u UseCase) astUpdateMethod() *ast.FuncDecl {
 				// Get model to update
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(u.Model.Variable()),
+						ast.NewIdent(u.model.Variable()),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -1006,7 +1002,7 @@ func (u UseCase) astUpdateMethod() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("u"),
-									Sel: ast.NewIdent(u.Model.RepositoryVariableName()),
+									Sel: ast.NewIdent(u.model.RepositoryVariableName()),
 								},
 								Sel: ast.NewIdent("Get"),
 							},
@@ -1042,7 +1038,7 @@ func (u UseCase) astUpdateMethod() *ast.FuncDecl {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.SelectorExpr{
-							X:   ast.NewIdent(u.Model.Variable()),
+							X:   ast.NewIdent(u.model.Variable()),
 							Sel: ast.NewIdent("UpdatedAt"),
 						},
 					},
@@ -1077,13 +1073,13 @@ func (u UseCase) astUpdateMethod() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("u"),
-										Sel: ast.NewIdent(u.Model.RepositoryVariableName()),
+										Sel: ast.NewIdent(u.model.RepositoryVariableName()),
 									},
 									Sel: ast.NewIdent("Update"),
 								},
 								Args: []ast.Expr{
 									ast.NewIdent("ctx"),
-									ast.NewIdent(u.Model.Variable()),
+									ast.NewIdent(u.model.Variable()),
 								},
 							},
 						},
@@ -1108,7 +1104,7 @@ func (u UseCase) astUpdateMethod() *ast.FuncDecl {
 				// Return updated model and nil error
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(u.Model.Variable()),
+						ast.NewIdent(u.model.Variable()),
 						ast.NewIdent("nil"),
 					},
 				},
@@ -1137,7 +1133,7 @@ func (u UseCase) syncUpdateMethod() error {
 	if method == nil {
 		method = u.astUpdateMethod()
 	}
-	for _, param := range u.Model.Params {
+	for _, param := range u.model.Params {
 		param := param
 		exists := false
 		for _, stmt := range method.Body.List {
@@ -1172,7 +1168,7 @@ func (u UseCase) syncUpdateMethod() error {
 								&ast.AssignStmt{
 									Lhs: []ast.Expr{
 										&ast.SelectorExpr{
-											X:   ast.NewIdent(u.Model.Variable()),
+											X:   ast.NewIdent(u.model.Variable()),
 											Sel: ast.NewIdent(param.GetName()),
 										},
 									},
@@ -1217,7 +1213,7 @@ func (u UseCase) astDeleteMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.Model.UseCaseTypeName()),
+						X: ast.NewIdent(u.model.UseCaseTypeName()),
 					},
 				},
 			},
@@ -1260,7 +1256,7 @@ func (u UseCase) astDeleteMethod() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("u"),
-										Sel: ast.NewIdent(u.Model.RepositoryVariableName()),
+										Sel: ast.NewIdent(u.model.RepositoryVariableName()),
 									},
 									Sel: ast.NewIdent("Delete"),
 								},

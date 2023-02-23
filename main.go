@@ -80,7 +80,7 @@ func initProject(ctx *cli.Context) error {
 			return err
 		}
 	}
-	interfaceGrpcServer := generatorsInterfacesGrpc.Server{Config: project}
+	interfaceGrpcServer := generatorsInterfacesGrpc.NewServer(project)
 	if err := interfaceGrpcServer.Sync(); err != nil {
 		return err
 	}

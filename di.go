@@ -28,27 +28,9 @@ func CreateDI(data *configs.Project) error {
 			return err
 		}
 	}
-	fx := containers.FxContainer{Project: data}
-	if err := fx.SyncFxModule(); err != nil {
+	fx := containers.NewFxContainer(data)
+	if err := fx.Sync(); err != nil {
 		return err
-	}
-	if err := fx.SyncMigrateContainer(); err != nil {
-		return err
-	}
-	if data.GRPCEnabled {
-		if err := fx.SyncGrpcContainer(); err != nil {
-			return err
-		}
-	}
-	if data.GatewayEnabled {
-		if err := fx.SyncGatewayContainer(); err != nil {
-			return err
-		}
-	}
-	if data.RESTEnabled {
-		if err := fx.SyncRestContainer(); err != nil {
-			return err
-		}
 	}
 	return nil
 }

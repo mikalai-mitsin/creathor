@@ -4,13 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/018bf/creathor/internal/configs"
-	generatorsIntercepstorInterfaces "github.com/018bf/creathor/internal/generators/domain/interceptors"
-	generatorsModels "github.com/018bf/creathor/internal/generators/domain/models"
-	generatorsRepositoriesInterfaces "github.com/018bf/creathor/internal/generators/domain/repositories"
-	generatorsUseCasesInterfaces "github.com/018bf/creathor/internal/generators/domain/usecases"
-	generatorsIntercepstorImpl "github.com/018bf/creathor/internal/generators/interceptors"
-	generatorsRepositoriesImpl "github.com/018bf/creathor/internal/generators/repositories/postgres"
-	generatorsUseCasesImpl "github.com/018bf/creathor/internal/generators/usecases"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -20,50 +13,6 @@ import (
 	"path"
 	"path/filepath"
 )
-
-func SyncModel(m *configs.ModelConfig) error {
-	model := generatorsModels.NewModel(m)
-	if err := model.Sync(); err != nil {
-		return err
-	}
-	create := generatorsModels.NewCreate(m)
-	if err := create.Sync(); err != nil {
-		return err
-	}
-	update := generatorsModels.NewUpdate(m)
-	if err := update.Sync(); err != nil {
-		return err
-	}
-	filter := generatorsModels.NewFilter(m)
-	if err := filter.Sync(); err != nil {
-		return err
-	}
-	repositoryInterface := generatorsRepositoriesInterfaces.NewRepositoryInterface(m)
-	if err := repositoryInterface.Sync(); err != nil {
-		return err
-	}
-	useCaseInterface := generatorsUseCasesInterfaces.NewUseCaseInterface(m)
-	if err := useCaseInterface.Sync(); err != nil {
-		return err
-	}
-	interceptorInterface := generatorsIntercepstorInterfaces.NewInterceptorInterface(m)
-	if err := interceptorInterface.Sync(); err != nil {
-		return err
-	}
-	useCaseImpl := generatorsUseCasesImpl.NewUseCase(m)
-	if err := useCaseImpl.Sync(); err != nil {
-		return err
-	}
-	repositoryImpl := generatorsRepositoriesImpl.NewRepository(m)
-	if err := repositoryImpl.Sync(); err != nil {
-		return err
-	}
-	interceptorImpl := generatorsIntercepstorImpl.NewInterceptor(m)
-	if err := interceptorImpl.Sync(); err != nil {
-		return err
-	}
-	return nil
-}
 
 func CreateCRUD(model *configs.ModelConfig) error {
 	if err := model.Validate(); err != nil {
@@ -171,9 +120,6 @@ func CreateCRUD(model *configs.ModelConfig) error {
 		if err := tmpl.renderToFile(model); err != nil {
 			return err
 		}
-	}
-	if err := SyncModel(model); err != nil {
-		return err
 	}
 	if model.Auth && model.ModelName() != "User" {
 		if err := addPermission(model.PermissionIDList(), "objectAnybody"); err != nil {

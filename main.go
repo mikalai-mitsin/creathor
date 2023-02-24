@@ -6,6 +6,7 @@ import (
 	_ "embed"
 	"fmt"
 	"github.com/018bf/creathor/internal/configs"
+	"github.com/018bf/creathor/internal/generators"
 	generatorsInterfacesGrpc "github.com/018bf/creathor/internal/generators/interfaces/grpc"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
@@ -79,6 +80,10 @@ func initProject(ctx *cli.Context) error {
 		if err := CreateCRUD(model); err != nil {
 			return err
 		}
+	}
+	crud := generators.NewCrudGenerator(project)
+	if err := crud.Sync(); err != nil {
+		return err
 	}
 	interfaceGrpcServer := generatorsInterfacesGrpc.NewServer(project)
 	if err := interfaceGrpcServer.Sync(); err != nil {

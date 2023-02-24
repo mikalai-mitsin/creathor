@@ -1,4 +1,4 @@
-package interceptors
+package domain
 
 import (
 	"bytes"

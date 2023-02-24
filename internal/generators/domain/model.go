@@ -1,10 +1,10 @@
-package models
+package domain
 
 import (
 	"bytes"
 	"fmt"
 	"github.com/018bf/creathor/internal/configs"
-	"github.com/018bf/creathor/internal/generators"
+	"github.com/018bf/creathor/internal/fake"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -12,74 +12,77 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
-type Filter struct {
-	ModelConfig *configs.ModelConfig
+type MainModel struct {
+	model *configs.ModelConfig
 }
 
-func NewFilter(modelConfig *configs.ModelConfig) *Filter {
-	return &Filter{ModelConfig: modelConfig}
+func NewMainModel(modelConfig *configs.ModelConfig) *MainModel {
+	return &MainModel{model: modelConfig}
 }
 
-func (m *Filter) filename() string {
-	return filepath.Join("internal", "domain", "models", m.ModelConfig.FileName())
+func (m *MainModel) filename() string {
+	return filepath.Join("internal", "domain", "models", m.model.FileName())
 }
 
-func (m *Filter) params() []*ast.Field {
+func (m *MainModel) params() []*ast.Field {
 	fields := []*ast.Field{
 		{
-			Names: []*ast.Ident{ast.NewIdent("IDs")},
-			Type: &ast.ArrayType{
-				Elt: ast.NewIdent("UUID"),
-			},
+			Doc:   nil,
+			Names: []*ast.Ident{ast.NewIdent("ID")},
+			Type:  ast.NewIdent("UUID"),
 			Tag: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: "`json:\"ids\"`",
+				Value: "`json:\"id\"`",
 			},
+			Comment: nil,
 		},
 		{
-			Names: []*ast.Ident{ast.NewIdent("PageSize")},
-			Type:  &ast.StarExpr{X: ast.NewIdent("uint64")},
+			Doc:   nil,
+			Names: []*ast.Ident{ast.NewIdent("UpdatedAt")},
+			Type: &ast.SelectorExpr{
+				X:   ast.NewIdent("time"),
+				Sel: ast.NewIdent("Time"),
+			},
 			Tag: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: "`json:\"page_size\"`",
+				Value: "`json:\"updated_at\"`",
 			},
+			Comment: nil,
 		},
 		{
-			Names: []*ast.Ident{ast.NewIdent("PageNumber")},
-			Type:  &ast.StarExpr{X: ast.NewIdent("uint64")},
-			Tag: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: "`json:\"page_number\"`",
-			},
-		},
-		{
-			Names: []*ast.Ident{ast.NewIdent("OrderBy")},
-			Type: &ast.ArrayType{
-				Elt: ast.NewIdent("string"),
+			Doc:   nil,
+			Names: []*ast.Ident{ast.NewIdent("CreatedAt")},
+			Type: &ast.SelectorExpr{
+				X:   ast.NewIdent("time"),
+				Sel: ast.NewIdent("Time"),
 			},
 			Tag: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: "`json:\"order_by\"`",
+				Value: "`json:\"created_at\"`",
 			},
+			Comment: nil,
 		},
 	}
-	if m.ModelConfig.Auth {
+	for _, param := range m.model.Params {
 		fields = append(fields, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent("Search")},
-			Type:  &ast.StarExpr{X: ast.NewIdent("string")},
+			Doc:   nil,
+			Names: []*ast.Ident{ast.NewIdent(param.GetName())},
+			Type:  ast.NewIdent(param.Type),
 			Tag: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: "`json:\"search\"`",
+				Value: fmt.Sprintf("`json:\"%s\"`", param.Tag()),
 			},
+			Comment: nil,
 		})
 	}
 	return fields
 }
 
-func (m *Filter) toValidate() []*ast.CallExpr {
-	callExprs := []*ast.CallExpr{
+func (m *MainModel) toValidate() []*ast.CallExpr {
+	fields := []*ast.CallExpr{
 		{
 			Fun: &ast.SelectorExpr{
 				X:   ast.NewIdent("validation"),
@@ -90,8 +93,16 @@ func (m *Filter) toValidate() []*ast.CallExpr {
 					Op: token.AND,
 					X: &ast.SelectorExpr{
 						X:   ast.NewIdent("m"),
-						Sel: ast.NewIdent("IDs"),
+						Sel: ast.NewIdent("ID"),
 					},
+				},
+				&ast.SelectorExpr{
+					X:   ast.NewIdent("validation"),
+					Sel: ast.NewIdent("Required"),
+				},
+				&ast.SelectorExpr{
+					X:   ast.NewIdent("is"),
+					Sel: ast.NewIdent("UUID"),
 				},
 			},
 		},
@@ -105,8 +116,12 @@ func (m *Filter) toValidate() []*ast.CallExpr {
 					Op: token.AND,
 					X: &ast.SelectorExpr{
 						X:   ast.NewIdent("m"),
-						Sel: ast.NewIdent("PageNumber"),
+						Sel: ast.NewIdent("UpdatedAt"),
 					},
+				},
+				&ast.SelectorExpr{
+					X:   ast.NewIdent("validation"),
+					Sel: ast.NewIdent("Required"),
 				},
 			},
 		},
@@ -120,29 +135,19 @@ func (m *Filter) toValidate() []*ast.CallExpr {
 					Op: token.AND,
 					X: &ast.SelectorExpr{
 						X:   ast.NewIdent("m"),
-						Sel: ast.NewIdent("PageSize"),
+						Sel: ast.NewIdent("CreatedAt"),
 					},
 				},
-			},
-		},
-		{
-			Fun: &ast.SelectorExpr{
-				X:   ast.NewIdent("validation"),
-				Sel: ast.NewIdent("Field"),
-			},
-			Args: []ast.Expr{
-				&ast.UnaryExpr{
-					Op: token.AND,
-					X: &ast.SelectorExpr{
-						X:   ast.NewIdent("m"),
-						Sel: ast.NewIdent("OrderBy"),
-					},
+				&ast.SelectorExpr{
+					X:   ast.NewIdent("validation"),
+					Sel: ast.NewIdent("Required"),
 				},
 			},
 		},
 	}
-	if m.ModelConfig.Auth {
-		callExprs = append(callExprs, &ast.CallExpr{
+
+	for _, param := range m.model.Params {
+		call := &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
 				X:   ast.NewIdent("validation"),
 				Sel: ast.NewIdent("Field"),
@@ -152,16 +157,35 @@ func (m *Filter) toValidate() []*ast.CallExpr {
 					Op: token.AND,
 					X: &ast.SelectorExpr{
 						X:   ast.NewIdent("m"),
-						Sel: ast.NewIdent("Search"),
+						Sel: ast.NewIdent(param.GetName()),
 					},
 				},
 			},
-		})
+		}
+		if !strings.HasPrefix(param.Type, "*") {
+			call.Args = append(call.Args, &ast.SelectorExpr{
+				X:   ast.NewIdent("validation"),
+				Sel: ast.NewIdent("Required"),
+			})
+		}
+		if strings.ToLower(param.Type) == "uuid" {
+			call.Args = append(call.Args, &ast.SelectorExpr{
+				X:   ast.NewIdent("is"),
+				Sel: ast.NewIdent("UUID"),
+			})
+		}
+		if strings.Contains(strings.ToLower(param.GetName()), "email") {
+			call.Args = append(call.Args, &ast.SelectorExpr{
+				X:   ast.NewIdent("is"),
+				Sel: ast.NewIdent("EmailFormat"),
+			})
+		}
+		fields = append(fields, call)
 	}
-	return callExprs
+	return fields
 }
 
-func (m *Filter) syncStruct() error {
+func (m *MainModel) syncStruct() error {
 	fileset := token.NewFileSet()
 	filename := m.filename()
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -171,7 +195,7 @@ func (m *Filter) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == m.ModelConfig.FilterTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == m.model.ModelName() {
 			structure = t
 			structureExists = true
 			return false
@@ -221,10 +245,10 @@ func (m *Filter) syncStruct() error {
 	return nil
 }
 
-func (m *Filter) astStruct() *ast.TypeSpec {
+func (m *MainModel) astStruct() *ast.TypeSpec {
 	return &ast.TypeSpec{
-		Name:       ast.NewIdent(m.ModelConfig.FilterTypeName()),
 		Doc:        nil,
+		Name:       ast.NewIdent(m.model.ModelName()),
 		TypeParams: nil,
 		Assign:     0,
 		Type: &ast.StructType{
@@ -240,7 +264,7 @@ func (m *Filter) astStruct() *ast.TypeSpec {
 	}
 }
 
-func (m *Filter) astValidate() *ast.FuncDecl {
+func (m *MainModel) astValidate() *ast.FuncDecl {
 	exprs := []ast.Expr{
 		ast.NewIdent("m"),
 	}
@@ -258,7 +282,7 @@ func (m *Filter) astValidate() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						Star: 0,
-						X:    ast.NewIdent(m.ModelConfig.FilterTypeName()),
+						X:    ast.NewIdent(m.model.ModelName()),
 					},
 					Tag:     nil,
 					Comment: nil,
@@ -341,7 +365,7 @@ func (m *Filter) astValidate() *ast.FuncDecl {
 	}
 }
 
-func (m *Filter) syncValidate() error {
+func (m *MainModel) syncValidate() error {
 	fileset := token.NewFileSet()
 	filename := m.filename()
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -355,7 +379,7 @@ func (m *Filter) syncValidate() error {
 			for _, field := range fun.Recv.List {
 				if expr, ok := field.Type.(*ast.StarExpr); ok {
 					ident, ok := expr.X.(*ast.Ident)
-					if ok && ident.Name == m.ModelConfig.FilterTypeName() {
+					if ok && ident.Name == m.model.ModelName() {
 						validator = fun
 						validatorExists = true
 						return false
@@ -411,42 +435,39 @@ func (m *Filter) syncValidate() error {
 	return nil
 }
 
-func (m *Filter) astFakeValues() []*ast.KeyValueExpr {
-	keyValueExprs := []*ast.KeyValueExpr{
+func (m *MainModel) astFakeValues() []*ast.KeyValueExpr {
+	kvs := []*ast.KeyValueExpr{
 		{
-			Key:   ast.NewIdent("IDs"),
-			Value: generators.FakeAst("[]UUID"),
+			Key:   ast.NewIdent("ID"),
+			Value: fake.FakeAst("UUID"),
 		},
 		{
-			Key:   ast.NewIdent("PageNumber"),
-			Value: generators.FakeAst("*uint64"),
+			Key:   ast.NewIdent("UpdatedAt"),
+			Value: fake.FakeAst("time.Time"),
 		},
 		{
-			Key:   ast.NewIdent("PageSize"),
-			Value: generators.FakeAst("*uint64"),
-		},
-		{
-			Key:   ast.NewIdent("OrderBy"),
-			Value: generators.FakeAst("[]string"),
+			Key:   ast.NewIdent("CreatedAt"),
+			Value: fake.FakeAst("time.Time"),
 		},
 	}
-	if m.ModelConfig.Auth {
-		keyValueExprs = append(keyValueExprs, &ast.KeyValueExpr{
-			Key:   ast.NewIdent("Search"),
-			Value: generators.FakeAst("*string"),
+	for _, param := range m.model.Params {
+		kvs = append(kvs, &ast.KeyValueExpr{
+			Key:   ast.NewIdent(param.GetName()),
+			Colon: 0,
+			Value: fake.FakeAst(param.Type),
 		})
 	}
-	return keyValueExprs
+	return kvs
 }
 
-func (m *Filter) syncMock() error {
+func (m *MainModel) syncMock() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "domain", "models", "mock", m.ModelConfig.FileName())
+	filename := path.Join("internal", "domain", "models", "mock", m.model.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
-	mockName := fmt.Sprintf("New%s", m.ModelConfig.FilterTypeName())
+	mockName := fmt.Sprintf("New%s", m.model.ModelName())
 	var mockExists bool
 	var mock *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
@@ -494,7 +515,7 @@ func (m *Filter) syncMock() error {
 								Star: 0,
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(m.ModelConfig.FilterTypeName()),
+									Sel: ast.NewIdent(m.model.ModelName()),
 								},
 							},
 							Tag:     nil,
@@ -530,7 +551,7 @@ func (m *Filter) syncMock() error {
 								X: &ast.CompositeLit{
 									Type: &ast.SelectorExpr{
 										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(m.ModelConfig.FilterTypeName()),
+										Sel: ast.NewIdent(m.model.ModelName()),
 									},
 									Lbrace:     0,
 									Elts:       nil,
@@ -556,7 +577,7 @@ func (m *Filter) syncMock() error {
 		ast.Inspect(mock.Body, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
 				if sel, ok := cl.Type.(*ast.SelectorExpr); ok {
-					if sel.Sel.Name != m.ModelConfig.FilterTypeName() {
+					if sel.Sel.Name != m.model.ModelName() {
 						return true
 					}
 				}
@@ -585,7 +606,7 @@ func (m *Filter) syncMock() error {
 	return nil
 }
 
-func (m *Filter) Sync() error {
+func (m *MainModel) Sync() error {
 	if err := m.syncStruct(); err != nil {
 		return err
 	}

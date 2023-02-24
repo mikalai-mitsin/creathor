@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package examplepb.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "github.com/018bf/example/pkg/examplepb/v1";
+
+message CreateToken {
+  string email = 1;
+  string password = 2;
+}
+
+message AccessToken {
+  string token = 1;
+}
+
+message RefreshToken {
+  string token = 1;
+}
+
+message RevokeToken {
+  string token = 1;
+}
+
+message TokenPair {
+  string access = 1;
+  string refresh = 2;
+}
+
+service AuthService {
+  rpc CreateToken(examplepb.v1.CreateToken) returns (examplepb.v1.TokenPair) {
+    option (google.api.http) = {
+      post: "/api/v1/auth",
+      body: "*"
+    };
+  }
+  rpc RefreshToken(examplepb.v1.RefreshToken) returns (examplepb.v1.TokenPair) {
+    option (google.api.http) = {
+      patch: "/api/v1/auth",
+      body: "*"
+    };
+  }
+}

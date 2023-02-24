@@ -21,85 +21,6 @@ import (
 	"path/filepath"
 )
 
-//func SyncFilterStruct(m *configs.ModelConfig) error {
-//	create := &generatorsModels.Model{
-//		Name:        m.FilterTypeName(),
-//		ModelConfig: m,
-//		Params: []*generatorsModels.Param{
-//			{
-//				Name: "IDs",
-//				Type: "[]UUID",
-//			},
-//			{
-//				Name: "PageSize",
-//				Type: "*uint64",
-//			},
-//			{
-//				Name: "PageNumber",
-//				Type: "*uint64",
-//			},
-//			{
-//				Name: "OrderBy",
-//				Type: "[]string",
-//			},
-//		},
-//	}
-//	if m.SearchEnabled() {
-//		create.Params = append(
-//			create.Params,
-//			&generatorsModels.Param{
-//				Name: "Search",
-//				Type: "*string",
-//			},
-//		)
-//	}
-//	if err := create.Sync(); err != nil {
-//		return err
-//	}
-//	return nil
-//}
-//
-//func SyncCreateStruct(m *configs.ModelConfig) error {
-//	create := &generatorsModels.Model{
-//		Name:        m.CreateTypeName(),
-//		ModelConfig: m,
-//		Params:      []*generatorsModels.Param{},
-//	}
-//	for _, param := range m.Params {
-//		create.Params = append(create.Params, &generatorsModels.Param{
-//			Name: param.GetName(),
-//			Type: param.Type,
-//		})
-//	}
-//	if err := create.Sync(); err != nil {
-//		return err
-//	}
-//	return nil
-//}
-//
-//func SyncUpdateStruct(m *configs.ModelConfig) error {
-//	update := &generatorsModels.Model{
-//		Name:        m.UpdateTypeName(),
-//		ModelConfig: m,
-//		Params: []*generatorsModels.Param{
-//			{
-//				Name: "ID",
-//				Type: "UUID",
-//			},
-//		},
-//	}
-//	for _, param := range m.Params {
-//		update.Params = append(update.Params, &generatorsModels.Param{
-//			Name: param.GetName(),
-//			Type: fmt.Sprintf("*%s", param.Type),
-//		})
-//	}
-//	if err := update.Sync(); err != nil {
-//		return err
-//	}
-//	return nil
-//}
-
 func SyncModel(m *configs.ModelConfig) error {
 	model := generatorsModels.NewModel(m)
 	if err := model.Sync(); err != nil {
@@ -117,15 +38,6 @@ func SyncModel(m *configs.ModelConfig) error {
 	if err := filter.Sync(); err != nil {
 		return err
 	}
-	//if err := SyncFilterStruct(m); err != nil {
-	//	return err
-	//}
-	//if err := SyncCreateStruct(m); err != nil {
-	//	return err
-	//}
-	//if err := SyncUpdateStruct(m); err != nil {
-	//	return err
-	//}
 	repositoryInterface := generatorsRepositoriesInterfaces.NewRepositoryInterface(m)
 	if err := repositoryInterface.Sync(); err != nil {
 		return err

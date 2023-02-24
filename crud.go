@@ -21,31 +21,6 @@ func CreateCRUD(model *configs.ModelConfig) error {
 	}
 	files := []*Template{
 		{
-			SourcePath:      "templates/internal/domain/models/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "models", model.FileName()),
-			Name:            "model",
-		},
-		{
-			SourcePath:      "templates/internal/domain/models/crud_mock.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "models", "mock", model.FileName()),
-			Name:            "model_mock",
-		},
-		{
-			SourcePath:      "templates/internal/domain/repositories/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "repositories", model.FileName()),
-			Name:            "repository",
-		},
-		{
-			SourcePath:      "templates/internal/domain/usecases/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "usecases", model.FileName()),
-			Name:            "usecase",
-		},
-		{
-			SourcePath:      "templates/internal/domain/interceptors/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "domain", "interceptors", model.FileName()),
-			Name:            "interceptor",
-		},
-		{
 			SourcePath:      "templates/internal/usecases/crud.go.tmpl",
 			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", model.FileName()),
 			Name:            "usecase",

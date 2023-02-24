@@ -2,6 +2,7 @@ package domain
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
@@ -19,12 +20,45 @@ func NewRepositoryInterface(config *configs.ModelConfig) *RepositoryInterface {
 	return &RepositoryInterface{model: config}
 }
 
+func (i RepositoryInterface) file() *ast.File {
+	return &ast.File{
+		Name: &ast.Ident{
+			Name: "repositories",
+		},
+		Decls: []ast.Decl{
+			&ast.GenDecl{
+				Doc:    nil,
+				TokPos: 0,
+				Tok:    token.IMPORT,
+				Lparen: 0,
+				Specs: []ast.Spec{
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"context"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/domain/models"`, i.model.Module),
+						},
+					},
+				},
+				Rparen: 0,
+			},
+		},
+		Imports:  nil,
+		Comments: nil,
+	}
+}
+
 func (i RepositoryInterface) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "domain", "repositories", i.model.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
-		return err
+		file = i.file()
 	}
 	var structureExists bool
 	var structure *ast.TypeSpec
@@ -41,12 +75,18 @@ func (i RepositoryInterface) Sync() error {
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
-			Doc:    nil,
-			TokPos: 0,
-			Tok:    token.TYPE,
-			Lparen: 0,
-			Specs:  []ast.Spec{structure},
-			Rparen: 0,
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: fmt.Sprintf("//%s - domain layer repository interface", i.model.RepositoryTypeName()),
+					},
+					{
+						Text: fmt.Sprintf("//go:generate mockgen -build_flags=-mod=mod -destination mock/%s %s/internal/domain/repositories %s", i.model.FileName(), i.model.Module, i.model.RepositoryTypeName()),
+					},
+				},
+			},
+			Tok:   token.TYPE,
+			Specs: []ast.Spec{structure},
 		}
 		file.Decls = append(file.Decls, gd)
 	}

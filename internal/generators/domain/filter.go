@@ -26,6 +26,49 @@ func (m *FilterModel) filename() string {
 	return filepath.Join("internal", "domain", "models", m.model.FileName())
 }
 
+func (m *FilterModel) file() *ast.File {
+	return &ast.File{
+		Package: 1,
+		Name: &ast.Ident{
+			Name: "models",
+		},
+		Decls: []ast.Decl{
+			&ast.GenDecl{
+				Tok: token.IMPORT,
+				Specs: []ast.Spec{
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"time"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/domain/errs"`, m.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Name: ast.NewIdent("validation"),
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"github.com/go-ozzo/ozzo-validation/v4"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"github.com/go-ozzo/ozzo-validation/v4/is"`,
+						},
+					},
+				},
+			},
+		},
+		Imports:  nil,
+		Comments: nil,
+	}
+}
+
 func (m *FilterModel) params() []*ast.Field {
 	fields := []*ast.Field{
 		{
@@ -166,7 +209,7 @@ func (m *FilterModel) syncStruct() error {
 	filename := m.filename()
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
-		return err
+		file = m.file()
 	}
 	var structureExists bool
 	var structure *ast.TypeSpec
@@ -346,7 +389,7 @@ func (m *FilterModel) syncValidate() error {
 	filename := m.filename()
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
-		return err
+		file = m.file()
 	}
 	var validatorExists bool
 	var validator *ast.FuncDecl
@@ -438,13 +481,67 @@ func (m *FilterModel) astFakeValues() []*ast.KeyValueExpr {
 	}
 	return keyValueExprs
 }
+func (m *FilterModel) mockFile() *ast.File {
+	return &ast.File{
+		Package: 1,
+		Name: &ast.Ident{
+			Name: "mock_models",
+		},
+
+		Decls: []ast.Decl{
+			&ast.GenDecl{
+				Tok: token.IMPORT,
+				Specs: []ast.Spec{
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/domain/models"`, m.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/pkg/utils"`, m.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"github.com/google/uuid"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"github.com/jaswdr/faker"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"testing"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"time"`,
+						},
+					},
+				},
+			},
+		},
+		Imports:  nil,
+		Comments: nil,
+	}
+}
 
 func (m *FilterModel) syncMock() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "domain", "models", "mock", m.model.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
-		return err
+		file = m.mockFile()
 	}
 	mockName := fmt.Sprintf("New%s", m.model.FilterTypeName())
 	var mockExists bool

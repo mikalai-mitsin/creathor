@@ -143,6 +143,55 @@ func FakeAst(t string) ast.Expr {
 			Ellipsis: 0,
 			Rparen:   0,
 		}
+	case "[]uuid", "[]UUID":
+		fake = &ast.CompositeLit{
+			Type: &ast.ArrayType{
+				Lbrack: 0,
+				Len:    nil,
+				Elt:    ast.NewIdent("models.UUID"),
+			},
+			Lbrace: 0,
+			Elts: []ast.Expr{
+				&ast.CallExpr{
+					Fun:    ast.NewIdent("models.UUID"),
+					Lparen: 0,
+					Args: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X:   ast.NewIdent("uuid"),
+								Sel: ast.NewIdent("NewString"),
+							},
+							Lparen:   0,
+							Args:     nil,
+							Ellipsis: 0,
+							Rparen:   0,
+						},
+					},
+					Ellipsis: 0,
+					Rparen:   0,
+				},
+				&ast.CallExpr{
+					Fun:    ast.NewIdent("models.UUID"),
+					Lparen: 0,
+					Args: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X:   ast.NewIdent("uuid"),
+								Sel: ast.NewIdent("NewString"),
+							},
+							Lparen:   0,
+							Args:     nil,
+							Ellipsis: 0,
+							Rparen:   0,
+						},
+					},
+					Ellipsis: 0,
+					Rparen:   0,
+				},
+			},
+			Rbrace:     0,
+			Incomplete: false,
+		}
 	case "uuid", "UUID":
 		fake = &ast.CallExpr{
 			Fun:    ast.NewIdent("models.UUID"),
@@ -206,7 +255,7 @@ func FakeAst(t string) ast.Expr {
 		fake = &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
 				X:   ast.NewIdent("faker"),
-				Sel: ast.NewIdent("Todo()"),
+				Sel: ast.NewIdent("Todo"),
 			},
 			Lparen:   0,
 			Args:     nil,

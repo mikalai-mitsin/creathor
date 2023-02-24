@@ -2,6 +2,7 @@ package domain
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
@@ -19,12 +20,41 @@ func NewInterceptorInterface(config *configs.ModelConfig) *InterceptorInterface 
 	return &InterceptorInterface{model: config}
 }
 
+func (i InterceptorInterface) file() *ast.File {
+	return &ast.File{
+		Name: &ast.Ident{
+			Name: "interceptors",
+		},
+		Decls: []ast.Decl{
+			&ast.GenDecl{
+				Tok: token.IMPORT,
+				Specs: []ast.Spec{
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"context"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/domain/models"`, i.model.Module),
+						},
+					},
+				},
+			},
+		},
+		Imports:  nil,
+		Comments: nil,
+	}
+}
+
 func (i InterceptorInterface) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "domain", "interceptors", i.model.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
-		return err
+		file = i.file()
 	}
 	var structureExists bool
 	var structure *ast.TypeSpec
@@ -41,12 +71,18 @@ func (i InterceptorInterface) Sync() error {
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
-			Doc:    nil,
-			TokPos: 0,
-			Tok:    token.TYPE,
-			Lparen: 0,
-			Specs:  []ast.Spec{structure},
-			Rparen: 0,
+			Doc: &ast.CommentGroup{
+				List: []*ast.Comment{
+					{
+						Text: fmt.Sprintf("//%s - domain layer interceptor interface", i.model.InterceptorTypeName()),
+					},
+					{
+						Text: fmt.Sprintf("//go:generate mockgen -build_flags=-mod=mod -destination mock/%s %s/internal/domain/interceptors %s", i.model.FileName(), i.model.Module, i.model.InterceptorTypeName()),
+					},
+				},
+			},
+			Tok:   token.TYPE,
+			Specs: []ast.Spec{structure},
 		}
 		file.Decls = append(file.Decls, gd)
 	}

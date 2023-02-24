@@ -102,11 +102,6 @@ func CreateLayout(project *configs.Project) error {
 			Name:            "config tests",
 		},
 		{
-			SourcePath:      "templates/internal/domain/errs/errors.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "domain", "errs", "errors.go"),
-			Name:            "domain errors",
-		},
-		{
 			SourcePath:      "templates/internal/domain/errs/errors_test.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "domain", "errs", "errors_test.go"),
 			Name:            "domain errors tests",

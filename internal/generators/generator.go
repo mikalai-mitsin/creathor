@@ -24,6 +24,7 @@ func NewCrudGenerator(project *configs.Project) *CrudGenerator {
 func (g CrudGenerator) Sync() error {
 	generators := []Generator{
 		grpc.NewServer(g.project),
+		domain.NewErrors(g.project),
 	}
 	for _, m := range g.project.Models {
 		generators = append(

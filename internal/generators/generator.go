@@ -3,10 +3,8 @@ package generators
 import (
 	"github.com/018bf/creathor/internal/configs"
 	"github.com/018bf/creathor/internal/generators/domain"
-	"github.com/018bf/creathor/internal/generators/interceptors"
+	"github.com/018bf/creathor/internal/generators/implementations"
 	"github.com/018bf/creathor/internal/generators/interfaces/grpc"
-	"github.com/018bf/creathor/internal/generators/repositories/postgres"
-	"github.com/018bf/creathor/internal/generators/usecases"
 )
 
 type Generator interface {
@@ -36,9 +34,10 @@ func (g CrudGenerator) Sync() error {
 			domain.NewRepositoryInterface(m),
 			domain.NewUseCaseInterface(m),
 			domain.NewInterceptorInterface(m),
-			interceptors.NewInterceptor(m),
-			usecases.NewUseCase(m),
-			postgres.NewRepository(m),
+
+			implementations.NewInterceptor(m),
+			implementations.NewUseCase(m),
+			implementations.NewPostgresRepository(m),
 		)
 	}
 	for _, generator := range generators {

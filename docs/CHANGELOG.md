@@ -2,8 +2,50 @@
 ## [Unreleased]
 
 
-<a name="0.4.3"></a>
-## [0.4.3] - 2023-02-08
+<a name="0.4.4"></a>
+## [0.4.4] - 2023-03-04
+### Build
+- update dependencies
+
+### Feat
+- clean up di
+- **container:** run servers as gorutine
+- **domain:** generate files from ast
+- **generators:** generate grpc interface
+- **grpc:** generate server from ast
+- **grpc:** add otel middleware
+- **interceptor:** generate implementation from AST
+- **interceptor:** cleanup templates
+- **interfaces:** generate from AST
+- **models:** generate filter from ast
+- **models:** generate from AST
+- **repositories:** generate implementation from AST
+- **repositories:** generate implementation of create from AST
+- **usecases:** generate implementation from AST
+
+### Fix
+- enable post init
+- **container:** generate fx containers from ast
+- **docker:** set go version
+- **repositories:** enable search only if needed
+
+### Refactor
+- cleanup
+- cleanup
+- move to implementation
+- add base crud generator
+- move generators to separate packages
+- separate model with generators
+- **generators:** use project config in errors
+- **models:** separate model, update and filter
+- **usecases:** remove params
+
+### Style
+- remove comments
+
+
+<a name="v0.4.3"></a>
+## [v0.4.3] - 2023-02-08
 ### Docs
 - rebuild example
 - regenerate example
@@ -196,8 +238,9 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/018bf/creathor/compare/0.4.3...HEAD
-[0.4.3]: https://github.com/018bf/creathor/compare/v0.4.2...0.4.3
+[Unreleased]: https://github.com/018bf/creathor/compare/0.4.4...HEAD
+[0.4.4]: https://github.com/018bf/creathor/compare/v0.4.3...0.4.4
+[v0.4.3]: https://github.com/018bf/creathor/compare/v0.4.2...v0.4.3
 [v0.4.2]: https://github.com/018bf/creathor/compare/v0.4.1...v0.4.2
 [v0.4.1]: https://github.com/018bf/creathor/compare/v0.4.0...v0.4.1
 [v0.4.0]: https://github.com/018bf/creathor/compare/v0.3.3...v0.4.0

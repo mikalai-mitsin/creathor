@@ -13,10 +13,6 @@ import "google/api/annotations.proto";
 message SessionCreate {
   string title = 1;
   string description = 2;
-  uint64 weight = 3;
-  repeated uint64 versions = 4;
-  google.protobuf.Timestamp release = 5;
-  google.protobuf.Timestamp tested = 6;
 }
 
 message SessionGet {
@@ -27,10 +23,6 @@ message SessionUpdate {
   string id = 1;
   google.protobuf.StringValue title = 2;
   google.protobuf.StringValue description = 3;
-  google.protobuf.UInt64Value weight = 4;
-  google.protobuf.ListValue versions = 5;
-  google.protobuf.Timestamp release = 6;
-  google.protobuf.Timestamp tested = 7;
 }
 
 message Session {
@@ -39,10 +31,6 @@ message Session {
   google.protobuf.Timestamp created_at = 3;
   string title = 4;
   string description = 5;
-  uint64 weight = 6;
-  repeated uint64 versions = 7;
-  google.protobuf.Timestamp release = 8;
-  google.protobuf.Timestamp tested = 9;
 }
 
 message ListSession {

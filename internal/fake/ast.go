@@ -105,10 +105,10 @@ func FakeAst(t string) ast.Expr {
 					Ellipsis: 0,
 					Rparen:   0,
 				},
-				Sel: ast.NewIdent("Text"),
+				Sel: ast.NewIdent("Sentence"),
 			},
 			Lparen:   0,
-			Args:     []ast.Expr{&ast.BasicLit{Kind: token.INT, Value: "256"}},
+			Args:     []ast.Expr{&ast.BasicLit{Kind: token.INT, Value: "15"}},
 			Ellipsis: 0,
 			Rparen:   0,
 		}

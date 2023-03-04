@@ -7,8 +7,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/lib/pq"
-
 	"github.com/018bf/example/internal/domain/errs"
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
 	"github.com/018bf/example/internal/interfaces/postgres"
@@ -99,12 +97,9 @@ func TestEquipmentRepository_Create(t *testing.T) {
 					WithArgs(
 						equipment.UpdatedAt,
 						equipment.CreatedAt,
-						equipment.Title,
-						equipment.Description,
+						equipment.Name,
+						equipment.Repeat,
 						equipment.Weight,
-						pq.Array(equipment.Versions),
-						equipment.Release,
-						equipment.Tested,
 					).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).
 						AddRow(equipment.ID, equipment.CreatedAt))
@@ -126,12 +121,9 @@ func TestEquipmentRepository_Create(t *testing.T) {
 					WithArgs(
 						equipment.UpdatedAt,
 						equipment.CreatedAt,
-						equipment.Title,
-						equipment.Description,
+						equipment.Name,
+						equipment.Repeat,
 						equipment.Weight,
-						pq.Array(equipment.Versions),
-						equipment.Release,
-						equipment.Tested,
 					).
 					WillReturnError(errors.New("test error"))
 			},
@@ -170,7 +162,7 @@ func TestEquipmentRepository_Get(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	query := "SELECT equipment.id, equipment.updated_at, equipment.created_at, equipment.title, equipment.description, equipment.weight, equipment.versions, equipment.release, equipment.tested FROM public.equipment WHERE id = \\$1 LIMIT 1"
+	query := "SELECT equipment.id, equipment.updated_at, equipment.created_at, equipment.name, equipment.repeat, equipment.weight FROM public.equipment WHERE id = \\$1 LIMIT 1"
 	equipment := mock_models.NewEquipment(t)
 	ctx := context.Background()
 	type fields struct {
@@ -277,7 +269,7 @@ func TestEquipmentRepository_List(t *testing.T) {
 		listEquipment = append(listEquipment, mock_models.NewEquipment(t))
 	}
 	filter := mock_models.NewEquipmentFilter(t)
-	query := "SELECT equipment.id, equipment.updated_at, equipment.created_at, equipment.title, equipment.description, equipment.weight, equipment.versions, equipment.release, equipment.tested FROM public.equipment"
+	query := "SELECT equipment.id, equipment.updated_at, equipment.created_at, equipment.name, equipment.repeat, equipment.weight FROM public.equipment"
 	type fields struct {
 		database *sqlx.DB
 		logger   log.Logger
@@ -421,12 +413,9 @@ func TestEquipmentRepository_Update(t *testing.T) {
 				mock.ExpectExec(query).
 					WithArgs(
 						equipment.UpdatedAt,
-						equipment.Title,
-						equipment.Description,
+						equipment.Name,
+						equipment.Repeat,
 						equipment.Weight,
-						pq.Array(equipment.Versions),
-						equipment.Release,
-						equipment.Tested,
 						equipment.ID,
 					).
 					WillReturnResult(sqlmock.NewResult(0, 1))
@@ -447,12 +436,9 @@ func TestEquipmentRepository_Update(t *testing.T) {
 				mock.ExpectExec(query).
 					WithArgs(
 						equipment.UpdatedAt,
-						equipment.Title,
-						equipment.Description,
+						equipment.Name,
+						equipment.Repeat,
 						equipment.Weight,
-						pq.Array(equipment.Versions),
-						equipment.Release,
-						equipment.Tested,
 						equipment.ID,
 					).
 					WillReturnResult(sqlmock.NewResult(0, 0))
@@ -473,12 +459,9 @@ func TestEquipmentRepository_Update(t *testing.T) {
 				mock.ExpectExec(query).
 					WithArgs(
 						equipment.UpdatedAt,
-						equipment.Title,
-						equipment.Description,
+						equipment.Name,
+						equipment.Repeat,
 						equipment.Weight,
-						pq.Array(equipment.Versions),
-						equipment.Release,
-						equipment.Tested,
 						equipment.ID,
 					).
 					WillReturnError(errors.New("test error"))
@@ -500,12 +483,9 @@ func TestEquipmentRepository_Update(t *testing.T) {
 				mock.ExpectExec(query).
 					WithArgs(
 						equipment.UpdatedAt,
-						equipment.Title,
-						equipment.Description,
+						equipment.Name,
+						equipment.Repeat,
 						equipment.Weight,
-						pq.Array(equipment.Versions),
-						equipment.Release,
-						equipment.Tested,
 						equipment.ID,
 					).
 					WillReturnError(errors.New("test error"))
@@ -527,12 +507,9 @@ func TestEquipmentRepository_Update(t *testing.T) {
 				mock.ExpectExec(query).
 					WithArgs(
 						equipment.UpdatedAt,
-						equipment.Title,
-						equipment.Description,
+						equipment.Name,
+						equipment.Repeat,
 						equipment.Weight,
-						pq.Array(equipment.Versions),
-						equipment.Release,
-						equipment.Tested,
 						equipment.ID,
 					).
 					WillReturnResult(sqlmock.NewErrorResult(errors.New("test error")))
@@ -780,24 +757,18 @@ func newEquipmentRows(t *testing.T, listEquipment []*models.Equipment) *sqlmock.
 	t.Helper()
 	rows := sqlmock.NewRows([]string{
 		"id",
-		"title",
-		"description",
+		"name",
+		"repeat",
 		"weight",
-		"versions",
-		"release",
-		"tested",
 		"updated_at",
 		"created_at",
 	})
 	for _, equipment := range listEquipment {
 		rows.AddRow(
 			equipment.ID,
-			equipment.Title,
-			equipment.Description,
+			equipment.Name,
+			equipment.Repeat,
 			equipment.Weight,
-			pq.Array(equipment.Versions),
-			equipment.Release,
-			equipment.Tested,
 			equipment.UpdatedAt,
 			equipment.CreatedAt,
 		)

@@ -22,10 +22,6 @@ type Session struct {
 	CreatedAt   time.Time `json:"created_at"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
-	Weight      uint64    `json:"weight"`
-	Versions    []uint64  `json:"versions"`
-	Release     time.Time `json:"release"`
-	Tested      time.Time `json:"tested"`
 }
 
 func (m *Session) Validate() error {
@@ -36,10 +32,6 @@ func (m *Session) Validate() error {
 		validation.Field(&m.CreatedAt, validation.Required),
 		validation.Field(&m.Title, validation.Required),
 		validation.Field(&m.Description, validation.Required),
-		validation.Field(&m.Weight, validation.Required),
-		validation.Field(&m.Versions, validation.Required),
-		validation.Field(&m.Release, validation.Required),
-		validation.Field(&m.Tested, validation.Required),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -48,12 +40,8 @@ func (m *Session) Validate() error {
 }
 
 type SessionCreate struct {
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Weight      uint64    `json:"weight"`
-	Versions    []uint64  `json:"versions"`
-	Release     time.Time `json:"release"`
-	Tested      time.Time `json:"tested"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
 func (m *SessionCreate) Validate() error {
@@ -61,10 +49,6 @@ func (m *SessionCreate) Validate() error {
 		m,
 		validation.Field(&m.Title, validation.Required),
 		validation.Field(&m.Description, validation.Required),
-		validation.Field(&m.Weight, validation.Required),
-		validation.Field(&m.Versions, validation.Required),
-		validation.Field(&m.Release, validation.Required),
-		validation.Field(&m.Tested, validation.Required),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -73,13 +57,9 @@ func (m *SessionCreate) Validate() error {
 }
 
 type SessionUpdate struct {
-	ID          UUID       `json:"id"`
-	Title       *string    `json:"title"`
-	Description *string    `json:"description"`
-	Weight      *uint64    `json:"weight"`
-	Versions    *[]uint64  `json:"versions"`
-	Release     *time.Time `json:"release"`
-	Tested      *time.Time `json:"tested"`
+	ID          UUID    `json:"id"`
+	Title       *string `json:"title"`
+	Description *string `json:"description"`
 }
 
 func (m *SessionUpdate) Validate() error {
@@ -88,10 +68,6 @@ func (m *SessionUpdate) Validate() error {
 		validation.Field(&m.ID, validation.Required, is.UUID),
 		validation.Field(&m.Title),
 		validation.Field(&m.Description),
-		validation.Field(&m.Weight),
-		validation.Field(&m.Versions),
-		validation.Field(&m.Release),
-		validation.Field(&m.Tested),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)

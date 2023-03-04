@@ -17,15 +17,12 @@ const (
 )
 
 type Equipment struct {
-	ID          UUID      `json:"id"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	CreatedAt   time.Time `json:"created_at"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Weight      uint64    `json:"weight"`
-	Versions    []uint64  `json:"versions"`
-	Release     time.Time `json:"release"`
-	Tested      time.Time `json:"tested"`
+	ID        UUID      `json:"id"`
+	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"`
+	Name      string    `json:"name"`
+	Repeat    int       `json:"repeat"`
+	Weight    int       `json:"weight"`
 }
 
 func (m *Equipment) Validate() error {
@@ -34,12 +31,9 @@ func (m *Equipment) Validate() error {
 		validation.Field(&m.ID, validation.Required, is.UUID),
 		validation.Field(&m.UpdatedAt, validation.Required),
 		validation.Field(&m.CreatedAt, validation.Required),
-		validation.Field(&m.Title, validation.Required),
-		validation.Field(&m.Description, validation.Required),
+		validation.Field(&m.Name, validation.Required),
+		validation.Field(&m.Repeat, validation.Required),
 		validation.Field(&m.Weight, validation.Required),
-		validation.Field(&m.Versions, validation.Required),
-		validation.Field(&m.Release, validation.Required),
-		validation.Field(&m.Tested, validation.Required),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -48,23 +42,17 @@ func (m *Equipment) Validate() error {
 }
 
 type EquipmentCreate struct {
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Weight      uint64    `json:"weight"`
-	Versions    []uint64  `json:"versions"`
-	Release     time.Time `json:"release"`
-	Tested      time.Time `json:"tested"`
+	Name   string `json:"name"`
+	Repeat int    `json:"repeat"`
+	Weight int    `json:"weight"`
 }
 
 func (m *EquipmentCreate) Validate() error {
 	err := validation.ValidateStruct(
 		m,
-		validation.Field(&m.Title, validation.Required),
-		validation.Field(&m.Description, validation.Required),
+		validation.Field(&m.Name, validation.Required),
+		validation.Field(&m.Repeat, validation.Required),
 		validation.Field(&m.Weight, validation.Required),
-		validation.Field(&m.Versions, validation.Required),
-		validation.Field(&m.Release, validation.Required),
-		validation.Field(&m.Tested, validation.Required),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -73,25 +61,19 @@ func (m *EquipmentCreate) Validate() error {
 }
 
 type EquipmentUpdate struct {
-	ID          UUID       `json:"id"`
-	Title       *string    `json:"title"`
-	Description *string    `json:"description"`
-	Weight      *uint64    `json:"weight"`
-	Versions    *[]uint64  `json:"versions"`
-	Release     *time.Time `json:"release"`
-	Tested      *time.Time `json:"tested"`
+	ID     UUID    `json:"id"`
+	Name   *string `json:"name"`
+	Repeat *int    `json:"repeat"`
+	Weight *int    `json:"weight"`
 }
 
 func (m *EquipmentUpdate) Validate() error {
 	err := validation.ValidateStruct(
 		m,
 		validation.Field(&m.ID, validation.Required, is.UUID),
-		validation.Field(&m.Title),
-		validation.Field(&m.Description),
+		validation.Field(&m.Name),
+		validation.Field(&m.Repeat),
 		validation.Field(&m.Weight),
-		validation.Field(&m.Versions),
-		validation.Field(&m.Release),
-		validation.Field(&m.Tested),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)

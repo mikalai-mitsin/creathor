@@ -6,7 +6,6 @@ import (
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
 	"github.com/018bf/example/internal/domain/usecases"
-
 	"github.com/018bf/example/pkg/clock"
 	"github.com/018bf/example/pkg/log"
 )
@@ -39,10 +38,6 @@ func (u *SessionUseCase) Create(
 		CreatedAt:   now,
 		Title:       create.Title,
 		Description: create.Description,
-		Weight:      create.Weight,
-		Versions:    create.Versions,
-		Release:     create.Release,
-		Tested:      create.Tested,
 	}
 	if err := u.sessionRepository.Create(ctx, session); err != nil {
 		return nil, err
@@ -89,18 +84,6 @@ func (u *SessionUseCase) Update(
 		}
 		if update.Description != nil {
 			session.Description = *update.Description
-		}
-		if update.Weight != nil {
-			session.Weight = *update.Weight
-		}
-		if update.Versions != nil {
-			session.Versions = *update.Versions
-		}
-		if update.Release != nil {
-			session.Release = *update.Release
-		}
-		if update.Tested != nil {
-			session.Tested = *update.Tested
 		}
 	}
 	session.UpdatedAt = u.clock.Now().UTC()

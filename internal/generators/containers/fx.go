@@ -89,14 +89,25 @@ func (f FxContainer) toProvide() []ast.Expr {
 		},
 	}
 	if f.project.GRPCEnabled {
-		toProvide = append(toProvide, &ast.SelectorExpr{
-			X: &ast.Ident{
-				Name: "grpcInterface",
+		toProvide = append(
+			toProvide,
+			&ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "grpcInterface",
+				},
+				Sel: &ast.Ident{
+					Name: "NewServer",
+				},
 			},
-			Sel: &ast.Ident{
-				Name: "NewServer",
+			&ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "grpcInterface",
+				},
+				Sel: &ast.Ident{
+					Name: "NewRequestIDMiddleware",
+				},
 			},
-		})
+		)
 		if f.project.Auth {
 			toProvide = append(
 				toProvide,

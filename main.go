@@ -96,6 +96,7 @@ func initProject(ctx *cli.Context) error {
 }
 
 func postInit(project *configs.Project) error {
+	//return nil
 	fmt.Println("post init...")
 	var errb bytes.Buffer
 	generate := exec.Command("go", "generate", "./...")

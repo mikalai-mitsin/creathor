@@ -9,6 +9,177 @@
     "host": "127.0.0.1:8000",
     "basePath": "/api/v1",
     "paths": {
+        "/arches": {
+            "get": {
+                "description": "Responds with the list of all Arch as JSON.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Arch"
+                ],
+                "summary": "List Arch array",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "name": "ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "name": "order_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_number",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Arch"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Takes a Arch JSON and store in DB. Return saved JSON.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Arch"
+                ],
+                "summary": "Store a new Arch",
+                "parameters": [
+                    {
+                        "description": "Arch JSON",
+                        "name": "Arch",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ArchCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Arch"
+                        }
+                    }
+                }
+            }
+        },
+        "/arches/{uuid}": {
+            "get": {
+                "description": "Returns the Arch whose UUID value matches the UUID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Arch"
+                ],
+                "summary": "Get single Arch by UUID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "search Arch by UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Arch"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete the Arch whose UUID value matches the UUID.",
+                "tags": [
+                    "Arch"
+                ],
+                "summary": "Delete single Arch by UUID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "delete Arch by UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
+                "description": "Returns the updated Arch.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Arch"
+                ],
+                "summary": "Update Arch by UUID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "update Arch by UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Arch JSON",
+                        "name": "Arch",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ArchUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Arch"
+                        }
+                    }
+                }
+            }
+        },
         "/auth": {
             "post": {
                 "description": "Auth user return access and refresh token.",
@@ -64,6 +235,177 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.TokenPair"
+                        }
+                    }
+                }
+            }
+        },
+        "/days": {
+            "get": {
+                "description": "Responds with the list of all Day as JSON.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Day"
+                ],
+                "summary": "List Day array",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "name": "ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "name": "order_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_number",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Day"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Takes a Day JSON and store in DB. Return saved JSON.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Day"
+                ],
+                "summary": "Store a new Day",
+                "parameters": [
+                    {
+                        "description": "Day JSON",
+                        "name": "Day",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DayCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Day"
+                        }
+                    }
+                }
+            }
+        },
+        "/days/{uuid}": {
+            "get": {
+                "description": "Returns the Day whose UUID value matches the UUID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Day"
+                ],
+                "summary": "Get single Day by UUID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "search Day by UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Day"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete the Day whose UUID value matches the UUID.",
+                "tags": [
+                    "Day"
+                ],
+                "summary": "Delete single Day by UUID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "delete Day by UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
+                "description": "Returns the updated Day.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Day"
+                ],
+                "summary": "Update Day by UUID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "update Day by UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Day JSON",
+                        "name": "Day",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DayUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Day"
                         }
                     }
                 }
@@ -235,6 +577,177 @@
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/models.Equipment"
+                        }
+                    }
+                }
+            }
+        },
+        "/plans": {
+            "get": {
+                "description": "Responds with the list of all Plan as JSON.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plan"
+                ],
+                "summary": "List Plan array",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "name": "ids",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "name": "order_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_number",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Plan"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Takes a Plan JSON and store in DB. Return saved JSON.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plan"
+                ],
+                "summary": "Store a new Plan",
+                "parameters": [
+                    {
+                        "description": "Plan JSON",
+                        "name": "Plan",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.PlanCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Plan"
+                        }
+                    }
+                }
+            }
+        },
+        "/plans/{uuid}": {
+            "get": {
+                "description": "Returns the Plan whose UUID value matches the UUID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plan"
+                ],
+                "summary": "Get single Plan by UUID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "search Plan by UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Plan"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete the Plan whose UUID value matches the UUID.",
+                "tags": [
+                    "Plan"
+                ],
+                "summary": "Delete single Plan by UUID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "delete Plan by UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
+                "description": "Returns the updated Plan.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Plan"
+                ],
+                "summary": "Update Plan by UUID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "update Plan by UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Plan JSON",
+                        "name": "Plan",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.PlanUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Plan"
                         }
                     }
                 }
@@ -576,7 +1089,7 @@
         }
     },
     "definitions": {
-        "models.Equipment": {
+        "models.Arch": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -588,8 +1101,17 @@
                 "id": {
                     "type": "string"
                 },
+                "name": {
+                    "type": "string"
+                },
                 "release": {
                     "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "tested": {
                     "type": "string"
@@ -605,6 +1127,147 @@
                     "items": {
                         "type": "integer"
                     }
+                }
+            }
+        },
+        "models.ArchCreate": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "release": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tested": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "versions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "models.ArchUpdate": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "release": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tested": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "versions": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "models.Day": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "equipment_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "repeat": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.DayCreate": {
+            "type": "object",
+            "properties": {
+                "equipment_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "repeat": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.DayUpdate": {
+            "type": "object",
+            "properties": {
+                "equipment_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "repeat": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Equipment": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "repeat": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
                 },
                 "weight": {
                     "type": "integer"
@@ -614,23 +1277,11 @@
         "models.EquipmentCreate": {
             "type": "object",
             "properties": {
-                "description": {
+                "name": {
                     "type": "string"
                 },
-                "release": {
-                    "type": "string"
-                },
-                "tested": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "versions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                "repeat": {
+                    "type": "integer"
                 },
                 "weight": {
                     "type": "integer"
@@ -640,26 +1291,14 @@
         "models.EquipmentUpdate": {
             "type": "object",
             "properties": {
-                "description": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
-                "release": {
+                "name": {
                     "type": "string"
                 },
-                "tested": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "versions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                "repeat": {
+                    "type": "integer"
                 },
                 "weight": {
                     "type": "integer"
@@ -690,6 +1329,60 @@
                 }
             }
         },
+        "models.Plan": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "equipment_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "repeat": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PlanCreate": {
+            "type": "object",
+            "properties": {
+                "equipment_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "repeat": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.PlanUpdate": {
+            "type": "object",
+            "properties": {
+                "equipment_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "repeat": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.Session": {
             "type": "object",
             "properties": {
@@ -702,26 +1395,11 @@
                 "id": {
                     "type": "string"
                 },
-                "release": {
-                    "type": "string"
-                },
-                "tested": {
-                    "type": "string"
-                },
                 "title": {
                     "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
-                },
-                "versions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "weight": {
-                    "type": "integer"
                 }
             }
         },
@@ -731,23 +1409,8 @@
                 "description": {
                     "type": "string"
                 },
-                "release": {
-                    "type": "string"
-                },
-                "tested": {
-                    "type": "string"
-                },
                 "title": {
                     "type": "string"
-                },
-                "versions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "weight": {
-                    "type": "integer"
                 }
             }
         },
@@ -760,23 +1423,8 @@
                 "id": {
                     "type": "string"
                 },
-                "release": {
-                    "type": "string"
-                },
-                "tested": {
-                    "type": "string"
-                },
                 "title": {
                     "type": "string"
-                },
-                "versions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "weight": {
-                    "type": "integer"
                 }
             }
         },

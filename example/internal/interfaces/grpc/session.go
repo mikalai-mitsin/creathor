@@ -12,7 +12,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -27,10 +26,7 @@ func NewSessionServiceServer(
 	sessionInterceptor interceptors.SessionInterceptor,
 	logger log.Logger,
 ) examplepb.SessionServiceServer {
-	return &SessionServiceServer{
-		sessionInterceptor: sessionInterceptor,
-		logger:             logger,
-	}
+	return &SessionServiceServer{sessionInterceptor: sessionInterceptor, logger: logger}
 }
 
 func (s *SessionServiceServer) Create(
@@ -99,62 +95,15 @@ func (s *SessionServiceServer) Delete(
 	ctx context.Context,
 	input *examplepb.SessionDelete,
 ) (*emptypb.Empty, error) {
-	if err := s.sessionInterceptor.Delete(
-		ctx,
-		models.UUID(input.GetId()),
-		ctx.Value(UserKey).(*models.User),
-	); err != nil {
+	if err := s.sessionInterceptor.Delete(ctx, models.UUID(input.GetId()), ctx.Value(UserKey).(*models.User)); err != nil {
 		return nil, decodeError(err)
 	}
 	return &emptypb.Empty{}, nil
 }
-
-func encodeSessionUpdate(input *examplepb.SessionUpdate) *models.SessionUpdate {
-	update := &models.SessionUpdate{
-		ID:          models.UUID(input.GetId()),
-		Title:       nil,
-		Description: nil,
-		Weight:      nil,
-		Versions:    nil,
-		Release:     nil,
-		Tested:      nil,
-	}
-	if input.GetTitle() != nil {
-		update.Title = utils.Pointer(string(input.GetTitle().GetValue()))
-	}
-	if input.GetDescription() != nil {
-		update.Description = utils.Pointer(string(input.GetDescription().GetValue()))
-	}
-	if input.GetWeight() != nil {
-		update.Weight = utils.Pointer(uint64(input.GetWeight().GetValue()))
-	}
-	if input.GetVersions() != nil {
-		var params []uint64
-		for _, item := range input.GetVersions().GetValues() {
-			params = append(params, uint64(item.GetNumberValue()))
-		}
-		update.Versions = &params
-	}
-	if input.GetRelease() != nil {
-		update.Release = utils.Pointer(input.GetRelease().AsTime())
-	}
-	if input.GetTested() != nil {
-		update.Tested = utils.Pointer(input.GetTested().AsTime())
-	}
-	return update
+func encodeSessionCreate(input *examplepb.SessionCreate) *models.SessionCreate {
+	create := &models.SessionCreate{Title: input.GetTitle(), Description: input.GetDescription()}
+	return create
 }
-
-func decodeListSession(listSessions []*models.Session, count uint64) *examplepb.ListSession {
-	response := &examplepb.ListSession{
-		Items: make([]*examplepb.Session, 0, len(listSessions)),
-		Count: count,
-	}
-	for _, session := range listSessions {
-		response.Items = append(response.Items, decodeSession(session))
-	}
-	return response
-}
-
 func encodeSessionFilter(input *examplepb.SessionFilter) *models.SessionFilter {
 	filter := &models.SessionFilter{
 		IDs:        nil,
@@ -169,64 +118,49 @@ func encodeSessionFilter(input *examplepb.SessionFilter) *models.SessionFilter {
 	if input.GetPageNumber() != nil {
 		filter.PageNumber = utils.Pointer(input.GetPageNumber().GetValue())
 	}
-	if input.GetSearch() != nil {
-		filter.Search = utils.Pointer(input.GetSearch().GetValue())
-	}
 	for _, id := range input.GetIds() {
 		filter.IDs = append(filter.IDs, models.UUID(id))
 	}
+	if input.GetSearch() != nil {
+		filter.Search = utils.Pointer(input.GetSearch().GetValue())
+	}
 	return filter
 }
-
-func encodeSessionCreate(input *examplepb.SessionCreate) *models.SessionCreate {
-	create := &models.SessionCreate{
-		Title:       string(input.GetTitle()),
-		Description: string(input.GetDescription()),
-		Weight:      uint64(input.GetWeight()),
-		Versions:    nil,
-		Release:     input.GetRelease().AsTime(),
-		Tested:      input.GetTested().AsTime(),
+func encodeSessionUpdate(input *examplepb.SessionUpdate) *models.SessionUpdate {
+	update := &models.SessionUpdate{ID: models.UUID(input.GetId())}
+	if input.GetTitle() != nil {
+		update.Title = utils.Pointer(input.GetTitle().GetValue())
 	}
-	for _, param := range input.GetVersions() {
-		create.Versions = append(create.Versions, uint64(param))
+	if input.GetDescription() != nil {
+		update.Description = utils.Pointer(input.GetDescription().GetValue())
 	}
-	return create
+	return update
 }
-
 func decodeSession(session *models.Session) *examplepb.Session {
 	response := &examplepb.Session{
 		Id:          string(session.ID),
 		UpdatedAt:   timestamppb.New(session.UpdatedAt),
 		CreatedAt:   timestamppb.New(session.CreatedAt),
-		Title:       string(session.Title),
-		Description: string(session.Description),
-		Weight:      uint64(session.Weight),
-		Versions:    nil,
-		Release:     timestamppb.New(session.Release),
-		Tested:      timestamppb.New(session.Tested),
-	}
-	for _, param := range session.Versions {
-		response.Versions = append(response.Versions, uint64(param))
+		Title:       session.Title,
+		Description: session.Description,
 	}
 	return response
 }
-
+func decodeListSession(listSessions []*models.Session, count uint64) *examplepb.ListSession {
+	response := &examplepb.ListSession{
+		Items: make([]*examplepb.Session, 0, len(listSessions)),
+		Count: count,
+	}
+	for _, session := range listSessions {
+		response.Items = append(response.Items, decodeSession(session))
+	}
+	return response
+}
 func decodeSessionUpdate(update *models.SessionUpdate) *examplepb.SessionUpdate {
 	result := &examplepb.SessionUpdate{
 		Id:          string(update.ID),
-		Title:       wrapperspb.String(string(*update.Title)),
-		Description: wrapperspb.String(string(*update.Description)),
-		Weight:      wrapperspb.UInt64(uint64(*update.Weight)),
-		Versions:    nil,
-		Release:     timestamppb.New(*update.Release),
-		Tested:      timestamppb.New(*update.Tested),
-	}
-	if update.Versions != nil {
-		params, err := structpb.NewList(utils.ToAnySlice(*update.Versions))
-		if err != nil {
-			return nil
-		}
-		result.Versions = params
+		Title:       wrapperspb.String(*update.Title),
+		Description: wrapperspb.String(*update.Description),
 	}
 	return result
 }

@@ -541,18 +541,12 @@ func TestEquipmentServiceServer_Update(t *testing.T) {
 func Test_decodeEquipment(t *testing.T) {
 	equipment := mock_models.NewEquipment(t)
 	result := &examplepb.Equipment{
-		Id:          string(equipment.ID),
-		UpdatedAt:   timestamppb.New(equipment.UpdatedAt),
-		CreatedAt:   timestamppb.New(equipment.CreatedAt),
-		Title:       string(equipment.Title),
-		Description: string(equipment.Description),
-		Weight:      uint64(equipment.Weight),
-		Versions:    []uint64{},
-		Release:     timestamppb.New(equipment.Release),
-		Tested:      timestamppb.New(equipment.Tested),
-	}
-	for _, param := range equipment.Versions {
-		result.Versions = append(result.Versions, uint64(param))
+		Id:        string(equipment.ID),
+		UpdatedAt: timestamppb.New(equipment.UpdatedAt),
+		CreatedAt: timestamppb.New(equipment.CreatedAt),
+		Name:      string(equipment.Name),
+		Repeat:    int32(equipment.Repeat),
+		Weight:    int32(equipment.Weight),
 	}
 	type args struct {
 		equipment *models.Equipment

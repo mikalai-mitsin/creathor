@@ -4,16 +4,12 @@ CREATE TABLE public.sessions
         CONSTRAINT sessions_pk PRIMARY KEY,
     title varchar NOT NULL,
     description text NOT NULL,
-    weight bigint NOT NULL,
-    versions bigint[] NOT NULL,
-    release timestamp NOT NULL,
-    tested timestamp NOT NULL,
     updated_at  timestamp    NOT NULL DEFAULT (now() at time zone 'utc'),
     created_at  timestamp    NOT NULL DEFAULT (now() at time zone 'utc')
 );
 CREATE INDEX search_sessions
     ON public.sessions
-        USING GIN (to_tsvector('english', description || weight));
+        USING GIN (to_tsvector('english', description));
 
 CREATE TRIGGER update_sessions_updated_at
     BEFORE UPDATE

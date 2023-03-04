@@ -5,75 +5,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lib/pq"
-
-	sq "github.com/Masterminds/squirrel"
-
-	"github.com/018bf/example/pkg/log"
-
+	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
-
-	"github.com/018bf/example/internal/domain/errs"
+	"github.com/018bf/example/pkg/log"
 	"github.com/018bf/example/pkg/postgresql"
 	"github.com/018bf/example/pkg/utils"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 )
-
-type EquipmentDTO struct {
-	ID          string        `db:"id,omitempty"`
-	UpdatedAt   time.Time     `db:"updated_at,omitempty"`
-	CreatedAt   time.Time     `db:"created_at,omitempty"`
-	Title       string        `db:"title"`
-	Description string        `db:"description"`
-	Weight      int64         `db:"weight"`
-	Versions    pq.Int64Array `db:"versions"`
-	Release     time.Time     `db:"release"`
-	Tested      time.Time     `db:"tested"`
-}
-type EquipmentListDTO []*EquipmentDTO
-
-func (list EquipmentListDTO) ToModels() []*models.Equipment {
-	listEquipment := make([]*models.Equipment, len(list))
-	for i := range list {
-		listEquipment[i] = list[i].ToModel()
-	}
-	return listEquipment
-}
-func NewEquipmentDTOFromModel(equipment *models.Equipment) *EquipmentDTO {
-	dto := &EquipmentDTO{
-		ID:          string(equipment.ID),
-		UpdatedAt:   equipment.UpdatedAt,
-		CreatedAt:   equipment.CreatedAt,
-		Title:       equipment.Title,
-		Description: equipment.Description,
-		Weight:      int64(equipment.Weight),
-		Versions:    pq.Int64Array{},
-		Release:     equipment.Release,
-		Tested:      equipment.Tested,
-	}
-	for _, param := range equipment.Versions {
-		dto.Versions = append(dto.Versions, int64(param))
-	}
-	return dto
-}
-func (dto *EquipmentDTO) ToModel() *models.Equipment {
-	model := &models.Equipment{
-		ID:          models.UUID(dto.ID),
-		UpdatedAt:   dto.UpdatedAt,
-		CreatedAt:   dto.CreatedAt,
-		Title:       dto.Title,
-		Description: dto.Description,
-		Weight:      uint64(dto.Weight),
-		Versions:    []uint64{},
-		Release:     dto.Release,
-		Tested:      dto.Tested,
-	}
-	for _, param := range dto.Versions {
-		model.Versions = append(model.Versions, uint64(param))
-	}
-	return model
-}
 
 type EquipmentRepository struct {
 	database *sqlx.DB
@@ -88,8 +28,8 @@ func (r *EquipmentRepository) Create(ctx context.Context, equipment *models.Equi
 	defer cancel()
 	dto := NewEquipmentDTOFromModel(equipment)
 	q := sq.Insert("public.equipment").
-		Columns("updated_at", "created_at", "title", "description", "weight", "versions", "release", "tested").
-		Values(dto.UpdatedAt, dto.CreatedAt, dto.Title, dto.Description, dto.Weight, dto.Versions, dto.Release, dto.Tested).
+		Columns("updated_at", "created_at", "name", "repeat", "weight").
+		Values(dto.UpdatedAt, dto.CreatedAt, dto.Name, dto.Repeat, dto.Weight).
 		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.QueryRowxContext(ctx, query, args...).StructScan(dto); err != nil {
@@ -103,7 +43,7 @@ func (r *EquipmentRepository) Get(ctx context.Context, id models.UUID) (*models.
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	dto := &EquipmentDTO{}
-	q := sq.Select("equipment.id", "equipment.updated_at", "equipment.created_at", "equipment.title", "equipment.description", "equipment.weight", "equipment.versions", "equipment.release", "equipment.tested").
+	q := sq.Select("equipment.id", "equipment.updated_at", "equipment.created_at", "equipment.name", "equipment.repeat", "equipment.weight").
 		From("public.equipment").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
@@ -126,16 +66,12 @@ func (r *EquipmentRepository) List(
 	if filter.PageSize == nil {
 		filter.PageSize = utils.Pointer(pageSize)
 	}
-	q := sq.Select("equipment.id", "equipment.updated_at", "equipment.created_at", "equipment.title", "equipment.description", "equipment.weight", "equipment.versions", "equipment.release", "equipment.tested").
+	q := sq.Select("equipment.id", "equipment.updated_at", "equipment.created_at", "equipment.name", "equipment.repeat", "equipment.weight").
 		From("public.equipment").
 		Limit(pageSize)
 	if filter.Search != nil {
 		q = q.Where(
-			postgresql.Search{
-				Lang:   "english",
-				Query:  *filter.Search,
-				Fields: []string{"description", "weight"},
-			},
+			postgresql.Search{Lang: "english", Query: *filter.Search, Fields: []string{"name"}},
 		)
 	}
 	if len(filter.IDs) > 0 {
@@ -165,11 +101,7 @@ func (r *EquipmentRepository) Count(
 	q := sq.Select("count(id)").From("public.equipment")
 	if filter.Search != nil {
 		q = q.Where(
-			postgresql.Search{
-				Lang:   "english",
-				Query:  *filter.Search,
-				Fields: []string{"description", "weight"},
-			},
+			postgresql.Search{Lang: "english", Query: *filter.Search, Fields: []string{"name"}},
 		)
 	}
 	if len(filter.IDs) > 0 {
@@ -195,12 +127,9 @@ func (r *EquipmentRepository) Update(ctx context.Context, equipment *models.Equi
 	q := sq.Update("public.equipment").Where(sq.Eq{"id": equipment.ID})
 	{
 		q = q.Set("equipment.updated_at", dto.UpdatedAt)
-		q = q.Set("equipment.title", dto.Title)
-		q = q.Set("equipment.description", dto.Description)
+		q = q.Set("equipment.name", dto.Name)
+		q = q.Set("equipment.repeat", dto.Repeat)
 		q = q.Set("equipment.weight", dto.Weight)
-		q = q.Set("equipment.versions", dto.Versions)
-		q = q.Set("equipment.release", dto.Release)
-		q = q.Set("equipment.tested", dto.Tested)
 	}
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
@@ -238,4 +167,44 @@ func (r *EquipmentRepository) Delete(ctx context.Context, id models.UUID) error 
 		return e
 	}
 	return nil
+}
+
+type EquipmentDTO struct {
+	ID        string    `db:"id,omitempty"`
+	UpdatedAt time.Time `db:"updated_at,omitempty"`
+	CreatedAt time.Time `db:"created_at,omitempty"`
+	Name      string    `db:"name"`
+	Repeat    int       `db:"repeat"`
+	Weight    int       `db:"weight"`
+}
+type EquipmentListDTO []*EquipmentDTO
+
+func (list EquipmentListDTO) ToModels() []*models.Equipment {
+	listEquipment := make([]*models.Equipment, len(list))
+	for i := range list {
+		listEquipment[i] = list[i].ToModel()
+	}
+	return listEquipment
+}
+func NewEquipmentDTOFromModel(equipment *models.Equipment) *EquipmentDTO {
+	dto := &EquipmentDTO{
+		ID:        string(equipment.ID),
+		UpdatedAt: equipment.UpdatedAt,
+		CreatedAt: equipment.CreatedAt,
+		Name:      equipment.Name,
+		Repeat:    equipment.Repeat,
+		Weight:    equipment.Weight,
+	}
+	return dto
+}
+func (dto *EquipmentDTO) ToModel() *models.Equipment {
+	model := &models.Equipment{
+		ID:        models.UUID(dto.ID),
+		UpdatedAt: dto.UpdatedAt,
+		CreatedAt: dto.CreatedAt,
+		Name:      dto.Name,
+		Repeat:    dto.Repeat,
+		Weight:    dto.Weight,
+	}
+	return model
 }

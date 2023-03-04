@@ -11,12 +11,9 @@ import "google/protobuf/struct.proto";
 import "google/api/annotations.proto";
 
 message EquipmentCreate {
-  string title = 1;
-  string description = 2;
-  uint64 weight = 3;
-  repeated uint64 versions = 4;
-  google.protobuf.Timestamp release = 5;
-  google.protobuf.Timestamp tested = 6;
+  string name = 1;
+  int32 repeat = 2;
+  int32 weight = 3;
 }
 
 message EquipmentGet {
@@ -25,24 +22,18 @@ message EquipmentGet {
 
 message EquipmentUpdate {
   string id = 1;
-  google.protobuf.StringValue title = 2;
-  google.protobuf.StringValue description = 3;
-  google.protobuf.UInt64Value weight = 4;
-  google.protobuf.ListValue versions = 5;
-  google.protobuf.Timestamp release = 6;
-  google.protobuf.Timestamp tested = 7;
+  google.protobuf.StringValue name = 2;
+  google.protobuf.Int32Value repeat = 3;
+  google.protobuf.Int32Value weight = 4;
 }
 
 message Equipment {
   string id = 1;
   google.protobuf.Timestamp updated_at = 2;
   google.protobuf.Timestamp created_at = 3;
-  string title = 4;
-  string description = 5;
-  uint64 weight = 6;
-  repeated uint64 versions = 7;
-  google.protobuf.Timestamp release = 8;
-  google.protobuf.Timestamp tested = 9;
+  string name = 4;
+  int32 repeat = 5;
+  int32 weight = 6;
 }
 
 message ListEquipment {

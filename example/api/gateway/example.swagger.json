@@ -1,15 +1,24 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "examplepb/v1/auth.proto",
+    "title": "examplepb/v1/arch.proto",
     "version": "version not set"
   },
   "tags": [
     {
+      "name": "ArchService"
+    },
+    {
       "name": "AuthService"
     },
     {
+      "name": "DayService"
+    },
+    {
       "name": "EquipmentService"
+    },
+    {
+      "name": "PlanService"
     },
     {
       "name": "SessionService"
@@ -25,6 +34,226 @@
     "application/json"
   ],
   "paths": {
+    "/api/v1/arches": {
+      "get": {
+        "operationId": "ArchService_List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListArch"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "ids",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ArchService"
+        ]
+      },
+      "post": {
+        "operationId": "ArchService_Create",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Arch"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ArchCreate"
+            }
+          }
+        ],
+        "tags": [
+          "ArchService"
+        ]
+      }
+    },
+    "/api/v1/arches/{id}": {
+      "get": {
+        "operationId": "ArchService_Get",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Arch"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ArchService"
+        ]
+      },
+      "delete": {
+        "operationId": "ArchService_Delete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ArchService"
+        ]
+      },
+      "patch": {
+        "operationId": "ArchService_Update",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Arch"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "versions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "release": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "tested": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "ArchService"
+        ]
+      }
+    },
     "/api/v1/auth": {
       "post": {
         "operationId": "AuthService_CreateToken",
@@ -84,6 +313,207 @@
         ],
         "tags": [
           "AuthService"
+        ]
+      }
+    },
+    "/api/v1/days": {
+      "get": {
+        "operationId": "DayService_List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListDay"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "ids",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DayService"
+        ]
+      },
+      "post": {
+        "operationId": "DayService_Create",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Day"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1DayCreate"
+            }
+          }
+        ],
+        "tags": [
+          "DayService"
+        ]
+      }
+    },
+    "/api/v1/days/{id}": {
+      "get": {
+        "operationId": "DayService_Get",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Day"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DayService"
+        ]
+      },
+      "delete": {
+        "operationId": "DayService_Delete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DayService"
+        ]
+      },
+      "patch": {
+        "operationId": "DayService_Update",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Day"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "repeat": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "equipmentId": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "DayService"
         ]
       }
     },
@@ -269,29 +699,16 @@
             "schema": {
               "type": "object",
               "properties": {
-                "title": {
+                "name": {
                   "type": "string"
                 },
-                "description": {
-                  "type": "string"
+                "repeat": {
+                  "type": "integer",
+                  "format": "int32"
                 },
                 "weight": {
-                  "type": "string",
-                  "format": "uint64"
-                },
-                "versions": {
-                  "type": "array",
-                  "items": {
-                    "type": "object"
-                  }
-                },
-                "release": {
-                  "type": "string",
-                  "format": "date-time"
-                },
-                "tested": {
-                  "type": "string",
-                  "format": "date-time"
+                  "type": "integer",
+                  "format": "int32"
                 }
               }
             }
@@ -299,6 +716,207 @@
         ],
         "tags": [
           "EquipmentService"
+        ]
+      }
+    },
+    "/api/v1/plans": {
+      "get": {
+        "operationId": "PlanService_List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPlan"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "ids",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PlanService"
+        ]
+      },
+      "post": {
+        "operationId": "PlanService_Create",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Plan"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1PlanCreate"
+            }
+          }
+        ],
+        "tags": [
+          "PlanService"
+        ]
+      }
+    },
+    "/api/v1/plans/{id}": {
+      "get": {
+        "operationId": "PlanService_Get",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Plan"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PlanService"
+        ]
+      },
+      "delete": {
+        "operationId": "PlanService_Delete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "PlanService"
+        ]
+      },
+      "patch": {
+        "operationId": "PlanService_Update",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Plan"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "repeat": {
+                  "type": "string",
+                  "format": "uint64"
+                },
+                "equipmentId": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "PlanService"
         ]
       }
     },
@@ -489,24 +1107,6 @@
                 },
                 "description": {
                   "type": "string"
-                },
-                "weight": {
-                  "type": "string",
-                  "format": "uint64"
-                },
-                "versions": {
-                  "type": "array",
-                  "items": {
-                    "type": "object"
-                  }
-                },
-                "release": {
-                  "type": "string",
-                  "format": "date-time"
-                },
-                "tested": {
-                  "type": "string",
-                  "format": "date-time"
                 }
               }
             }
@@ -757,6 +1357,87 @@
         }
       }
     },
+    "v1Arch": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "release": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tested": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1ArchCreate": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "release": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tested": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "v1CreateToken": {
       "type": "object",
       "properties": {
@@ -764,6 +1445,47 @@
           "type": "string"
         },
         "password": {
+          "type": "string"
+        }
+      }
+    },
+    "v1Day": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "name": {
+          "type": "string"
+        },
+        "repeat": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "equipmentId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1DayCreate": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "repeat": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "equipmentId": {
           "type": "string"
         }
       }
@@ -782,60 +1504,62 @@
           "type": "string",
           "format": "date-time"
         },
-        "title": {
+        "name": {
           "type": "string"
         },
-        "description": {
-          "type": "string"
+        "repeat": {
+          "type": "integer",
+          "format": "int32"
         },
         "weight": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "versions": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "release": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "tested": {
-          "type": "string",
-          "format": "date-time"
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
     "v1EquipmentCreate": {
       "type": "object",
       "properties": {
-        "title": {
+        "name": {
           "type": "string"
         },
-        "description": {
-          "type": "string"
+        "repeat": {
+          "type": "integer",
+          "format": "int32"
         },
         "weight": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "versions": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1ListArch": {
+      "type": "object",
+      "properties": {
+        "items": {
           "type": "array",
           "items": {
-            "type": "string",
-            "format": "uint64"
+            "$ref": "#/definitions/v1Arch"
           }
         },
-        "release": {
+        "count": {
           "type": "string",
-          "format": "date-time"
+          "format": "uint64"
+        }
+      }
+    },
+    "v1ListDay": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Day"
+          }
         },
-        "tested": {
+        "count": {
           "type": "string",
-          "format": "date-time"
+          "format": "uint64"
         }
       }
     },
@@ -846,6 +1570,21 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1Equipment"
+          }
+        },
+        "count": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "v1ListPlan": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Plan"
           }
         },
         "count": {
@@ -866,6 +1605,47 @@
         "count": {
           "type": "string",
           "format": "uint64"
+        }
+      }
+    },
+    "v1Plan": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "name": {
+          "type": "string"
+        },
+        "repeat": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "equipmentId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1PlanCreate": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "repeat": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "equipmentId": {
+          "type": "string"
         }
       }
     },
@@ -896,25 +1676,6 @@
         },
         "description": {
           "type": "string"
-        },
-        "weight": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "versions": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "release": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "tested": {
-          "type": "string",
-          "format": "date-time"
         }
       }
     },
@@ -926,25 +1687,6 @@
         },
         "description": {
           "type": "string"
-        },
-        "weight": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "versions": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "release": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "tested": {
-          "type": "string",
-          "format": "date-time"
         }
       }
     },

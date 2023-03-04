@@ -97,7 +97,7 @@ func (s Server) syncServerStruct() error {
 	filename := path.Join("internal", "interfaces", "grpc", "server.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
-		return err
+		file = s.file()
 	}
 	var structureExists bool
 	var structure *ast.TypeSpec
@@ -165,6 +165,16 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 						Name: "Config",
 					},
 				},
+			},
+		},
+		{
+			Names: []*ast.Ident{
+				{
+					Name: "requestIDMiddleware",
+				},
+			},
+			Type: &ast.StarExpr{
+				X: ast.NewIdent("RequestIDMiddleware"),
 			},
 		},
 	}
@@ -389,11 +399,16 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 												Name: "authMiddleware",
 											},
 											Sel: &ast.Ident{
-												Name: "UnaryServerInterceptorAuth",
+												Name: "UnaryServerInterceptor",
 											},
 										},
-										&ast.Ident{
-											Name: "RequestIDUnaryServerInterceptor",
+										&ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "requestIDMiddleware",
+											},
+											Sel: &ast.Ident{
+												Name: "UnaryServerInterceptor",
+											},
 										},
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
@@ -2087,4 +2102,135 @@ func (s Server) syncDecodeError() error {
 		return err
 	}
 	return nil
+}
+
+func (s Server) file() *ast.File {
+	return &ast.File{
+		Name: &ast.Ident{
+			Name: "grpc",
+		},
+		Decls: []ast.Decl{
+			&ast.GenDecl{
+				Tok: token.IMPORT,
+				Specs: []ast.Spec{
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"context"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"errors"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"net"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/configs"`, s.project.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/domain/errs"`, s.project.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/pkg/log"`, s.project.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Name: ast.NewIdent(s.project.ProtoPackage()),
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/pkg/%s/v1"`, s.project.Module, s.project.ProtoPackage()),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"google.golang.org/genproto/googleapis/rpc/errdetails"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"google.golang.org/grpc/status"`,
+						},
+					},
+					&ast.ImportSpec{
+						Name: ast.NewIdent("grpcZap"),
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"go.uber.org/zap"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"go.uber.org/zap/zapcore"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"google.golang.org/grpc"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"google.golang.org/grpc/codes"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"google.golang.org/grpc/health"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"google.golang.org/grpc/health/grpc_health_v1"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"google.golang.org/grpc/reflection"`,
+						},
+					},
+				},
+			},
+		},
+	}
 }

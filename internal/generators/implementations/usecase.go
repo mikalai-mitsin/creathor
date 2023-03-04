@@ -92,11 +92,60 @@ func (u UseCase) astStruct() *ast.TypeSpec {
 	return structure
 }
 
+func (u UseCase) file() *ast.File {
+	return &ast.File{
+		Name: ast.NewIdent("usecases"),
+		Decls: []ast.Decl{
+			&ast.GenDecl{
+				Tok: token.IMPORT,
+				Specs: []ast.Spec{
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"context"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/domain/models"`, u.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/domain/repositories"`, u.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/domain/usecases"`, u.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/pkg/clock"`, u.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/pkg/log"`, u.model.Module),
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func (u UseCase) syncStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
-		return err
+		file = u.file()
 	}
 	var structureExists bool
 	var structure *ast.TypeSpec

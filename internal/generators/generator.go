@@ -22,6 +22,8 @@ func NewCrudGenerator(project *configs.Project) *CrudGenerator {
 func (g CrudGenerator) Sync() error {
 	generators := []Generator{
 		grpc.NewServer(g.project),
+		grpc.NewAuthMiddleware(g.project),
+		grpc.NewRequestIDMiddleware(g.project),
 		domain.NewErrors(g.project),
 	}
 	for _, m := range g.project.Models {
@@ -38,6 +40,8 @@ func (g CrudGenerator) Sync() error {
 			implementations.NewInterceptor(m),
 			implementations.NewUseCase(m),
 			implementations.NewPostgresRepository(m),
+
+			grpc.NewHandler(m),
 		)
 	}
 	for _, generator := range generators {

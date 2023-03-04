@@ -99,7 +99,7 @@ func (i Interceptor) syncStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
-		return err
+		file = i.file()
 	}
 	var structureExists bool
 	var structure *ast.TypeSpec
@@ -1586,4 +1586,47 @@ func (i Interceptor) syncDeleteMethod() error {
 		return err
 	}
 	return nil
+}
+
+func (i Interceptor) file() *ast.File {
+	return &ast.File{
+		Name: ast.NewIdent("interceptors"),
+		Decls: []ast.Decl{
+			&ast.GenDecl{
+				Tok: token.IMPORT,
+				Specs: []ast.Spec{
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"context"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/domain/interceptors"`, i.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/domain/models"`, i.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/domain/usecases"`, i.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/pkg/log"`, i.model.Module),
+						},
+					},
+				},
+			},
+		},
+	}
 }

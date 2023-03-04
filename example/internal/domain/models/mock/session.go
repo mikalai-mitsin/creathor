@@ -16,24 +16,16 @@ func NewSession(t *testing.T) *models.Session {
 		ID:          models.UUID(uuid.NewString()),
 		UpdatedAt:   faker.New().Time().Time(time.Now()),
 		CreatedAt:   faker.New().Time().Time(time.Now()),
-		Title:       faker.New().Lorem().Text(256),
-		Description: faker.New().Lorem().Text(256),
-		Weight:      faker.New().UInt64(),
-		Versions:    []uint64{faker.New().UInt64(), faker.New().UInt64()},
-		Release:     faker.New().Time().Time(time.Now()),
-		Tested:      faker.New().Time().Time(time.Now()),
+		Title:       faker.New().Lorem().Sentence(15),
+		Description: faker.New().Lorem().Sentence(15),
 	}
 	return m
 }
 func NewSessionCreate(t *testing.T) *models.SessionCreate {
 	t.Helper()
 	m := &models.SessionCreate{
-		Title:       faker.New().Lorem().Text(256),
-		Description: faker.New().Lorem().Text(256),
-		Weight:      faker.New().UInt64(),
-		Versions:    []uint64{faker.New().UInt64(), faker.New().UInt64()},
-		Release:     faker.New().Time().Time(time.Now()),
-		Tested:      faker.New().Time().Time(time.Now()),
+		Title:       faker.New().Lorem().Sentence(15),
+		Description: faker.New().Lorem().Sentence(15),
 	}
 	return m
 }
@@ -41,12 +33,8 @@ func NewSessionUpdate(t *testing.T) *models.SessionUpdate {
 	t.Helper()
 	m := &models.SessionUpdate{
 		ID:          models.UUID(uuid.NewString()),
-		Title:       utils.Pointer(faker.New().Lorem().Text(256)),
-		Description: utils.Pointer(faker.New().Lorem().Text(256)),
-		Weight:      utils.Pointer(faker.New().UInt64()),
-		Versions:    utils.Pointer([]uint64{faker.New().UInt64(), faker.New().UInt64()}),
-		Release:     utils.Pointer(faker.New().Time().Time(time.Now())),
-		Tested:      utils.Pointer(faker.New().Time().Time(time.Now())),
+		Title:       utils.Pointer(faker.New().Lorem().Sentence(15)),
+		Description: utils.Pointer(faker.New().Lorem().Sentence(15)),
 	}
 	return m
 }
@@ -57,7 +45,7 @@ func NewSessionFilter(t *testing.T) *models.SessionFilter {
 		PageNumber: utils.Pointer(faker.New().UInt64()),
 		PageSize:   utils.Pointer(faker.New().UInt64()),
 		OrderBy:    faker.New().Lorem().Words(27),
-		Search:     utils.Pointer(faker.New().Lorem().Text(256)),
+		Search:     utils.Pointer(faker.New().Lorem().Sentence(15)),
 	}
 	return m
 }

@@ -12,7 +12,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -27,10 +26,7 @@ func NewEquipmentServiceServer(
 	equipmentInterceptor interceptors.EquipmentInterceptor,
 	logger log.Logger,
 ) examplepb.EquipmentServiceServer {
-	return &EquipmentServiceServer{
-		equipmentInterceptor: equipmentInterceptor,
-		logger:               logger,
-	}
+	return &EquipmentServiceServer{equipmentInterceptor: equipmentInterceptor, logger: logger}
 }
 
 func (s *EquipmentServiceServer) Create(
@@ -99,62 +95,19 @@ func (s *EquipmentServiceServer) Delete(
 	ctx context.Context,
 	input *examplepb.EquipmentDelete,
 ) (*emptypb.Empty, error) {
-	if err := s.equipmentInterceptor.Delete(
-		ctx,
-		models.UUID(input.GetId()),
-		ctx.Value(UserKey).(*models.User),
-	); err != nil {
+	if err := s.equipmentInterceptor.Delete(ctx, models.UUID(input.GetId()), ctx.Value(UserKey).(*models.User)); err != nil {
 		return nil, decodeError(err)
 	}
 	return &emptypb.Empty{}, nil
 }
-
-func encodeEquipmentUpdate(input *examplepb.EquipmentUpdate) *models.EquipmentUpdate {
-	update := &models.EquipmentUpdate{
-		ID:          models.UUID(input.GetId()),
-		Title:       nil,
-		Description: nil,
-		Weight:      nil,
-		Versions:    nil,
-		Release:     nil,
-		Tested:      nil,
+func encodeEquipmentCreate(input *examplepb.EquipmentCreate) *models.EquipmentCreate {
+	create := &models.EquipmentCreate{
+		Name:   input.GetName(),
+		Repeat: int(input.GetRepeat()),
+		Weight: int(input.GetWeight()),
 	}
-	if input.GetTitle() != nil {
-		update.Title = utils.Pointer(string(input.GetTitle().GetValue()))
-	}
-	if input.GetDescription() != nil {
-		update.Description = utils.Pointer(string(input.GetDescription().GetValue()))
-	}
-	if input.GetWeight() != nil {
-		update.Weight = utils.Pointer(uint64(input.GetWeight().GetValue()))
-	}
-	if input.GetVersions() != nil {
-		var params []uint64
-		for _, item := range input.GetVersions().GetValues() {
-			params = append(params, uint64(item.GetNumberValue()))
-		}
-		update.Versions = &params
-	}
-	if input.GetRelease() != nil {
-		update.Release = utils.Pointer(input.GetRelease().AsTime())
-	}
-	if input.GetTested() != nil {
-		update.Tested = utils.Pointer(input.GetTested().AsTime())
-	}
-	return update
+	return create
 }
-
-func decodeListEquipment(listEquipment []*models.Equipment, count uint64) *examplepb.ListEquipment {
-	response := &examplepb.ListEquipment{
-		Items: make([]*examplepb.Equipment, 0, len(listEquipment)),
-		Count: count,
-	}
-	for _, equipment := range listEquipment {
-		response.Items = append(response.Items, decodeEquipment(equipment))
-	}
-	return response
-}
-
 func encodeEquipmentFilter(input *examplepb.EquipmentFilter) *models.EquipmentFilter {
 	filter := &models.EquipmentFilter{
 		IDs:        nil,
@@ -169,64 +122,54 @@ func encodeEquipmentFilter(input *examplepb.EquipmentFilter) *models.EquipmentFi
 	if input.GetPageNumber() != nil {
 		filter.PageNumber = utils.Pointer(input.GetPageNumber().GetValue())
 	}
-	if input.GetSearch() != nil {
-		filter.Search = utils.Pointer(input.GetSearch().GetValue())
-	}
 	for _, id := range input.GetIds() {
 		filter.IDs = append(filter.IDs, models.UUID(id))
 	}
+	if input.GetSearch() != nil {
+		filter.Search = utils.Pointer(input.GetSearch().GetValue())
+	}
 	return filter
 }
-
-func encodeEquipmentCreate(input *examplepb.EquipmentCreate) *models.EquipmentCreate {
-	create := &models.EquipmentCreate{
-		Title:       string(input.GetTitle()),
-		Description: string(input.GetDescription()),
-		Weight:      uint64(input.GetWeight()),
-		Versions:    nil,
-		Release:     input.GetRelease().AsTime(),
-		Tested:      input.GetTested().AsTime(),
+func encodeEquipmentUpdate(input *examplepb.EquipmentUpdate) *models.EquipmentUpdate {
+	update := &models.EquipmentUpdate{ID: models.UUID(input.GetId())}
+	if input.GetName() != nil {
+		update.Name = utils.Pointer(input.GetName().GetValue())
 	}
-	for _, param := range input.GetVersions() {
-		create.Versions = append(create.Versions, uint64(param))
+	if input.GetRepeat() != nil {
+		update.Repeat = utils.Pointer(int(input.GetRepeat().GetValue()))
 	}
-	return create
+	if input.GetWeight() != nil {
+		update.Weight = utils.Pointer(int(input.GetWeight().GetValue()))
+	}
+	return update
 }
-
 func decodeEquipment(equipment *models.Equipment) *examplepb.Equipment {
 	response := &examplepb.Equipment{
-		Id:          string(equipment.ID),
-		UpdatedAt:   timestamppb.New(equipment.UpdatedAt),
-		CreatedAt:   timestamppb.New(equipment.CreatedAt),
-		Title:       string(equipment.Title),
-		Description: string(equipment.Description),
-		Weight:      uint64(equipment.Weight),
-		Versions:    nil,
-		Release:     timestamppb.New(equipment.Release),
-		Tested:      timestamppb.New(equipment.Tested),
-	}
-	for _, param := range equipment.Versions {
-		response.Versions = append(response.Versions, uint64(param))
+		Id:        string(equipment.ID),
+		UpdatedAt: timestamppb.New(equipment.UpdatedAt),
+		CreatedAt: timestamppb.New(equipment.CreatedAt),
+		Name:      equipment.Name,
+		Repeat:    int32(equipment.Repeat),
+		Weight:    int32(equipment.Weight),
 	}
 	return response
 }
-
+func decodeListEquipment(listEquipment []*models.Equipment, count uint64) *examplepb.ListEquipment {
+	response := &examplepb.ListEquipment{
+		Items: make([]*examplepb.Equipment, 0, len(listEquipment)),
+		Count: count,
+	}
+	for _, equipment := range listEquipment {
+		response.Items = append(response.Items, decodeEquipment(equipment))
+	}
+	return response
+}
 func decodeEquipmentUpdate(update *models.EquipmentUpdate) *examplepb.EquipmentUpdate {
 	result := &examplepb.EquipmentUpdate{
-		Id:          string(update.ID),
-		Title:       wrapperspb.String(string(*update.Title)),
-		Description: wrapperspb.String(string(*update.Description)),
-		Weight:      wrapperspb.UInt64(uint64(*update.Weight)),
-		Versions:    nil,
-		Release:     timestamppb.New(*update.Release),
-		Tested:      timestamppb.New(*update.Tested),
-	}
-	if update.Versions != nil {
-		params, err := structpb.NewList(utils.ToAnySlice(*update.Versions))
-		if err != nil {
-			return nil
-		}
-		result.Versions = params
+		Id:     string(update.ID),
+		Name:   wrapperspb.String(*update.Name),
+		Repeat: wrapperspb.Int32(int32(*update.Repeat)),
+		Weight: wrapperspb.Int32(int32(*update.Weight)),
 	}
 	return result
 }

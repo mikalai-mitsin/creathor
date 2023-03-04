@@ -6,7 +6,6 @@ import (
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
 	"github.com/018bf/example/internal/domain/usecases"
-
 	"github.com/018bf/example/pkg/clock"
 	"github.com/018bf/example/pkg/log"
 )
@@ -34,15 +33,12 @@ func (u *EquipmentUseCase) Create(
 	}
 	now := u.clock.Now().UTC()
 	equipment := &models.Equipment{
-		ID:          "",
-		UpdatedAt:   now,
-		CreatedAt:   now,
-		Title:       create.Title,
-		Description: create.Description,
-		Weight:      create.Weight,
-		Versions:    create.Versions,
-		Release:     create.Release,
-		Tested:      create.Tested,
+		ID:        "",
+		UpdatedAt: now,
+		CreatedAt: now,
+		Name:      create.Name,
+		Repeat:    create.Repeat,
+		Weight:    create.Weight,
 	}
 	if err := u.equipmentRepository.Create(ctx, equipment); err != nil {
 		return nil, err
@@ -84,23 +80,14 @@ func (u *EquipmentUseCase) Update(
 		return nil, err
 	}
 	{
-		if update.Title != nil {
-			equipment.Title = *update.Title
+		if update.Name != nil {
+			equipment.Name = *update.Name
 		}
-		if update.Description != nil {
-			equipment.Description = *update.Description
+		if update.Repeat != nil {
+			equipment.Repeat = *update.Repeat
 		}
 		if update.Weight != nil {
 			equipment.Weight = *update.Weight
-		}
-		if update.Versions != nil {
-			equipment.Versions = *update.Versions
-		}
-		if update.Release != nil {
-			equipment.Release = *update.Release
-		}
-		if update.Tested != nil {
-			equipment.Tested = *update.Tested
 		}
 	}
 	equipment.UpdatedAt = u.clock.Now().UTC()

@@ -7,8 +7,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/lib/pq"
-
 	"github.com/018bf/example/internal/domain/errs"
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
 	"github.com/018bf/example/internal/interfaces/postgres"
@@ -101,10 +99,6 @@ func TestSessionRepository_Create(t *testing.T) {
 						session.CreatedAt,
 						session.Title,
 						session.Description,
-						session.Weight,
-						pq.Array(session.Versions),
-						session.Release,
-						session.Tested,
 					).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).
 						AddRow(session.ID, session.CreatedAt))
@@ -128,10 +122,6 @@ func TestSessionRepository_Create(t *testing.T) {
 						session.CreatedAt,
 						session.Title,
 						session.Description,
-						session.Weight,
-						pq.Array(session.Versions),
-						session.Release,
-						session.Tested,
 					).
 					WillReturnError(errors.New("test error"))
 			},
@@ -170,7 +160,7 @@ func TestSessionRepository_Get(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	query := "SELECT sessions.id, sessions.updated_at, sessions.created_at, sessions.title, sessions.description, sessions.weight, sessions.versions, sessions.release, sessions.tested FROM public.sessions WHERE id = \\$1 LIMIT 1"
+	query := "SELECT sessions.id, sessions.updated_at, sessions.created_at, sessions.title, sessions.description FROM public.sessions WHERE id = \\$1 LIMIT 1"
 	session := mock_models.NewSession(t)
 	ctx := context.Background()
 	type fields struct {
@@ -277,7 +267,7 @@ func TestSessionRepository_List(t *testing.T) {
 		listSessions = append(listSessions, mock_models.NewSession(t))
 	}
 	filter := mock_models.NewSessionFilter(t)
-	query := "SELECT sessions.id, sessions.updated_at, sessions.created_at, sessions.title, sessions.description, sessions.weight, sessions.versions, sessions.release, sessions.tested FROM public.sessions"
+	query := "SELECT sessions.id, sessions.updated_at, sessions.created_at, sessions.title, sessions.description FROM public.sessions"
 	type fields struct {
 		database *sqlx.DB
 		logger   log.Logger
@@ -423,10 +413,6 @@ func TestSessionRepository_Update(t *testing.T) {
 						session.UpdatedAt,
 						session.Title,
 						session.Description,
-						session.Weight,
-						pq.Array(session.Versions),
-						session.Release,
-						session.Tested,
 						session.ID,
 					).
 					WillReturnResult(sqlmock.NewResult(0, 1))
@@ -449,10 +435,6 @@ func TestSessionRepository_Update(t *testing.T) {
 						session.UpdatedAt,
 						session.Title,
 						session.Description,
-						session.Weight,
-						pq.Array(session.Versions),
-						session.Release,
-						session.Tested,
 						session.ID,
 					).
 					WillReturnResult(sqlmock.NewResult(0, 0))
@@ -475,10 +457,6 @@ func TestSessionRepository_Update(t *testing.T) {
 						session.UpdatedAt,
 						session.Title,
 						session.Description,
-						session.Weight,
-						pq.Array(session.Versions),
-						session.Release,
-						session.Tested,
 						session.ID,
 					).
 					WillReturnError(errors.New("test error"))
@@ -502,10 +480,6 @@ func TestSessionRepository_Update(t *testing.T) {
 						session.UpdatedAt,
 						session.Title,
 						session.Description,
-						session.Weight,
-						pq.Array(session.Versions),
-						session.Release,
-						session.Tested,
 						session.ID,
 					).
 					WillReturnError(errors.New("test error"))
@@ -529,10 +503,6 @@ func TestSessionRepository_Update(t *testing.T) {
 						session.UpdatedAt,
 						session.Title,
 						session.Description,
-						session.Weight,
-						pq.Array(session.Versions),
-						session.Release,
-						session.Tested,
 						session.ID,
 					).
 					WillReturnResult(sqlmock.NewErrorResult(errors.New("test error")))
@@ -782,10 +752,6 @@ func newSessionRows(t *testing.T, listSessions []*models.Session) *sqlmock.Rows 
 		"id",
 		"title",
 		"description",
-		"weight",
-		"versions",
-		"release",
-		"tested",
 		"updated_at",
 		"created_at",
 	})
@@ -794,10 +760,6 @@ func newSessionRows(t *testing.T, listSessions []*models.Session) *sqlmock.Rows 
 			session.ID,
 			session.Title,
 			session.Description,
-			session.Weight,
-			pq.Array(session.Versions),
-			session.Release,
-			session.Tested,
 			session.UpdatedAt,
 			session.CreatedAt,
 		)

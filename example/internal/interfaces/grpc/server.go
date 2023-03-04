@@ -9,20 +9,18 @@ import (
 	"github.com/018bf/example/internal/domain/errs"
 	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/log"
-	"google.golang.org/genproto/googleapis/rpc/errdetails"
-	"google.golang.org/grpc/status"
-
 	grpcZap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
 type Server struct {
@@ -33,18 +31,22 @@ type Server struct {
 func NewServer(
 	logger log.Logger,
 	config *configs.Config,
+	requestIDMiddleware *RequestIDMiddleware,
 	authMiddleware *AuthMiddleware,
 	authHandler examplepb.AuthServiceServer,
 	userHandler examplepb.UserServiceServer,
 	sessionHandler examplepb.SessionServiceServer,
 	equipmentHandler examplepb.EquipmentServiceServer,
+	planHandler examplepb.PlanServiceServer,
+	dayHandler examplepb.DayServiceServer,
+	archHandler examplepb.ArchServiceServer,
 ) *Server {
 	server := grpc.NewServer(
 		grpc.ChainStreamInterceptor(otelgrpc.StreamServerInterceptor()),
 		grpc.ChainUnaryInterceptor(
 			otelgrpc.UnaryServerInterceptor(),
-			authMiddleware.UnaryServerInterceptorAuth,
-			RequestIDUnaryServerInterceptor,
+			authMiddleware.UnaryServerInterceptor,
+			requestIDMiddleware.UnaryServerInterceptor,
 			grpcZap.UnaryServerInterceptor(
 				logger.Logger(),
 				grpcZap.WithMessageProducer(DefaultMessageProducer),
@@ -57,6 +59,9 @@ func NewServer(
 		examplepb.RegisterUserServiceServer(server, userHandler)
 		examplepb.RegisterSessionServiceServer(server, sessionHandler)
 		examplepb.RegisterEquipmentServiceServer(server, equipmentHandler)
+		examplepb.RegisterPlanServiceServer(server, planHandler)
+		examplepb.RegisterDayServiceServer(server, dayHandler)
+		examplepb.RegisterArchServiceServer(server, archHandler)
 	}
 	healthServer := health.NewServer()
 	for service := range server.GetServiceInfo() {

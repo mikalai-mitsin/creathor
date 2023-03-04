@@ -382,18 +382,8 @@ func CreateLayout(project *configs.Project) error {
 		files = append(
 			files,
 			&Template{
-				SourcePath:      "templates/internal/interfaces/grpc/server.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "server.go"),
-				Name:            "grpc server",
-			},
-			&Template{
-				SourcePath:      "templates/internal/interfaces/grpc/middleware.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "middleware.go"),
-				Name:            "grpc middleware",
-			},
-			&Template{
-				SourcePath:      "templates/internal/interfaces/grpc/middleware_test.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "middleware_test.go"),
+				SourcePath:      "templates/internal/interfaces/grpc/auth_middleware_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "auth_middleware_test.go"),
 				Name:            "grpc middleware test",
 			},
 			&Template{

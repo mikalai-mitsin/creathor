@@ -25,21 +25,6 @@ func (r PostgresRepository) filename() string {
 }
 
 func (r PostgresRepository) Sync() error {
-	if err := r.syncDTOStruct(); err != nil {
-		return err
-	}
-	if err := r.syncDTOListType(); err != nil {
-		return err
-	}
-	if err := r.syncDTOListToModels(); err != nil {
-		return err
-	}
-	if err := r.syncDTOConstructor(); err != nil {
-		return err
-	}
-	if err := r.syncDTOToModel(); err != nil {
-		return err
-	}
 	if err := r.syncStruct(); err != nil {
 		return err
 	}
@@ -62,6 +47,21 @@ func (r PostgresRepository) Sync() error {
 		return err
 	}
 	if err := r.syncDeleteMethod(); err != nil {
+		return err
+	}
+	if err := r.syncDTOStruct(); err != nil {
+		return err
+	}
+	if err := r.syncDTOListType(); err != nil {
+		return err
+	}
+	if err := r.syncDTOListToModels(); err != nil {
+		return err
+	}
+	if err := r.syncDTOConstructor(); err != nil {
+		return err
+	}
+	if err := r.syncDTOToModel(); err != nil {
 		return err
 	}
 	return nil
@@ -879,11 +879,97 @@ func (r PostgresRepository) astStruct() *ast.TypeSpec {
 	return structure
 }
 
+func (r PostgresRepository) file() *ast.File {
+	return &ast.File{
+		Name: ast.NewIdent("postgres"),
+		Decls: []ast.Decl{
+			&ast.GenDecl{
+				Tok: token.IMPORT,
+				Specs: []ast.Spec{
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"context"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"fmt"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"time"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/domain/errs"`, r.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/domain/models"`, r.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/domain/repositories"`, r.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/pkg/log"`, r.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/pkg/postgresql"`, r.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/pkg/utils"`, r.model.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Name: ast.NewIdent("sq"),
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"github.com/Masterminds/squirrel"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"github.com/jmoiron/sqlx"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"github.com/lib/pq"`,
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func (r PostgresRepository) syncStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
-		return err
+		file = r.file()
 	}
 	var structureExists bool
 	var structure *ast.TypeSpec

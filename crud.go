@@ -20,31 +20,19 @@ func CreateCRUD(model *configs.ModelConfig) error {
 		return err
 	}
 	files := []*Template{
-		{
-			SourcePath:      "templates/internal/usecases/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", model.FileName()),
-			Name:            "usecase",
-		},
+
 		{
 			SourcePath:      "templates/internal/usecases/crud_test.go.tmpl",
 			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", model.TestFileName()),
 			Name:            "usecase test",
 		},
-		{
-			SourcePath:      "templates/internal/interceptors/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "interceptors", model.FileName()),
-			Name:            "interceptor",
-		},
+
 		{
 			SourcePath:      "templates/internal/interceptors/crud_test.go.tmpl",
 			DestinationPath: filepath.Join(destinationPath, "internal", "interceptors", model.TestFileName()),
 			Name:            "interceptor test",
 		},
-		{
-			SourcePath:      "templates/internal/repositories/postgres/crud.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", "postgres", model.FileName()),
-			Name:            "repository",
-		},
+
 		{
 			SourcePath:      "templates/internal/repositories/postgres/crud_test.go.tmpl",
 			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", "postgres", model.TestFileName()),
@@ -74,11 +62,6 @@ func CreateCRUD(model *configs.ModelConfig) error {
 	if model.GRPCEnabled {
 		files = append(
 			files,
-			&Template{
-				SourcePath:      "templates/internal/interfaces/grpc/crud.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", model.FileName()),
-				Name:            "grpc service server",
-			},
 			&Template{
 				SourcePath:      "templates/internal/interfaces/grpc/crud_test.go.tmpl",
 				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", model.TestFileName()),

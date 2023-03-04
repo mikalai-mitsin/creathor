@@ -537,13 +537,6 @@ func Test_decodeSession(t *testing.T) {
 		CreatedAt:   timestamppb.New(session.CreatedAt),
 		Title:       string(session.Title),
 		Description: string(session.Description),
-		Weight:      uint64(session.Weight),
-		Versions:    []uint64{},
-		Release:     timestamppb.New(session.Release),
-		Tested:      timestamppb.New(session.Tested),
-	}
-	for _, param := range session.Versions {
-		result.Versions = append(result.Versions, uint64(param))
 	}
 	type args struct {
 		session *models.Session

@@ -5,75 +5,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lib/pq"
-
-	sq "github.com/Masterminds/squirrel"
-
-	"github.com/018bf/example/pkg/log"
-
+	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
-
-	"github.com/018bf/example/internal/domain/errs"
+	"github.com/018bf/example/pkg/log"
 	"github.com/018bf/example/pkg/postgresql"
 	"github.com/018bf/example/pkg/utils"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 )
-
-type SessionDTO struct {
-	ID          string        `db:"id,omitempty"`
-	UpdatedAt   time.Time     `db:"updated_at,omitempty"`
-	CreatedAt   time.Time     `db:"created_at,omitempty"`
-	Title       string        `db:"title"`
-	Description string        `db:"description"`
-	Weight      int64         `db:"weight"`
-	Versions    pq.Int64Array `db:"versions"`
-	Release     time.Time     `db:"release"`
-	Tested      time.Time     `db:"tested"`
-}
-type SessionListDTO []*SessionDTO
-
-func (list SessionListDTO) ToModels() []*models.Session {
-	listSessions := make([]*models.Session, len(list))
-	for i := range list {
-		listSessions[i] = list[i].ToModel()
-	}
-	return listSessions
-}
-func NewSessionDTOFromModel(session *models.Session) *SessionDTO {
-	dto := &SessionDTO{
-		ID:          string(session.ID),
-		UpdatedAt:   session.UpdatedAt,
-		CreatedAt:   session.CreatedAt,
-		Title:       session.Title,
-		Description: session.Description,
-		Weight:      int64(session.Weight),
-		Versions:    pq.Int64Array{},
-		Release:     session.Release,
-		Tested:      session.Tested,
-	}
-	for _, param := range session.Versions {
-		dto.Versions = append(dto.Versions, int64(param))
-	}
-	return dto
-}
-func (dto *SessionDTO) ToModel() *models.Session {
-	model := &models.Session{
-		ID:          models.UUID(dto.ID),
-		UpdatedAt:   dto.UpdatedAt,
-		CreatedAt:   dto.CreatedAt,
-		Title:       dto.Title,
-		Description: dto.Description,
-		Weight:      uint64(dto.Weight),
-		Versions:    []uint64{},
-		Release:     dto.Release,
-		Tested:      dto.Tested,
-	}
-	for _, param := range dto.Versions {
-		model.Versions = append(model.Versions, uint64(param))
-	}
-	return model
-}
 
 type SessionRepository struct {
 	database *sqlx.DB
@@ -88,8 +28,8 @@ func (r *SessionRepository) Create(ctx context.Context, session *models.Session)
 	defer cancel()
 	dto := NewSessionDTOFromModel(session)
 	q := sq.Insert("public.sessions").
-		Columns("updated_at", "created_at", "title", "description", "weight", "versions", "release", "tested").
-		Values(dto.UpdatedAt, dto.CreatedAt, dto.Title, dto.Description, dto.Weight, dto.Versions, dto.Release, dto.Tested).
+		Columns("updated_at", "created_at", "title", "description").
+		Values(dto.UpdatedAt, dto.CreatedAt, dto.Title, dto.Description).
 		Suffix("RETURNING id")
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	if err := r.database.QueryRowxContext(ctx, query, args...).StructScan(dto); err != nil {
@@ -103,7 +43,7 @@ func (r *SessionRepository) Get(ctx context.Context, id models.UUID) (*models.Se
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	dto := &SessionDTO{}
-	q := sq.Select("sessions.id", "sessions.updated_at", "sessions.created_at", "sessions.title", "sessions.description", "sessions.weight", "sessions.versions", "sessions.release", "sessions.tested").
+	q := sq.Select("sessions.id", "sessions.updated_at", "sessions.created_at", "sessions.title", "sessions.description").
 		From("public.sessions").
 		Where(sq.Eq{"id": id}).
 		Limit(1)
@@ -126,7 +66,7 @@ func (r *SessionRepository) List(
 	if filter.PageSize == nil {
 		filter.PageSize = utils.Pointer(pageSize)
 	}
-	q := sq.Select("sessions.id", "sessions.updated_at", "sessions.created_at", "sessions.title", "sessions.description", "sessions.weight", "sessions.versions", "sessions.release", "sessions.tested").
+	q := sq.Select("sessions.id", "sessions.updated_at", "sessions.created_at", "sessions.title", "sessions.description").
 		From("public.sessions").
 		Limit(pageSize)
 	if filter.Search != nil {
@@ -134,7 +74,7 @@ func (r *SessionRepository) List(
 			postgresql.Search{
 				Lang:   "english",
 				Query:  *filter.Search,
-				Fields: []string{"description", "weight"},
+				Fields: []string{"description"},
 			},
 		)
 	}
@@ -168,7 +108,7 @@ func (r *SessionRepository) Count(
 			postgresql.Search{
 				Lang:   "english",
 				Query:  *filter.Search,
-				Fields: []string{"description", "weight"},
+				Fields: []string{"description"},
 			},
 		)
 	}
@@ -197,10 +137,6 @@ func (r *SessionRepository) Update(ctx context.Context, session *models.Session)
 		q = q.Set("sessions.updated_at", dto.UpdatedAt)
 		q = q.Set("sessions.title", dto.Title)
 		q = q.Set("sessions.description", dto.Description)
-		q = q.Set("sessions.weight", dto.Weight)
-		q = q.Set("sessions.versions", dto.Versions)
-		q = q.Set("sessions.release", dto.Release)
-		q = q.Set("sessions.tested", dto.Tested)
 	}
 	query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
 	result, err := r.database.ExecContext(ctx, query, args...)
@@ -238,4 +174,41 @@ func (r *SessionRepository) Delete(ctx context.Context, id models.UUID) error {
 		return e
 	}
 	return nil
+}
+
+type SessionDTO struct {
+	ID          string    `db:"id,omitempty"`
+	UpdatedAt   time.Time `db:"updated_at,omitempty"`
+	CreatedAt   time.Time `db:"created_at,omitempty"`
+	Title       string    `db:"title"`
+	Description string    `db:"description"`
+}
+type SessionListDTO []*SessionDTO
+
+func (list SessionListDTO) ToModels() []*models.Session {
+	listSessions := make([]*models.Session, len(list))
+	for i := range list {
+		listSessions[i] = list[i].ToModel()
+	}
+	return listSessions
+}
+func NewSessionDTOFromModel(session *models.Session) *SessionDTO {
+	dto := &SessionDTO{
+		ID:          string(session.ID),
+		UpdatedAt:   session.UpdatedAt,
+		CreatedAt:   session.CreatedAt,
+		Title:       session.Title,
+		Description: session.Description,
+	}
+	return dto
+}
+func (dto *SessionDTO) ToModel() *models.Session {
+	model := &models.Session{
+		ID:          models.UUID(dto.ID),
+		UpdatedAt:   dto.UpdatedAt,
+		CreatedAt:   dto.CreatedAt,
+		Title:       dto.Title,
+		Description: dto.Description,
+	}
+	return model
 }

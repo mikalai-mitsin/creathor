@@ -17,7 +17,7 @@ import (
 	"strings"
 )
 
-var version = "0.4.0"
+var version string
 
 var (
 	destinationPath = "."

@@ -12,11 +12,13 @@ import (
 )
 
 type Errors struct {
-	model *configs.ModelConfig
+	project *configs.Project
 }
 
 func NewErrors(project *configs.Project) *Errors {
-	return &Errors{}
+	return &Errors{
+		project: project,
+	}
 }
 
 func (i Errors) file() *ast.File {

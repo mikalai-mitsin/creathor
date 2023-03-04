@@ -11,7 +11,7 @@ import (
 	mock_usecases "github.com/018bf/example/internal/domain/usecases/mock"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/golang/mock/gomock"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
@@ -54,7 +54,10 @@ func TestNewDayInterceptor(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewDayInterceptor(tt.args.dayUseCase, tt.args.authUseCase, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewDayInterceptor(tt.args.dayUseCase, tt.args.logger, tt.args.authUseCase); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewDayInterceptor() = %v, want %v", got, tt.want)
 			}
 		})
@@ -676,7 +679,10 @@ func TestDayInterceptor_Delete(t *testing.T) {
 				authUseCase: tt.fields.authUseCase,
 				logger:      tt.fields.logger,
 			}
-			if err := i.Delete(tt.args.ctx, tt.args.id, tt.args.requestUser); !errors.Is(err, tt.wantErr) {
+			if err := i.Delete(tt.args.ctx, tt.args.id, tt.args.requestUser); !errors.Is(
+				err,
+				tt.wantErr,
+			) {
 				t.Errorf("DayInterceptor.Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -692,7 +698,7 @@ func TestDayInterceptor_List(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	filter := mock_models.NewDayFilter(t)
-	count := uint64(faker.Number().NumberInt64(2))
+	count := faker.New().UInt64Between(2, 20)
 	listDays := make([]*models.Day, 0, count)
 	for i := uint64(0); i < count; i++ {
 		listDays = append(listDays, mock_models.NewDay(t))

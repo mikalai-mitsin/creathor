@@ -19,7 +19,7 @@ import (
     mock_log "{{ .Module }}/pkg/log/mock"
     "{{ .Module }}/pkg/utils"
     "github.com/golang/mock/gomock"
-    "syreclabs.com/go/faker"
+    "github.com/jaswdr/faker"
 )
 
 func TestNewUserUseCase(t *testing.T) {
@@ -537,7 +537,7 @@ func TestUserUseCase_List(t *testing.T) {
     logger := mock_log.NewMockLogger(ctrl)
     ctx := context.Background()
     var users []*models.User
-    count := uint64(faker.Number().NumberInt(2))
+    count := faker.New().UInt64Between(2, 20)
     for i := uint64(0); i < count; i++ {
         users = append(users, mock_models.NewUser(t))
     }

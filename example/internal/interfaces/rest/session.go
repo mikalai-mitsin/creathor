@@ -15,7 +15,10 @@ type SessionHandler struct {
 	logger             log.Logger
 }
 
-func NewSessionHandler(sessionInterceptor interceptors.SessionInterceptor, logger log.Logger) *SessionHandler {
+func NewSessionHandler(
+	sessionInterceptor interceptors.SessionInterceptor,
+	logger log.Logger,
+) *SessionHandler {
 	return &SessionHandler{sessionInterceptor: sessionInterceptor, logger: logger}
 }
 
@@ -64,7 +67,11 @@ func (h *SessionHandler) List(ctx *gin.Context) {
 	if err := ctx.Bind(filter); err != nil {
 		return
 	}
-	listSessions, count, err := h.sessionInterceptor.List(ctx.Request.Context(), filter, requestUser)
+	listSessions, count, err := h.sessionInterceptor.List(
+		ctx.Request.Context(),
+		filter,
+		requestUser,
+	)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
@@ -83,7 +90,11 @@ func (h *SessionHandler) List(ctx *gin.Context) {
 // @Router       /sessions/{uuid} [get]
 func (h *SessionHandler) Get(c *gin.Context) {
 	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
-	session, err := h.sessionInterceptor.Get(c.Request.Context(), models.UUID(c.Param("id")), requestUser)
+	session, err := h.sessionInterceptor.Get(
+		c.Request.Context(),
+		models.UUID(c.Param("id")),
+		requestUser,
+	)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return

@@ -8,43 +8,30 @@ import (
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
+const (
+	PermissionIDSessionList   PermissionID = "session_list"
+	PermissionIDSessionDetail PermissionID = "session_detail"
+	PermissionIDSessionCreate PermissionID = "session_create"
+	PermissionIDSessionUpdate PermissionID = "session_update"
+	PermissionIDSessionDelete PermissionID = "session_delete"
+)
+
 type Session struct {
-	ID          UUID      `json:"id" form:"id"`
-	Title       string    `json:"title" form:"title"`
-	Description string    `json:"description" form:"description"`
-	UpdatedAt   time.Time `json:"updated_at" form:"updated_at"`
-	CreatedAt   time.Time `json:"created_at" form:"created_at,omitempty"`
+	ID          UUID      `json:"id"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedAt   time.Time `json:"created_at"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
 }
 
-func (c *Session) Validate() error {
+func (m *Session) Validate() error {
 	err := validation.ValidateStruct(
-		c,
-		validation.Field(&c.ID, is.UUID),
-		validation.Field(&c.Title),
-		validation.Field(&c.Description),
-	)
-	if err != nil {
-		return errs.FromValidationError(err)
-	}
-	return nil
-}
-
-type SessionFilter struct {
-	IDs        []UUID   `json:"ids" form:"ids"`
-	PageSize   *uint64  `json:"page_size" form:"page_size"`
-	PageNumber *uint64  `json:"page_number" form:"page_number"`
-	OrderBy    []string `json:"order_by" form:"order_by"`
-	Search     *string  `json:"search" form:"search"`
-}
-
-func (c *SessionFilter) Validate() error {
-	err := validation.ValidateStruct(
-		c,
-		validation.Field(&c.IDs),
-		validation.Field(&c.PageSize),
-		validation.Field(&c.PageNumber),
-		validation.Field(&c.OrderBy),
-		validation.Field(&c.Search),
+		m,
+		validation.Field(&m.ID, validation.Required, is.UUID),
+		validation.Field(&m.UpdatedAt, validation.Required),
+		validation.Field(&m.CreatedAt, validation.Required),
+		validation.Field(&m.Title, validation.Required),
+		validation.Field(&m.Description, validation.Required),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -53,15 +40,15 @@ func (c *SessionFilter) Validate() error {
 }
 
 type SessionCreate struct {
-	Title       string `json:"title" form:"title"`
-	Description string `json:"description" form:"description"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
-func (c *SessionCreate) Validate() error {
+func (m *SessionCreate) Validate() error {
 	err := validation.ValidateStruct(
-		c,
-		validation.Field(&c.Title, validation.Required),
-		validation.Field(&c.Description, validation.Required),
+		m,
+		validation.Field(&m.Title, validation.Required),
+		validation.Field(&m.Description, validation.Required),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -71,16 +58,16 @@ func (c *SessionCreate) Validate() error {
 
 type SessionUpdate struct {
 	ID          UUID    `json:"id"`
-	Title       *string `json:"title" form:"title"`
-	Description *string `json:"description" form:"description"`
+	Title       *string `json:"title"`
+	Description *string `json:"description"`
 }
 
-func (c *SessionUpdate) Validate() error {
+func (m *SessionUpdate) Validate() error {
 	err := validation.ValidateStruct(
-		c,
-		validation.Field(&c.ID, validation.Required, is.UUID),
-		validation.Field(&c.Title),
-		validation.Field(&c.Description),
+		m,
+		validation.Field(&m.ID, validation.Required, is.UUID),
+		validation.Field(&m.Title),
+		validation.Field(&m.Description),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -88,10 +75,25 @@ func (c *SessionUpdate) Validate() error {
 	return nil
 }
 
-const (
-	PermissionIDSessionList   PermissionID = "session_list"
-	PermissionIDSessionDetail PermissionID = "session_detail"
-	PermissionIDSessionCreate PermissionID = "session_create"
-	PermissionIDSessionUpdate PermissionID = "session_update"
-	PermissionIDSessionDelete PermissionID = "session_delete"
-)
+type SessionFilter struct {
+	IDs        []UUID   `json:"ids"`
+	PageSize   *uint64  `json:"page_size"`
+	PageNumber *uint64  `json:"page_number"`
+	OrderBy    []string `json:"order_by"`
+	Search     *string  `json:"search"`
+}
+
+func (m *SessionFilter) Validate() error {
+	err := validation.ValidateStruct(
+		m,
+		validation.Field(&m.IDs),
+		validation.Field(&m.PageNumber),
+		validation.Field(&m.PageSize),
+		validation.Field(&m.OrderBy),
+		validation.Field(&m.Search),
+	)
+	if err != nil {
+		return errs.FromValidationError(err)
+	}
+	return nil
+}

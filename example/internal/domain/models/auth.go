@@ -15,7 +15,7 @@ func (t Token) String() string {
 }
 
 type TokenPair struct {
-	Access  Token `json:"access" form:"access"`
+	Access  Token `json:"access"  form:"access"`
 	Refresh Token `json:"refresh" form:"refresh"`
 }
 
@@ -32,7 +32,7 @@ func (c *TokenPair) Validate() error {
 }
 
 type Login struct {
-	Email    string `json:"email" form:"email"`
+	Email    string `json:"email"    form:"email"`
 	Password string `json:"password" form:"password"`
 }
 

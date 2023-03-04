@@ -8,45 +8,32 @@ import (
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
+const (
+	PermissionIDEquipmentList   PermissionID = "equipment_list"
+	PermissionIDEquipmentDetail PermissionID = "equipment_detail"
+	PermissionIDEquipmentCreate PermissionID = "equipment_create"
+	PermissionIDEquipmentUpdate PermissionID = "equipment_update"
+	PermissionIDEquipmentDelete PermissionID = "equipment_delete"
+)
+
 type Equipment struct {
-	ID        UUID      `json:"id" form:"id"`
-	Name      string    `json:"name" form:"name"`
-	Repeat    int       `json:"repeat" form:"repeat"`
-	Weight    int       `json:"weight" form:"weight"`
-	UpdatedAt time.Time `json:"updated_at" form:"updated_at"`
-	CreatedAt time.Time `json:"created_at" form:"created_at,omitempty"`
+	ID        UUID      `json:"id"`
+	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"`
+	Name      string    `json:"name"`
+	Repeat    int       `json:"repeat"`
+	Weight    int       `json:"weight"`
 }
 
-func (c *Equipment) Validate() error {
+func (m *Equipment) Validate() error {
 	err := validation.ValidateStruct(
-		c,
-		validation.Field(&c.ID, is.UUID),
-		validation.Field(&c.Name),
-		validation.Field(&c.Repeat),
-		validation.Field(&c.Weight),
-	)
-	if err != nil {
-		return errs.FromValidationError(err)
-	}
-	return nil
-}
-
-type EquipmentFilter struct {
-	IDs        []UUID   `json:"ids" form:"ids"`
-	PageSize   *uint64  `json:"page_size" form:"page_size"`
-	PageNumber *uint64  `json:"page_number" form:"page_number"`
-	OrderBy    []string `json:"order_by" form:"order_by"`
-	Search     *string  `json:"search" form:"search"`
-}
-
-func (c *EquipmentFilter) Validate() error {
-	err := validation.ValidateStruct(
-		c,
-		validation.Field(&c.IDs),
-		validation.Field(&c.PageSize),
-		validation.Field(&c.PageNumber),
-		validation.Field(&c.OrderBy),
-		validation.Field(&c.Search),
+		m,
+		validation.Field(&m.ID, validation.Required, is.UUID),
+		validation.Field(&m.UpdatedAt, validation.Required),
+		validation.Field(&m.CreatedAt, validation.Required),
+		validation.Field(&m.Name, validation.Required),
+		validation.Field(&m.Repeat, validation.Required),
+		validation.Field(&m.Weight, validation.Required),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -55,17 +42,17 @@ func (c *EquipmentFilter) Validate() error {
 }
 
 type EquipmentCreate struct {
-	Name   string `json:"name" form:"name"`
-	Repeat int    `json:"repeat" form:"repeat"`
-	Weight int    `json:"weight" form:"weight"`
+	Name   string `json:"name"`
+	Repeat int    `json:"repeat"`
+	Weight int    `json:"weight"`
 }
 
-func (c *EquipmentCreate) Validate() error {
+func (m *EquipmentCreate) Validate() error {
 	err := validation.ValidateStruct(
-		c,
-		validation.Field(&c.Name, validation.Required),
-		validation.Field(&c.Repeat, validation.Required),
-		validation.Field(&c.Weight, validation.Required),
+		m,
+		validation.Field(&m.Name, validation.Required),
+		validation.Field(&m.Repeat, validation.Required),
+		validation.Field(&m.Weight, validation.Required),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -75,18 +62,18 @@ func (c *EquipmentCreate) Validate() error {
 
 type EquipmentUpdate struct {
 	ID     UUID    `json:"id"`
-	Name   *string `json:"name" form:"name"`
-	Repeat *int    `json:"repeat" form:"repeat"`
-	Weight *int    `json:"weight" form:"weight"`
+	Name   *string `json:"name"`
+	Repeat *int    `json:"repeat"`
+	Weight *int    `json:"weight"`
 }
 
-func (c *EquipmentUpdate) Validate() error {
+func (m *EquipmentUpdate) Validate() error {
 	err := validation.ValidateStruct(
-		c,
-		validation.Field(&c.ID, validation.Required, is.UUID),
-		validation.Field(&c.Name),
-		validation.Field(&c.Repeat),
-		validation.Field(&c.Weight),
+		m,
+		validation.Field(&m.ID, validation.Required, is.UUID),
+		validation.Field(&m.Name),
+		validation.Field(&m.Repeat),
+		validation.Field(&m.Weight),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -94,10 +81,25 @@ func (c *EquipmentUpdate) Validate() error {
 	return nil
 }
 
-const (
-	PermissionIDEquipmentList   PermissionID = "equipment_list"
-	PermissionIDEquipmentDetail PermissionID = "equipment_detail"
-	PermissionIDEquipmentCreate PermissionID = "equipment_create"
-	PermissionIDEquipmentUpdate PermissionID = "equipment_update"
-	PermissionIDEquipmentDelete PermissionID = "equipment_delete"
-)
+type EquipmentFilter struct {
+	IDs        []UUID   `json:"ids"`
+	PageSize   *uint64  `json:"page_size"`
+	PageNumber *uint64  `json:"page_number"`
+	OrderBy    []string `json:"order_by"`
+	Search     *string  `json:"search"`
+}
+
+func (m *EquipmentFilter) Validate() error {
+	err := validation.ValidateStruct(
+		m,
+		validation.Field(&m.IDs),
+		validation.Field(&m.PageNumber),
+		validation.Field(&m.PageSize),
+		validation.Field(&m.OrderBy),
+		validation.Field(&m.Search),
+	)
+	if err != nil {
+		return errs.FromValidationError(err)
+	}
+	return nil
+}

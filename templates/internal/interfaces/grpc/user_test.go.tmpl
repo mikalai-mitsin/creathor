@@ -6,7 +6,7 @@ import (
     {{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
     "{{ .Module }}/pkg/utils"
     "reflect"
-    "syreclabs.com/go/faker"
+    "github.com/jaswdr/faker"
     "testing"
 
     "{{ .Module }}/internal/domain/errs"
@@ -246,7 +246,7 @@ func TestUserServiceServer_List(t *testing.T) {
     user := mock_models.NewUser(t)
     ctx = context.WithValue(ctx, UserKey, user)
     userFilter := mock_models.NewUserFilter(t)
-    count := uint64(faker.RandomInt64(1, 100))
+    count := faker.New().UInt64Between(2, 20)
     response := &{{ .ProtoPackage }}.Users{
         Items: make([]*{{ .ProtoPackage }}.User, 0, int(count)),
         Count: count,

@@ -12,11 +12,12 @@ import "google/api/annotations.proto";
 
 message ArchCreate {
   string name = 1;
-  repeated string tags = 2;
-  repeated uint32 versions = 3;
-  repeated uint64 old_versions = 4;
-  google.protobuf.Timestamp release = 5;
-  google.protobuf.Timestamp tested = 6;
+  string title = 2;
+  string description = 3;
+  repeated string tags = 4;
+  repeated uint64 versions = 5;
+  google.protobuf.Timestamp release = 6;
+  google.protobuf.Timestamp tested = 7;
 }
 
 message ArchGet {
@@ -26,11 +27,12 @@ message ArchGet {
 message ArchUpdate {
   string id = 1;
   google.protobuf.StringValue name = 2;
-  google.protobuf.ListValue tags = 3;
-  google.protobuf.ListValue versions = 4;
-  google.protobuf.ListValue old_versions = 5;
-  google.protobuf.Timestamp release = 6;
-  google.protobuf.Timestamp tested = 7;
+  google.protobuf.StringValue title = 3;
+  google.protobuf.StringValue description = 4;
+  google.protobuf.ListValue tags = 5;
+  google.protobuf.ListValue versions = 6;
+  google.protobuf.Timestamp release = 7;
+  google.protobuf.Timestamp tested = 8;
 }
 
 message Arch {
@@ -38,11 +40,12 @@ message Arch {
   google.protobuf.Timestamp updated_at = 2;
   google.protobuf.Timestamp created_at = 3;
   string name = 4;
-  repeated string tags = 5;
-  repeated uint32 versions = 6;
-  repeated uint64 old_versions = 7;
-  google.protobuf.Timestamp release = 8;
-  google.protobuf.Timestamp tested = 9;
+  string title = 5;
+  string description = 6;
+  repeated string tags = 7;
+  repeated uint64 versions = 8;
+  google.protobuf.Timestamp release = 9;
+  google.protobuf.Timestamp tested = 10;
 }
 
 message ListArch {

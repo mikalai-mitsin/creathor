@@ -79,7 +79,10 @@ func NewPostgresUserRepository(database *sqlx.DB, logger log.Logger) repositorie
 	return &PostgresUserRepository{database: database, logger: logger}
 }
 
-func (r *PostgresUserRepository) Count(ctx context.Context, filter *models.UserFilter) (uint64, error) {
+func (r *PostgresUserRepository) Count(
+	ctx context.Context,
+	filter *models.UserFilter,
+) (uint64, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	q := sq.Select("count(id)").From("public.users")
@@ -169,7 +172,10 @@ func (r *PostgresUserRepository) Get(ctx context.Context, id models.UUID) (*mode
 	return dto.ToModel(), nil
 }
 
-func (r *PostgresUserRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
+func (r *PostgresUserRepository) GetByEmail(
+	ctx context.Context,
+	email string,
+) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	dto := &UserDTO{}
@@ -195,7 +201,10 @@ func (r *PostgresUserRepository) GetByEmail(ctx context.Context, email string) (
 	return dto.ToModel(), nil
 }
 
-func (r *PostgresUserRepository) List(ctx context.Context, filter *models.UserFilter) ([]*models.User, error) {
+func (r *PostgresUserRepository) List(
+	ctx context.Context,
+	filter *models.UserFilter,
+) ([]*models.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	var dto UserListDTO

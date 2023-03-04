@@ -3,6 +3,9 @@ package grpc
 import (
 	"context"
 	"errors"
+	"reflect"
+	"testing"
+
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/interceptors"
 	mock_interceptors "github.com/018bf/example/internal/domain/interceptors/mock"
@@ -10,8 +13,6 @@ import (
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
 	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/golang/mock/gomock"
-	"reflect"
-	"testing"
 )
 
 func TestAuthServiceServer_CreateToken(t *testing.T) {
@@ -207,7 +208,10 @@ func TestNewAuthServiceServer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewAuthServiceServer(tt.args.authInterceptor); !reflect.DeepEqual(got, tt.want) {
+			if got := NewAuthServiceServer(tt.args.authInterceptor); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewAuthServiceServer() = %v, want %v", got, tt.want)
 			}
 		})

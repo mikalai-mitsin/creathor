@@ -3,6 +3,9 @@ package grpc
 import (
 	"context"
 	"errors"
+	"reflect"
+	"testing"
+
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/interceptors"
 	mock_interceptors "github.com/018bf/example/internal/domain/interceptors/mock"
@@ -14,12 +17,10 @@ import (
 	"github.com/018bf/example/pkg/utils"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
+	"github.com/jaswdr/faker"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
-	"reflect"
-	"syreclabs.com/go/faker"
-	"testing"
 )
 
 func TestNewEquipmentServiceServer(t *testing.T) {
@@ -50,7 +51,10 @@ func TestNewEquipmentServiceServer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewEquipmentServiceServer(tt.args.equipmentInterceptor, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewEquipmentServiceServer(tt.args.equipmentInterceptor, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewEquipmentServiceServer() = %v, want %v", got, tt.want)
 			}
 		})
@@ -175,7 +179,10 @@ func TestEquipmentServiceServer_Delete(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				equipmentInterceptor.EXPECT().Delete(ctx, models.UUID(id), user).Return(nil).Times(1)
+				equipmentInterceptor.EXPECT().
+					Delete(ctx, models.UUID(id), user).
+					Return(nil).
+					Times(1)
 			},
 			fields: fields{
 				UnimplementedEquipmentServiceServer: examplepb.UnimplementedEquipmentServiceServer{},
@@ -268,7 +275,10 @@ func TestEquipmentServiceServer_Get(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				equipmentInterceptor.EXPECT().Get(ctx, equipment.ID, user).Return(equipment, nil).Times(1)
+				equipmentInterceptor.EXPECT().
+					Get(ctx, equipment.ID, user).
+					Return(equipment, nil).
+					Times(1)
 			},
 			fields: fields{
 				UnimplementedEquipmentServiceServer: examplepb.UnimplementedEquipmentServiceServer{},
@@ -337,7 +347,7 @@ func TestEquipmentServiceServer_List(t *testing.T) {
 	filter := mock_models.NewEquipmentFilter(t)
 	var ids []models.UUID
 	var stringIDs []string
-	count := uint64(faker.RandomInt64(1, 100))
+	count := faker.New().UInt64Between(2, 20)
 	response := &examplepb.ListEquipment{
 		Items: make([]*examplepb.Equipment, 0, int(count)),
 		Count: count,
@@ -371,7 +381,10 @@ func TestEquipmentServiceServer_List(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				equipmentInterceptor.EXPECT().List(ctx, filter, user).Return(listEquipment, count, nil).Times(1)
+				equipmentInterceptor.EXPECT().
+					List(ctx, filter, user).
+					Return(listEquipment, count, nil).
+					Times(1)
 			},
 			fields: fields{
 				UnimplementedEquipmentServiceServer: examplepb.UnimplementedEquipmentServiceServer{},
@@ -469,7 +482,10 @@ func TestEquipmentServiceServer_Update(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				equipmentInterceptor.EXPECT().Update(ctx, update, user).Return(equipment, nil).Times(1)
+				equipmentInterceptor.EXPECT().
+					Update(ctx, update, user).
+					Return(equipment, nil).
+					Times(1)
 			},
 			fields: fields{
 				UnimplementedEquipmentServiceServer: examplepb.UnimplementedEquipmentServiceServer{},

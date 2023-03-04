@@ -18,7 +18,7 @@ import (
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/golang/mock/gomock"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 )
 
 func TestNewPlanUseCase(t *testing.T) {
@@ -57,7 +57,10 @@ func TestNewPlanUseCase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewPlanUseCase(tt.args.planRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewPlanUseCase(tt.args.planRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewPlanUseCase() = %v, want %v", got, tt.want)
 			}
 		})
@@ -146,7 +149,7 @@ func TestPlanUseCase_List(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	var listPlans []*models.Plan
-	count := uint64(faker.Number().NumberInt(2))
+	count := faker.New().UInt64Between(2, 20)
 	for i := uint64(0); i < count; i++ {
 		listPlans = append(listPlans, mock_models.NewPlan(t))
 	}
@@ -189,7 +192,9 @@ func TestPlanUseCase_List(t *testing.T) {
 		{
 			name: "list error",
 			setup: func() {
-				planRepository.EXPECT().List(ctx, filter).Return(nil, errs.NewUnexpectedBehaviorError("test error"))
+				planRepository.EXPECT().
+					List(ctx, filter).
+					Return(nil, errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
 				planRepository: planRepository,
@@ -207,7 +212,9 @@ func TestPlanUseCase_List(t *testing.T) {
 			name: "count error",
 			setup: func() {
 				planRepository.EXPECT().List(ctx, filter).Return(listPlans, nil)
-				planRepository.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
+				planRepository.EXPECT().
+					Count(ctx, filter).
+					Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
 				planRepository: planRepository,
@@ -476,7 +483,7 @@ func TestPlanUseCase_Update(t *testing.T) {
 			args: args{
 				ctx: ctx,
 				update: &models.PlanUpdate{
-					ID: models.UUID(faker.Number().Number(1)),
+					ID: models.UUID("baduuid"),
 				},
 			},
 			want:    nil,

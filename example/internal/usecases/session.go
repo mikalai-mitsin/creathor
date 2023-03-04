@@ -6,7 +6,6 @@ import (
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
 	"github.com/018bf/example/internal/domain/usecases"
-
 	"github.com/018bf/example/pkg/clock"
 	"github.com/018bf/example/pkg/log"
 )
@@ -22,37 +21,7 @@ func NewSessionUseCase(
 	clock clock.Clock,
 	logger log.Logger,
 ) usecases.SessionUseCase {
-	return &SessionUseCase{
-		sessionRepository: sessionRepository,
-		clock:             clock,
-		logger:            logger,
-	}
-}
-
-func (u *SessionUseCase) Get(
-	ctx context.Context,
-	id models.UUID,
-) (*models.Session, error) {
-	session, err := u.sessionRepository.Get(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return session, nil
-}
-
-func (u *SessionUseCase) List(
-	ctx context.Context,
-	filter *models.SessionFilter,
-) ([]*models.Session, uint64, error) {
-	listSessions, err := u.sessionRepository.List(ctx, filter)
-	if err != nil {
-		return nil, 0, err
-	}
-	count, err := u.sessionRepository.Count(ctx, filter)
-	if err != nil {
-		return nil, 0, err
-	}
-	return listSessions, count, nil
+	return &SessionUseCase{sessionRepository: sessionRepository, clock: clock, logger: logger}
 }
 
 func (u *SessionUseCase) Create(
@@ -65,15 +34,37 @@ func (u *SessionUseCase) Create(
 	now := u.clock.Now().UTC()
 	session := &models.Session{
 		ID:          "",
-		Title:       create.Title,
-		Description: create.Description,
 		UpdatedAt:   now,
 		CreatedAt:   now,
+		Title:       create.Title,
+		Description: create.Description,
 	}
 	if err := u.sessionRepository.Create(ctx, session); err != nil {
 		return nil, err
 	}
 	return session, nil
+}
+func (u *SessionUseCase) Get(ctx context.Context, id models.UUID) (*models.Session, error) {
+	session, err := u.sessionRepository.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return session, nil
+}
+
+func (u *SessionUseCase) List(
+	ctx context.Context,
+	filter *models.SessionFilter,
+) ([]*models.Session, uint64, error) {
+	session, err := u.sessionRepository.List(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	count, err := u.sessionRepository.Count(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	return session, count, nil
 }
 
 func (u *SessionUseCase) Update(
@@ -87,19 +78,20 @@ func (u *SessionUseCase) Update(
 	if err != nil {
 		return nil, err
 	}
-	if update.Title != nil {
-		session.Title = *update.Title
+	{
+		if update.Title != nil {
+			session.Title = *update.Title
+		}
+		if update.Description != nil {
+			session.Description = *update.Description
+		}
 	}
-	if update.Description != nil {
-		session.Description = *update.Description
-	}
-	session.UpdatedAt = u.clock.Now()
+	session.UpdatedAt = u.clock.Now().UTC()
 	if err := u.sessionRepository.Update(ctx, session); err != nil {
 		return nil, err
 	}
 	return session, nil
 }
-
 func (u *SessionUseCase) Delete(ctx context.Context, id models.UUID) error {
 	if err := u.sessionRepository.Delete(ctx, id); err != nil {
 		return err

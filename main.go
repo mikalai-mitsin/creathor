@@ -5,7 +5,10 @@ import (
 	"embed"
 	_ "embed"
 	"fmt"
-	"github.com/018bf/creathor/models"
+	"github.com/018bf/creathor/internal/configs"
+	"github.com/018bf/creathor/internal/generators"
+	generatorsInterfacesGrpc "github.com/018bf/creathor/internal/generators/interfaces/grpc"
+	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
@@ -14,7 +17,7 @@ import (
 	"strings"
 )
 
-var version = "0.4.0"
+var version string
 
 var (
 	destinationPath = "."
@@ -47,13 +50,14 @@ func main() {
 		},
 		Action: initProject,
 	}
+	strcase.ConfigureAcronym("UUID", "uuid")
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func initProject(ctx *cli.Context) error {
-	project, err := models.NewProject(path.Join(destinationPath, configPath))
+	project, err := configs.NewProject(path.Join(destinationPath, configPath))
 	if err != nil {
 		return err
 	}
@@ -77,13 +81,21 @@ func initProject(ctx *cli.Context) error {
 			return err
 		}
 	}
+	crud := generators.NewCrudGenerator(project)
+	if err := crud.Sync(); err != nil {
+		return err
+	}
+	interfaceGrpcServer := generatorsInterfacesGrpc.NewServer(project)
+	if err := interfaceGrpcServer.Sync(); err != nil {
+		return err
+	}
 	if err := postInit(project); err != nil {
 		return err
 	}
 	return nil
 }
 
-func postInit(project *models.Project) error {
+func postInit(project *configs.Project) error {
 	fmt.Println("post init...")
 	var errb bytes.Buffer
 	generate := exec.Command("go", "generate", "./...")
@@ -123,6 +135,12 @@ func postInit(project *models.Project) error {
 	tidy.Stderr = &errb
 	fmt.Println(strings.Join(tidy.Args, " "))
 	if err := tidy.Run(); err != nil {
+		fmt.Println(errb.String())
+	}
+	goLines := exec.Command("golines", ".", "-w", "--ignore-generated")
+	goLines.Dir = destinationPath
+	fmt.Println(strings.Join(goLines.Args, " "))
+	if err := goLines.Run(); err != nil {
 		fmt.Println(errb.String())
 	}
 	clean := exec.Command("golangci-lint", "run", "./...", "--fix")

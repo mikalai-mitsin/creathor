@@ -18,8 +18,8 @@ import (
 	"github.com/018bf/example/pkg/log"
 	"github.com/018bf/example/pkg/utils"
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/jaswdr/faker"
 	"github.com/jmoiron/sqlx"
-	"syreclabs.com/go/faker"
 )
 
 func TestNewPostgresUserRepository(t *testing.T) {
@@ -51,7 +51,10 @@ func TestNewPostgresUserRepository(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewPostgresUserRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewPostgresUserRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewPostgresUserRepository() = %v, want %v", got, tt.want)
 			}
 		})
@@ -462,7 +465,7 @@ func TestPostgresRepository_List(t *testing.T) {
 	pageSize := uint64(100)
 	pageNumber := uint64(3)
 	var users []*models.User
-	for i := 0; i < faker.RandomInt(1, 100); i++ {
+	for i := 0; i < faker.New().IntBetween(2, 20); i++ {
 		users = append(users, mock_models.NewUser(t))
 	}
 	query := "SELECT id, first_name, last_name, password, email, group_id, created_at, updated_at FROM public.users"
@@ -801,7 +804,8 @@ func TestPostgresUserRepository_Count(t *testing.T) {
 		{
 			name: "bad return type",
 			setup: func() {
-				mock.ExpectQuery(query).WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow("one"))
+				mock.ExpectQuery(query).
+					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow("one"))
 			},
 			fields: fields{
 				database: database,

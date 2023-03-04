@@ -6,33 +6,25 @@ import (
 	"github.com/018bf/example/internal/domain/models"
 )
 
-//nolint: lll
-//go:generate mockgen -build_flags=-mod=mod -destination mock/equipment_mock.go github.com/018bf/example/internal/domain/interceptors EquipmentInterceptor
-
+// EquipmentInterceptor - domain layer interceptor interface
+//
+//go:generate mockgen -build_flags=-mod=mod -destination mock/equipment.go github.com/018bf/example/internal/domain/interceptors EquipmentInterceptor
 type EquipmentInterceptor interface {
-	Get(
-		ctx context.Context,
-		id models.UUID,
-		requestUser *models.User,
-	) (*models.Equipment, error)
+	Get(ctx context.Context, id models.UUID, requestUser *models.User) (*models.Equipment, error)
 	List(
 		ctx context.Context,
 		filter *models.EquipmentFilter,
 		requestUser *models.User,
 	) ([]*models.Equipment, uint64, error)
-	Create(
-		ctx context.Context,
-		create *models.EquipmentCreate,
-		requestUser *models.User,
-	) (*models.Equipment, error)
 	Update(
 		ctx context.Context,
 		update *models.EquipmentUpdate,
 		requestUser *models.User,
 	) (*models.Equipment, error)
-	Delete(
+	Create(
 		ctx context.Context,
-		id models.UUID,
+		create *models.EquipmentCreate,
 		requestUser *models.User,
-	) error
+	) (*models.Equipment, error)
+	Delete(ctx context.Context, id models.UUID, requestUser *models.User) error
 }

@@ -18,7 +18,7 @@ import (
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/golang/mock/gomock"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 )
 
 func TestNewArchUseCase(t *testing.T) {
@@ -57,7 +57,10 @@ func TestNewArchUseCase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewArchUseCase(tt.args.archRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewArchUseCase(tt.args.archRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewArchUseCase() = %v, want %v", got, tt.want)
 			}
 		})
@@ -146,7 +149,7 @@ func TestArchUseCase_List(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	var listArches []*models.Arch
-	count := uint64(faker.Number().NumberInt(2))
+	count := faker.New().UInt64Between(2, 20)
 	for i := uint64(0); i < count; i++ {
 		listArches = append(listArches, mock_models.NewArch(t))
 	}
@@ -189,7 +192,9 @@ func TestArchUseCase_List(t *testing.T) {
 		{
 			name: "list error",
 			setup: func() {
-				archRepository.EXPECT().List(ctx, filter).Return(nil, errs.NewUnexpectedBehaviorError("test error"))
+				archRepository.EXPECT().
+					List(ctx, filter).
+					Return(nil, errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
 				archRepository: archRepository,
@@ -207,7 +212,9 @@ func TestArchUseCase_List(t *testing.T) {
 			name: "count error",
 			setup: func() {
 				archRepository.EXPECT().List(ctx, filter).Return(listArches, nil)
-				archRepository.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
+				archRepository.EXPECT().
+					Count(ctx, filter).
+					Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
 				archRepository: archRepository,
@@ -279,9 +286,10 @@ func TestArchUseCase_Create(t *testing.T) {
 						ctx,
 						&models.Arch{
 							Name:        create.Name,
+							Title:       create.Title,
+							Description: create.Description,
 							Tags:        create.Tags,
 							Versions:    create.Versions,
-							OldVersions: create.OldVersions,
 							Release:     create.Release,
 							Tested:      create.Tested,
 							UpdatedAt:   now,
@@ -302,9 +310,10 @@ func TestArchUseCase_Create(t *testing.T) {
 			want: &models.Arch{
 				ID:          "",
 				Name:        create.Name,
+				Title:       create.Title,
+				Description: create.Description,
 				Tags:        create.Tags,
 				Versions:    create.Versions,
-				OldVersions: create.OldVersions,
 				Release:     create.Release,
 				Tested:      create.Tested,
 				UpdatedAt:   now,
@@ -322,9 +331,10 @@ func TestArchUseCase_Create(t *testing.T) {
 						&models.Arch{
 							ID:          "",
 							Name:        create.Name,
+							Title:       create.Title,
+							Description: create.Description,
 							Tags:        create.Tags,
 							Versions:    create.Versions,
-							OldVersions: create.OldVersions,
 							Release:     create.Release,
 							Tested:      create.Tested,
 							UpdatedAt:   now,
@@ -359,12 +369,13 @@ func TestArchUseCase_Create(t *testing.T) {
 			},
 			want: nil,
 			wantErr: errs.NewInvalidFormError().WithParams(map[string]string{
-				"name":         "cannot be blank",
-				"tags":         "cannot be blank",
-				"versions":     "cannot be blank",
-				"old_versions": "cannot be blank",
-				"release":      "cannot be blank",
-				"tested":       "cannot be blank",
+				"name":        "cannot be blank",
+				"title":       "cannot be blank",
+				"description": "cannot be blank",
+				"tags":        "cannot be blank",
+				"versions":    "cannot be blank",
+				"release":     "cannot be blank",
+				"tested":      "cannot be blank",
 			}),
 		},
 	}
@@ -488,7 +499,7 @@ func TestArchUseCase_Update(t *testing.T) {
 			args: args{
 				ctx: ctx,
 				update: &models.ArchUpdate{
-					ID: models.UUID(faker.Number().Number(1)),
+					ID: models.UUID("baduuid"),
 				},
 			},
 			want:    nil,

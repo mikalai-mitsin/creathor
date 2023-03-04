@@ -19,7 +19,7 @@ import (
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/018bf/example/pkg/utils"
 	"github.com/golang/mock/gomock"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 )
 
 func TestNewUserUseCase(t *testing.T) {
@@ -57,7 +57,10 @@ func TestNewUserUseCase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewUserUseCase(tt.args.userRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewUserUseCase(tt.args.userRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewUserUseCase() = %v, want %v", got, tt.want)
 			}
 		})
@@ -302,7 +305,10 @@ func TestUserUseCase_Create(t *testing.T) {
 			wantErr: &errs.Error{
 				Code:    errs.ErrorCodeInvalidArgument,
 				Message: "The form sent is not valid, please correct the errors below.",
-				Params:  map[string]string{"email": "must be a valid email address", "password": "cannot be blank"},
+				Params: map[string]string{
+					"email":    "must be a valid email address",
+					"password": "cannot be blank",
+				},
 			},
 		},
 	}
@@ -537,7 +543,7 @@ func TestUserUseCase_List(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	var users []*models.User
-	count := uint64(faker.Number().NumberInt(2))
+	count := faker.New().UInt64Between(2, 20)
 	for i := uint64(0); i < count; i++ {
 		users = append(users, mock_models.NewUser(t))
 	}

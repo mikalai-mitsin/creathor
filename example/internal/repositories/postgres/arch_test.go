@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"github.com/lib/pq"
 	"reflect"
 	"testing"
+
+	"github.com/lib/pq"
 
 	"github.com/018bf/example/internal/domain/errs"
 	mock_models "github.com/018bf/example/internal/domain/models/mock"
@@ -14,7 +15,7 @@ import (
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/golang/mock/gomock"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
@@ -53,7 +54,10 @@ func TestNewArchRepository(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewArchRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewArchRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewArchRepository() = %v, want %v", got, tt.want)
 			}
 		})
@@ -93,14 +97,15 @@ func TestArchRepository_Create(t *testing.T) {
 			setup: func() {
 				mock.ExpectQuery(query).
 					WithArgs(
-						arch.Name,
-						pq.Array(arch.Tags),
-						pq.Array(arch.Versions),
-						pq.Array(arch.OldVersions),
-						arch.Release,
-						arch.Tested,
 						arch.UpdatedAt,
 						arch.CreatedAt,
+						arch.Name,
+						arch.Title,
+						arch.Description,
+						pq.Array(arch.Tags),
+						pq.Array(arch.Versions),
+						arch.Release,
+						arch.Tested,
 					).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).
 						AddRow(arch.ID, arch.CreatedAt))
@@ -120,14 +125,15 @@ func TestArchRepository_Create(t *testing.T) {
 			setup: func() {
 				mock.ExpectQuery(query).
 					WithArgs(
-						arch.Name,
-						pq.Array(arch.Tags),
-						pq.Array(arch.Versions),
-						pq.Array(arch.OldVersions),
-						arch.Release,
-						arch.Tested,
 						arch.UpdatedAt,
 						arch.CreatedAt,
+						arch.Name,
+						arch.Title,
+						arch.Description,
+						pq.Array(arch.Tags),
+						pq.Array(arch.Versions),
+						arch.Release,
+						arch.Tested,
 					).
 					WillReturnError(errors.New("test error"))
 			},
@@ -166,7 +172,7 @@ func TestArchRepository_Get(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	query := "SELECT arches.id, arches.name, arches.tags, arches.versions, arches.old_versions, arches.release, arches.tested, arches.updated_at, arches.created_at FROM public.arches WHERE id = \\$1 LIMIT 1"
+	query := "SELECT arches.id, arches.updated_at, arches.created_at, arches.name, arches.title, arches.description, arches.tags, arches.versions, arches.release, arches.tested FROM public.arches WHERE id = \\$1 LIMIT 1"
 	arch := mock_models.NewArch(t)
 	ctx := context.Background()
 	type fields struct {
@@ -267,11 +273,11 @@ func TestArchRepository_List(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	var listArches []*models.Arch
-	for i := 0; i < faker.RandomInt(1, 20); i++ {
+	for i := 0; i < faker.New().IntBetween(2, 20); i++ {
 		listArches = append(listArches, mock_models.NewArch(t))
 	}
 	filter := mock_models.NewArchFilter(t)
-	query := "SELECT arches.id, arches.name, arches.tags, arches.versions, arches.old_versions, arches.release, arches.tested, arches.updated_at, arches.created_at FROM public.arches"
+	query := "SELECT arches.id, arches.updated_at, arches.created_at, arches.name, arches.title, arches.description, arches.tags, arches.versions, arches.release, arches.tested FROM public.arches"
 	type fields struct {
 		database *sqlx.DB
 		logger   log.Logger
@@ -414,13 +420,14 @@ func TestArchRepository_Update(t *testing.T) {
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						arch.UpdatedAt,
 						arch.Name,
+						arch.Title,
+						arch.Description,
 						pq.Array(arch.Tags),
 						pq.Array(arch.Versions),
-						pq.Array(arch.OldVersions),
 						arch.Release,
 						arch.Tested,
-						arch.UpdatedAt,
 						arch.ID,
 					).
 					WillReturnResult(sqlmock.NewResult(0, 1))
@@ -440,13 +447,14 @@ func TestArchRepository_Update(t *testing.T) {
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						arch.UpdatedAt,
 						arch.Name,
+						arch.Title,
+						arch.Description,
 						pq.Array(arch.Tags),
 						pq.Array(arch.Versions),
-						pq.Array(arch.OldVersions),
 						arch.Release,
 						arch.Tested,
-						arch.UpdatedAt,
 						arch.ID,
 					).
 					WillReturnResult(sqlmock.NewResult(0, 0))
@@ -466,13 +474,14 @@ func TestArchRepository_Update(t *testing.T) {
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						arch.UpdatedAt,
 						arch.Name,
+						arch.Title,
+						arch.Description,
 						pq.Array(arch.Tags),
 						pq.Array(arch.Versions),
-						pq.Array(arch.OldVersions),
 						arch.Release,
 						arch.Tested,
-						arch.UpdatedAt,
 						arch.ID,
 					).
 					WillReturnError(errors.New("test error"))
@@ -485,20 +494,22 @@ func TestArchRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: arch,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("arch_id", string(arch.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("arch_id", string(arch.ID)),
 		},
 		{
 			name: "unexpected error",
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						arch.UpdatedAt,
 						arch.Name,
+						arch.Title,
+						arch.Description,
 						pq.Array(arch.Tags),
 						pq.Array(arch.Versions),
-						pq.Array(arch.OldVersions),
 						arch.Release,
 						arch.Tested,
-						arch.UpdatedAt,
 						arch.ID,
 					).
 					WillReturnError(errors.New("test error"))
@@ -511,20 +522,22 @@ func TestArchRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: arch,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("arch_id", string(arch.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("arch_id", string(arch.ID)),
 		},
 		{
 			name: "result error",
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						arch.UpdatedAt,
 						arch.Name,
+						arch.Title,
+						arch.Description,
 						pq.Array(arch.Tags),
 						pq.Array(arch.Versions),
-						pq.Array(arch.OldVersions),
 						arch.Release,
 						arch.Tested,
-						arch.UpdatedAt,
 						arch.ID,
 					).
 					WillReturnResult(sqlmock.NewErrorResult(errors.New("test error")))
@@ -537,7 +550,8 @@ func TestArchRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: arch,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("arch_id", string(arch.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("arch_id", string(arch.ID)),
 		},
 	}
 	for _, tt := range tests {
@@ -629,7 +643,8 @@ func TestArchRepository_Delete(t *testing.T) {
 				ctx: context.Background(),
 				id:  arch.ID,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("arch_id", string(arch.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("arch_id", string(arch.ID)),
 		},
 		{
 			name: "result error",
@@ -646,7 +661,8 @@ func TestArchRepository_Delete(t *testing.T) {
 				ctx: context.Background(),
 				id:  arch.ID,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("arch_id", string(arch.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("arch_id", string(arch.ID)),
 		},
 	}
 	for _, tt := range tests {
@@ -770,9 +786,10 @@ func newArchRows(t *testing.T, listArches []*models.Arch) *sqlmock.Rows {
 	rows := sqlmock.NewRows([]string{
 		"id",
 		"name",
+		"title",
+		"description",
 		"tags",
 		"versions",
-		"old_versions",
 		"release",
 		"tested",
 		"updated_at",
@@ -782,9 +799,10 @@ func newArchRows(t *testing.T, listArches []*models.Arch) *sqlmock.Rows {
 		rows.AddRow(
 			arch.ID,
 			arch.Name,
+			arch.Title,
+			arch.Description,
 			pq.Array(arch.Tags),
 			pq.Array(arch.Versions),
-			pq.Array(arch.OldVersions),
 			arch.Release,
 			arch.Tested,
 			arch.UpdatedAt,

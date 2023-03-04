@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
 	examplepb "github.com/018bf/example/pkg/examplepb/v1"
@@ -25,10 +26,7 @@ func NewDayServiceServer(
 	dayInterceptor interceptors.DayInterceptor,
 	logger log.Logger,
 ) examplepb.DayServiceServer {
-	return &DayServiceServer{
-		dayInterceptor: dayInterceptor,
-		logger:         logger,
-	}
+	return &DayServiceServer{dayInterceptor: dayInterceptor, logger: logger}
 }
 
 func (s *DayServiceServer) Create(
@@ -97,46 +95,19 @@ func (s *DayServiceServer) Delete(
 	ctx context.Context,
 	input *examplepb.DayDelete,
 ) (*emptypb.Empty, error) {
-	if err := s.dayInterceptor.Delete(
-		ctx,
-		models.UUID(input.GetId()),
-		ctx.Value(UserKey).(*models.User),
-	); err != nil {
+	if err := s.dayInterceptor.Delete(ctx, models.UUID(input.GetId()), ctx.Value(UserKey).(*models.User)); err != nil {
 		return nil, decodeError(err)
 	}
 	return &emptypb.Empty{}, nil
 }
-
-func encodeDayUpdate(input *examplepb.DayUpdate) *models.DayUpdate {
-	update := &models.DayUpdate{
-		ID:          models.UUID(input.GetId()),
-		Name:        nil,
-		Repeat:      nil,
-		EquipmentID: nil,
+func encodeDayCreate(input *examplepb.DayCreate) *models.DayCreate {
+	create := &models.DayCreate{
+		Name:        input.GetName(),
+		Repeat:      int(input.GetRepeat()),
+		EquipmentID: input.GetEquipmentId(),
 	}
-	if input.GetName() != nil {
-		update.Name = utils.Pointer(string(input.GetName().GetValue()))
-	}
-	if input.GetRepeat() != nil {
-		update.Repeat = utils.Pointer(int(input.GetRepeat().GetValue()))
-	}
-	if input.GetEquipmentId() != nil {
-		update.EquipmentID = utils.Pointer(string(input.GetEquipmentId().GetValue()))
-	}
-	return update
+	return create
 }
-
-func decodeListDay(listDays []*models.Day, count uint64) *examplepb.ListDay {
-	response := &examplepb.ListDay{
-		Items: make([]*examplepb.Day, 0, len(listDays)),
-		Count: count,
-	}
-	for _, day := range listDays {
-		response.Items = append(response.Items, decodeDay(day))
-	}
-	return response
-}
-
 func encodeDayFilter(input *examplepb.DayFilter) *models.DayFilter {
 	filter := &models.DayFilter{
 		IDs:        nil,
@@ -151,42 +122,51 @@ func encodeDayFilter(input *examplepb.DayFilter) *models.DayFilter {
 	if input.GetPageNumber() != nil {
 		filter.PageNumber = utils.Pointer(input.GetPageNumber().GetValue())
 	}
-	if input.GetSearch() != nil {
-		filter.Search = utils.Pointer(input.GetSearch().GetValue())
-	}
 	for _, id := range input.GetIds() {
 		filter.IDs = append(filter.IDs, models.UUID(id))
 	}
+	if input.GetSearch() != nil {
+		filter.Search = utils.Pointer(input.GetSearch().GetValue())
+	}
 	return filter
 }
-
-func encodeDayCreate(input *examplepb.DayCreate) *models.DayCreate {
-	create := &models.DayCreate{
-		Name:        string(input.GetName()),
-		Repeat:      int(input.GetRepeat()),
-		EquipmentID: string(input.GetEquipmentId()),
+func encodeDayUpdate(input *examplepb.DayUpdate) *models.DayUpdate {
+	update := &models.DayUpdate{ID: models.UUID(input.GetId())}
+	if input.GetName() != nil {
+		update.Name = utils.Pointer(input.GetName().GetValue())
 	}
-	return create
+	if input.GetRepeat() != nil {
+		update.Repeat = utils.Pointer(int(input.GetRepeat().GetValue()))
+	}
+	if input.GetEquipmentId() != nil {
+		update.EquipmentID = utils.Pointer(input.GetEquipmentId().GetValue())
+	}
+	return update
 }
-
 func decodeDay(day *models.Day) *examplepb.Day {
 	response := &examplepb.Day{
 		Id:          string(day.ID),
 		UpdatedAt:   timestamppb.New(day.UpdatedAt),
 		CreatedAt:   timestamppb.New(day.CreatedAt),
-		Name:        string(day.Name),
+		Name:        day.Name,
 		Repeat:      int32(day.Repeat),
-		EquipmentId: string(day.EquipmentID),
+		EquipmentId: day.EquipmentID,
 	}
 	return response
 }
-
+func decodeListDay(listDays []*models.Day, count uint64) *examplepb.ListDay {
+	response := &examplepb.ListDay{Items: make([]*examplepb.Day, 0, len(listDays)), Count: count}
+	for _, day := range listDays {
+		response.Items = append(response.Items, decodeDay(day))
+	}
+	return response
+}
 func decodeDayUpdate(update *models.DayUpdate) *examplepb.DayUpdate {
 	result := &examplepb.DayUpdate{
 		Id:          string(update.ID),
-		Name:        wrapperspb.String(string(*update.Name)),
+		Name:        wrapperspb.String(*update.Name),
 		Repeat:      wrapperspb.Int32(int32(*update.Repeat)),
-		EquipmentId: wrapperspb.String(string(*update.EquipmentID)),
+		EquipmentId: wrapperspb.String(*update.EquipmentID),
 	}
 	return result
 }

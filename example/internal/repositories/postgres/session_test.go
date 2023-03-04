@@ -13,7 +13,7 @@ import (
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/golang/mock/gomock"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
@@ -52,7 +52,10 @@ func TestNewSessionRepository(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewSessionRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewSessionRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewSessionRepository() = %v, want %v", got, tt.want)
 			}
 		})
@@ -92,10 +95,10 @@ func TestSessionRepository_Create(t *testing.T) {
 			setup: func() {
 				mock.ExpectQuery(query).
 					WithArgs(
-						session.Title,
-						session.Description,
 						session.UpdatedAt,
 						session.CreatedAt,
+						session.Title,
+						session.Description,
 					).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).
 						AddRow(session.ID, session.CreatedAt))
@@ -115,10 +118,10 @@ func TestSessionRepository_Create(t *testing.T) {
 			setup: func() {
 				mock.ExpectQuery(query).
 					WithArgs(
-						session.Title,
-						session.Description,
 						session.UpdatedAt,
 						session.CreatedAt,
+						session.Title,
+						session.Description,
 					).
 					WillReturnError(errors.New("test error"))
 			},
@@ -157,7 +160,7 @@ func TestSessionRepository_Get(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	query := "SELECT sessions.id, sessions.title, sessions.description, sessions.updated_at, sessions.created_at FROM public.sessions WHERE id = \\$1 LIMIT 1"
+	query := "SELECT sessions.id, sessions.updated_at, sessions.created_at, sessions.title, sessions.description FROM public.sessions WHERE id = \\$1 LIMIT 1"
 	session := mock_models.NewSession(t)
 	ctx := context.Background()
 	type fields struct {
@@ -196,7 +199,9 @@ func TestSessionRepository_Get(t *testing.T) {
 		{
 			name: "unexpected behavior",
 			setup: func() {
-				mock.ExpectQuery(query).WithArgs(session.ID).WillReturnError(errors.New("test error"))
+				mock.ExpectQuery(query).
+					WithArgs(session.ID).
+					WillReturnError(errors.New("test error"))
 			},
 			fields: fields{
 				database: db,
@@ -258,11 +263,11 @@ func TestSessionRepository_List(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	var listSessions []*models.Session
-	for i := 0; i < faker.RandomInt(1, 20); i++ {
+	for i := 0; i < faker.New().IntBetween(2, 20); i++ {
 		listSessions = append(listSessions, mock_models.NewSession(t))
 	}
 	filter := mock_models.NewSessionFilter(t)
-	query := "SELECT sessions.id, sessions.title, sessions.description, sessions.updated_at, sessions.created_at FROM public.sessions"
+	query := "SELECT sessions.id, sessions.updated_at, sessions.created_at, sessions.title, sessions.description FROM public.sessions"
 	type fields struct {
 		database *sqlx.DB
 		logger   log.Logger
@@ -405,9 +410,9 @@ func TestSessionRepository_Update(t *testing.T) {
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						session.UpdatedAt,
 						session.Title,
 						session.Description,
-						session.UpdatedAt,
 						session.ID,
 					).
 					WillReturnResult(sqlmock.NewResult(0, 1))
@@ -427,9 +432,9 @@ func TestSessionRepository_Update(t *testing.T) {
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						session.UpdatedAt,
 						session.Title,
 						session.Description,
-						session.UpdatedAt,
 						session.ID,
 					).
 					WillReturnResult(sqlmock.NewResult(0, 0))
@@ -449,9 +454,9 @@ func TestSessionRepository_Update(t *testing.T) {
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						session.UpdatedAt,
 						session.Title,
 						session.Description,
-						session.UpdatedAt,
 						session.ID,
 					).
 					WillReturnError(errors.New("test error"))
@@ -464,16 +469,17 @@ func TestSessionRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: session,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("session_id", string(session.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("session_id", string(session.ID)),
 		},
 		{
 			name: "unexpected error",
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						session.UpdatedAt,
 						session.Title,
 						session.Description,
-						session.UpdatedAt,
 						session.ID,
 					).
 					WillReturnError(errors.New("test error"))
@@ -486,16 +492,17 @@ func TestSessionRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: session,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("session_id", string(session.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("session_id", string(session.ID)),
 		},
 		{
 			name: "result error",
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						session.UpdatedAt,
 						session.Title,
 						session.Description,
-						session.UpdatedAt,
 						session.ID,
 					).
 					WillReturnResult(sqlmock.NewErrorResult(errors.New("test error")))
@@ -508,7 +515,8 @@ func TestSessionRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: session,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("session_id", string(session.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("session_id", string(session.ID)),
 		},
 	}
 	for _, tt := range tests {
@@ -600,7 +608,8 @@ func TestSessionRepository_Delete(t *testing.T) {
 				ctx: context.Background(),
 				id:  session.ID,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("session_id", string(session.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("session_id", string(session.ID)),
 		},
 		{
 			name: "result error",
@@ -617,7 +626,8 @@ func TestSessionRepository_Delete(t *testing.T) {
 				ctx: context.Background(),
 				id:  session.ID,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("session_id", string(session.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("session_id", string(session.ID)),
 		},
 	}
 	for _, tt := range tests {

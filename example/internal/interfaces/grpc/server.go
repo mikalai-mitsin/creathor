@@ -9,21 +9,18 @@ import (
 	"github.com/018bf/example/internal/domain/errs"
 	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/log"
-	"google.golang.org/genproto/googleapis/rpc/errdetails"
-	"google.golang.org/grpc/status"
-
-	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcZap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap/ctxzap"
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
 type Server struct {
@@ -34,42 +31,45 @@ type Server struct {
 func NewServer(
 	logger log.Logger,
 	config *configs.Config,
+	requestIDMiddleware *RequestIDMiddleware,
 	authMiddleware *AuthMiddleware,
 	authHandler examplepb.AuthServiceServer,
-	userHandler examplepb.UserServiceServer, sessionHandler examplepb.SessionServiceServer, equipmentHandler examplepb.EquipmentServiceServer, planHandler examplepb.PlanServiceServer, dayHandler examplepb.DayServiceServer, archHandler examplepb.ArchServiceServer,
+	userHandler examplepb.UserServiceServer,
+	sessionHandler examplepb.SessionServiceServer,
+	equipmentHandler examplepb.EquipmentServiceServer,
+	planHandler examplepb.PlanServiceServer,
+	dayHandler examplepb.DayServiceServer,
+	archHandler examplepb.ArchServiceServer,
 ) *Server {
 	server := grpc.NewServer(
-		grpc.UnaryInterceptor(
-			grpcMiddleware.ChainUnaryServer(
-				grpc_prometheus.UnaryServerInterceptor,
-				authMiddleware.UnaryServerInterceptorAuth,
-				RequestIDUnaryServerInterceptor,
-				grpcZap.UnaryServerInterceptor(
-					logger.Logger(),
-					grpcZap.WithMessageProducer(DefaultMessageProducer),
-				),
+		grpc.ChainStreamInterceptor(otelgrpc.StreamServerInterceptor()),
+		grpc.ChainUnaryInterceptor(
+			otelgrpc.UnaryServerInterceptor(),
+			authMiddleware.UnaryServerInterceptor,
+			requestIDMiddleware.UnaryServerInterceptor,
+			grpcZap.UnaryServerInterceptor(
+				logger.Logger(),
+				grpcZap.WithMessageProducer(DefaultMessageProducer),
 			),
 		),
 	)
 	reflection.Register(server)
+	{
+		examplepb.RegisterAuthServiceServer(server, authHandler)
+		examplepb.RegisterUserServiceServer(server, userHandler)
+		examplepb.RegisterSessionServiceServer(server, sessionHandler)
+		examplepb.RegisterEquipmentServiceServer(server, equipmentHandler)
+		examplepb.RegisterPlanServiceServer(server, planHandler)
+		examplepb.RegisterDayServiceServer(server, dayHandler)
+		examplepb.RegisterArchServiceServer(server, archHandler)
+	}
 	healthServer := health.NewServer()
 	for service := range server.GetServiceInfo() {
 		healthServer.SetServingStatus(service, grpc_health_v1.HealthCheckResponse_SERVING)
 	}
 	grpc_health_v1.RegisterHealthServer(server, healthServer)
-	examplepb.RegisterAuthServiceServer(server, authHandler)
-	examplepb.RegisterUserServiceServer(server, userHandler)
-	examplepb.RegisterSessionServiceServer(server, sessionHandler)
-	examplepb.RegisterEquipmentServiceServer(server, equipmentHandler)
-	examplepb.RegisterPlanServiceServer(server, planHandler)
-	examplepb.RegisterDayServiceServer(server, dayHandler)
-	examplepb.RegisterArchServiceServer(server, archHandler)
-	return &Server{
-		server: server,
-		config: config,
-	}
+	return &Server{server: server, config: config}
 }
-
 func (s *Server) Start(_ context.Context) error {
 	listener, err := net.Listen("tcp", s.config.BindAddr)
 	if err != nil {
@@ -77,7 +77,6 @@ func (s *Server) Start(_ context.Context) error {
 	}
 	return s.server.Serve(listener)
 }
-
 func (s *Server) Stop(_ context.Context) error {
 	s.server.GracefulStop()
 	return nil
@@ -119,7 +118,6 @@ func DefaultMessageProducer(
 	}
 	logger.Check(level, msg).Write(params...)
 }
-
 func decodeError(err error) error {
 	var domainError *errs.Error
 	if errors.As(err, &domainError) {
@@ -129,10 +127,10 @@ func decodeError(err error) error {
 		case errs.ErrorCodeInvalidArgument:
 			d := &errdetails.BadRequest{}
 			for key, value := range domainError.Params {
-				d.FieldViolations = append(d.FieldViolations, &errdetails.BadRequest_FieldViolation{
-					Field:       key,
-					Description: value,
-				})
+				d.FieldViolations = append(
+					d.FieldViolations,
+					&errdetails.BadRequest_FieldViolation{Field: key, Description: value},
+				)
 			}
 			withDetails, err = stat.WithDetails(d)
 			if err != nil {

@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/018bf/creathor/models"
+	"github.com/018bf/creathor/internal/configs"
 	"os"
 	"path"
 )
 
-func createDirectories(project *models.Project) error {
+func createDirectories(project *configs.Project) error {
 	directories := []string{
 		path.Join(destinationPath, "build"),
 		path.Join(destinationPath, "cmd"),
@@ -61,7 +61,7 @@ func createDirectories(project *models.Project) error {
 	return nil
 }
 
-func CreateLayout(project *models.Project) error {
+func CreateLayout(project *configs.Project) error {
 	if err := createDirectories(project); err != nil {
 		return err
 	}
@@ -100,11 +100,6 @@ func CreateLayout(project *models.Project) error {
 			SourcePath:      "templates/internal/configs/config_test.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "configs", "config_test.go"),
 			Name:            "config tests",
-		},
-		{
-			SourcePath:      "templates/internal/domain/errs/errors.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "domain", "errs", "errors.go"),
-			Name:            "domain errors",
 		},
 		{
 			SourcePath:      "templates/internal/domain/errs/errors_test.go.tmpl",
@@ -387,18 +382,8 @@ func CreateLayout(project *models.Project) error {
 		files = append(
 			files,
 			&Template{
-				SourcePath:      "templates/internal/interfaces/grpc/server.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "server.go"),
-				Name:            "grpc server",
-			},
-			&Template{
-				SourcePath:      "templates/internal/interfaces/grpc/middleware.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "middleware.go"),
-				Name:            "grpc middleware",
-			},
-			&Template{
-				SourcePath:      "templates/internal/interfaces/grpc/middleware_test.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "middleware_test.go"),
+				SourcePath:      "templates/internal/interfaces/grpc/auth_middleware_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "auth_middleware_test.go"),
 				Name:            "grpc middleware test",
 			},
 			&Template{

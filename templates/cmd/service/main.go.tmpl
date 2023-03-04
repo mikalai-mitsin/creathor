@@ -70,15 +70,11 @@ func main() {
 // runApp - run app
 func runApp(context *cli.Context) error {
 {{- if .GRPCEnabled }}
-    app := containers.NewGRPC{{ .Name | Title }}(configPath)
-    if err := app.Start(context.Context); err != nil {
-        return err
-    }
+    app := containers.NewGRPCContainer(configPath)
+    app.Run()
 {{- else if .RESTEnabled }}
-    app := containers.NewREST{{ .Name | Title }}(configPath)
-    if err := app.Start(context.Context); err != nil {
-        return err
-    }
+    app := containers.NewRESTContainer(configPath)
+    app.Run()
 {{- else }}
 {{- end }}
     return nil
@@ -87,10 +83,8 @@ func runApp(context *cli.Context) error {
 {{- if .GRPCEnabled }}
 // runGRPC - run grpc api
 func runGRPC(context *cli.Context) error {
-    app := containers.NewGRPC{{ .Name | Title }}(configPath)
-    if err := app.Start(context.Context); err != nil {
-        return err
-    }
+    app := containers.NewGRPCContainer(configPath)
+    app.Run()
     return nil
 }
 {{- end }}
@@ -98,10 +92,8 @@ func runGRPC(context *cli.Context) error {
 {{- if .GatewayEnabled }}
 // runGateway - run gateway api
 func runGateway(context *cli.Context) error {
-    app := containers.NewGateway{{ .Name | Title }}(configPath)
-    if err := app.Start(context.Context); err != nil {
-        return err
-    }
+    app := containers.NewGatewayContainer(configPath)
+    app.Run()
     return nil
 }
 {{- end }}
@@ -110,20 +102,15 @@ func runGateway(context *cli.Context) error {
 {{- if .RESTEnabled }}
 // runREST - run REST api
 func runREST(context *cli.Context) error {
-    app := containers.NewREST{{ .Name | Title }}(configPath)
-    if err := app.Start(context.Context); err != nil {
-        return err
-    }
+    app := containers.NewRESTContainer(configPath)
+    app.Run()
     return nil
 }
 {{- end }}
 
 // runMigrations - migrate database
 func runMigrations(context *cli.Context) error {
-	app := containers.NewMigrate(configPath)
-	err := app.Start(context.Context)
-	if err != nil {
-		return err
-	}
+	app := containers.NewMigrateContainer(configPath)
+    app.Run()
 	return nil
 }

@@ -106,7 +106,10 @@ func (r *AuthRepository) Validate(_ context.Context, token models.Token) error {
 	return nil
 }
 
-func (r *AuthRepository) RefreshToken(_ context.Context, token models.Token) (*models.TokenPair, error) {
+func (r *AuthRepository) RefreshToken(
+	_ context.Context,
+	token models.Token,
+) (*models.TokenPair, error) {
 	jwtToken, err := r.validate(token)
 	if err != nil {
 		return nil, err

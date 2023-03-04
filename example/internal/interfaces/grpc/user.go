@@ -3,12 +3,13 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
 	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/log"
 	"github.com/018bf/example/pkg/utils"
-	"strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -30,7 +31,10 @@ func NewUserServiceServer(
 	return &UserServiceServer{userInterceptor: userInterceptor, logger: logger}
 }
 
-func (u UserServiceServer) Signup(ctx context.Context, input *examplepb.Signup) (*examplepb.User, error) {
+func (u UserServiceServer) Signup(
+	ctx context.Context,
+	input *examplepb.Signup,
+) (*examplepb.User, error) {
 	signup := &models.UserCreate{
 		Email:    strings.ToLower(input.GetEmail()),
 		Password: input.GetPassword(),
@@ -42,7 +46,10 @@ func (u UserServiceServer) Signup(ctx context.Context, input *examplepb.Signup) 
 	return decodeUser(user), nil
 }
 
-func (u UserServiceServer) Update(ctx context.Context, input *examplepb.UserUpdate) (*examplepb.User, error) {
+func (u UserServiceServer) Update(
+	ctx context.Context,
+	input *examplepb.UserUpdate,
+) (*examplepb.User, error) {
 	update := &models.UserUpdate{
 		ID: models.UUID(input.GetId()),
 	}
@@ -65,15 +72,25 @@ func (u UserServiceServer) Update(ctx context.Context, input *examplepb.UserUpda
 	return decodeUser(user), nil
 }
 
-func (u UserServiceServer) Get(ctx context.Context, input *examplepb.UserGet) (*examplepb.User, error) {
-	user, err := u.userInterceptor.Get(ctx, models.UUID(input.GetId()), ctx.Value(UserKey).(*models.User))
+func (u UserServiceServer) Get(
+	ctx context.Context,
+	input *examplepb.UserGet,
+) (*examplepb.User, error) {
+	user, err := u.userInterceptor.Get(
+		ctx,
+		models.UUID(input.GetId()),
+		ctx.Value(UserKey).(*models.User),
+	)
 	if err != nil {
 		return nil, decodeError(err)
 	}
 	return decodeUser(user), nil
 }
 
-func (u UserServiceServer) List(ctx context.Context, input *examplepb.UserFilter) (*examplepb.Users, error) {
+func (u UserServiceServer) List(
+	ctx context.Context,
+	input *examplepb.UserFilter,
+) (*examplepb.Users, error) {
 	filter := encodeUserFilter(input)
 	users, count, err := u.userInterceptor.List(ctx, filter, ctx.Value(UserKey).(*models.User))
 	if err != nil {
@@ -108,7 +125,10 @@ func encodeUserFilter(input *examplepb.UserFilter) *models.UserFilter {
 	return filter
 }
 
-func (u UserServiceServer) Delete(ctx context.Context, input *examplepb.UserDelete) (*emptypb.Empty, error) {
+func (u UserServiceServer) Delete(
+	ctx context.Context,
+	input *examplepb.UserDelete,
+) (*emptypb.Empty, error) {
 	if err := u.userInterceptor.Delete(ctx, models.UUID(input.GetId()), ctx.Value(UserKey).(*models.User)); err != nil {
 		return nil, decodeError(err)
 	}

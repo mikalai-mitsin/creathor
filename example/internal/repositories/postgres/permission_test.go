@@ -248,7 +248,9 @@ func TestPermissionRepository_HasPermission(t *testing.T) {
 			name: "ok",
 			setup: func() {
 				rows := NewPermissionRows(t, []*models.Permission{permission})
-				mock.ExpectQuery(query).WithArgs(user.GroupID, models.PermissionIDUserCreate).WillReturnRows(rows)
+				mock.ExpectQuery(query).
+					WithArgs(user.GroupID, models.PermissionIDUserCreate).
+					WillReturnRows(rows)
 			},
 			fields: fields{
 				database: db,
@@ -263,7 +265,9 @@ func TestPermissionRepository_HasPermission(t *testing.T) {
 		{
 			name: "error",
 			setup: func() {
-				mock.ExpectQuery(query).WithArgs(user.GroupID, models.PermissionIDUserList).WillReturnError(errors.New("error"))
+				mock.ExpectQuery(query).
+					WithArgs(user.GroupID, models.PermissionIDUserList).
+					WillReturnError(errors.New("error"))
 			},
 			fields: fields{
 				database: db,
@@ -290,7 +294,10 @@ func TestPermissionRepository_HasPermission(t *testing.T) {
 			r := &PermissionRepository{
 				database: tt.fields.database,
 			}
-			if err := r.HasPermission(tt.args.ctx, tt.args.permissionID, tt.args.user); !errors.Is(err, tt.wantErr) {
+			if err := r.HasPermission(tt.args.ctx, tt.args.permissionID, tt.args.user); !errors.Is(
+				err,
+				tt.wantErr,
+			) {
 				t.Errorf("HasPermission() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -360,7 +367,10 @@ func TestPermissionRepository_HasObjectPermission1(t *testing.T) {
 			r := &PermissionRepository{
 				database: tt.fields.database,
 			}
-			if err := r.HasObjectPermission(tt.args.in0, tt.args.permission, tt.args.user, tt.args.obj); !errors.Is(err, tt.wantErr) {
+			if err := r.HasObjectPermission(tt.args.in0, tt.args.permission, tt.args.user, tt.args.obj); !errors.Is(
+				err,
+				tt.wantErr,
+			) {
 				t.Errorf("HasObjectPermission() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

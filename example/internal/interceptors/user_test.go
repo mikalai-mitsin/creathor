@@ -15,7 +15,7 @@ import (
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/golang/mock/gomock"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 )
 
 func TestNewUserInterceptor(t *testing.T) {
@@ -55,7 +55,10 @@ func TestNewUserInterceptor(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewUserInterceptor(tt.args.userUseCase, tt.args.authUseCase, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewUserInterceptor(tt.args.userUseCase, tt.args.authUseCase, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewUserInterceptor() = %v, want %v", got, tt.want)
 			}
 		})
@@ -92,9 +95,13 @@ func TestUserInterceptor_Get(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserDetail).Return(nil)
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserDetail).
+					Return(nil)
 				userUseCase.EXPECT().Get(ctx, user.ID).Return(user, nil)
-				authUseCase.EXPECT().HasObjectPermission(ctx, user, models.PermissionIDUserDetail, user).Return(nil)
+				authUseCase.EXPECT().
+					HasObjectPermission(ctx, user, models.PermissionIDUserDetail, user).
+					Return(nil)
 			},
 			fields: fields{
 				userUseCase: userUseCase,
@@ -112,7 +119,9 @@ func TestUserInterceptor_Get(t *testing.T) {
 		{
 			name: "permission denied",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserDetail).Return(errs.NewPermissionDeniedError())
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserDetail).
+					Return(errs.NewPermissionDeniedError())
 			},
 			fields: fields{
 				userUseCase: userUseCase,
@@ -130,7 +139,9 @@ func TestUserInterceptor_Get(t *testing.T) {
 		{
 			name: "user not found",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserDetail).Return(nil)
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserDetail).
+					Return(nil)
 				userUseCase.EXPECT().Get(ctx, user.ID).Return(nil, errs.NewEntityNotFound())
 			},
 			fields: fields{
@@ -149,9 +160,13 @@ func TestUserInterceptor_Get(t *testing.T) {
 		{
 			name: "object permission denied",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserDetail).Return(nil)
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserDetail).
+					Return(nil)
 				userUseCase.EXPECT().Get(ctx, user.ID).Return(user, nil)
-				authUseCase.EXPECT().HasObjectPermission(ctx, user, models.PermissionIDUserDetail, user).Return(errs.NewPermissionDeniedError())
+				authUseCase.EXPECT().
+					HasObjectPermission(ctx, user, models.PermissionIDUserDetail, user).
+					Return(errs.NewPermissionDeniedError())
 			},
 			fields: fields{
 				userUseCase: userUseCase,
@@ -217,7 +232,9 @@ func TestUserInterceptor_Create(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserCreate).Return(nil)
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserCreate).
+					Return(nil)
 				userUseCase.EXPECT().Create(ctx, create).Return(user, nil)
 			},
 			fields: fields{
@@ -236,7 +253,9 @@ func TestUserInterceptor_Create(t *testing.T) {
 		{
 			name: "permission denied",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserCreate).Return(errs.NewPermissionDeniedError())
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserCreate).
+					Return(errs.NewPermissionDeniedError())
 			},
 			fields: fields{
 				userUseCase: userUseCase,
@@ -254,8 +273,12 @@ func TestUserInterceptor_Create(t *testing.T) {
 		{
 			name: "create error",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserCreate).Return(nil)
-				userUseCase.EXPECT().Create(ctx, create).Return(user, errs.NewUnexpectedBehaviorError("c u"))
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserCreate).
+					Return(nil)
+				userUseCase.EXPECT().
+					Create(ctx, create).
+					Return(user, errs.NewUnexpectedBehaviorError("c u"))
 			},
 			fields: fields{
 				userUseCase: userUseCase,
@@ -321,9 +344,13 @@ func TestUserInterceptor_Update(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserUpdate).Return(nil)
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserUpdate).
+					Return(nil)
 				userUseCase.EXPECT().Get(ctx, update.ID).Return(user, nil)
-				authUseCase.EXPECT().HasObjectPermission(ctx, user, models.PermissionIDUserUpdate, user).Return(nil)
+				authUseCase.EXPECT().
+					HasObjectPermission(ctx, user, models.PermissionIDUserUpdate, user).
+					Return(nil)
 				userUseCase.EXPECT().Update(ctx, update).Return(user, nil)
 			},
 			fields: fields{
@@ -342,10 +369,16 @@ func TestUserInterceptor_Update(t *testing.T) {
 		{
 			name: "update error",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserUpdate).Return(nil)
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserUpdate).
+					Return(nil)
 				userUseCase.EXPECT().Get(ctx, update.ID).Return(user, nil)
-				authUseCase.EXPECT().HasObjectPermission(ctx, user, models.PermissionIDUserUpdate, user).Return(nil)
-				userUseCase.EXPECT().Update(ctx, update).Return(nil, errs.NewUnexpectedBehaviorError("d 2"))
+				authUseCase.EXPECT().
+					HasObjectPermission(ctx, user, models.PermissionIDUserUpdate, user).
+					Return(nil)
+				userUseCase.EXPECT().
+					Update(ctx, update).
+					Return(nil, errs.NewUnexpectedBehaviorError("d 2"))
 			},
 			fields: fields{
 				userUseCase: userUseCase,
@@ -363,7 +396,9 @@ func TestUserInterceptor_Update(t *testing.T) {
 		{
 			name: "permission denied",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserUpdate).Return(errs.NewPermissionDeniedError())
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserUpdate).
+					Return(errs.NewPermissionDeniedError())
 			},
 			fields: fields{
 				userUseCase: userUseCase,
@@ -380,7 +415,9 @@ func TestUserInterceptor_Update(t *testing.T) {
 		{
 			name: "user not found",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserUpdate).Return(nil)
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserUpdate).
+					Return(nil)
 				userUseCase.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFound())
 			},
 			fields: fields{
@@ -398,9 +435,13 @@ func TestUserInterceptor_Update(t *testing.T) {
 		{
 			name: "object permission denied",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserUpdate).Return(nil)
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserUpdate).
+					Return(nil)
 				userUseCase.EXPECT().Get(ctx, update.ID).Return(user, nil)
-				authUseCase.EXPECT().HasObjectPermission(ctx, user, models.PermissionIDUserUpdate, user).Return(errs.NewPermissionDeniedError())
+				authUseCase.EXPECT().
+					HasObjectPermission(ctx, user, models.PermissionIDUserUpdate, user).
+					Return(errs.NewPermissionDeniedError())
 			},
 			fields: fields{
 				userUseCase: userUseCase,
@@ -463,9 +504,13 @@ func TestUserInterceptor_Delete(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserDelete).Return(nil)
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserDelete).
+					Return(nil)
 				userUseCase.EXPECT().Get(ctx, user.ID).Return(user, nil)
-				authUseCase.EXPECT().HasObjectPermission(ctx, user, models.PermissionIDUserDelete, user).Return(nil)
+				authUseCase.EXPECT().
+					HasObjectPermission(ctx, user, models.PermissionIDUserDelete, user).
+					Return(nil)
 				userUseCase.EXPECT().Delete(ctx, user.ID).Return(nil)
 			},
 			fields: fields{
@@ -483,10 +528,16 @@ func TestUserInterceptor_Delete(t *testing.T) {
 		{
 			name: "delete error",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserDelete).Return(nil)
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserDelete).
+					Return(nil)
 				userUseCase.EXPECT().Get(ctx, user.ID).Return(user, nil)
-				authUseCase.EXPECT().HasObjectPermission(ctx, user, models.PermissionIDUserDelete, user).Return(nil)
-				userUseCase.EXPECT().Delete(ctx, user.ID).Return(errs.NewUnexpectedBehaviorError("d 2"))
+				authUseCase.EXPECT().
+					HasObjectPermission(ctx, user, models.PermissionIDUserDelete, user).
+					Return(nil)
+				userUseCase.EXPECT().
+					Delete(ctx, user.ID).
+					Return(errs.NewUnexpectedBehaviorError("d 2"))
 			},
 			fields: fields{
 				userUseCase: userUseCase,
@@ -503,7 +554,9 @@ func TestUserInterceptor_Delete(t *testing.T) {
 		{
 			name: "permission denied",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserDelete).Return(errs.NewPermissionDeniedError())
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserDelete).
+					Return(errs.NewPermissionDeniedError())
 			},
 			fields: fields{
 				userUseCase: userUseCase,
@@ -520,7 +573,9 @@ func TestUserInterceptor_Delete(t *testing.T) {
 		{
 			name: "user not found",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserDelete).Return(nil)
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserDelete).
+					Return(nil)
 				userUseCase.EXPECT().Get(ctx, user.ID).Return(nil, errs.NewEntityNotFound())
 			},
 			fields: fields{
@@ -538,9 +593,13 @@ func TestUserInterceptor_Delete(t *testing.T) {
 		{
 			name: "object permission denied",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserDelete).Return(nil)
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserDelete).
+					Return(nil)
 				userUseCase.EXPECT().Get(ctx, user.ID).Return(user, nil)
-				authUseCase.EXPECT().HasObjectPermission(ctx, user, models.PermissionIDUserDelete, user).Return(errs.NewPermissionDeniedError())
+				authUseCase.EXPECT().
+					HasObjectPermission(ctx, user, models.PermissionIDUserDelete, user).
+					Return(errs.NewPermissionDeniedError())
 			},
 			fields: fields{
 				userUseCase: userUseCase,
@@ -579,7 +638,7 @@ func TestUserInterceptor_List(t *testing.T) {
 	ctx := context.Background()
 	user := mock_models.NewUser(t)
 	filter := mock_models.NewUserFilter(t)
-	count := uint64(faker.Number().NumberInt64(2))
+	count := faker.New().UInt64Between(2, 20)
 	users := make([]*models.User, 0, count)
 	for i := uint64(0); i < count; i++ {
 		users = append(users, mock_models.NewUser(t))
@@ -606,8 +665,12 @@ func TestUserInterceptor_List(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserList).Return(nil)
-				authUseCase.EXPECT().HasObjectPermission(ctx, user, models.PermissionIDUserList, filter).Return(nil)
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserList).
+					Return(nil)
+				authUseCase.EXPECT().
+					HasObjectPermission(ctx, user, models.PermissionIDUserList, filter).
+					Return(nil)
 				userUseCase.EXPECT().List(ctx, filter).Return(users, count, nil)
 			},
 			fields: fields{
@@ -627,7 +690,9 @@ func TestUserInterceptor_List(t *testing.T) {
 		{
 			name: "object permission error",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserList).Return(nil)
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserList).
+					Return(nil)
 				authUseCase.EXPECT().
 					HasObjectPermission(ctx, user, models.PermissionIDUserList, filter).
 					Return(errs.NewPermissionDenied())
@@ -649,7 +714,9 @@ func TestUserInterceptor_List(t *testing.T) {
 		{
 			name: "permission error",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserList).Return(errs.NewPermissionDeniedError())
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserList).
+					Return(errs.NewPermissionDeniedError())
 			},
 			fields: fields{
 				userUseCase: userUseCase,
@@ -668,9 +735,15 @@ func TestUserInterceptor_List(t *testing.T) {
 		{
 			name: "list error",
 			setup: func() {
-				authUseCase.EXPECT().HasPermission(ctx, user, models.PermissionIDUserList).Return(nil)
-				authUseCase.EXPECT().HasObjectPermission(ctx, user, models.PermissionIDUserList, filter).Return(nil)
-				userUseCase.EXPECT().List(ctx, filter).Return(nil, uint64(0), errs.NewUnexpectedBehaviorError("l e"))
+				authUseCase.EXPECT().
+					HasPermission(ctx, user, models.PermissionIDUserList).
+					Return(nil)
+				authUseCase.EXPECT().
+					HasObjectPermission(ctx, user, models.PermissionIDUserList, filter).
+					Return(nil)
+				userUseCase.EXPECT().
+					List(ctx, filter).
+					Return(nil, uint64(0), errs.NewUnexpectedBehaviorError("l e"))
 			},
 			fields: fields{
 				userUseCase: userUseCase,

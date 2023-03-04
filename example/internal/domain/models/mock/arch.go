@@ -1,4 +1,4 @@
-package mock_models // nolint:stylecheck
+package mock_models
 
 import (
 	"testing"
@@ -7,60 +7,60 @@ import (
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/pkg/utils"
 	"github.com/google/uuid"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 )
 
 func NewArch(t *testing.T) *models.Arch {
 	t.Helper()
-	return &models.Arch{
+	m := &models.Arch{
 		ID:          models.UUID(uuid.NewString()),
-		Name:        faker.Lorem().String(),
-		Tags:        faker.Lorem().Words(5),
-		Versions:    []uint{uint(faker.RandomInt(2, 100)), uint(faker.RandomInt(2, 100))},
-		OldVersions: []uint64{uint64(faker.RandomInt(2, 100)), uint64(faker.RandomInt(2, 100))},
-		Release:     faker.Time().Backward(40 * time.Hour).UTC(),
-		Tested:      faker.Time().Backward(40 * time.Hour).UTC(),
-		UpdatedAt:   faker.Time().Backward(40 * time.Hour).UTC(),
-		CreatedAt:   faker.Time().Backward(40 * time.Hour).UTC(),
+		UpdatedAt:   faker.New().Time().Time(time.Now()),
+		CreatedAt:   faker.New().Time().Time(time.Now()),
+		Name:        faker.New().Lorem().Sentence(15),
+		Title:       faker.New().Lorem().Sentence(15),
+		Description: faker.New().Lorem().Sentence(15),
+		Tags:        faker.New().Lorem().Words(27),
+		Versions:    []uint64{faker.New().UInt64(), faker.New().UInt64()},
+		Release:     faker.New().Time().Time(time.Now()),
+		Tested:      faker.New().Time().Time(time.Now()),
 	}
+	return m
 }
-
 func NewArchCreate(t *testing.T) *models.ArchCreate {
 	t.Helper()
-	return &models.ArchCreate{
-		Name:        faker.Lorem().String(),
-		Tags:        faker.Lorem().Words(5),
-		Versions:    []uint{uint(faker.RandomInt(2, 100)), uint(faker.RandomInt(2, 100))},
-		OldVersions: []uint64{uint64(faker.RandomInt(2, 100)), uint64(faker.RandomInt(2, 100))},
-		Release:     faker.Time().Backward(40 * time.Hour).UTC(),
-		Tested:      faker.Time().Backward(40 * time.Hour).UTC(),
+	m := &models.ArchCreate{
+		Name:        faker.New().Lorem().Sentence(15),
+		Title:       faker.New().Lorem().Sentence(15),
+		Description: faker.New().Lorem().Sentence(15),
+		Tags:        faker.New().Lorem().Words(27),
+		Versions:    []uint64{faker.New().UInt64(), faker.New().UInt64()},
+		Release:     faker.New().Time().Time(time.Now()),
+		Tested:      faker.New().Time().Time(time.Now()),
 	}
+	return m
 }
-
 func NewArchUpdate(t *testing.T) *models.ArchUpdate {
 	t.Helper()
-	return &models.ArchUpdate{
+	m := &models.ArchUpdate{
 		ID:          models.UUID(uuid.NewString()),
-		Name:        utils.Pointer(faker.Lorem().String()),
-		Tags:        utils.Pointer(faker.Lorem().Words(5)),
-		Versions:    utils.Pointer([]uint{uint(faker.RandomInt(2, 100)), uint(faker.RandomInt(2, 100))}),
-		OldVersions: utils.Pointer([]uint64{uint64(faker.RandomInt(2, 100)), uint64(faker.RandomInt(2, 100))}),
-		Release:     utils.Pointer(faker.Time().Backward(40 * time.Hour).UTC()),
-		Tested:      utils.Pointer(faker.Time().Backward(40 * time.Hour).UTC()),
+		Name:        utils.Pointer(faker.New().Lorem().Sentence(15)),
+		Title:       utils.Pointer(faker.New().Lorem().Sentence(15)),
+		Description: utils.Pointer(faker.New().Lorem().Sentence(15)),
+		Tags:        utils.Pointer(faker.New().Lorem().Words(27)),
+		Versions:    utils.Pointer([]uint64{faker.New().UInt64(), faker.New().UInt64()}),
+		Release:     utils.Pointer(faker.New().Time().Time(time.Now())),
+		Tested:      utils.Pointer(faker.New().Time().Time(time.Now())),
 	}
+	return m
 }
-
 func NewArchFilter(t *testing.T) *models.ArchFilter {
 	t.Helper()
-	return &models.ArchFilter{
-		PageSize:   utils.Pointer(uint64(faker.RandomInt64(2, 100))),
-		PageNumber: utils.Pointer(uint64(faker.RandomInt64(2, 100))),
-		OrderBy:    faker.Lorem().Words(5),
-		IDs: []models.UUID{
-			models.UUID(uuid.NewString()),
-			models.UUID(uuid.NewString()),
-			models.UUID(uuid.NewString()),
-		},
-		Search: utils.Pointer(faker.Lorem().String()),
+	m := &models.ArchFilter{
+		IDs:        []models.UUID{models.UUID(uuid.NewString()), models.UUID(uuid.NewString())},
+		PageNumber: utils.Pointer(faker.New().UInt64()),
+		PageSize:   utils.Pointer(faker.New().UInt64()),
+		OrderBy:    faker.New().Lorem().Words(27),
+		Search:     utils.Pointer(faker.New().Lorem().Sentence(15)),
 	}
+	return m
 }

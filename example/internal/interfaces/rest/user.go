@@ -83,7 +83,11 @@ func (h *UserHandler) List(ctx *gin.Context) {
 // @Router       /users/{uuid} [get]
 func (h *UserHandler) Get(c *gin.Context) {
 	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
-	users, err := h.userInterceptor.Get(c.Request.Context(), models.UUID(c.Param("id")), requestUser)
+	users, err := h.userInterceptor.Get(
+		c.Request.Context(),
+		models.UUID(c.Param("id")),
+		requestUser,
+	)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return

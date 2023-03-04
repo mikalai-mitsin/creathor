@@ -1,15 +1,16 @@
 package mock_models // nolint:stylecheck
 
 import (
-	"github.com/018bf/example/internal/domain/models"
 	"testing"
 
-	"syreclabs.com/go/faker"
+	"github.com/018bf/example/internal/domain/models"
+
+	"github.com/jaswdr/faker"
 )
 
 func NewToken(t *testing.T) models.Token {
 	t.Helper()
-	return models.Token(faker.Internet().Password(30, 60))
+	return models.Token(faker.New().Internet().Password())
 }
 
 func NewTokenPair(t *testing.T) *models.TokenPair {
@@ -23,7 +24,7 @@ func NewTokenPair(t *testing.T) *models.TokenPair {
 func NewLogin(t *testing.T) *models.Login {
 	t.Helper()
 	return &models.Login{
-		Email:    faker.Internet().Email(),
-		Password: faker.Internet().Password(6, 12),
+		Email:    faker.New().Internet().Email(),
+		Password: faker.New().Internet().Password(),
 	}
 }

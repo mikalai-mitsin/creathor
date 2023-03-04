@@ -3,6 +3,9 @@ package grpc
 import (
 	"context"
 	"errors"
+	"reflect"
+	"testing"
+
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/interceptors"
 	mock_interceptors "github.com/018bf/example/internal/domain/interceptors/mock"
@@ -14,12 +17,10 @@ import (
 	"github.com/018bf/example/pkg/utils"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
+	"github.com/jaswdr/faker"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
-	"reflect"
-	"syreclabs.com/go/faker"
-	"testing"
 )
 
 func TestNewArchServiceServer(t *testing.T) {
@@ -50,7 +51,10 @@ func TestNewArchServiceServer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewArchServiceServer(tt.args.archInterceptor, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewArchServiceServer(tt.args.archInterceptor, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewArchServiceServer() = %v, want %v", got, tt.want)
 			}
 		})
@@ -337,7 +341,7 @@ func TestArchServiceServer_List(t *testing.T) {
 	filter := mock_models.NewArchFilter(t)
 	var ids []models.UUID
 	var stringIDs []string
-	count := uint64(faker.RandomInt64(1, 100))
+	count := faker.New().UInt64Between(2, 20)
 	response := &examplepb.ListArch{
 		Items: make([]*examplepb.Arch, 0, int(count)),
 		Count: count,
@@ -371,7 +375,10 @@ func TestArchServiceServer_List(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				archInterceptor.EXPECT().List(ctx, filter, user).Return(listArches, count, nil).Times(1)
+				archInterceptor.EXPECT().
+					List(ctx, filter, user).
+					Return(listArches, count, nil).
+					Times(1)
 			},
 			fields: fields{
 				UnimplementedArchServiceServer: examplepb.UnimplementedArchServiceServer{},
@@ -529,9 +536,10 @@ func Test_decodeArch(t *testing.T) {
 		UpdatedAt:   timestamppb.New(arch.UpdatedAt),
 		CreatedAt:   timestamppb.New(arch.CreatedAt),
 		Name:        string(arch.Name),
+		Title:       string(arch.Title),
+		Description: string(arch.Description),
 		Tags:        []string{},
-		Versions:    []uint32{},
-		OldVersions: []uint64{},
+		Versions:    []uint64{},
 		Release:     timestamppb.New(arch.Release),
 		Tested:      timestamppb.New(arch.Tested),
 	}
@@ -539,10 +547,7 @@ func Test_decodeArch(t *testing.T) {
 		result.Tags = append(result.Tags, string(param))
 	}
 	for _, param := range arch.Versions {
-		result.Versions = append(result.Versions, uint32(param))
-	}
-	for _, param := range arch.OldVersions {
-		result.OldVersions = append(result.OldVersions, uint64(param))
+		result.Versions = append(result.Versions, uint64(param))
 	}
 	type args struct {
 		arch *models.Arch

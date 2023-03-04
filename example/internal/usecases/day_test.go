@@ -18,7 +18,7 @@ import (
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/golang/mock/gomock"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 )
 
 func TestNewDayUseCase(t *testing.T) {
@@ -57,7 +57,10 @@ func TestNewDayUseCase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewDayUseCase(tt.args.dayRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewDayUseCase(tt.args.dayRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewDayUseCase() = %v, want %v", got, tt.want)
 			}
 		})
@@ -146,7 +149,7 @@ func TestDayUseCase_List(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	var listDays []*models.Day
-	count := uint64(faker.Number().NumberInt(2))
+	count := faker.New().UInt64Between(2, 20)
 	for i := uint64(0); i < count; i++ {
 		listDays = append(listDays, mock_models.NewDay(t))
 	}
@@ -189,7 +192,9 @@ func TestDayUseCase_List(t *testing.T) {
 		{
 			name: "list error",
 			setup: func() {
-				dayRepository.EXPECT().List(ctx, filter).Return(nil, errs.NewUnexpectedBehaviorError("test error"))
+				dayRepository.EXPECT().
+					List(ctx, filter).
+					Return(nil, errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
 				dayRepository: dayRepository,
@@ -207,7 +212,9 @@ func TestDayUseCase_List(t *testing.T) {
 			name: "count error",
 			setup: func() {
 				dayRepository.EXPECT().List(ctx, filter).Return(listDays, nil)
-				dayRepository.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
+				dayRepository.EXPECT().
+					Count(ctx, filter).
+					Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
 				dayRepository: dayRepository,
@@ -476,7 +483,7 @@ func TestDayUseCase_Update(t *testing.T) {
 			args: args{
 				ctx: ctx,
 				update: &models.DayUpdate{
-					ID: models.UUID(faker.Number().Number(1)),
+					ID: models.UUID("baduuid"),
 				},
 			},
 			want:    nil,

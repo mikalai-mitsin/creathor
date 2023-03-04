@@ -2,6 +2,8 @@ package rest
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/018bf/example/internal/configs"
 	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/gin-contrib/cors"
@@ -9,7 +11,6 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"net/http"
 
 	"github.com/018bf/example/pkg/log"
 )
@@ -44,11 +45,6 @@ func (s *Server) Start(ctx context.Context) error {
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	_ = examplepb.RegisterAuthServiceHandlerFromEndpoint(ctx, mux, s.config.BindAddr, opts)
 	_ = examplepb.RegisterUserServiceHandlerFromEndpoint(ctx, mux, s.config.BindAddr, opts)
-	_ = examplepb.RegisterSessionServiceHandlerFromEndpoint(ctx, mux, s.config.BindAddr, opts)
-	_ = examplepb.RegisterEquipmentServiceHandlerFromEndpoint(ctx, mux, s.config.BindAddr, opts)
-	_ = examplepb.RegisterPlanServiceHandlerFromEndpoint(ctx, mux, s.config.BindAddr, opts)
-	_ = examplepb.RegisterDayServiceHandlerFromEndpoint(ctx, mux, s.config.BindAddr, opts)
-	_ = examplepb.RegisterArchServiceHandlerFromEndpoint(ctx, mux, s.config.BindAddr, opts)
 	s.server.Any("/*any", gin.WrapH(mux))
 	return http.ListenAndServe(":8001", s.server)
 }

@@ -155,7 +155,10 @@ func TestNewAuthMiddleware(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewAuthMiddleware(tt.args.authInterceptor, tt.args.logger, tt.args.config); !reflect.DeepEqual(got, tt.want) {
+			if got := NewAuthMiddleware(tt.args.authInterceptor, tt.args.logger, tt.args.config); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewAuthMiddleware() = %v, want %v", got, tt.want)
 			}
 		})

@@ -18,7 +18,7 @@ import (
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/golang/mock/gomock"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 )
 
 func TestNewSessionUseCase(t *testing.T) {
@@ -57,7 +57,10 @@ func TestNewSessionUseCase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewSessionUseCase(tt.args.sessionRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewSessionUseCase(tt.args.sessionRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewSessionUseCase() = %v, want %v", got, tt.want)
 			}
 		})
@@ -106,7 +109,9 @@ func TestSessionUseCase_Get(t *testing.T) {
 		{
 			name: "Session not found",
 			setup: func() {
-				sessionRepository.EXPECT().Get(ctx, session.ID).Return(nil, errs.NewEntityNotFound())
+				sessionRepository.EXPECT().
+					Get(ctx, session.ID).
+					Return(nil, errs.NewEntityNotFound())
 			},
 			fields: fields{
 				sessionRepository: sessionRepository,
@@ -146,7 +151,7 @@ func TestSessionUseCase_List(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	var listSessions []*models.Session
-	count := uint64(faker.Number().NumberInt(2))
+	count := faker.New().UInt64Between(2, 20)
 	for i := uint64(0); i < count; i++ {
 		listSessions = append(listSessions, mock_models.NewSession(t))
 	}
@@ -189,7 +194,9 @@ func TestSessionUseCase_List(t *testing.T) {
 		{
 			name: "list error",
 			setup: func() {
-				sessionRepository.EXPECT().List(ctx, filter).Return(nil, errs.NewUnexpectedBehaviorError("test error"))
+				sessionRepository.EXPECT().
+					List(ctx, filter).
+					Return(nil, errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
 				sessionRepository: sessionRepository,
@@ -207,7 +214,9 @@ func TestSessionUseCase_List(t *testing.T) {
 			name: "count error",
 			setup: func() {
 				sessionRepository.EXPECT().List(ctx, filter).Return(listSessions, nil)
-				sessionRepository.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
+				sessionRepository.EXPECT().
+					Count(ctx, filter).
+					Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
 				sessionRepository: sessionRepository,
@@ -472,7 +481,7 @@ func TestSessionUseCase_Update(t *testing.T) {
 			args: args{
 				ctx: ctx,
 				update: &models.SessionUpdate{
-					ID: models.UUID(faker.Number().Number(1)),
+					ID: models.UUID("baduuid"),
 				},
 			},
 			want:    nil,

@@ -219,6 +219,12 @@
                 "name": {
                   "type": "string"
                 },
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
                 "tags": {
                   "type": "array",
                   "items": {
@@ -226,12 +232,6 @@
                   }
                 },
                 "versions": {
-                  "type": "array",
-                  "items": {
-                    "type": "object"
-                  }
-                },
-                "oldVersions": {
                   "type": "array",
                   "items": {
                     "type": "object"
@@ -1374,6 +1374,12 @@
         "name": {
           "type": "string"
         },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
         "tags": {
           "type": "array",
           "items": {
@@ -1381,13 +1387,6 @@
           }
         },
         "versions": {
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "int64"
-          }
-        },
-        "oldVersions": {
           "type": "array",
           "items": {
             "type": "string",
@@ -1410,6 +1409,12 @@
         "name": {
           "type": "string"
         },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
         "tags": {
           "type": "array",
           "items": {
@@ -1417,13 +1422,6 @@
           }
         },
         "versions": {
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "int64"
-          }
-        },
-        "oldVersions": {
           "type": "array",
           "items": {
             "type": "string",

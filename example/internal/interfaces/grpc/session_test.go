@@ -3,6 +3,9 @@ package grpc
 import (
 	"context"
 	"errors"
+	"reflect"
+	"testing"
+
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/interceptors"
 	mock_interceptors "github.com/018bf/example/internal/domain/interceptors/mock"
@@ -14,12 +17,10 @@ import (
 	"github.com/018bf/example/pkg/utils"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
+	"github.com/jaswdr/faker"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
-	"reflect"
-	"syreclabs.com/go/faker"
-	"testing"
 )
 
 func TestNewSessionServiceServer(t *testing.T) {
@@ -50,7 +51,10 @@ func TestNewSessionServiceServer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewSessionServiceServer(tt.args.sessionInterceptor, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewSessionServiceServer(tt.args.sessionInterceptor, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewSessionServiceServer() = %v, want %v", got, tt.want)
 			}
 		})
@@ -337,7 +341,7 @@ func TestSessionServiceServer_List(t *testing.T) {
 	filter := mock_models.NewSessionFilter(t)
 	var ids []models.UUID
 	var stringIDs []string
-	count := uint64(faker.RandomInt64(1, 100))
+	count := faker.New().UInt64Between(2, 20)
 	response := &examplepb.ListSession{
 		Items: make([]*examplepb.Session, 0, int(count)),
 		Count: count,
@@ -371,7 +375,10 @@ func TestSessionServiceServer_List(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				sessionInterceptor.EXPECT().List(ctx, filter, user).Return(listSessions, count, nil).Times(1)
+				sessionInterceptor.EXPECT().
+					List(ctx, filter, user).
+					Return(listSessions, count, nil).
+					Times(1)
 			},
 			fields: fields{
 				UnimplementedSessionServiceServer: examplepb.UnimplementedSessionServiceServer{},

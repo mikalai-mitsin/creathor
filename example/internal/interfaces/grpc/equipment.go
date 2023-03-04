@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
 	examplepb "github.com/018bf/example/pkg/examplepb/v1"
@@ -25,10 +26,7 @@ func NewEquipmentServiceServer(
 	equipmentInterceptor interceptors.EquipmentInterceptor,
 	logger log.Logger,
 ) examplepb.EquipmentServiceServer {
-	return &EquipmentServiceServer{
-		equipmentInterceptor: equipmentInterceptor,
-		logger:               logger,
-	}
+	return &EquipmentServiceServer{equipmentInterceptor: equipmentInterceptor, logger: logger}
 }
 
 func (s *EquipmentServiceServer) Create(
@@ -97,46 +95,19 @@ func (s *EquipmentServiceServer) Delete(
 	ctx context.Context,
 	input *examplepb.EquipmentDelete,
 ) (*emptypb.Empty, error) {
-	if err := s.equipmentInterceptor.Delete(
-		ctx,
-		models.UUID(input.GetId()),
-		ctx.Value(UserKey).(*models.User),
-	); err != nil {
+	if err := s.equipmentInterceptor.Delete(ctx, models.UUID(input.GetId()), ctx.Value(UserKey).(*models.User)); err != nil {
 		return nil, decodeError(err)
 	}
 	return &emptypb.Empty{}, nil
 }
-
-func encodeEquipmentUpdate(input *examplepb.EquipmentUpdate) *models.EquipmentUpdate {
-	update := &models.EquipmentUpdate{
-		ID:     models.UUID(input.GetId()),
-		Name:   nil,
-		Repeat: nil,
-		Weight: nil,
+func encodeEquipmentCreate(input *examplepb.EquipmentCreate) *models.EquipmentCreate {
+	create := &models.EquipmentCreate{
+		Name:   input.GetName(),
+		Repeat: int(input.GetRepeat()),
+		Weight: int(input.GetWeight()),
 	}
-	if input.GetName() != nil {
-		update.Name = utils.Pointer(string(input.GetName().GetValue()))
-	}
-	if input.GetRepeat() != nil {
-		update.Repeat = utils.Pointer(int(input.GetRepeat().GetValue()))
-	}
-	if input.GetWeight() != nil {
-		update.Weight = utils.Pointer(int(input.GetWeight().GetValue()))
-	}
-	return update
+	return create
 }
-
-func decodeListEquipment(listEquipment []*models.Equipment, count uint64) *examplepb.ListEquipment {
-	response := &examplepb.ListEquipment{
-		Items: make([]*examplepb.Equipment, 0, len(listEquipment)),
-		Count: count,
-	}
-	for _, equipment := range listEquipment {
-		response.Items = append(response.Items, decodeEquipment(equipment))
-	}
-	return response
-}
-
 func encodeEquipmentFilter(input *examplepb.EquipmentFilter) *models.EquipmentFilter {
 	filter := &models.EquipmentFilter{
 		IDs:        nil,
@@ -151,40 +122,52 @@ func encodeEquipmentFilter(input *examplepb.EquipmentFilter) *models.EquipmentFi
 	if input.GetPageNumber() != nil {
 		filter.PageNumber = utils.Pointer(input.GetPageNumber().GetValue())
 	}
-	if input.GetSearch() != nil {
-		filter.Search = utils.Pointer(input.GetSearch().GetValue())
-	}
 	for _, id := range input.GetIds() {
 		filter.IDs = append(filter.IDs, models.UUID(id))
 	}
+	if input.GetSearch() != nil {
+		filter.Search = utils.Pointer(input.GetSearch().GetValue())
+	}
 	return filter
 }
-
-func encodeEquipmentCreate(input *examplepb.EquipmentCreate) *models.EquipmentCreate {
-	create := &models.EquipmentCreate{
-		Name:   string(input.GetName()),
-		Repeat: int(input.GetRepeat()),
-		Weight: int(input.GetWeight()),
+func encodeEquipmentUpdate(input *examplepb.EquipmentUpdate) *models.EquipmentUpdate {
+	update := &models.EquipmentUpdate{ID: models.UUID(input.GetId())}
+	if input.GetName() != nil {
+		update.Name = utils.Pointer(input.GetName().GetValue())
 	}
-	return create
+	if input.GetRepeat() != nil {
+		update.Repeat = utils.Pointer(int(input.GetRepeat().GetValue()))
+	}
+	if input.GetWeight() != nil {
+		update.Weight = utils.Pointer(int(input.GetWeight().GetValue()))
+	}
+	return update
 }
-
 func decodeEquipment(equipment *models.Equipment) *examplepb.Equipment {
 	response := &examplepb.Equipment{
 		Id:        string(equipment.ID),
 		UpdatedAt: timestamppb.New(equipment.UpdatedAt),
 		CreatedAt: timestamppb.New(equipment.CreatedAt),
-		Name:      string(equipment.Name),
+		Name:      equipment.Name,
 		Repeat:    int32(equipment.Repeat),
 		Weight:    int32(equipment.Weight),
 	}
 	return response
 }
-
+func decodeListEquipment(listEquipment []*models.Equipment, count uint64) *examplepb.ListEquipment {
+	response := &examplepb.ListEquipment{
+		Items: make([]*examplepb.Equipment, 0, len(listEquipment)),
+		Count: count,
+	}
+	for _, equipment := range listEquipment {
+		response.Items = append(response.Items, decodeEquipment(equipment))
+	}
+	return response
+}
 func decodeEquipmentUpdate(update *models.EquipmentUpdate) *examplepb.EquipmentUpdate {
 	result := &examplepb.EquipmentUpdate{
 		Id:     string(update.ID),
-		Name:   wrapperspb.String(string(*update.Name)),
+		Name:   wrapperspb.String(*update.Name),
 		Repeat: wrapperspb.Int32(int32(*update.Repeat)),
 		Weight: wrapperspb.Int32(int32(*update.Weight)),
 	}

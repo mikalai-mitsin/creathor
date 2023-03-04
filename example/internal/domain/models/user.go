@@ -19,14 +19,14 @@ const (
 )
 
 type User struct {
-	ID        UUID      `db:"id,omitempty" json:"id" form:"id"`
-	FirstName string    `db:"first_name" json:"first_name" form:"first_name"`
-	LastName  string    `db:"last_name" json:"last_name" form:"last_name"`
-	Password  string    `db:"password" json:"-" form:"-"`
-	Email     string    `db:"email" json:"email" form:"email"`
-	GroupID   GroupID   `db:"group_id" json:"group_id" form:"group_id"`
+	ID        UUID      `db:"id,omitempty"         json:"id"         form:"id"`
+	FirstName string    `db:"first_name"           json:"first_name" form:"first_name"`
+	LastName  string    `db:"last_name"            json:"last_name"  form:"last_name"`
+	Password  string    `db:"password"             json:"-"          form:"-"`
+	Email     string    `db:"email"                json:"email"      form:"email"`
+	GroupID   GroupID   `db:"group_id"             json:"group_id"   form:"group_id"`
 	CreatedAt time.Time `db:"created_at,omitempty" json:"created_at" form:"created_at"`
-	UpdatedAt time.Time `db:"updated_at" json:"updated_at" form:"updated_at"`
+	UpdatedAt time.Time `db:"updated_at"           json:"updated_at" form:"updated_at"`
 }
 
 func (u *User) Validate() error {
@@ -63,10 +63,10 @@ func (u *User) FullName() string {
 }
 
 type UserFilter struct {
-	PageSize   *uint64  `json:"page_size" form:"page_size"`
+	PageSize   *uint64  `json:"page_size"   form:"page_size"`
 	PageNumber *uint64  `json:"page_number" form:"page_number"`
-	Search     *string  `json:"search" form:"search"`
-	OrderBy    []string `json:"order_by" form:"order_by"`
+	Search     *string  `json:"search"      form:"search"`
+	OrderBy    []string `json:"order_by"    form:"order_by"`
 }
 
 func (c *UserFilter) Validate() error {
@@ -84,7 +84,7 @@ func (c *UserFilter) Validate() error {
 }
 
 type UserCreate struct {
-	Email    string `json:"email" form:"email"`
+	Email    string `json:"email"    form:"email"`
 	Password string `json:"password" form:"password"`
 }
 
@@ -101,11 +101,11 @@ func (u *UserCreate) Validate() error {
 }
 
 type UserUpdate struct {
-	ID        UUID    `json:"id" form:"id"`
+	ID        UUID    `json:"id"         form:"id"`
 	FirstName *string `json:"first_name" form:"first_name"`
-	LastName  *string `json:"last_name" form:"last_name"`
-	Password  *string `json:"password" form:"password"`
-	Email     *string `json:"email" form:"email"`
+	LastName  *string `json:"last_name"  form:"last_name"`
+	Password  *string `json:"password"   form:"password"`
+	Email     *string `json:"email"      form:"email"`
 }
 
 func (u *UserUpdate) Validate() error {
@@ -114,7 +114,7 @@ func (u *UserUpdate) Validate() error {
 		validation.Field(&u.ID, validation.Required, is.UUID),
 		validation.Field(&u.FirstName),
 		validation.Field(&u.LastName),
-		validation.Field(&u.Password, validation.Length(8, 100)),
+		validation.Field(&u.Password, validation.Length(6, 100)),
 		validation.Field(&u.Email, is.EmailFormat),
 	)
 	if err != nil {
@@ -124,7 +124,7 @@ func (u *UserUpdate) Validate() error {
 }
 
 type SetPassword struct {
-	UserID   string `json:"user_id" form:"user_id"`
+	UserID   string `json:"user_id"  form:"user_id"`
 	Password string `json:"password" form:"password"`
 }
 
@@ -132,7 +132,7 @@ func (u *SetPassword) Validate() error {
 	err := validation.ValidateStruct(
 		u,
 		validation.Field(&u.UserID, validation.Required, is.UUID),
-		validation.Field(&u.Password, validation.Required, validation.Length(8, 100)),
+		validation.Field(&u.Password, validation.Required, validation.Length(6, 100)),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)

@@ -3,11 +3,12 @@ package grpc
 import (
 	"context"
 	"errors"
+	"reflect"
+	"testing"
+
 	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/utils"
-	"reflect"
-	"syreclabs.com/go/faker"
-	"testing"
+	"github.com/jaswdr/faker"
 
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/interceptors"
@@ -51,7 +52,10 @@ func TestNewUserServiceServer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewUserServiceServer(tt.args.userInterceptor, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewUserServiceServer(tt.args.userInterceptor, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewUserServiceServer() = %v, want %v", got, tt.want)
 			}
 		})
@@ -246,7 +250,7 @@ func TestUserServiceServer_List(t *testing.T) {
 	user := mock_models.NewUser(t)
 	ctx = context.WithValue(ctx, UserKey, user)
 	userFilter := mock_models.NewUserFilter(t)
-	count := uint64(faker.RandomInt64(1, 100))
+	count := faker.New().UInt64Between(2, 20)
 	response := &examplepb.Users{
 		Items: make([]*examplepb.User, 0, int(count)),
 		Count: count,
@@ -277,7 +281,10 @@ func TestUserServiceServer_List(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				userInterceptor.EXPECT().List(ctx, userFilter, user).Return(users, count, nil).Times(1)
+				userInterceptor.EXPECT().
+					List(ctx, userFilter, user).
+					Return(users, count, nil).
+					Times(1)
 			},
 			fields: fields{
 				UnimplementedUserServiceServer: examplepb.UnimplementedUserServiceServer{},

@@ -1095,17 +1095,14 @@
                 "created_at": {
                     "type": "string"
                 },
+                "description": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
-                },
-                "old_versions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
                 },
                 "release": {
                     "type": "string"
@@ -1117,6 +1114,9 @@
                     }
                 },
                 "tested": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -1133,14 +1133,11 @@
         "models.ArchCreate": {
             "type": "object",
             "properties": {
-                "name": {
+                "description": {
                     "type": "string"
                 },
-                "old_versions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                "name": {
+                    "type": "string"
                 },
                 "release": {
                     "type": "string"
@@ -1152,6 +1149,9 @@
                     }
                 },
                 "tested": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 },
                 "versions": {
@@ -1165,17 +1165,14 @@
         "models.ArchUpdate": {
             "type": "object",
             "properties": {
+                "description": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
-                },
-                "old_versions": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
                 },
                 "release": {
                     "type": "string"
@@ -1187,6 +1184,9 @@
                     }
                 },
                 "tested": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 },
                 "versions": {

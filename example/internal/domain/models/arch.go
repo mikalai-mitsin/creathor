@@ -8,51 +8,40 @@ import (
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
+const (
+	PermissionIDArchList   PermissionID = "arch_list"
+	PermissionIDArchDetail PermissionID = "arch_detail"
+	PermissionIDArchCreate PermissionID = "arch_create"
+	PermissionIDArchUpdate PermissionID = "arch_update"
+	PermissionIDArchDelete PermissionID = "arch_delete"
+)
+
 type Arch struct {
-	ID          UUID      `json:"id" form:"id"`
-	Name        string    `json:"name" form:"name"`
-	Tags        []string  `json:"tags" form:"tags"`
-	Versions    []uint    `json:"versions" form:"versions"`
-	OldVersions []uint64  `json:"old_versions" form:"old_versions"`
-	Release     time.Time `json:"release" form:"release"`
-	Tested      time.Time `json:"tested" form:"tested"`
-	UpdatedAt   time.Time `json:"updated_at" form:"updated_at"`
-	CreatedAt   time.Time `json:"created_at" form:"created_at,omitempty"`
+	ID          UUID      `json:"id"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedAt   time.Time `json:"created_at"`
+	Name        string    `json:"name"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Tags        []string  `json:"tags"`
+	Versions    []uint64  `json:"versions"`
+	Release     time.Time `json:"release"`
+	Tested      time.Time `json:"tested"`
 }
 
-func (c *Arch) Validate() error {
+func (m *Arch) Validate() error {
 	err := validation.ValidateStruct(
-		c,
-		validation.Field(&c.ID, is.UUID),
-		validation.Field(&c.Name),
-		validation.Field(&c.Tags),
-		validation.Field(&c.Versions),
-		validation.Field(&c.OldVersions),
-		validation.Field(&c.Release),
-		validation.Field(&c.Tested),
-	)
-	if err != nil {
-		return errs.FromValidationError(err)
-	}
-	return nil
-}
-
-type ArchFilter struct {
-	IDs        []UUID   `json:"ids" form:"ids"`
-	PageSize   *uint64  `json:"page_size" form:"page_size"`
-	PageNumber *uint64  `json:"page_number" form:"page_number"`
-	OrderBy    []string `json:"order_by" form:"order_by"`
-	Search     *string  `json:"search" form:"search"`
-}
-
-func (c *ArchFilter) Validate() error {
-	err := validation.ValidateStruct(
-		c,
-		validation.Field(&c.IDs),
-		validation.Field(&c.PageSize),
-		validation.Field(&c.PageNumber),
-		validation.Field(&c.OrderBy),
-		validation.Field(&c.Search),
+		m,
+		validation.Field(&m.ID, validation.Required, is.UUID),
+		validation.Field(&m.UpdatedAt, validation.Required),
+		validation.Field(&m.CreatedAt, validation.Required),
+		validation.Field(&m.Name, validation.Required),
+		validation.Field(&m.Title, validation.Required),
+		validation.Field(&m.Description, validation.Required),
+		validation.Field(&m.Tags, validation.Required),
+		validation.Field(&m.Versions, validation.Required),
+		validation.Field(&m.Release, validation.Required),
+		validation.Field(&m.Tested, validation.Required),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -61,23 +50,25 @@ func (c *ArchFilter) Validate() error {
 }
 
 type ArchCreate struct {
-	Name        string    `json:"name" form:"name"`
-	Tags        []string  `json:"tags" form:"tags"`
-	Versions    []uint    `json:"versions" form:"versions"`
-	OldVersions []uint64  `json:"old_versions" form:"old_versions"`
-	Release     time.Time `json:"release" form:"release"`
-	Tested      time.Time `json:"tested" form:"tested"`
+	Name        string    `json:"name"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Tags        []string  `json:"tags"`
+	Versions    []uint64  `json:"versions"`
+	Release     time.Time `json:"release"`
+	Tested      time.Time `json:"tested"`
 }
 
-func (c *ArchCreate) Validate() error {
+func (m *ArchCreate) Validate() error {
 	err := validation.ValidateStruct(
-		c,
-		validation.Field(&c.Name, validation.Required),
-		validation.Field(&c.Tags, validation.Required),
-		validation.Field(&c.Versions, validation.Required),
-		validation.Field(&c.OldVersions, validation.Required),
-		validation.Field(&c.Release, validation.Required),
-		validation.Field(&c.Tested, validation.Required),
+		m,
+		validation.Field(&m.Name, validation.Required),
+		validation.Field(&m.Title, validation.Required),
+		validation.Field(&m.Description, validation.Required),
+		validation.Field(&m.Tags, validation.Required),
+		validation.Field(&m.Versions, validation.Required),
+		validation.Field(&m.Release, validation.Required),
+		validation.Field(&m.Tested, validation.Required),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -87,24 +78,26 @@ func (c *ArchCreate) Validate() error {
 
 type ArchUpdate struct {
 	ID          UUID       `json:"id"`
-	Name        *string    `json:"name" form:"name"`
-	Tags        *[]string  `json:"tags" form:"tags"`
-	Versions    *[]uint    `json:"versions" form:"versions"`
-	OldVersions *[]uint64  `json:"old_versions" form:"old_versions"`
-	Release     *time.Time `json:"release" form:"release"`
-	Tested      *time.Time `json:"tested" form:"tested"`
+	Name        *string    `json:"name"`
+	Title       *string    `json:"title"`
+	Description *string    `json:"description"`
+	Tags        *[]string  `json:"tags"`
+	Versions    *[]uint64  `json:"versions"`
+	Release     *time.Time `json:"release"`
+	Tested      *time.Time `json:"tested"`
 }
 
-func (c *ArchUpdate) Validate() error {
+func (m *ArchUpdate) Validate() error {
 	err := validation.ValidateStruct(
-		c,
-		validation.Field(&c.ID, validation.Required, is.UUID),
-		validation.Field(&c.Name),
-		validation.Field(&c.Tags),
-		validation.Field(&c.Versions),
-		validation.Field(&c.OldVersions),
-		validation.Field(&c.Release),
-		validation.Field(&c.Tested),
+		m,
+		validation.Field(&m.ID, validation.Required, is.UUID),
+		validation.Field(&m.Name),
+		validation.Field(&m.Title),
+		validation.Field(&m.Description),
+		validation.Field(&m.Tags),
+		validation.Field(&m.Versions),
+		validation.Field(&m.Release),
+		validation.Field(&m.Tested),
 	)
 	if err != nil {
 		return errs.FromValidationError(err)
@@ -112,10 +105,25 @@ func (c *ArchUpdate) Validate() error {
 	return nil
 }
 
-const (
-	PermissionIDArchList   PermissionID = "arch_list"
-	PermissionIDArchDetail PermissionID = "arch_detail"
-	PermissionIDArchCreate PermissionID = "arch_create"
-	PermissionIDArchUpdate PermissionID = "arch_update"
-	PermissionIDArchDelete PermissionID = "arch_delete"
-)
+type ArchFilter struct {
+	IDs        []UUID   `json:"ids"`
+	PageSize   *uint64  `json:"page_size"`
+	PageNumber *uint64  `json:"page_number"`
+	OrderBy    []string `json:"order_by"`
+	Search     *string  `json:"search"`
+}
+
+func (m *ArchFilter) Validate() error {
+	err := validation.ValidateStruct(
+		m,
+		validation.Field(&m.IDs),
+		validation.Field(&m.PageNumber),
+		validation.Field(&m.PageSize),
+		validation.Field(&m.OrderBy),
+		validation.Field(&m.Search),
+	)
+	if err != nil {
+		return errs.FromValidationError(err)
+	}
+	return nil
+}

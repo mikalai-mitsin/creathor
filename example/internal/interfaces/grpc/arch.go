@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
 	examplepb "github.com/018bf/example/pkg/examplepb/v1"
@@ -26,10 +27,7 @@ func NewArchServiceServer(
 	archInterceptor interceptors.ArchInterceptor,
 	logger log.Logger,
 ) examplepb.ArchServiceServer {
-	return &ArchServiceServer{
-		archInterceptor: archInterceptor,
-		logger:          logger,
-	}
+	return &ArchServiceServer{archInterceptor: archInterceptor, logger: logger}
 }
 
 func (s *ArchServiceServer) Create(
@@ -98,70 +96,23 @@ func (s *ArchServiceServer) Delete(
 	ctx context.Context,
 	input *examplepb.ArchDelete,
 ) (*emptypb.Empty, error) {
-	if err := s.archInterceptor.Delete(
-		ctx,
-		models.UUID(input.GetId()),
-		ctx.Value(UserKey).(*models.User),
-	); err != nil {
+	if err := s.archInterceptor.Delete(ctx, models.UUID(input.GetId()), ctx.Value(UserKey).(*models.User)); err != nil {
 		return nil, decodeError(err)
 	}
 	return &emptypb.Empty{}, nil
 }
-
-func encodeArchUpdate(input *examplepb.ArchUpdate) *models.ArchUpdate {
-	update := &models.ArchUpdate{
-		ID:          models.UUID(input.GetId()),
-		Name:        nil,
-		Tags:        nil,
-		Versions:    nil,
-		OldVersions: nil,
-		Release:     nil,
-		Tested:      nil,
+func encodeArchCreate(input *examplepb.ArchCreate) *models.ArchCreate {
+	create := &models.ArchCreate{
+		Name:        input.GetName(),
+		Title:       input.GetTitle(),
+		Description: input.GetDescription(),
+		Tags:        input.GetTags(),
+		Versions:    input.GetVersions(),
+		Release:     input.GetRelease().AsTime(),
+		Tested:      input.GetTested().AsTime(),
 	}
-	if input.GetName() != nil {
-		update.Name = utils.Pointer(string(input.GetName().GetValue()))
-	}
-	if input.GetTags() != nil {
-		var params []string
-		for _, item := range input.GetTags().GetValues() {
-			params = append(params, string(item.GetStringValue()))
-		}
-		update.Tags = &params
-	}
-	if input.GetVersions() != nil {
-		var params []uint
-		for _, item := range input.GetVersions().GetValues() {
-			params = append(params, uint(item.GetNumberValue()))
-		}
-		update.Versions = &params
-	}
-	if input.GetOldVersions() != nil {
-		var params []uint64
-		for _, item := range input.GetOldVersions().GetValues() {
-			params = append(params, uint64(item.GetNumberValue()))
-		}
-		update.OldVersions = &params
-	}
-	if input.GetRelease() != nil {
-		update.Release = utils.Pointer(input.GetRelease().AsTime())
-	}
-	if input.GetTested() != nil {
-		update.Tested = utils.Pointer(input.GetTested().AsTime())
-	}
-	return update
+	return create
 }
-
-func decodeListArch(listArches []*models.Arch, count uint64) *examplepb.ListArch {
-	response := &examplepb.ListArch{
-		Items: make([]*examplepb.Arch, 0, len(listArches)),
-		Count: count,
-	}
-	for _, arch := range listArches {
-		response.Items = append(response.Items, decodeArch(arch))
-	}
-	return response
-}
-
 func encodeArchFilter(input *examplepb.ArchFilter) *models.ArchFilter {
 	filter := &models.ArchFilter{
 		IDs:        nil,
@@ -176,67 +127,80 @@ func encodeArchFilter(input *examplepb.ArchFilter) *models.ArchFilter {
 	if input.GetPageNumber() != nil {
 		filter.PageNumber = utils.Pointer(input.GetPageNumber().GetValue())
 	}
-	if input.GetSearch() != nil {
-		filter.Search = utils.Pointer(input.GetSearch().GetValue())
-	}
 	for _, id := range input.GetIds() {
 		filter.IDs = append(filter.IDs, models.UUID(id))
 	}
+	if input.GetSearch() != nil {
+		filter.Search = utils.Pointer(input.GetSearch().GetValue())
+	}
 	return filter
 }
-
-func encodeArchCreate(input *examplepb.ArchCreate) *models.ArchCreate {
-	create := &models.ArchCreate{
-		Name:        string(input.GetName()),
-		Tags:        nil,
-		Versions:    nil,
-		OldVersions: nil,
-		Release:     input.GetRelease().AsTime(),
-		Tested:      input.GetTested().AsTime(),
+func encodeArchUpdate(input *examplepb.ArchUpdate) *models.ArchUpdate {
+	update := &models.ArchUpdate{ID: models.UUID(input.GetId())}
+	if input.GetName() != nil {
+		update.Name = utils.Pointer(input.GetName().GetValue())
 	}
-	for _, param := range input.GetTags() {
-		create.Tags = append(create.Tags, string(param))
+	if input.GetTitle() != nil {
+		update.Title = utils.Pointer(input.GetTitle().GetValue())
 	}
-	for _, param := range input.GetVersions() {
-		create.Versions = append(create.Versions, uint(param))
+	if input.GetDescription() != nil {
+		update.Description = utils.Pointer(input.GetDescription().GetValue())
 	}
-	for _, param := range input.GetOldVersions() {
-		create.OldVersions = append(create.OldVersions, uint64(param))
+	if input.GetTags() != nil {
+		var params []string
+		for _, item := range input.GetTags().GetValues() {
+			params = append(params, string(item.GetStringValue()))
+		}
+		update.Tags = utils.Pointer(params)
 	}
-	return create
+	if input.GetVersions() != nil {
+		var params []uint64
+		for _, item := range input.GetVersions().GetValues() {
+			params = append(params, uint64(item.GetNumberValue()))
+		}
+		update.Versions = utils.Pointer(params)
+	}
+	if input.GetRelease() != nil {
+		update.Release = utils.Pointer(input.GetRelease().AsTime())
+	}
+	if input.GetTested() != nil {
+		update.Tested = utils.Pointer(input.GetTested().AsTime())
+	}
+	return update
 }
-
 func decodeArch(arch *models.Arch) *examplepb.Arch {
 	response := &examplepb.Arch{
 		Id:          string(arch.ID),
 		UpdatedAt:   timestamppb.New(arch.UpdatedAt),
 		CreatedAt:   timestamppb.New(arch.CreatedAt),
-		Name:        string(arch.Name),
-		Tags:        nil,
-		Versions:    nil,
-		OldVersions: nil,
+		Name:        arch.Name,
+		Title:       arch.Title,
+		Description: arch.Description,
+		Tags:        arch.Tags,
+		Versions:    arch.Versions,
 		Release:     timestamppb.New(arch.Release),
 		Tested:      timestamppb.New(arch.Tested),
 	}
-	for _, param := range arch.Tags {
-		response.Tags = append(response.Tags, string(param))
+	return response
+}
+func decodeListArch(listArches []*models.Arch, count uint64) *examplepb.ListArch {
+	response := &examplepb.ListArch{
+		Items: make([]*examplepb.Arch, 0, len(listArches)),
+		Count: count,
 	}
-	for _, param := range arch.Versions {
-		response.Versions = append(response.Versions, uint32(param))
-	}
-	for _, param := range arch.OldVersions {
-		response.OldVersions = append(response.OldVersions, uint64(param))
+	for _, arch := range listArches {
+		response.Items = append(response.Items, decodeArch(arch))
 	}
 	return response
 }
-
 func decodeArchUpdate(update *models.ArchUpdate) *examplepb.ArchUpdate {
 	result := &examplepb.ArchUpdate{
 		Id:          string(update.ID),
-		Name:        wrapperspb.String(string(*update.Name)),
+		Name:        wrapperspb.String(*update.Name),
+		Title:       wrapperspb.String(*update.Title),
+		Description: wrapperspb.String(*update.Description),
 		Tags:        nil,
 		Versions:    nil,
-		OldVersions: nil,
 		Release:     timestamppb.New(*update.Release),
 		Tested:      timestamppb.New(*update.Tested),
 	}
@@ -253,13 +217,6 @@ func decodeArchUpdate(update *models.ArchUpdate) *examplepb.ArchUpdate {
 			return nil
 		}
 		result.Versions = params
-	}
-	if update.OldVersions != nil {
-		params, err := structpb.NewList(utils.ToAnySlice(*update.OldVersions))
-		if err != nil {
-			return nil
-		}
-		result.OldVersions = params
 	}
 	return result
 }

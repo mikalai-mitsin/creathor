@@ -15,7 +15,7 @@ import (
     "{{ .Module }}/pkg/log"
     mock_log "{{ .Module }}/pkg/log/mock"
     "github.com/golang/mock/gomock"
-    "syreclabs.com/go/faker"
+    "github.com/jaswdr/faker"
 )
 
 func TestNewUserInterceptor(t *testing.T) {
@@ -579,7 +579,7 @@ func TestUserInterceptor_List(t *testing.T) {
     ctx := context.Background()
     user := mock_models.NewUser(t)
     filter := mock_models.NewUserFilter(t)
-    count := uint64(faker.Number().NumberInt64(2))
+    count := faker.New().UInt64Between(2, 20)
     users := make([]*models.User, 0, count)
     for i := uint64(0); i < count; i++ {
         users = append(users, mock_models.NewUser(t))

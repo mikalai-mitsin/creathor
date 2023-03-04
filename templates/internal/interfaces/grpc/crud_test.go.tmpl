@@ -18,7 +18,7 @@ import (
     "google.golang.org/protobuf/types/known/timestamppb"
     "google.golang.org/protobuf/types/known/wrapperspb"
     "reflect"
-    "syreclabs.com/go/faker"
+    "github.com/jaswdr/faker"
     "testing"
 )
 
@@ -337,7 +337,7 @@ func Test{{ .GRPCHandlerTypeName }}_List(t *testing.T) {
     filter := mock_models.New{{ .FilterTypeName }}(t)
     var ids []models.UUID
     var stringIDs []string
-    count := uint64(faker.RandomInt64(1, 100))
+    count := faker.New().UInt64Between(2, 20)
     response := &{{ .ProtoPackage }}.List{{ .ModelName }}{
         Items: make([]*{{ .ProtoPackage }}.{{ .ModelName }}, 0, int(count)),
         Count:    count,

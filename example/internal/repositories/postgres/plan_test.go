@@ -13,7 +13,7 @@ import (
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/golang/mock/gomock"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
@@ -52,7 +52,10 @@ func TestNewPlanRepository(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewPlanRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewPlanRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewPlanRepository() = %v, want %v", got, tt.want)
 			}
 		})
@@ -92,11 +95,11 @@ func TestPlanRepository_Create(t *testing.T) {
 			setup: func() {
 				mock.ExpectQuery(query).
 					WithArgs(
+						plan.UpdatedAt,
+						plan.CreatedAt,
 						plan.Name,
 						plan.Repeat,
 						plan.EquipmentID,
-						plan.UpdatedAt,
-						plan.CreatedAt,
 					).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).
 						AddRow(plan.ID, plan.CreatedAt))
@@ -116,11 +119,11 @@ func TestPlanRepository_Create(t *testing.T) {
 			setup: func() {
 				mock.ExpectQuery(query).
 					WithArgs(
+						plan.UpdatedAt,
+						plan.CreatedAt,
 						plan.Name,
 						plan.Repeat,
 						plan.EquipmentID,
-						plan.UpdatedAt,
-						plan.CreatedAt,
 					).
 					WillReturnError(errors.New("test error"))
 			},
@@ -159,7 +162,7 @@ func TestPlanRepository_Get(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	query := "SELECT plans.id, plans.name, plans.repeat, plans.equipment_id, plans.updated_at, plans.created_at FROM public.plans WHERE id = \\$1 LIMIT 1"
+	query := "SELECT plans.id, plans.updated_at, plans.created_at, plans.name, plans.repeat, plans.equipment_id FROM public.plans WHERE id = \\$1 LIMIT 1"
 	plan := mock_models.NewPlan(t)
 	ctx := context.Background()
 	type fields struct {
@@ -260,11 +263,11 @@ func TestPlanRepository_List(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	var listPlans []*models.Plan
-	for i := 0; i < faker.RandomInt(1, 20); i++ {
+	for i := 0; i < faker.New().IntBetween(2, 20); i++ {
 		listPlans = append(listPlans, mock_models.NewPlan(t))
 	}
 	filter := mock_models.NewPlanFilter(t)
-	query := "SELECT plans.id, plans.name, plans.repeat, plans.equipment_id, plans.updated_at, plans.created_at FROM public.plans"
+	query := "SELECT plans.id, plans.updated_at, plans.created_at, plans.name, plans.repeat, plans.equipment_id FROM public.plans"
 	type fields struct {
 		database *sqlx.DB
 		logger   log.Logger
@@ -407,10 +410,10 @@ func TestPlanRepository_Update(t *testing.T) {
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						plan.UpdatedAt,
 						plan.Name,
 						plan.Repeat,
 						plan.EquipmentID,
-						plan.UpdatedAt,
 						plan.ID,
 					).
 					WillReturnResult(sqlmock.NewResult(0, 1))
@@ -430,10 +433,10 @@ func TestPlanRepository_Update(t *testing.T) {
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						plan.UpdatedAt,
 						plan.Name,
 						plan.Repeat,
 						plan.EquipmentID,
-						plan.UpdatedAt,
 						plan.ID,
 					).
 					WillReturnResult(sqlmock.NewResult(0, 0))
@@ -453,10 +456,10 @@ func TestPlanRepository_Update(t *testing.T) {
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						plan.UpdatedAt,
 						plan.Name,
 						plan.Repeat,
 						plan.EquipmentID,
-						plan.UpdatedAt,
 						plan.ID,
 					).
 					WillReturnError(errors.New("test error"))
@@ -469,17 +472,18 @@ func TestPlanRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: plan,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("plan_id", string(plan.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("plan_id", string(plan.ID)),
 		},
 		{
 			name: "unexpected error",
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						plan.UpdatedAt,
 						plan.Name,
 						plan.Repeat,
 						plan.EquipmentID,
-						plan.UpdatedAt,
 						plan.ID,
 					).
 					WillReturnError(errors.New("test error"))
@@ -492,17 +496,18 @@ func TestPlanRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: plan,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("plan_id", string(plan.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("plan_id", string(plan.ID)),
 		},
 		{
 			name: "result error",
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						plan.UpdatedAt,
 						plan.Name,
 						plan.Repeat,
 						plan.EquipmentID,
-						plan.UpdatedAt,
 						plan.ID,
 					).
 					WillReturnResult(sqlmock.NewErrorResult(errors.New("test error")))
@@ -515,7 +520,8 @@ func TestPlanRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: plan,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("plan_id", string(plan.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("plan_id", string(plan.ID)),
 		},
 	}
 	for _, tt := range tests {
@@ -607,7 +613,8 @@ func TestPlanRepository_Delete(t *testing.T) {
 				ctx: context.Background(),
 				id:  plan.ID,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("plan_id", string(plan.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("plan_id", string(plan.ID)),
 		},
 		{
 			name: "result error",
@@ -624,7 +631,8 @@ func TestPlanRepository_Delete(t *testing.T) {
 				ctx: context.Background(),
 				id:  plan.ID,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("plan_id", string(plan.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("plan_id", string(plan.ID)),
 		},
 	}
 	for _, tt := range tests {

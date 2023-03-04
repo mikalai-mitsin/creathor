@@ -3,6 +3,9 @@ package grpc
 import (
 	"context"
 	"errors"
+	"reflect"
+	"testing"
+
 	"github.com/018bf/example/internal/domain/errs"
 	"github.com/018bf/example/internal/domain/interceptors"
 	mock_interceptors "github.com/018bf/example/internal/domain/interceptors/mock"
@@ -14,12 +17,10 @@ import (
 	"github.com/018bf/example/pkg/utils"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
+	"github.com/jaswdr/faker"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
-	"reflect"
-	"syreclabs.com/go/faker"
-	"testing"
 )
 
 func TestNewPlanServiceServer(t *testing.T) {
@@ -50,7 +51,10 @@ func TestNewPlanServiceServer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewPlanServiceServer(tt.args.planInterceptor, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewPlanServiceServer(tt.args.planInterceptor, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewPlanServiceServer() = %v, want %v", got, tt.want)
 			}
 		})
@@ -337,7 +341,7 @@ func TestPlanServiceServer_List(t *testing.T) {
 	filter := mock_models.NewPlanFilter(t)
 	var ids []models.UUID
 	var stringIDs []string
-	count := uint64(faker.RandomInt64(1, 100))
+	count := faker.New().UInt64Between(2, 20)
 	response := &examplepb.ListPlan{
 		Items: make([]*examplepb.Plan, 0, int(count)),
 		Count: count,
@@ -371,7 +375,10 @@ func TestPlanServiceServer_List(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				planInterceptor.EXPECT().List(ctx, filter, user).Return(listPlans, count, nil).Times(1)
+				planInterceptor.EXPECT().
+					List(ctx, filter, user).
+					Return(listPlans, count, nil).
+					Times(1)
 			},
 			fields: fields{
 				UnimplementedPlanServiceServer: examplepb.UnimplementedPlanServiceServer{},

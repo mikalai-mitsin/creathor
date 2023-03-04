@@ -2,6 +2,7 @@ package containers
 
 import (
 	"context"
+
 	gatewayInterface "github.com/018bf/example/internal/interfaces/gateway"
 	grpcInterface "github.com/018bf/example/internal/interfaces/grpc"
 	postgresInterface "github.com/018bf/example/internal/interfaces/postgres"
@@ -21,88 +22,77 @@ import (
 	"go.uber.org/fx"
 )
 
-var FXModule = fx.Options(
-	fx.WithLogger(
-		func(logger log.Logger) fxevent.Logger {
-			return logger
-		},
-	),
-	fx.Provide(
-		context.Background,
-		configs.ParseConfig,
-		clock.NewRealClock,
-		postgresInterface.NewDatabase,
-		postgresInterface.NewMigrateManager,
-		grpcInterface.NewServer,
-		restInterface.NewServer,
-		func(config *configs.Config) (log.Logger, error) {
-			return log.NewLog(config.LogLevel)
-		},
-		usecases.NewAuthUseCase,
-		interceptors.NewAuthInterceptor,
-		jwtRepositories.NewAuthRepository,
-		postgresRepositories.NewPermissionRepository,
-		grpcInterface.NewAuthMiddleware,
-		grpcInterface.NewAuthServiceServer,
-		grpcInterface.NewUserServiceServer,
-		restInterface.NewAuthHandler,
-		restInterface.NewAuthMiddleware,
-		restInterface.NewUserHandler,
-		gatewayInterface.NewServer,
-		usecases.NewUserUseCase,
-		interceptors.NewUserInterceptor,
-		postgresRepositories.NewPostgresUserRepository, usecases.NewSessionUseCase, interceptors.NewSessionInterceptor, postgresRepositories.NewSessionRepository, restInterface.NewSessionHandler, grpcInterface.NewSessionServiceServer, usecases.NewEquipmentUseCase, interceptors.NewEquipmentInterceptor, postgresRepositories.NewEquipmentRepository, restInterface.NewEquipmentHandler, grpcInterface.NewEquipmentServiceServer, usecases.NewPlanUseCase, interceptors.NewPlanInterceptor, postgresRepositories.NewPlanRepository, restInterface.NewPlanHandler, grpcInterface.NewPlanServiceServer, usecases.NewDayUseCase, interceptors.NewDayInterceptor, postgresRepositories.NewDayRepository, restInterface.NewDayHandler, grpcInterface.NewDayServiceServer, usecases.NewArchUseCase, interceptors.NewArchInterceptor, postgresRepositories.NewArchRepository, restInterface.NewArchHandler, grpcInterface.NewArchServiceServer,
-	),
-)
+var FXModule = fx.Options(fx.WithLogger(func(logger log.Logger) fxevent.Logger {
+	return logger
+}), fx.Provide(func(config *configs.Config) (log.Logger, error) {
+	return log.NewLog(config.LogLevel)
+}, context.Background, configs.ParseConfig, clock.NewRealClock, postgresInterface.NewDatabase, postgresInterface.NewMigrateManager, grpcInterface.NewServer, grpcInterface.NewRequestIDMiddleware, grpcInterface.NewAuthMiddleware, grpcInterface.NewAuthServiceServer, grpcInterface.NewUserServiceServer, restInterface.NewServer, restInterface.NewAuthMiddleware, restInterface.NewAuthHandler, restInterface.NewUserHandler, gatewayInterface.NewServer, interceptors.NewAuthInterceptor, usecases.NewAuthUseCase, jwtRepositories.NewAuthRepository, postgresRepositories.NewPermissionRepository, interceptors.NewUserInterceptor, usecases.NewUserUseCase, postgresRepositories.NewPostgresUserRepository, grpcInterface.NewSessionServiceServer, restInterface.NewSessionHandler, interceptors.NewSessionInterceptor, usecases.NewSessionUseCase, postgresRepositories.NewSessionRepository, grpcInterface.NewEquipmentServiceServer, restInterface.NewEquipmentHandler, interceptors.NewEquipmentInterceptor, usecases.NewEquipmentUseCase, postgresRepositories.NewEquipmentRepository, grpcInterface.NewPlanServiceServer, restInterface.NewPlanHandler, interceptors.NewPlanInterceptor, usecases.NewPlanUseCase, postgresRepositories.NewPlanRepository, grpcInterface.NewDayServiceServer, restInterface.NewDayHandler, interceptors.NewDayInterceptor, usecases.NewDayUseCase, postgresRepositories.NewDayRepository, grpcInterface.NewArchServiceServer, restInterface.NewArchHandler, interceptors.NewArchInterceptor, usecases.NewArchUseCase, postgresRepositories.NewArchRepository))
 
-func NewGRPCExample(config string) *fx.App {
-	app := fx.New(
-		fx.Provide(func() string { return config }),
-		FXModule,
-		fx.Invoke(func(lifecycle fx.Lifecycle, server *grpcInterface.Server) {
-			lifecycle.Append(fx.Hook{
-				OnStart: server.Start,
-				OnStop:  server.Stop,
-			})
-		}),
-	)
+func NewMigrateContainer(config string) *fx.App {
+	app := fx.New(fx.Provide(func() string {
+		return config
+	}), FXModule, fx.Invoke(func(lifecycle fx.Lifecycle, logger log.Logger, manager *postgresInterface.MigrateManager, shutdowner fx.Shutdowner) {
+		lifecycle.Append(fx.Hook{OnStart: func(ctx context.Context) error {
+			go func() {
+				err := manager.Up(ctx)
+				if err != nil {
+					logger.Error("shutdown", log.Any("error", err))
+					_ = shutdowner.Shutdown()
+				}
+			}()
+			return nil
+		}})
+	}))
 	return app
 }
-func NewGatewayExample(config string) *fx.App {
-	app := fx.New(
-		fx.Provide(func() string { return config }),
-		FXModule,
-		fx.Invoke(func(lifecycle fx.Lifecycle, server *gatewayInterface.Server) {
-			lifecycle.Append(fx.Hook{
-				OnStart: server.Start,
-			})
-		}),
-	)
+func NewGRPCContainer(config string) *fx.App {
+	app := fx.New(fx.Provide(func() string {
+		return config
+	}), FXModule, fx.Invoke(func(lifecycle fx.Lifecycle, logger log.Logger, server *grpcInterface.Server, shutdowner fx.Shutdowner) {
+		lifecycle.Append(fx.Hook{OnStart: func(ctx context.Context) error {
+			go func() {
+				err := server.Start(ctx)
+				if err != nil {
+					logger.Error("shutdown", log.Any("error", err))
+					_ = shutdowner.Shutdown()
+				}
+			}()
+			return nil
+		}, OnStop: server.Stop})
+	}))
 	return app
 }
-func NewRESTExample(config string) *fx.App {
-	app := fx.New(
-		fx.Provide(func() string { return config }),
-		FXModule,
-		fx.Invoke(func(lifecycle fx.Lifecycle, server *restInterface.Server) {
-			lifecycle.Append(fx.Hook{
-				OnStart: server.Start,
-				OnStop:  server.Stop,
-			})
-		}),
-	)
+func NewGatewayContainer(config string) *fx.App {
+	app := fx.New(fx.Provide(func() string {
+		return config
+	}), FXModule, fx.Invoke(func(lifecycle fx.Lifecycle, logger log.Logger, server *gatewayInterface.Server, shutdowner fx.Shutdowner) {
+		lifecycle.Append(fx.Hook{OnStart: func(ctx context.Context) error {
+			go func() {
+				err := server.Start(ctx)
+				if err != nil {
+					logger.Error("shutdown", log.Any("error", err))
+					_ = shutdowner.Shutdown()
+				}
+			}()
+			return nil
+		}})
+	}))
 	return app
 }
-
-func NewMigrate(config string) *fx.App {
-	app := fx.New(
-		fx.Provide(func() string { return config }),
-		FXModule,
-		fx.Invoke(func(lifecycle fx.Lifecycle, manager *postgresInterface.MigrateManager) {
-			lifecycle.Append(fx.Hook{
-				OnStart: manager.Up,
-			})
-		}),
-	)
+func NewRESTContainer(config string) *fx.App {
+	app := fx.New(fx.Provide(func() string {
+		return config
+	}), FXModule, fx.Invoke(func(lifecycle fx.Lifecycle, logger log.Logger, server *restInterface.Server, shutdowner fx.Shutdowner) {
+		lifecycle.Append(fx.Hook{OnStart: func(ctx context.Context) error {
+			go func() {
+				err := server.Start(ctx)
+				if err != nil {
+					logger.Error("shutdown", log.Any("error", err))
+					_ = shutdowner.Shutdown()
+				}
+			}()
+			return nil
+		}, OnStop: server.Stop})
+	}))
 	return app
 }

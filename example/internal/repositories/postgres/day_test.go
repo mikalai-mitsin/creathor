@@ -13,7 +13,7 @@ import (
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/golang/mock/gomock"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
@@ -52,7 +52,10 @@ func TestNewDayRepository(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewDayRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewDayRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewDayRepository() = %v, want %v", got, tt.want)
 			}
 		})
@@ -92,11 +95,11 @@ func TestDayRepository_Create(t *testing.T) {
 			setup: func() {
 				mock.ExpectQuery(query).
 					WithArgs(
+						day.UpdatedAt,
+						day.CreatedAt,
 						day.Name,
 						day.Repeat,
 						day.EquipmentID,
-						day.UpdatedAt,
-						day.CreatedAt,
 					).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).
 						AddRow(day.ID, day.CreatedAt))
@@ -116,11 +119,11 @@ func TestDayRepository_Create(t *testing.T) {
 			setup: func() {
 				mock.ExpectQuery(query).
 					WithArgs(
+						day.UpdatedAt,
+						day.CreatedAt,
 						day.Name,
 						day.Repeat,
 						day.EquipmentID,
-						day.UpdatedAt,
-						day.CreatedAt,
 					).
 					WillReturnError(errors.New("test error"))
 			},
@@ -159,7 +162,7 @@ func TestDayRepository_Get(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	query := "SELECT days.id, days.name, days.repeat, days.equipment_id, days.updated_at, days.created_at FROM public.days WHERE id = \\$1 LIMIT 1"
+	query := "SELECT days.id, days.updated_at, days.created_at, days.name, days.repeat, days.equipment_id FROM public.days WHERE id = \\$1 LIMIT 1"
 	day := mock_models.NewDay(t)
 	ctx := context.Background()
 	type fields struct {
@@ -260,11 +263,11 @@ func TestDayRepository_List(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	var listDays []*models.Day
-	for i := 0; i < faker.RandomInt(1, 20); i++ {
+	for i := 0; i < faker.New().IntBetween(2, 20); i++ {
 		listDays = append(listDays, mock_models.NewDay(t))
 	}
 	filter := mock_models.NewDayFilter(t)
-	query := "SELECT days.id, days.name, days.repeat, days.equipment_id, days.updated_at, days.created_at FROM public.days"
+	query := "SELECT days.id, days.updated_at, days.created_at, days.name, days.repeat, days.equipment_id FROM public.days"
 	type fields struct {
 		database *sqlx.DB
 		logger   log.Logger
@@ -407,10 +410,10 @@ func TestDayRepository_Update(t *testing.T) {
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						day.UpdatedAt,
 						day.Name,
 						day.Repeat,
 						day.EquipmentID,
-						day.UpdatedAt,
 						day.ID,
 					).
 					WillReturnResult(sqlmock.NewResult(0, 1))
@@ -430,10 +433,10 @@ func TestDayRepository_Update(t *testing.T) {
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						day.UpdatedAt,
 						day.Name,
 						day.Repeat,
 						day.EquipmentID,
-						day.UpdatedAt,
 						day.ID,
 					).
 					WillReturnResult(sqlmock.NewResult(0, 0))
@@ -453,10 +456,10 @@ func TestDayRepository_Update(t *testing.T) {
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						day.UpdatedAt,
 						day.Name,
 						day.Repeat,
 						day.EquipmentID,
-						day.UpdatedAt,
 						day.ID,
 					).
 					WillReturnError(errors.New("test error"))
@@ -469,17 +472,18 @@ func TestDayRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: day,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("day_id", string(day.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("day_id", string(day.ID)),
 		},
 		{
 			name: "unexpected error",
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						day.UpdatedAt,
 						day.Name,
 						day.Repeat,
 						day.EquipmentID,
-						day.UpdatedAt,
 						day.ID,
 					).
 					WillReturnError(errors.New("test error"))
@@ -492,17 +496,18 @@ func TestDayRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: day,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("day_id", string(day.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("day_id", string(day.ID)),
 		},
 		{
 			name: "result error",
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						day.UpdatedAt,
 						day.Name,
 						day.Repeat,
 						day.EquipmentID,
-						day.UpdatedAt,
 						day.ID,
 					).
 					WillReturnResult(sqlmock.NewErrorResult(errors.New("test error")))
@@ -515,7 +520,8 @@ func TestDayRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: day,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("day_id", string(day.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("day_id", string(day.ID)),
 		},
 	}
 	for _, tt := range tests {
@@ -607,7 +613,8 @@ func TestDayRepository_Delete(t *testing.T) {
 				ctx: context.Background(),
 				id:  day.ID,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("day_id", string(day.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("day_id", string(day.ID)),
 		},
 		{
 			name: "result error",
@@ -624,7 +631,8 @@ func TestDayRepository_Delete(t *testing.T) {
 				ctx: context.Background(),
 				id:  day.ID,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("day_id", string(day.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("day_id", string(day.ID)),
 		},
 	}
 	for _, tt := range tests {

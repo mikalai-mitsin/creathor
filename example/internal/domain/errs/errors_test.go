@@ -487,7 +487,10 @@ func TestNewUnexpectedBehaviorError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewUnexpectedBehaviorError(tt.args.details); !reflect.DeepEqual(got, tt.want) {
+			if got := NewUnexpectedBehaviorError(tt.args.details); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewUnexpectedBehaviorError() = %v, want %v", got, tt.want)
 			}
 		})
@@ -522,10 +525,12 @@ func Test_renderErrorMessage(t *testing.T) {
 		{
 			name: "bad message",
 			args: func() args {
-				obj := validation.ErrorObject{}.SetCode("12").SetMessage("{{ .text | asd }}").SetParams(map[string]interface{}{
-					"first":  "foo",
-					"second": "bar",
-				})
+				obj := validation.ErrorObject{}.SetCode("12").
+					SetMessage("{{ .text | asd }}").
+					SetParams(map[string]interface{}{
+						"first":  "foo",
+						"second": "bar",
+					})
 				return args{
 					object: obj.(validation.ErrorObject),
 				}

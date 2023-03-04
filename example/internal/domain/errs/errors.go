@@ -9,14 +9,12 @@ import (
 	"reflect"
 	"text/template"
 
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/lib/pq"
 	"go.uber.org/zap/zapcore"
-
-	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
 type ErrorCode uint
-
 type Params map[string]string
 
 func (p Params) MarshalLogObject(encoder zapcore.ObjectEncoder) error {
@@ -56,19 +54,16 @@ func (e *Error) WithParam(key, value string) *Error {
 	e.AddParam(key, value)
 	return e
 }
-
 func (e *Error) WithParams(params map[string]string) *Error {
 	for key, value := range params {
 		e.AddParam(key, value)
 	}
 	return e
 }
-
 func (e Error) Error() string {
 	data, _ := json.Marshal(e)
 	return string(data)
 }
-
 func (e *Error) Is(tgt error) bool {
 	target, ok := tgt.(*Error)
 	if !ok {
@@ -76,55 +71,46 @@ func (e *Error) Is(tgt error) bool {
 	}
 	return reflect.DeepEqual(e, target)
 }
-
 func (e *Error) SetCode(code ErrorCode) {
 	e.Code = code
 }
-
 func (e *Error) SetMessage(message string) {
 	e.Message = message
 }
-
 func (e *Error) SetParams(params map[string]string) {
 	e.Params = params
 }
-
 func (e *Error) AddParam(key string, value string) {
 	e.Params[key] = value
 }
-
 func NewError(code ErrorCode, message string) *Error {
-	return &Error{
-		Code:    code,
-		Message: message,
-		Params:  map[string]string{},
-	}
+	return &Error{Code: code, Message: message, Params: map[string]string{}}
 }
-
 func NewUnexpectedBehaviorError(details string) *Error {
 	return &Error{
 		Code:    ErrorCodeInternal,
 		Message: "Unexpected behavior.",
-		Params: map[string]string{
-			"details": details,
-		},
+		Params:  map[string]string{"details": details},
 	}
 }
-
 func NewInvalidFormError() *Error {
-	return NewError(ErrorCodeInvalidArgument, "The form sent is not valid, please correct the errors below.")
+	return NewError(
+		ErrorCodeInvalidArgument,
+		"The form sent is not valid, please correct the errors below.",
+	)
 }
-
 func NewInvalidParameter(message string) *Error {
 	e := NewError(ErrorCodeInvalidArgument, message)
 	return e
 }
-
 func FromValidationError(err error) *Error {
 	var validationErrors validation.Errors
 	var validationErrorObject validation.ErrorObject
 	if errors.As(err, &validationErrors) {
-		e := NewError(ErrorCodeInvalidArgument, "The form sent is not valid, please correct the errors below.")
+		e := NewError(
+			ErrorCodeInvalidArgument,
+			"The form sent is not valid, please correct the errors below.",
+		)
 		for key, value := range validationErrors {
 			switch t := value.(type) {
 			case validation.ErrorObject:
@@ -142,7 +128,6 @@ func FromValidationError(err error) *Error {
 	}
 	return nil
 }
-
 func renderErrorMessage(object validation.ErrorObject) string {
 	parse, err := template.New("message").Parse(object.Message())
 	if err != nil {
@@ -152,14 +137,11 @@ func renderErrorMessage(object validation.ErrorObject) string {
 	_ = parse.Execute(&tpl, object.Params())
 	return tpl.String()
 }
-
 func FromPostgresError(err error) *Error {
 	e := &Error{
 		Code:    ErrorCodeInternal,
 		Message: "Unexpected behavior.",
-		Params: map[string]string{
-			"error": err.Error(),
-		},
+		Params:  map[string]string{"error": err.Error()},
 	}
 	var pqErr *pq.Error
 	if errors.As(err, &pqErr) {
@@ -172,7 +154,6 @@ func FromPostgresError(err error) *Error {
 	}
 	return e
 }
-
 func NewEntityNotFound() *Error {
 	return &Error{
 		Code:    ErrorCodeNotFound,
@@ -180,7 +161,6 @@ func NewEntityNotFound() *Error {
 		Params:  map[string]string{},
 	}
 }
-
 func NewPermissionDeniedError() *Error {
 	return &Error{
 		Code:    ErrorCodePermissionDenied,
@@ -188,7 +168,6 @@ func NewPermissionDeniedError() *Error {
 		Params:  map[string]string{},
 	}
 }
-
 func NewBadToken() *Error {
 	return &Error{
 		Code:    ErrorCodeUnauthenticated,
@@ -196,7 +175,6 @@ func NewBadToken() *Error {
 		Params:  map[string]string{},
 	}
 }
-
 func NewPermissionDenied() *Error {
 	return &Error{
 		Code:    ErrorCodePermissionDenied,

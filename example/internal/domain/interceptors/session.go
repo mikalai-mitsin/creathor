@@ -6,33 +6,25 @@ import (
 	"github.com/018bf/example/internal/domain/models"
 )
 
-//nolint: lll
-//go:generate mockgen -build_flags=-mod=mod -destination mock/session_mock.go github.com/018bf/example/internal/domain/interceptors SessionInterceptor
-
+// SessionInterceptor - domain layer interceptor interface
+//
+//go:generate mockgen -build_flags=-mod=mod -destination mock/session.go github.com/018bf/example/internal/domain/interceptors SessionInterceptor
 type SessionInterceptor interface {
-	Get(
-		ctx context.Context,
-		id models.UUID,
-		requestUser *models.User,
-	) (*models.Session, error)
+	Get(ctx context.Context, id models.UUID, requestUser *models.User) (*models.Session, error)
 	List(
 		ctx context.Context,
 		filter *models.SessionFilter,
 		requestUser *models.User,
 	) ([]*models.Session, uint64, error)
-	Create(
-		ctx context.Context,
-		create *models.SessionCreate,
-		requestUser *models.User,
-	) (*models.Session, error)
 	Update(
 		ctx context.Context,
 		update *models.SessionUpdate,
 		requestUser *models.User,
 	) (*models.Session, error)
-	Delete(
+	Create(
 		ctx context.Context,
-		id models.UUID,
+		create *models.SessionCreate,
 		requestUser *models.User,
-	) error
+	) (*models.Session, error)
+	Delete(ctx context.Context, id models.UUID, requestUser *models.User) error
 }

@@ -11,7 +11,7 @@ import (
 	mock_usecases "github.com/018bf/example/internal/domain/usecases/mock"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/golang/mock/gomock"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
@@ -54,7 +54,10 @@ func TestNewPlanInterceptor(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewPlanInterceptor(tt.args.planUseCase, tt.args.authUseCase, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewPlanInterceptor(tt.args.planUseCase, tt.args.logger, tt.args.authUseCase); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewPlanInterceptor() = %v, want %v", got, tt.want)
 			}
 		})
@@ -676,7 +679,10 @@ func TestPlanInterceptor_Delete(t *testing.T) {
 				authUseCase: tt.fields.authUseCase,
 				logger:      tt.fields.logger,
 			}
-			if err := i.Delete(tt.args.ctx, tt.args.id, tt.args.requestUser); !errors.Is(err, tt.wantErr) {
+			if err := i.Delete(tt.args.ctx, tt.args.id, tt.args.requestUser); !errors.Is(
+				err,
+				tt.wantErr,
+			) {
 				t.Errorf("PlanInterceptor.Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -692,7 +698,7 @@ func TestPlanInterceptor_List(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	filter := mock_models.NewPlanFilter(t)
-	count := uint64(faker.Number().NumberInt64(2))
+	count := faker.New().UInt64Between(2, 20)
 	listPlans := make([]*models.Plan, 0, count)
 	for i := uint64(0); i < count; i++ {
 		listPlans = append(listPlans, mock_models.NewPlan(t))

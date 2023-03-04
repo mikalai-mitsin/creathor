@@ -311,7 +311,12 @@ func TestNewAuthInterceptor(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewAuthInterceptor(tt.args.authUseCase, tt.args.userUseCase, tt.args.clock, tt.args.logger)
+			got := NewAuthInterceptor(
+				tt.args.authUseCase,
+				tt.args.userUseCase,
+				tt.args.clock,
+				tt.args.logger,
+			)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewAuthInterceptor() = %v, want %v", got, tt.want)
 			}

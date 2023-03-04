@@ -2,8 +2,9 @@ package rest
 
 import (
 	"context"
-	"github.com/018bf/example/internal/configs"
 	"net/http"
+
+	"github.com/018bf/example/internal/configs"
 
 	"github.com/018bf/example/pkg/log"
 	"github.com/gin-gonic/gin"
@@ -33,7 +34,7 @@ func NewServer(
 	config *configs.Config,
 	authMiddleware *AuthMiddleware,
 	authHandler *AuthHandler,
-	userHandler *UserHandler, sessionHandler *SessionHandler, equipmentHandler *EquipmentHandler, planHandler *PlanHandler, dayHandler *DayHandler, archHandler *ArchHandler,
+	userHandler *UserHandler,
 ) *Server {
 	router := gin.Default()
 	router.Use(authMiddleware.Middleware())
@@ -49,11 +50,6 @@ func NewServer(
 	apiV1 := router.Group("api").Group("v1")
 	authHandler.Register(apiV1)
 	userHandler.Register(apiV1)
-	sessionHandler.Register(apiV1)
-	equipmentHandler.Register(apiV1)
-	planHandler.Register(apiV1)
-	dayHandler.Register(apiV1)
-	archHandler.Register(apiV1)
 	return &Server{
 		router: router,
 		config: config,

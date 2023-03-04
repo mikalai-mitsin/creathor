@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
 	examplepb "github.com/018bf/example/pkg/examplepb/v1"
@@ -25,10 +26,7 @@ func NewPlanServiceServer(
 	planInterceptor interceptors.PlanInterceptor,
 	logger log.Logger,
 ) examplepb.PlanServiceServer {
-	return &PlanServiceServer{
-		planInterceptor: planInterceptor,
-		logger:          logger,
-	}
+	return &PlanServiceServer{planInterceptor: planInterceptor, logger: logger}
 }
 
 func (s *PlanServiceServer) Create(
@@ -97,46 +95,19 @@ func (s *PlanServiceServer) Delete(
 	ctx context.Context,
 	input *examplepb.PlanDelete,
 ) (*emptypb.Empty, error) {
-	if err := s.planInterceptor.Delete(
-		ctx,
-		models.UUID(input.GetId()),
-		ctx.Value(UserKey).(*models.User),
-	); err != nil {
+	if err := s.planInterceptor.Delete(ctx, models.UUID(input.GetId()), ctx.Value(UserKey).(*models.User)); err != nil {
 		return nil, decodeError(err)
 	}
 	return &emptypb.Empty{}, nil
 }
-
-func encodePlanUpdate(input *examplepb.PlanUpdate) *models.PlanUpdate {
-	update := &models.PlanUpdate{
-		ID:          models.UUID(input.GetId()),
-		Name:        nil,
-		Repeat:      nil,
-		EquipmentID: nil,
+func encodePlanCreate(input *examplepb.PlanCreate) *models.PlanCreate {
+	create := &models.PlanCreate{
+		Name:        input.GetName(),
+		Repeat:      input.GetRepeat(),
+		EquipmentID: input.GetEquipmentId(),
 	}
-	if input.GetName() != nil {
-		update.Name = utils.Pointer(string(input.GetName().GetValue()))
-	}
-	if input.GetRepeat() != nil {
-		update.Repeat = utils.Pointer(uint64(input.GetRepeat().GetValue()))
-	}
-	if input.GetEquipmentId() != nil {
-		update.EquipmentID = utils.Pointer(string(input.GetEquipmentId().GetValue()))
-	}
-	return update
+	return create
 }
-
-func decodeListPlan(listPlans []*models.Plan, count uint64) *examplepb.ListPlan {
-	response := &examplepb.ListPlan{
-		Items: make([]*examplepb.Plan, 0, len(listPlans)),
-		Count: count,
-	}
-	for _, plan := range listPlans {
-		response.Items = append(response.Items, decodePlan(plan))
-	}
-	return response
-}
-
 func encodePlanFilter(input *examplepb.PlanFilter) *models.PlanFilter {
 	filter := &models.PlanFilter{
 		IDs:        nil,
@@ -151,42 +122,51 @@ func encodePlanFilter(input *examplepb.PlanFilter) *models.PlanFilter {
 	if input.GetPageNumber() != nil {
 		filter.PageNumber = utils.Pointer(input.GetPageNumber().GetValue())
 	}
-	if input.GetSearch() != nil {
-		filter.Search = utils.Pointer(input.GetSearch().GetValue())
-	}
 	for _, id := range input.GetIds() {
 		filter.IDs = append(filter.IDs, models.UUID(id))
 	}
+	if input.GetSearch() != nil {
+		filter.Search = utils.Pointer(input.GetSearch().GetValue())
+	}
 	return filter
 }
-
-func encodePlanCreate(input *examplepb.PlanCreate) *models.PlanCreate {
-	create := &models.PlanCreate{
-		Name:        string(input.GetName()),
-		Repeat:      uint64(input.GetRepeat()),
-		EquipmentID: string(input.GetEquipmentId()),
+func encodePlanUpdate(input *examplepb.PlanUpdate) *models.PlanUpdate {
+	update := &models.PlanUpdate{ID: models.UUID(input.GetId())}
+	if input.GetName() != nil {
+		update.Name = utils.Pointer(input.GetName().GetValue())
 	}
-	return create
+	if input.GetRepeat() != nil {
+		update.Repeat = utils.Pointer(input.GetRepeat().GetValue())
+	}
+	if input.GetEquipmentId() != nil {
+		update.EquipmentID = utils.Pointer(input.GetEquipmentId().GetValue())
+	}
+	return update
 }
-
 func decodePlan(plan *models.Plan) *examplepb.Plan {
 	response := &examplepb.Plan{
 		Id:          string(plan.ID),
 		UpdatedAt:   timestamppb.New(plan.UpdatedAt),
 		CreatedAt:   timestamppb.New(plan.CreatedAt),
-		Name:        string(plan.Name),
-		Repeat:      uint64(plan.Repeat),
-		EquipmentId: string(plan.EquipmentID),
+		Name:        plan.Name,
+		Repeat:      plan.Repeat,
+		EquipmentId: plan.EquipmentID,
 	}
 	return response
 }
-
+func decodeListPlan(listPlans []*models.Plan, count uint64) *examplepb.ListPlan {
+	response := &examplepb.ListPlan{Items: make([]*examplepb.Plan, 0, len(listPlans)), Count: count}
+	for _, plan := range listPlans {
+		response.Items = append(response.Items, decodePlan(plan))
+	}
+	return response
+}
 func decodePlanUpdate(update *models.PlanUpdate) *examplepb.PlanUpdate {
 	result := &examplepb.PlanUpdate{
 		Id:          string(update.ID),
-		Name:        wrapperspb.String(string(*update.Name)),
-		Repeat:      wrapperspb.UInt64(uint64(*update.Repeat)),
-		EquipmentId: wrapperspb.String(string(*update.EquipmentID)),
+		Name:        wrapperspb.String(*update.Name),
+		Repeat:      wrapperspb.UInt64(*update.Repeat),
+		EquipmentId: wrapperspb.String(*update.EquipmentID),
 	}
 	return result
 }

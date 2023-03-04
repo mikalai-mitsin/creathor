@@ -46,7 +46,10 @@ func TestAuthUseCase_Auth(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				authRepository.EXPECT().GetSubject(ctx, models.Token("mytoken")).Return(string(user.ID), nil).Times(1)
+				authRepository.EXPECT().
+					GetSubject(ctx, models.Token("mytoken")).
+					Return(string(user.ID), nil).
+					Times(1)
 				userRepository.EXPECT().Get(ctx, user.ID).Return(user, nil).Times(1)
 			},
 			fields: fields{
@@ -84,8 +87,14 @@ func TestAuthUseCase_Auth(t *testing.T) {
 		{
 			name: "user not found",
 			setup: func() {
-				authRepository.EXPECT().GetSubject(ctx, models.Token("mytoken")).Return(string(user.ID), nil).Times(1)
-				userRepository.EXPECT().Get(ctx, user.ID).Return(nil, errs.NewEntityNotFound()).Times(1)
+				authRepository.EXPECT().
+					GetSubject(ctx, models.Token("mytoken")).
+					Return(string(user.ID), nil).
+					Times(1)
+				userRepository.EXPECT().
+					Get(ctx, user.ID).
+					Return(nil, errs.NewEntityNotFound()).
+					Times(1)
 			},
 			fields: fields{
 				authRepository: authRepository,
@@ -279,7 +288,10 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				authRepository.EXPECT().RefreshToken(ctx, models.Token("my_r_token")).Return(pair, nil).Times(1)
+				authRepository.EXPECT().
+					RefreshToken(ctx, models.Token("my_r_token")).
+					Return(pair, nil).
+					Times(1)
 			},
 			fields: fields{
 				authRepository: authRepository,
@@ -445,7 +457,10 @@ func TestNewAuthUseCase(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewAuthUseCase(tt.args.authRepository, tt.args.userRepository, tt.args.permissionRepository, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewAuthUseCase(tt.args.authRepository, tt.args.userRepository, tt.args.permissionRepository, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewAuthUseCase() = %v, want %v", got, tt.want)
 			}
 		})
@@ -528,7 +543,10 @@ func TestAuthUseCase_HasPermission(t *testing.T) {
 				logger:               tt.fields.logger,
 			}
 			tt.setup()
-			if err := u.HasPermission(tt.args.in0, tt.args.in1, tt.args.permission); !errors.Is(err, tt.wantErr) {
+			if err := u.HasPermission(tt.args.in0, tt.args.in1, tt.args.permission); !errors.Is(
+				err,
+				tt.wantErr,
+			) {
 				t.Errorf("HasPermission() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -635,7 +653,10 @@ func TestAuthUseCase_HasObjectPermission(t *testing.T) {
 				logger:               tt.fields.logger,
 			}
 			tt.setup()
-			if err := u.HasObjectPermission(tt.args.in0, tt.args.user, tt.args.permission, tt.args.object); !errors.Is(err, tt.wantErr) {
+			if err := u.HasObjectPermission(tt.args.in0, tt.args.user, tt.args.permission, tt.args.object); !errors.Is(
+				err,
+				tt.wantErr,
+			) {
 				t.Errorf("HasObjectPermission() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -688,7 +709,9 @@ func TestAuthUseCase_CreateTokenByUser(t *testing.T) {
 		{
 			name: "error",
 			setup: func() {
-				authRepository.EXPECT().Create(ctx, user).Return(nil, errs.NewUnexpectedBehaviorError("asd"))
+				authRepository.EXPECT().
+					Create(ctx, user).
+					Return(nil, errs.NewUnexpectedBehaviorError("asd"))
 			},
 			fields: fields{
 				authRepository: authRepository,

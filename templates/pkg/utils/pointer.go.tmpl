@@ -1,5 +1,7 @@
 package utils
 
+import con "golang.org/x/exp/constraints"
+
 func Pointer[T any](v T) *T {
     return &v
 }
@@ -12,33 +14,18 @@ func Value[T any](v *T) T {
     return d
 }
 
-
-type Numeric interface {
-    uint8 |
-    uint16 |
-    uint32 |
-    uint64 |
-    int8 |
-    int16 |
-    int32 |
-    int64 |
-    float64 |
-    int |
-    uint
-}
-
-func UpcastSlice[T, V Numeric](in []T) []V {
-    out := make([]V, 0, len(in))
-    for _, t := range in {
-        out = append(out, V(t))
-    }
-    return out
-}
-
 func ToAnySlice[T any](input []T) []any {
 	b := make([]any, len(input))
 	for i := range input {
 		b[i] = input[i]
 	}
 	return b
+}
+
+func ChangeType[T con.Integer, F con.Integer](from []F) []T {
+    res := make([]T, len(from))
+    for i, e := range from {
+        res[i] = T(e)
+    }
+    return res
 }

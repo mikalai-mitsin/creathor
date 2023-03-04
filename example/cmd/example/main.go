@@ -1,9 +1,10 @@
 package main
 
 import (
+	"os"
+
 	"github.com/018bf/example/internal/containers"
 	"github.com/urfave/cli/v2"
-	"os"
 )
 
 var (
@@ -63,46 +64,35 @@ func main() {
 
 // runApp - run app
 func runApp(context *cli.Context) error {
-	app := containers.NewGRPCExample(configPath)
-	if err := app.Start(context.Context); err != nil {
-		return err
-	}
+	app := containers.NewGRPCContainer(configPath)
+	app.Run()
 	return nil
 }
 
 // runGRPC - run grpc api
 func runGRPC(context *cli.Context) error {
-	app := containers.NewGRPCExample(configPath)
-	if err := app.Start(context.Context); err != nil {
-		return err
-	}
+	app := containers.NewGRPCContainer(configPath)
+	app.Run()
 	return nil
 }
 
 // runGateway - run gateway api
 func runGateway(context *cli.Context) error {
-	app := containers.NewGatewayExample(configPath)
-	if err := app.Start(context.Context); err != nil {
-		return err
-	}
+	app := containers.NewGatewayContainer(configPath)
+	app.Run()
 	return nil
 }
 
 // runREST - run REST api
 func runREST(context *cli.Context) error {
-	app := containers.NewRESTExample(configPath)
-	if err := app.Start(context.Context); err != nil {
-		return err
-	}
+	app := containers.NewRESTContainer(configPath)
+	app.Run()
 	return nil
 }
 
 // runMigrations - migrate database
 func runMigrations(context *cli.Context) error {
-	app := containers.NewMigrate(configPath)
-	err := app.Start(context.Context)
-	if err != nil {
-		return err
-	}
+	app := containers.NewMigrateContainer(configPath)
+	app.Run()
 	return nil
 }

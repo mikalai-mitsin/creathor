@@ -88,8 +88,10 @@ log_level = 2
 			args: args{
 				configPath: badConfigPath,
 			},
-			want:    nil,
-			wantErr: errs.NewUnexpectedBehaviorError("config file parsing error: toml: cannot load TOML value of type int64 into a Go string"),
+			want: nil,
+			wantErr: errs.NewUnexpectedBehaviorError(
+				"config file parsing error: toml: cannot load TOML value of type int64 into a Go string",
+			),
 		},
 	}
 	for _, tt := range tests {

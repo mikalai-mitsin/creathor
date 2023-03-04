@@ -6,26 +6,39 @@ import (
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/usecases"
-
 	"github.com/018bf/example/pkg/log"
 )
 
 type PlanInterceptor struct {
 	planUseCase usecases.PlanUseCase
-	authUseCase usecases.AuthUseCase
 	logger      log.Logger
+	authUseCase usecases.AuthUseCase
 }
 
 func NewPlanInterceptor(
 	planUseCase usecases.PlanUseCase,
-	authUseCase usecases.AuthUseCase,
 	logger log.Logger,
+	authUseCase usecases.AuthUseCase,
 ) interceptors.PlanInterceptor {
-	return &PlanInterceptor{
-		planUseCase: planUseCase,
-		authUseCase: authUseCase,
-		logger:      logger,
+	return &PlanInterceptor{planUseCase: planUseCase, logger: logger, authUseCase: authUseCase}
+}
+
+func (i *PlanInterceptor) Create(
+	ctx context.Context,
+	create *models.PlanCreate,
+	requestUser *models.User,
+) (*models.Plan, error) {
+	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDPlanCreate); err != nil {
+		return nil, err
 	}
+	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDPlanCreate, create); err != nil {
+		return nil, err
+	}
+	plan, err := i.planUseCase.Create(ctx, create)
+	if err != nil {
+		return nil, err
+	}
+	return plan, nil
 }
 
 func (i *PlanInterceptor) Get(
@@ -33,24 +46,14 @@ func (i *PlanInterceptor) Get(
 	id models.UUID,
 	requestUser *models.User,
 ) (*models.Plan, error) {
-	if err := i.authUseCase.HasPermission(
-		ctx,
-		requestUser,
-		models.PermissionIDPlanDetail,
-	); err != nil {
+	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDPlanDetail); err != nil {
 		return nil, err
 	}
 	plan, err := i.planUseCase.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	err = i.authUseCase.HasObjectPermission(
-		ctx,
-		requestUser,
-		models.PermissionIDPlanDetail,
-		plan,
-	)
-	if err != nil {
+	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDPlanDetail, plan); err != nil {
 		return nil, err
 	}
 	return plan, nil
@@ -61,19 +64,10 @@ func (i *PlanInterceptor) List(
 	filter *models.PlanFilter,
 	requestUser *models.User,
 ) ([]*models.Plan, uint64, error) {
-	if err := i.authUseCase.HasPermission(
-		ctx,
-		requestUser,
-		models.PermissionIDPlanList,
-	); err != nil {
+	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDPlanList); err != nil {
 		return nil, 0, err
 	}
-	if err := i.authUseCase.HasObjectPermission(
-		ctx,
-		requestUser,
-		models.PermissionIDPlanList,
-		filter,
-	); err != nil {
+	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDPlanList, filter); err != nil {
 		return nil, 0, err
 	}
 	listPlans, count, err := i.planUseCase.List(ctx, filter)
@@ -83,62 +77,26 @@ func (i *PlanInterceptor) List(
 	return listPlans, count, nil
 }
 
-func (i *PlanInterceptor) Create(
-	ctx context.Context,
-	create *models.PlanCreate,
-	requestUser *models.User,
-) (*models.Plan, error) {
-	if err := i.authUseCase.HasPermission(
-		ctx,
-		requestUser,
-		models.PermissionIDPlanCreate,
-	); err != nil {
-		return nil, err
-	}
-	if err := i.authUseCase.HasObjectPermission(
-		ctx,
-		requestUser,
-		models.PermissionIDPlanCreate,
-		create,
-	); err != nil {
-		return nil, err
-	}
-	plan, err := i.planUseCase.Create(ctx, create)
-	if err != nil {
-		return nil, err
-	}
-	return plan, nil
-}
-
 func (i *PlanInterceptor) Update(
 	ctx context.Context,
 	update *models.PlanUpdate,
 	requestUser *models.User,
 ) (*models.Plan, error) {
-	if err := i.authUseCase.HasPermission(
-		ctx,
-		requestUser,
-		models.PermissionIDPlanUpdate,
-	); err != nil {
+	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDPlanUpdate); err != nil {
 		return nil, err
 	}
 	plan, err := i.planUseCase.Get(ctx, update.ID)
 	if err != nil {
 		return nil, err
 	}
-	if err := i.authUseCase.HasObjectPermission(
-		ctx,
-		requestUser,
-		models.PermissionIDPlanUpdate,
-		plan,
-	); err != nil {
+	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDPlanUpdate, plan); err != nil {
 		return nil, err
 	}
-	updatedPlan, err := i.planUseCase.Update(ctx, update)
+	updated, err := i.planUseCase.Update(ctx, update)
 	if err != nil {
 		return nil, err
 	}
-	return updatedPlan, nil
+	return updated, nil
 }
 
 func (i *PlanInterceptor) Delete(
@@ -146,24 +104,14 @@ func (i *PlanInterceptor) Delete(
 	id models.UUID,
 	requestUser *models.User,
 ) error {
-	if err := i.authUseCase.HasPermission(
-		ctx,
-		requestUser,
-		models.PermissionIDPlanDelete,
-	); err != nil {
+	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDPlanDelete); err != nil {
 		return err
 	}
 	plan, err := i.planUseCase.Get(ctx, id)
 	if err != nil {
 		return err
 	}
-	err = i.authUseCase.HasObjectPermission(
-		ctx,
-		requestUser,
-		models.PermissionIDPlanDelete,
-		plan,
-	)
-	if err != nil {
+	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDPlanDelete, plan); err != nil {
 		return err
 	}
 	if err := i.planUseCase.Delete(ctx, id); err != nil {

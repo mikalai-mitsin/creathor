@@ -2,10 +2,11 @@ package grpc
 
 import (
 	"context"
+	"strings"
+
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
 	examplepb "github.com/018bf/example/pkg/examplepb/v1"
-	"strings"
 )
 
 type AuthServiceServer struct {

@@ -15,7 +15,10 @@ type EquipmentHandler struct {
 	logger               log.Logger
 }
 
-func NewEquipmentHandler(equipmentInterceptor interceptors.EquipmentInterceptor, logger log.Logger) *EquipmentHandler {
+func NewEquipmentHandler(
+	equipmentInterceptor interceptors.EquipmentInterceptor,
+	logger log.Logger,
+) *EquipmentHandler {
 	return &EquipmentHandler{equipmentInterceptor: equipmentInterceptor, logger: logger}
 }
 
@@ -64,7 +67,11 @@ func (h *EquipmentHandler) List(ctx *gin.Context) {
 	if err := ctx.Bind(filter); err != nil {
 		return
 	}
-	listEquipment, count, err := h.equipmentInterceptor.List(ctx.Request.Context(), filter, requestUser)
+	listEquipment, count, err := h.equipmentInterceptor.List(
+		ctx.Request.Context(),
+		filter,
+		requestUser,
+	)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
@@ -83,7 +90,11 @@ func (h *EquipmentHandler) List(ctx *gin.Context) {
 // @Router       /equipment/{uuid} [get]
 func (h *EquipmentHandler) Get(c *gin.Context) {
 	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
-	equipment, err := h.equipmentInterceptor.Get(c.Request.Context(), models.UUID(c.Param("id")), requestUser)
+	equipment, err := h.equipmentInterceptor.Get(
+		c.Request.Context(),
+		models.UUID(c.Param("id")),
+		requestUser,
+	)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
@@ -124,7 +135,11 @@ func (h *EquipmentHandler) Update(c *gin.Context) {
 // @Router       /equipment/{uuid} [delete]
 func (h *EquipmentHandler) Delete(c *gin.Context) {
 	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
-	err := h.equipmentInterceptor.Delete(c.Request.Context(), models.UUID(c.Param("id")), requestUser)
+	err := h.equipmentInterceptor.Delete(
+		c.Request.Context(),
+		models.UUID(c.Param("id")),
+		requestUser,
+	)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return

@@ -13,7 +13,7 @@ import (
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/golang/mock/gomock"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
@@ -52,7 +52,10 @@ func TestNewEquipmentRepository(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewEquipmentRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewEquipmentRepository(tt.args.database, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewEquipmentRepository() = %v, want %v", got, tt.want)
 			}
 		})
@@ -92,11 +95,11 @@ func TestEquipmentRepository_Create(t *testing.T) {
 			setup: func() {
 				mock.ExpectQuery(query).
 					WithArgs(
+						equipment.UpdatedAt,
+						equipment.CreatedAt,
 						equipment.Name,
 						equipment.Repeat,
 						equipment.Weight,
-						equipment.UpdatedAt,
-						equipment.CreatedAt,
 					).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).
 						AddRow(equipment.ID, equipment.CreatedAt))
@@ -116,11 +119,11 @@ func TestEquipmentRepository_Create(t *testing.T) {
 			setup: func() {
 				mock.ExpectQuery(query).
 					WithArgs(
+						equipment.UpdatedAt,
+						equipment.CreatedAt,
 						equipment.Name,
 						equipment.Repeat,
 						equipment.Weight,
-						equipment.UpdatedAt,
-						equipment.CreatedAt,
 					).
 					WillReturnError(errors.New("test error"))
 			},
@@ -159,7 +162,7 @@ func TestEquipmentRepository_Get(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger := mock_log.NewMockLogger(ctrl)
-	query := "SELECT equipment.id, equipment.name, equipment.repeat, equipment.weight, equipment.updated_at, equipment.created_at FROM public.equipment WHERE id = \\$1 LIMIT 1"
+	query := "SELECT equipment.id, equipment.updated_at, equipment.created_at, equipment.name, equipment.repeat, equipment.weight FROM public.equipment WHERE id = \\$1 LIMIT 1"
 	equipment := mock_models.NewEquipment(t)
 	ctx := context.Background()
 	type fields struct {
@@ -198,7 +201,9 @@ func TestEquipmentRepository_Get(t *testing.T) {
 		{
 			name: "unexpected behavior",
 			setup: func() {
-				mock.ExpectQuery(query).WithArgs(equipment.ID).WillReturnError(errors.New("test error"))
+				mock.ExpectQuery(query).
+					WithArgs(equipment.ID).
+					WillReturnError(errors.New("test error"))
 			},
 			fields: fields{
 				database: db,
@@ -260,11 +265,11 @@ func TestEquipmentRepository_List(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	var listEquipment []*models.Equipment
-	for i := 0; i < faker.RandomInt(1, 20); i++ {
+	for i := 0; i < faker.New().IntBetween(2, 20); i++ {
 		listEquipment = append(listEquipment, mock_models.NewEquipment(t))
 	}
 	filter := mock_models.NewEquipmentFilter(t)
-	query := "SELECT equipment.id, equipment.name, equipment.repeat, equipment.weight, equipment.updated_at, equipment.created_at FROM public.equipment"
+	query := "SELECT equipment.id, equipment.updated_at, equipment.created_at, equipment.name, equipment.repeat, equipment.weight FROM public.equipment"
 	type fields struct {
 		database *sqlx.DB
 		logger   log.Logger
@@ -407,10 +412,10 @@ func TestEquipmentRepository_Update(t *testing.T) {
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						equipment.UpdatedAt,
 						equipment.Name,
 						equipment.Repeat,
 						equipment.Weight,
-						equipment.UpdatedAt,
 						equipment.ID,
 					).
 					WillReturnResult(sqlmock.NewResult(0, 1))
@@ -430,10 +435,10 @@ func TestEquipmentRepository_Update(t *testing.T) {
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						equipment.UpdatedAt,
 						equipment.Name,
 						equipment.Repeat,
 						equipment.Weight,
-						equipment.UpdatedAt,
 						equipment.ID,
 					).
 					WillReturnResult(sqlmock.NewResult(0, 0))
@@ -453,10 +458,10 @@ func TestEquipmentRepository_Update(t *testing.T) {
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						equipment.UpdatedAt,
 						equipment.Name,
 						equipment.Repeat,
 						equipment.Weight,
-						equipment.UpdatedAt,
 						equipment.ID,
 					).
 					WillReturnError(errors.New("test error"))
@@ -469,17 +474,18 @@ func TestEquipmentRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: equipment,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", string(equipment.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("equipment_id", string(equipment.ID)),
 		},
 		{
 			name: "unexpected error",
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						equipment.UpdatedAt,
 						equipment.Name,
 						equipment.Repeat,
 						equipment.Weight,
-						equipment.UpdatedAt,
 						equipment.ID,
 					).
 					WillReturnError(errors.New("test error"))
@@ -492,17 +498,18 @@ func TestEquipmentRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: equipment,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", string(equipment.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("equipment_id", string(equipment.ID)),
 		},
 		{
 			name: "result error",
 			setup: func() {
 				mock.ExpectExec(query).
 					WithArgs(
+						equipment.UpdatedAt,
 						equipment.Name,
 						equipment.Repeat,
 						equipment.Weight,
-						equipment.UpdatedAt,
 						equipment.ID,
 					).
 					WillReturnResult(sqlmock.NewErrorResult(errors.New("test error")))
@@ -515,7 +522,8 @@ func TestEquipmentRepository_Update(t *testing.T) {
 				ctx:  ctx,
 				card: equipment,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", string(equipment.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("equipment_id", string(equipment.ID)),
 		},
 	}
 	for _, tt := range tests {
@@ -607,7 +615,8 @@ func TestEquipmentRepository_Delete(t *testing.T) {
 				ctx: context.Background(),
 				id:  equipment.ID,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", string(equipment.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("equipment_id", string(equipment.ID)),
 		},
 		{
 			name: "result error",
@@ -624,7 +633,8 @@ func TestEquipmentRepository_Delete(t *testing.T) {
 				ctx: context.Background(),
 				id:  equipment.ID,
 			},
-			wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("equipment_id", string(equipment.ID)),
+			wantErr: errs.FromPostgresError(errors.New("test error")).
+				WithParam("equipment_id", string(equipment.ID)),
 		},
 	}
 	for _, tt := range tests {

@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
 	examplepb "github.com/018bf/example/pkg/examplepb/v1"
@@ -25,10 +26,7 @@ func NewSessionServiceServer(
 	sessionInterceptor interceptors.SessionInterceptor,
 	logger log.Logger,
 ) examplepb.SessionServiceServer {
-	return &SessionServiceServer{
-		sessionInterceptor: sessionInterceptor,
-		logger:             logger,
-	}
+	return &SessionServiceServer{sessionInterceptor: sessionInterceptor, logger: logger}
 }
 
 func (s *SessionServiceServer) Create(
@@ -97,42 +95,15 @@ func (s *SessionServiceServer) Delete(
 	ctx context.Context,
 	input *examplepb.SessionDelete,
 ) (*emptypb.Empty, error) {
-	if err := s.sessionInterceptor.Delete(
-		ctx,
-		models.UUID(input.GetId()),
-		ctx.Value(UserKey).(*models.User),
-	); err != nil {
+	if err := s.sessionInterceptor.Delete(ctx, models.UUID(input.GetId()), ctx.Value(UserKey).(*models.User)); err != nil {
 		return nil, decodeError(err)
 	}
 	return &emptypb.Empty{}, nil
 }
-
-func encodeSessionUpdate(input *examplepb.SessionUpdate) *models.SessionUpdate {
-	update := &models.SessionUpdate{
-		ID:          models.UUID(input.GetId()),
-		Title:       nil,
-		Description: nil,
-	}
-	if input.GetTitle() != nil {
-		update.Title = utils.Pointer(string(input.GetTitle().GetValue()))
-	}
-	if input.GetDescription() != nil {
-		update.Description = utils.Pointer(string(input.GetDescription().GetValue()))
-	}
-	return update
+func encodeSessionCreate(input *examplepb.SessionCreate) *models.SessionCreate {
+	create := &models.SessionCreate{Title: input.GetTitle(), Description: input.GetDescription()}
+	return create
 }
-
-func decodeListSession(listSessions []*models.Session, count uint64) *examplepb.ListSession {
-	response := &examplepb.ListSession{
-		Items: make([]*examplepb.Session, 0, len(listSessions)),
-		Count: count,
-	}
-	for _, session := range listSessions {
-		response.Items = append(response.Items, decodeSession(session))
-	}
-	return response
-}
-
 func encodeSessionFilter(input *examplepb.SessionFilter) *models.SessionFilter {
 	filter := &models.SessionFilter{
 		IDs:        nil,
@@ -147,39 +118,49 @@ func encodeSessionFilter(input *examplepb.SessionFilter) *models.SessionFilter {
 	if input.GetPageNumber() != nil {
 		filter.PageNumber = utils.Pointer(input.GetPageNumber().GetValue())
 	}
-	if input.GetSearch() != nil {
-		filter.Search = utils.Pointer(input.GetSearch().GetValue())
-	}
 	for _, id := range input.GetIds() {
 		filter.IDs = append(filter.IDs, models.UUID(id))
 	}
+	if input.GetSearch() != nil {
+		filter.Search = utils.Pointer(input.GetSearch().GetValue())
+	}
 	return filter
 }
-
-func encodeSessionCreate(input *examplepb.SessionCreate) *models.SessionCreate {
-	create := &models.SessionCreate{
-		Title:       string(input.GetTitle()),
-		Description: string(input.GetDescription()),
+func encodeSessionUpdate(input *examplepb.SessionUpdate) *models.SessionUpdate {
+	update := &models.SessionUpdate{ID: models.UUID(input.GetId())}
+	if input.GetTitle() != nil {
+		update.Title = utils.Pointer(input.GetTitle().GetValue())
 	}
-	return create
+	if input.GetDescription() != nil {
+		update.Description = utils.Pointer(input.GetDescription().GetValue())
+	}
+	return update
 }
-
 func decodeSession(session *models.Session) *examplepb.Session {
 	response := &examplepb.Session{
 		Id:          string(session.ID),
 		UpdatedAt:   timestamppb.New(session.UpdatedAt),
 		CreatedAt:   timestamppb.New(session.CreatedAt),
-		Title:       string(session.Title),
-		Description: string(session.Description),
+		Title:       session.Title,
+		Description: session.Description,
 	}
 	return response
 }
-
+func decodeListSession(listSessions []*models.Session, count uint64) *examplepb.ListSession {
+	response := &examplepb.ListSession{
+		Items: make([]*examplepb.Session, 0, len(listSessions)),
+		Count: count,
+	}
+	for _, session := range listSessions {
+		response.Items = append(response.Items, decodeSession(session))
+	}
+	return response
+}
 func decodeSessionUpdate(update *models.SessionUpdate) *examplepb.SessionUpdate {
 	result := &examplepb.SessionUpdate{
 		Id:          string(update.ID),
-		Title:       wrapperspb.String(string(*update.Title)),
-		Description: wrapperspb.String(string(*update.Description)),
+		Title:       wrapperspb.String(*update.Title),
+		Description: wrapperspb.String(*update.Description),
 	}
 	return result
 }

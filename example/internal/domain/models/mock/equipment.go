@@ -1,4 +1,4 @@
-package mock_models // nolint:stylecheck
+package mock_models
 
 import (
 	"testing"
@@ -7,51 +7,48 @@ import (
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/pkg/utils"
 	"github.com/google/uuid"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 )
 
 func NewEquipment(t *testing.T) *models.Equipment {
 	t.Helper()
-	return &models.Equipment{
+	m := &models.Equipment{
 		ID:        models.UUID(uuid.NewString()),
-		Name:      faker.Lorem().String(),
-		Repeat:    faker.RandomInt(2, 100),
-		Weight:    faker.RandomInt(2, 100),
-		UpdatedAt: faker.Time().Backward(40 * time.Hour).UTC(),
-		CreatedAt: faker.Time().Backward(40 * time.Hour).UTC(),
+		UpdatedAt: faker.New().Time().Time(time.Now()),
+		CreatedAt: faker.New().Time().Time(time.Now()),
+		Name:      faker.New().Lorem().Sentence(15),
+		Repeat:    faker.New().Int(),
+		Weight:    faker.New().Int(),
 	}
+	return m
 }
-
 func NewEquipmentCreate(t *testing.T) *models.EquipmentCreate {
 	t.Helper()
-	return &models.EquipmentCreate{
-		Name:   faker.Lorem().String(),
-		Repeat: faker.RandomInt(2, 100),
-		Weight: faker.RandomInt(2, 100),
+	m := &models.EquipmentCreate{
+		Name:   faker.New().Lorem().Sentence(15),
+		Repeat: faker.New().Int(),
+		Weight: faker.New().Int(),
 	}
+	return m
 }
-
 func NewEquipmentUpdate(t *testing.T) *models.EquipmentUpdate {
 	t.Helper()
-	return &models.EquipmentUpdate{
+	m := &models.EquipmentUpdate{
 		ID:     models.UUID(uuid.NewString()),
-		Name:   utils.Pointer(faker.Lorem().String()),
-		Repeat: utils.Pointer(faker.RandomInt(2, 100)),
-		Weight: utils.Pointer(faker.RandomInt(2, 100)),
+		Name:   utils.Pointer(faker.New().Lorem().Sentence(15)),
+		Repeat: utils.Pointer(faker.New().Int()),
+		Weight: utils.Pointer(faker.New().Int()),
 	}
+	return m
 }
-
 func NewEquipmentFilter(t *testing.T) *models.EquipmentFilter {
 	t.Helper()
-	return &models.EquipmentFilter{
-		PageSize:   utils.Pointer(uint64(faker.RandomInt64(2, 100))),
-		PageNumber: utils.Pointer(uint64(faker.RandomInt64(2, 100))),
-		OrderBy:    faker.Lorem().Words(5),
-		IDs: []models.UUID{
-			models.UUID(uuid.NewString()),
-			models.UUID(uuid.NewString()),
-			models.UUID(uuid.NewString()),
-		},
-		Search: utils.Pointer(faker.Lorem().String()),
+	m := &models.EquipmentFilter{
+		IDs:        []models.UUID{models.UUID(uuid.NewString()), models.UUID(uuid.NewString())},
+		PageNumber: utils.Pointer(faker.New().UInt64()),
+		PageSize:   utils.Pointer(faker.New().UInt64()),
+		OrderBy:    faker.New().Lorem().Words(27),
+		Search:     utils.Pointer(faker.New().Lorem().Sentence(15)),
 	}
+	return m
 }

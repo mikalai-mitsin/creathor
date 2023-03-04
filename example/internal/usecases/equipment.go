@@ -6,7 +6,6 @@ import (
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/repositories"
 	"github.com/018bf/example/internal/domain/usecases"
-
 	"github.com/018bf/example/pkg/clock"
 	"github.com/018bf/example/pkg/log"
 )
@@ -22,37 +21,7 @@ func NewEquipmentUseCase(
 	clock clock.Clock,
 	logger log.Logger,
 ) usecases.EquipmentUseCase {
-	return &EquipmentUseCase{
-		equipmentRepository: equipmentRepository,
-		clock:               clock,
-		logger:              logger,
-	}
-}
-
-func (u *EquipmentUseCase) Get(
-	ctx context.Context,
-	id models.UUID,
-) (*models.Equipment, error) {
-	equipment, err := u.equipmentRepository.Get(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return equipment, nil
-}
-
-func (u *EquipmentUseCase) List(
-	ctx context.Context,
-	filter *models.EquipmentFilter,
-) ([]*models.Equipment, uint64, error) {
-	listEquipment, err := u.equipmentRepository.List(ctx, filter)
-	if err != nil {
-		return nil, 0, err
-	}
-	count, err := u.equipmentRepository.Count(ctx, filter)
-	if err != nil {
-		return nil, 0, err
-	}
-	return listEquipment, count, nil
+	return &EquipmentUseCase{equipmentRepository: equipmentRepository, clock: clock, logger: logger}
 }
 
 func (u *EquipmentUseCase) Create(
@@ -65,16 +34,38 @@ func (u *EquipmentUseCase) Create(
 	now := u.clock.Now().UTC()
 	equipment := &models.Equipment{
 		ID:        "",
+		UpdatedAt: now,
+		CreatedAt: now,
 		Name:      create.Name,
 		Repeat:    create.Repeat,
 		Weight:    create.Weight,
-		UpdatedAt: now,
-		CreatedAt: now,
 	}
 	if err := u.equipmentRepository.Create(ctx, equipment); err != nil {
 		return nil, err
 	}
 	return equipment, nil
+}
+func (u *EquipmentUseCase) Get(ctx context.Context, id models.UUID) (*models.Equipment, error) {
+	equipment, err := u.equipmentRepository.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return equipment, nil
+}
+
+func (u *EquipmentUseCase) List(
+	ctx context.Context,
+	filter *models.EquipmentFilter,
+) ([]*models.Equipment, uint64, error) {
+	equipment, err := u.equipmentRepository.List(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	count, err := u.equipmentRepository.Count(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+	return equipment, count, nil
 }
 
 func (u *EquipmentUseCase) Update(
@@ -88,22 +79,23 @@ func (u *EquipmentUseCase) Update(
 	if err != nil {
 		return nil, err
 	}
-	if update.Name != nil {
-		equipment.Name = *update.Name
+	{
+		if update.Name != nil {
+			equipment.Name = *update.Name
+		}
+		if update.Repeat != nil {
+			equipment.Repeat = *update.Repeat
+		}
+		if update.Weight != nil {
+			equipment.Weight = *update.Weight
+		}
 	}
-	if update.Repeat != nil {
-		equipment.Repeat = *update.Repeat
-	}
-	if update.Weight != nil {
-		equipment.Weight = *update.Weight
-	}
-	equipment.UpdatedAt = u.clock.Now()
+	equipment.UpdatedAt = u.clock.Now().UTC()
 	if err := u.equipmentRepository.Update(ctx, equipment); err != nil {
 		return nil, err
 	}
 	return equipment, nil
 }
-
 func (u *EquipmentUseCase) Delete(ctx context.Context, id models.UUID) error {
 	if err := u.equipmentRepository.Delete(ctx, id); err != nil {
 		return err

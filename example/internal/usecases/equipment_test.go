@@ -18,7 +18,7 @@ import (
 	"github.com/018bf/example/pkg/log"
 	mock_log "github.com/018bf/example/pkg/log/mock"
 	"github.com/golang/mock/gomock"
-	"syreclabs.com/go/faker"
+	"github.com/jaswdr/faker"
 )
 
 func TestNewEquipmentUseCase(t *testing.T) {
@@ -57,7 +57,10 @@ func TestNewEquipmentUseCase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			if got := NewEquipmentUseCase(tt.args.equipmentRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+			if got := NewEquipmentUseCase(tt.args.equipmentRepository, tt.args.clock, tt.args.logger); !reflect.DeepEqual(
+				got,
+				tt.want,
+			) {
 				t.Errorf("NewEquipmentUseCase() = %v, want %v", got, tt.want)
 			}
 		})
@@ -106,7 +109,9 @@ func TestEquipmentUseCase_Get(t *testing.T) {
 		{
 			name: "Equipment not found",
 			setup: func() {
-				equipmentRepository.EXPECT().Get(ctx, equipment.ID).Return(nil, errs.NewEntityNotFound())
+				equipmentRepository.EXPECT().
+					Get(ctx, equipment.ID).
+					Return(nil, errs.NewEntityNotFound())
 			},
 			fields: fields{
 				equipmentRepository: equipmentRepository,
@@ -146,7 +151,7 @@ func TestEquipmentUseCase_List(t *testing.T) {
 	logger := mock_log.NewMockLogger(ctrl)
 	ctx := context.Background()
 	var listEquipment []*models.Equipment
-	count := uint64(faker.Number().NumberInt(2))
+	count := faker.New().UInt64Between(2, 20)
 	for i := uint64(0); i < count; i++ {
 		listEquipment = append(listEquipment, mock_models.NewEquipment(t))
 	}
@@ -189,7 +194,9 @@ func TestEquipmentUseCase_List(t *testing.T) {
 		{
 			name: "list error",
 			setup: func() {
-				equipmentRepository.EXPECT().List(ctx, filter).Return(nil, errs.NewUnexpectedBehaviorError("test error"))
+				equipmentRepository.EXPECT().
+					List(ctx, filter).
+					Return(nil, errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
 				equipmentRepository: equipmentRepository,
@@ -207,7 +214,9 @@ func TestEquipmentUseCase_List(t *testing.T) {
 			name: "count error",
 			setup: func() {
 				equipmentRepository.EXPECT().List(ctx, filter).Return(listEquipment, nil)
-				equipmentRepository.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
+				equipmentRepository.EXPECT().
+					Count(ctx, filter).
+					Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
 			},
 			fields: fields{
 				equipmentRepository: equipmentRepository,
@@ -450,7 +459,9 @@ func TestEquipmentUseCase_Update(t *testing.T) {
 		{
 			name: "Equipment not found",
 			setup: func() {
-				equipmentRepository.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFound())
+				equipmentRepository.EXPECT().
+					Get(ctx, update.ID).
+					Return(nil, errs.NewEntityNotFound())
 			},
 			fields: fields{
 				equipmentRepository: equipmentRepository,
@@ -476,7 +487,7 @@ func TestEquipmentUseCase_Update(t *testing.T) {
 			args: args{
 				ctx: ctx,
 				update: &models.EquipmentUpdate{
-					ID: models.UUID(faker.Number().Number(1)),
+					ID: models.UUID("baduuid"),
 				},
 			},
 			want:    nil,

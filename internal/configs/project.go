@@ -21,6 +21,7 @@ type Project struct {
 	RESTEnabled    bool           `yaml:"REST"`
 	MakeEnabled    bool           `yaml:"make"`
 	TaskEnabled    bool           `yaml:"task"`
+	UptraceEnabled bool           `yaml:"uptrace"`
 }
 
 func NewProject(configPath string) (*Project, error) {

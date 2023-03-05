@@ -2,20 +2,20 @@ package main
 
 import (
     "os"
+    "{{ .Module }}"
     "{{ .Module }}/internal/containers"
     "github.com/urfave/cli/v2"
 )
 
 var (
-    version = "unknown"
     configPath = ""
 )
 
 func main() {
     app := &cli.App{
-        Name:    "{{ .Name }}",
+        Name:    {{ .Name }}.Name,
         Usage:   "service",
-        Version: version,
+        Version: {{ .Name }}.Version,
         Flags: []cli.Flag{
             &cli.StringFlag{
                 Name:        "config",

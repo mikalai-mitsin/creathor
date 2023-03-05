@@ -5,6 +5,9 @@ import (
 {{- if .GRPCEnabled }}
 	grpcInterface "{{ .Module }}/internal/interfaces/grpc"
 {{- end }}
+{{- if .UptraceEnabled }}
+    uptraceInterface "{{ .Module }}/internal/interfaces/uptrace"
+{{- end }}
 {{- if .GatewayEnabled }}
 	gatewayInterface "{{ .Module }}/internal/interfaces/gateway"
 {{- end }}

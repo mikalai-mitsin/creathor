@@ -5,6 +5,7 @@ import (
 	"github.com/018bf/creathor/internal/generators/domain"
 	"github.com/018bf/creathor/internal/generators/implementations"
 	"github.com/018bf/creathor/internal/generators/interfaces/grpc"
+	"github.com/018bf/creathor/internal/generators/interfaces/uptrace"
 )
 
 type Generator interface {
@@ -22,8 +23,7 @@ func NewCrudGenerator(project *configs.Project) *CrudGenerator {
 func (g CrudGenerator) Sync() error {
 	generators := []Generator{
 		grpc.NewServer(g.project),
-		grpc.NewAuthMiddleware(g.project),
-		grpc.NewRequestIDMiddleware(g.project),
+		uptrace.NewProvider(g.project),
 		domain.NewErrors(g.project),
 	}
 	for _, m := range g.project.Models {

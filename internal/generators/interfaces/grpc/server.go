@@ -41,6 +41,16 @@ func (s Server) Sync() error {
 	if err := s.syncDecodeError(); err != nil {
 		return err
 	}
+	if s.project.Auth {
+		auth := NewAuthMiddleware(s.project)
+		if err := auth.Sync(); err != nil {
+			return err
+		}
+	}
+	requestID := NewRequestIDMiddleware(s.project)
+	if err := requestID.Sync(); err != nil {
+		return err
+	}
 	return nil
 }
 

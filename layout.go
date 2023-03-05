@@ -53,6 +53,12 @@ func createDirectories(project *configs.Project) error {
 			path.Join(destinationPath, "internal", "interfaces", "gateway"),
 		)
 	}
+	if project.UptraceEnabled {
+		directories = append(
+			directories,
+			path.Join(destinationPath, "internal", "interfaces", "uptrace"),
+		)
+	}
 	for _, directory := range directories {
 		if err := os.MkdirAll(directory, 0777); err != nil {
 			return NewUnexpectedBehaviorError(err.Error())
@@ -130,6 +136,11 @@ func CreateLayout(project *configs.Project) error {
 			SourcePath:      "templates/go.mod.tmpl",
 			DestinationPath: path.Join(destinationPath, "go.mod"),
 			Name:            "go.mod",
+		},
+		{
+			SourcePath:      "templates/version.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "version.go"),
+			Name:            "version",
 		},
 		{
 			SourcePath:      "templates/docs/README.md.tmpl",

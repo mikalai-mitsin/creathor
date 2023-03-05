@@ -16,18 +16,6 @@ func CreateDI(data *configs.Project) error {
 			return NewUnexpectedBehaviorError(err.Error())
 		}
 	}
-	files := []*Template{
-		{
-			SourcePath:      "templates/internal/containers/fx.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "containers", "fx.go"),
-			Name:            "Uber FX DI container",
-		},
-	}
-	for _, tmpl := range files {
-		if err := tmpl.renderToFile(data); err != nil {
-			return err
-		}
-	}
 	fx := containers.NewFxContainer(data)
 	if err := fx.Sync(); err != nil {
 		return err

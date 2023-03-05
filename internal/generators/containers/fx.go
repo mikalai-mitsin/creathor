@@ -10,6 +10,7 @@ import (
 	"go/token"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 type FxContainer struct {
@@ -43,6 +44,133 @@ func (f FxContainer) Sync() error {
 		}
 	}
 	return nil
+}
+
+func (f FxContainer) filename() string {
+	return filepath.Join("internal", "containers", "fx.go")
+}
+
+func (f FxContainer) file() *ast.File {
+	imports := []ast.Spec{
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"context"`,
+			},
+		},
+		&ast.ImportSpec{
+			Name: ast.NewIdent("postgresInterface"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/interfaces/postgres"`, f.project.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Name: ast.NewIdent("jwtRepositories"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/repositories/jwt"`, f.project.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Name: ast.NewIdent("postgresRepositories"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/repositories/postgres"`, f.project.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/pkg/log"`, f.project.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"go.uber.org/fx/fxevent"`,
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"go.uber.org/fx"`,
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/interceptors"`, f.project.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/usecases"`, f.project.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/pkg/clock"`, f.project.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/configs"`, f.project.Module),
+			},
+		},
+	}
+	if f.project.GRPCEnabled {
+		imports = append(imports, &ast.ImportSpec{
+			Name: ast.NewIdent("grpcInterface"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/interfaces/grpc"`, f.project.Module),
+			},
+		})
+	}
+	if f.project.UptraceEnabled {
+		imports = append(imports, &ast.ImportSpec{
+			Name: ast.NewIdent("uptraceInterface"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/interfaces/uptrace"`, f.project.Module),
+			},
+		})
+	}
+	if f.project.GRPCEnabled && f.project.GatewayEnabled {
+		imports = append(imports, &ast.ImportSpec{
+			Name: ast.NewIdent("gatewayInterface"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/interfaces/gateway"`, f.project.Module),
+			},
+		})
+	}
+	if f.project.RESTEnabled {
+		imports = append(imports, &ast.ImportSpec{
+			Name: ast.NewIdent("restInterface"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/interfaces/rest"`, f.project.Module),
+			},
+		})
+	}
+	return &ast.File{
+		Name: &ast.Ident{
+			Name: "containers",
+		},
+		Decls: []ast.Decl{
+			&ast.GenDecl{
+				Tok:   token.IMPORT,
+				Specs: imports,
+			},
+		},
+		Imports:  nil,
+		Comments: nil,
+	}
 }
 
 func (f FxContainer) toProvide() []ast.Expr {
@@ -609,10 +737,10 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 
 func (f FxContainer) syncFxModule() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "containers", "fx.go")
+	filename := f.filename()
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
-		return err
+		file = f.file()
 	}
 	var varExists bool
 	var fxModule *ast.ValueSpec

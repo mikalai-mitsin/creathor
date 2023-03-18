@@ -2213,6 +2213,50 @@ func (h Handler) syncConstructor() error {
 }
 
 func (h Handler) astCreateMethod() *ast.FuncDecl {
+	args := []ast.Expr{
+		&ast.Ident{
+			Name: "ctx",
+		},
+		&ast.CallExpr{
+			Fun: &ast.Ident{
+				Name: fmt.Sprintf("encode%s", h.model.CreateTypeName()),
+			},
+			Args: []ast.Expr{
+				&ast.Ident{
+					Name: "input",
+				},
+			},
+		},
+	}
+	if h.model.Auth {
+		args = append(args, &ast.TypeAssertExpr{
+			X: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "ctx",
+					},
+					Sel: &ast.Ident{
+						Name: "Value",
+					},
+				},
+				Args: []ast.Expr{
+					&ast.Ident{
+						Name: "UserKey",
+					},
+				},
+			},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "models",
+					},
+					Sel: &ast.Ident{
+						Name: "User",
+					},
+				},
+			},
+		})
+	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -2319,48 +2363,7 @@ func (h Handler) astCreateMethod() *ast.FuncDecl {
 									Name: "Create",
 								},
 							},
-							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "ctx",
-								},
-								&ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: fmt.Sprintf("encode%s", h.model.CreateTypeName()),
-									},
-									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "input",
-										},
-									},
-								},
-								&ast.TypeAssertExpr{
-									X: &ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "ctx",
-											},
-											Sel: &ast.Ident{
-												Name: "Value",
-											},
-										},
-										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "UserKey",
-											},
-										},
-									},
-									Type: &ast.StarExpr{
-										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "models",
-											},
-											Sel: &ast.Ident{
-												Name: "User",
-											},
-										},
-									},
-								},
-							},
+							Args: args,
 						},
 					},
 				},
@@ -2451,6 +2454,62 @@ func (h Handler) syncCreateMethod() error {
 }
 
 func (h Handler) astGetMethod() *ast.FuncDecl {
+	args := []ast.Expr{
+		&ast.Ident{
+			Name: "ctx",
+		},
+		&ast.CallExpr{
+			Fun: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "models",
+				},
+				Sel: &ast.Ident{
+					Name: "UUID",
+				},
+			},
+			Args: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "input",
+						},
+						Sel: &ast.Ident{
+							Name: "GetId",
+						},
+					},
+				},
+			},
+		},
+	}
+	if h.model.Auth {
+		args = append(args, &ast.TypeAssertExpr{
+			X: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "ctx",
+					},
+					Sel: &ast.Ident{
+						Name: "Value",
+					},
+				},
+				Args: []ast.Expr{
+					&ast.Ident{
+						Name: "UserKey",
+					},
+				},
+			},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "models",
+					},
+					Sel: &ast.Ident{
+						Name: "User",
+					},
+				},
+			},
+		})
+	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -2557,60 +2616,7 @@ func (h Handler) astGetMethod() *ast.FuncDecl {
 									Name: "Get",
 								},
 							},
-							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "ctx",
-								},
-								&ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "models",
-										},
-										Sel: &ast.Ident{
-											Name: "UUID",
-										},
-									},
-									Args: []ast.Expr{
-										&ast.CallExpr{
-											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "input",
-												},
-												Sel: &ast.Ident{
-													Name: "GetId",
-												},
-											},
-										},
-									},
-								},
-								&ast.TypeAssertExpr{
-									X: &ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "ctx",
-											},
-											Sel: &ast.Ident{
-												Name: "Value",
-											},
-										},
-										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "UserKey",
-											},
-										},
-									},
-									Type: &ast.StarExpr{
-										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "models",
-											},
-											Sel: &ast.Ident{
-												Name: "User",
-											},
-										},
-									},
-								},
-							},
+							Args: args,
 						},
 					},
 				},
@@ -2702,6 +2708,50 @@ func (h Handler) syncGetMethod() error {
 }
 
 func (h Handler) astListMethod() *ast.FuncDecl {
+	args := []ast.Expr{
+		&ast.Ident{
+			Name: "ctx",
+		},
+		&ast.CallExpr{
+			Fun: &ast.Ident{
+				Name: fmt.Sprintf("encode%s", h.model.FilterTypeName()),
+			},
+			Args: []ast.Expr{
+				&ast.Ident{
+					Name: "filter",
+				},
+			},
+		},
+	}
+	if h.model.Auth {
+		args = append(args, &ast.TypeAssertExpr{
+			X: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "ctx",
+					},
+					Sel: &ast.Ident{
+						Name: "Value",
+					},
+				},
+				Args: []ast.Expr{
+					&ast.Ident{
+						Name: "UserKey",
+					},
+				},
+			},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "models",
+					},
+					Sel: &ast.Ident{
+						Name: "User",
+					},
+				},
+			},
+		})
+	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -2811,48 +2861,7 @@ func (h Handler) astListMethod() *ast.FuncDecl {
 									Name: "List",
 								},
 							},
-							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "ctx",
-								},
-								&ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: fmt.Sprintf("encode%s", h.model.FilterTypeName()),
-									},
-									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "filter",
-										},
-									},
-								},
-								&ast.TypeAssertExpr{
-									X: &ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "ctx",
-											},
-											Sel: &ast.Ident{
-												Name: "Value",
-											},
-										},
-										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "UserKey",
-											},
-										},
-									},
-									Type: &ast.StarExpr{
-										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "models",
-											},
-											Sel: &ast.Ident{
-												Name: "User",
-											},
-										},
-									},
-								},
-							},
+							Args: args,
 						},
 					},
 				},
@@ -3016,6 +3025,50 @@ func (h Handler) syncListMethod() error {
 }
 
 func (h Handler) astUpdateMethod() *ast.FuncDecl {
+	args := []ast.Expr{
+		&ast.Ident{
+			Name: "ctx",
+		},
+		&ast.CallExpr{
+			Fun: &ast.Ident{
+				Name: fmt.Sprintf("encode%s", h.model.UpdateTypeName()),
+			},
+			Args: []ast.Expr{
+				&ast.Ident{
+					Name: "input",
+				},
+			},
+		},
+	}
+	if h.model.Auth {
+		args = append(args, &ast.TypeAssertExpr{
+			X: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "ctx",
+					},
+					Sel: &ast.Ident{
+						Name: "Value",
+					},
+				},
+				Args: []ast.Expr{
+					&ast.Ident{
+						Name: "UserKey",
+					},
+				},
+			},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "models",
+					},
+					Sel: &ast.Ident{
+						Name: "User",
+					},
+				},
+			},
+		})
+	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -3122,48 +3175,7 @@ func (h Handler) astUpdateMethod() *ast.FuncDecl {
 									Name: "Update",
 								},
 							},
-							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "ctx",
-								},
-								&ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: fmt.Sprintf("encode%s", h.model.UpdateTypeName()),
-									},
-									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "input",
-										},
-									},
-								},
-								&ast.TypeAssertExpr{
-									X: &ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "ctx",
-											},
-											Sel: &ast.Ident{
-												Name: "Value",
-											},
-										},
-										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "UserKey",
-											},
-										},
-									},
-									Type: &ast.StarExpr{
-										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "models",
-											},
-											Sel: &ast.Ident{
-												Name: "User",
-											},
-										},
-									},
-								},
-							},
+							Args: args,
 						},
 					},
 				},
@@ -3255,6 +3267,62 @@ func (h Handler) syncUpdateMethod() error {
 }
 
 func (h Handler) astDeleteMethod() *ast.FuncDecl {
+	args := []ast.Expr{
+		&ast.Ident{
+			Name: "ctx",
+		},
+		&ast.CallExpr{
+			Fun: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "models",
+				},
+				Sel: &ast.Ident{
+					Name: "UUID",
+				},
+			},
+			Args: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "input",
+						},
+						Sel: &ast.Ident{
+							Name: "GetId",
+						},
+					},
+				},
+			},
+		},
+	}
+	if h.model.Auth {
+		args = append(args, &ast.TypeAssertExpr{
+			X: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "ctx",
+					},
+					Sel: &ast.Ident{
+						Name: "Value",
+					},
+				},
+				Args: []ast.Expr{
+					&ast.Ident{
+						Name: "UserKey",
+					},
+				},
+			},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "models",
+					},
+					Sel: &ast.Ident{
+						Name: "User",
+					},
+				},
+			},
+		})
+	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -3359,60 +3427,7 @@ func (h Handler) astDeleteMethod() *ast.FuncDecl {
 										Name: "Delete",
 									},
 								},
-								Args: []ast.Expr{
-									&ast.Ident{
-										Name: "ctx",
-									},
-									&ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "models",
-											},
-											Sel: &ast.Ident{
-												Name: "UUID",
-											},
-										},
-										Args: []ast.Expr{
-											&ast.CallExpr{
-												Fun: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "input",
-													},
-													Sel: &ast.Ident{
-														Name: "GetId",
-													},
-												},
-											},
-										},
-									},
-									&ast.TypeAssertExpr{
-										X: &ast.CallExpr{
-											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "ctx",
-												},
-												Sel: &ast.Ident{
-													Name: "Value",
-												},
-											},
-											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "UserKey",
-												},
-											},
-										},
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "models",
-												},
-												Sel: &ast.Ident{
-													Name: "User",
-												},
-											},
-										},
-									},
-								},
+								Args: args,
 							},
 						},
 					},

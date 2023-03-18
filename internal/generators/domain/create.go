@@ -29,7 +29,6 @@ func (m *CreateModel) filename() string {
 
 func (m *CreateModel) file() *ast.File {
 	return &ast.File{
-		Package: 1,
 		Name: &ast.Ident{
 			Name: "models",
 		},

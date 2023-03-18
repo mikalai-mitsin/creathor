@@ -393,11 +393,6 @@ func CreateLayout(project *configs.Project) error {
 		files = append(
 			files,
 			&Template{
-				SourcePath:      "templates/internal/interfaces/grpc/auth_middleware_test.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "auth_middleware_test.go"),
-				Name:            "grpc middleware test",
-			},
-			&Template{
 				SourcePath:      "templates/api/proto/buf.yaml.tmpl",
 				DestinationPath: path.Join(destinationPath, "api", "proto", "buf.yaml"),
 				Name:            "buf.yaml",
@@ -444,6 +439,11 @@ func CreateLayout(project *configs.Project) error {
 					SourcePath:      "templates/internal/interfaces/grpc/user_test.go.tmpl",
 					DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "user_test.go"),
 					Name:            "grpc user test",
+				},
+				&Template{
+					SourcePath:      "templates/internal/interfaces/grpc/auth_middleware_test.go.tmpl",
+					DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", "auth_middleware_test.go"),
+					Name:            "grpc middleware test",
 				},
 			)
 		}

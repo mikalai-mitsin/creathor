@@ -24,130 +24,128 @@ func NewMainModel(modelConfig *configs.ModelConfig) *MainModel {
 }
 
 func (m *MainModel) file() *ast.File {
+	decls := []ast.Decl{
+		&ast.GenDecl{
+			Tok: token.IMPORT,
+			Specs: []ast.Spec{
+				&ast.ImportSpec{
+					Path: &ast.BasicLit{
+						Kind:  token.STRING,
+						Value: `"time"`,
+					},
+				},
+				&ast.ImportSpec{
+					Path: &ast.BasicLit{
+						Kind:  token.STRING,
+						Value: fmt.Sprintf(`"%s/internal/domain/errs"`, m.model.Module),
+					},
+				},
+				&ast.ImportSpec{
+					Name: ast.NewIdent("validation"),
+					Path: &ast.BasicLit{
+						Kind:  token.STRING,
+						Value: `"github.com/go-ozzo/ozzo-validation/v4"`,
+					},
+				},
+				&ast.ImportSpec{
+					Path: &ast.BasicLit{
+						Kind:  token.STRING,
+						Value: `"github.com/go-ozzo/ozzo-validation/v4/is"`,
+					},
+				},
+			},
+		},
+	}
+	if m.model.Auth {
+		decls = append(decls, &ast.GenDecl{
+			Tok: token.CONST,
+			Specs: []ast.Spec{
+				&ast.ValueSpec{
+					Names: []*ast.Ident{
+						{
+							Name: m.model.PermissionIDList(),
+						},
+					},
+					Type: &ast.Ident{
+						Name: "PermissionID",
+					},
+					Values: []ast.Expr{
+						&ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s_list"`, m.model.KeyName()),
+						},
+					},
+				},
+				&ast.ValueSpec{
+					Names: []*ast.Ident{
+						{
+							Name: m.model.PermissionIDDetail(),
+						},
+					},
+					Type: &ast.Ident{
+						Name: "PermissionID",
+					},
+					Values: []ast.Expr{
+						&ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s_detail"`, m.model.KeyName()),
+						},
+					},
+				},
+				&ast.ValueSpec{
+					Names: []*ast.Ident{
+						{
+							Name: m.model.PermissionIDCreate(),
+						},
+					},
+					Type: &ast.Ident{
+						Name: "PermissionID",
+					},
+					Values: []ast.Expr{
+						&ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s_create"`, m.model.KeyName()),
+						},
+					},
+				},
+				&ast.ValueSpec{
+					Names: []*ast.Ident{
+						{
+							Name: m.model.PermissionIDUpdate(),
+						},
+					},
+					Type: &ast.Ident{
+						Name: "PermissionID",
+					},
+					Values: []ast.Expr{
+						&ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s_update"`, m.model.KeyName()),
+						},
+					},
+				},
+				&ast.ValueSpec{
+					Names: []*ast.Ident{
+						{
+							Name: m.model.PermissionIDDelete(),
+						},
+					},
+					Type: &ast.Ident{
+						Name: "PermissionID",
+					},
+					Values: []ast.Expr{
+						&ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s_delete"`, m.model.KeyName()),
+						},
+					},
+				},
+			},
+		})
+	}
 	return &ast.File{
-		Package: 1,
-		Name: &ast.Ident{
-			Name: "models",
-		},
-		Decls: []ast.Decl{
-			&ast.GenDecl{
-				Tok: token.IMPORT,
-				Specs: []ast.Spec{
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"time"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/errs"`, m.model.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Name: ast.NewIdent("validation"),
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"github.com/go-ozzo/ozzo-validation/v4"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"github.com/go-ozzo/ozzo-validation/v4/is"`,
-						},
-					},
-				},
-			},
-			&ast.GenDecl{
-				Tok: token.CONST,
-				Specs: []ast.Spec{
-					&ast.ValueSpec{
-						Names: []*ast.Ident{
-							{
-								Name: m.model.PermissionIDList(),
-							},
-						},
-						Type: &ast.Ident{
-							Name: "PermissionID",
-						},
-						Values: []ast.Expr{
-							&ast.BasicLit{
-								Kind:  token.STRING,
-								Value: fmt.Sprintf(`"%s_list"`, m.model.KeyName()),
-							},
-						},
-					},
-					&ast.ValueSpec{
-						Names: []*ast.Ident{
-							{
-								Name: m.model.PermissionIDDetail(),
-							},
-						},
-						Type: &ast.Ident{
-							Name: "PermissionID",
-						},
-						Values: []ast.Expr{
-							&ast.BasicLit{
-								Kind:  token.STRING,
-								Value: fmt.Sprintf(`"%s_detail"`, m.model.KeyName()),
-							},
-						},
-					},
-					&ast.ValueSpec{
-						Names: []*ast.Ident{
-							{
-								Name: m.model.PermissionIDCreate(),
-							},
-						},
-						Type: &ast.Ident{
-							Name: "PermissionID",
-						},
-						Values: []ast.Expr{
-							&ast.BasicLit{
-								Kind:  token.STRING,
-								Value: fmt.Sprintf(`"%s_create"`, m.model.KeyName()),
-							},
-						},
-					},
-					&ast.ValueSpec{
-						Names: []*ast.Ident{
-							{
-								Name: m.model.PermissionIDUpdate(),
-							},
-						},
-						Type: &ast.Ident{
-							Name: "PermissionID",
-						},
-						Values: []ast.Expr{
-							&ast.BasicLit{
-								Kind:  token.STRING,
-								Value: fmt.Sprintf(`"%s_update"`, m.model.KeyName()),
-							},
-						},
-					},
-					&ast.ValueSpec{
-						Names: []*ast.Ident{
-							{
-								Name: m.model.PermissionIDDelete(),
-							},
-						},
-						Type: &ast.Ident{
-							Name: "PermissionID",
-						},
-						Values: []ast.Expr{
-							&ast.BasicLit{
-								Kind:  token.STRING,
-								Value: fmt.Sprintf(`"%s_delete"`, m.model.KeyName()),
-							},
-						},
-					},
-				},
-			},
-		},
-		Imports:  nil,
-		Comments: nil,
+		Name:  ast.NewIdent("models"),
+		Decls: decls,
 	}
 }
 

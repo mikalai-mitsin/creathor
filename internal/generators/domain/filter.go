@@ -28,7 +28,6 @@ func (m *FilterModel) filename() string {
 
 func (m *FilterModel) file() *ast.File {
 	return &ast.File{
-		Package: 1,
 		Name: &ast.Ident{
 			Name: "models",
 		},
@@ -108,7 +107,7 @@ func (m *FilterModel) params() []*ast.Field {
 			},
 		},
 	}
-	if m.model.Auth {
+	if m.model.SearchEnabled() {
 		fields = append(fields, &ast.Field{
 			Names: []*ast.Ident{ast.NewIdent("Search")},
 			Type:  &ast.StarExpr{X: ast.NewIdent("string")},

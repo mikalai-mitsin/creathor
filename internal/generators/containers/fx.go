@@ -3,7 +3,6 @@ package containers
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -11,6 +10,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 type FxContainer struct {
@@ -764,7 +765,8 @@ func (f FxContainer) syncFxModule() error {
 		if ok {
 			ast.Inspect(fxModule, func(node ast.Node) bool {
 				if call, ok := node.(*ast.CallExpr); ok {
-					if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Provide" {
+					if fun, ok := call.Fun.(*ast.SelectorExpr); ok &&
+						fun.Sel.String() == "Provide" {
 						for _, arg := range call.Args {
 							arg := arg
 							if argSelector, ok := arg.(*ast.SelectorExpr); ok {

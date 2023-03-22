@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/018bf/creathor/internal/configs"
-	"github.com/018bf/creathor/internal/generators/containers"
 	"os"
 	"path"
+
+	"github.com/018bf/creathor/internal/configs"
+	"github.com/018bf/creathor/internal/generators/containers"
 )
 
 func CreateDI(data *configs.Project) error {

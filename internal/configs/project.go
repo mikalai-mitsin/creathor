@@ -2,11 +2,12 @@ package configs
 
 import (
 	"fmt"
+	"log"
+	"os"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/iancoleman/strcase"
 	"gopkg.in/yaml.v3"
-	"log"
-	"os"
 )
 
 type Project struct {

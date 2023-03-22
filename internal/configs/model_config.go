@@ -2,9 +2,6 @@ package configs
 
 import (
 	"fmt"
-	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/iancoleman/strcase"
-	"github.com/jinzhu/inflection"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -14,18 +11,22 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/iancoleman/strcase"
+	"github.com/jinzhu/inflection"
 )
 
 type ModelConfig struct {
-	Model          string   `json:"model" yaml:"model"`
-	Module         string   `json:"module" yaml:"module"`
-	ProjectName    string   `json:"project_name" yaml:"projectName"`
+	Model          string   `json:"model"         yaml:"model"`
+	Module         string   `json:"module"        yaml:"module"`
+	ProjectName    string   `json:"project_name"  yaml:"projectName"`
 	ProtoPackage   string   `json:"proto_package" yaml:"protoPackage"`
-	Auth           bool     `json:"auth" yaml:"auth"`
-	Params         []*Param `json:"params" yaml:"params"`
-	GRPCEnabled    bool     `yaml:"gRPC"`
-	GatewayEnabled bool     `yaml:"gateway"`
-	RESTEnabled    bool     `yaml:"REST"`
+	Auth           bool     `json:"auth"          yaml:"auth"`
+	Params         []*Param `json:"params"        yaml:"params"`
+	GRPCEnabled    bool     `                     yaml:"gRPC"`
+	GatewayEnabled bool     `                     yaml:"gateway"`
+	RESTEnabled    bool     `                     yaml:"REST"`
 }
 
 func (m *ModelConfig) Validate() error {

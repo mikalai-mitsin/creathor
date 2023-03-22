@@ -2,13 +2,14 @@ package grpc
 
 import (
 	"bytes"
-	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 type RequestIDMiddleware struct {

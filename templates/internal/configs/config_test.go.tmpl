@@ -52,12 +52,14 @@ log_level = 2
                     MaxOpenConnections: 50,
                     MaxIDLEConnections: 10,
                 },
+{{- if .Auth }}
                 Auth: auth{
                     PublicKey:  "",
                     PrivateKey: "",
                     RefreshTTL: 172800,
                     AccessTTL:  86400,
                 },
+{{- end }}
             },
             wantErr: nil,
         },
@@ -74,12 +76,14 @@ log_level = 2
                     MaxOpenConnections: 50,
                     MaxIDLEConnections: 10,
                 },
+{{- if .Auth }}
                 Auth: auth{
                     PublicKey:  "",
                     PrivateKey: "",
                     RefreshTTL: 172800,
                     AccessTTL:  86400,
                 },
+{{- end }}
             },
             wantErr: nil,
         },
@@ -89,7 +93,7 @@ log_level = 2
                 configPath: badConfigPath,
             },
             want:    nil,
-            wantErr: errs.NewUnexpectedBehaviorError("config file parsing error: toml: cannot load TOML value of type int64 into a Go string"),
+            wantErr: errs.NewUnexpectedBehaviorError("config file parsing error: toml: line 3 (last key \"log_level\"): incompatible types: TOML value has type int64; destination has type string"),
         },
     }
     for _, tt := range tests {

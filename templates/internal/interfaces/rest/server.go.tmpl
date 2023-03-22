@@ -56,6 +56,8 @@ func NewServer(
 {{- if .Auth }}
     authHandler.Register(apiV1)
     userHandler.Register(apiV1)
+{{- else }}
+    _ = apiV1
 {{- end }}
     return &Server{
         router: router,

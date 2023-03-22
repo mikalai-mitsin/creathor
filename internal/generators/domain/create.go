@@ -3,8 +3,6 @@ package domain
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
-	"github.com/018bf/creathor/internal/fake"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -13,6 +11,9 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/018bf/creathor/internal/configs"
+	"github.com/018bf/creathor/internal/fake"
 )
 
 type CreateModel struct {

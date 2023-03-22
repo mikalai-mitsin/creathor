@@ -3,8 +3,6 @@ package domain
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
-	"github.com/018bf/creathor/internal/fake"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -12,6 +10,9 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/018bf/creathor/internal/configs"
+	"github.com/018bf/creathor/internal/fake"
 )
 
 type FilterModel struct {
@@ -472,7 +473,7 @@ func (m *FilterModel) astFakeValues() []*ast.KeyValueExpr {
 			Value: fake.FakeAst("[]string"),
 		},
 	}
-	if m.model.Auth {
+	if m.model.SearchEnabled() {
 		keyValueExprs = append(keyValueExprs, &ast.KeyValueExpr{
 			Key:   ast.NewIdent("Search"),
 			Value: fake.FakeAst("*string"),

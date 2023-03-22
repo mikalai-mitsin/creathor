@@ -5,16 +5,17 @@ import (
 	"embed"
 	_ "embed"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
-	"github.com/018bf/creathor/internal/generators"
-	generatorsInterfacesGrpc "github.com/018bf/creathor/internal/generators/interfaces/grpc"
-	"github.com/iancoleman/strcase"
-	"github.com/urfave/cli/v2"
 	"log"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
+
+	"github.com/018bf/creathor/internal/configs"
+	"github.com/018bf/creathor/internal/generators"
+	generatorsInterfacesGrpc "github.com/018bf/creathor/internal/generators/interfaces/grpc"
+	"github.com/iancoleman/strcase"
+	"github.com/urfave/cli/v2"
 )
 
 var version string
@@ -106,7 +107,19 @@ func postInit(project *configs.Project) error {
 		fmt.Println(errb.String())
 	}
 	if project.RESTEnabled {
-		swag := exec.Command("swag", "init", "-d", "./internal/interfaces/rest", "-g", "server.go", "--parseDependency", "-o", "./api/rest", "-ot", "json")
+		swag := exec.Command(
+			"swag",
+			"init",
+			"-d",
+			"./internal/interfaces/rest",
+			"-g",
+			"server.go",
+			"--parseDependency",
+			"-o",
+			"./api/rest",
+			"-ot",
+			"json",
+		)
 		swag.Dir = destinationPath
 		swag.Stderr = &errb
 		fmt.Println(strings.Join(swag.Args, " "))

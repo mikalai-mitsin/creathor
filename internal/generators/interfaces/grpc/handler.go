@@ -3,13 +3,14 @@ package grpc
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 type Handler struct {
@@ -272,7 +273,8 @@ func (h Handler) syncEncodeCreate() error {
 	var methodExist bool
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("encode%s", h.model.CreateTypeName()) {
+		if t, ok := node.(*ast.FuncDecl); ok &&
+			t.Name.String() == fmt.Sprintf("encode%s", h.model.CreateTypeName()) {
 			methodExist = true
 			method = t
 			return false
@@ -746,7 +748,8 @@ func (h Handler) syncEncodeUpdate() error {
 	var methodExist bool
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("encode%s", h.model.UpdateTypeName()) {
+		if t, ok := node.(*ast.FuncDecl); ok &&
+			t.Name.String() == fmt.Sprintf("encode%s", h.model.UpdateTypeName()) {
 			methodExist = true
 			method = t
 			return false
@@ -1177,7 +1180,8 @@ func (h Handler) syncEncodeFilter() error {
 	var methodExist bool
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("encode%s", h.model.FilterTypeName()) {
+		if t, ok := node.(*ast.FuncDecl); ok &&
+			t.Name.String() == fmt.Sprintf("encode%s", h.model.FilterTypeName()) {
 			methodExist = true
 			method = t
 			return false
@@ -1426,7 +1430,8 @@ func (h Handler) syncDecodeModel() error {
 	var methodExist bool
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("decode%s", h.model.ModelName()) {
+		if t, ok := node.(*ast.FuncDecl); ok &&
+			t.Name.String() == fmt.Sprintf("decode%s", h.model.ModelName()) {
 			methodExist = true
 			method = t
 			return false
@@ -1643,7 +1648,10 @@ func (h Handler) astDecodeList() *ast.FuncDecl {
 											},
 											&ast.CallExpr{
 												Fun: &ast.Ident{
-													Name: fmt.Sprintf("decode%s", h.model.ModelName()),
+													Name: fmt.Sprintf(
+														"decode%s",
+														h.model.ModelName(),
+													),
 												},
 												Args: []ast.Expr{
 													&ast.Ident{
@@ -1679,7 +1687,8 @@ func (h Handler) syncDecodeList() error {
 	var methodExist bool
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("decodeList%s", h.model.ModelName()) {
+		if t, ok := node.(*ast.FuncDecl); ok &&
+			t.Name.String() == fmt.Sprintf("decodeList%s", h.model.ModelName()) {
 			methodExist = true
 			method = t
 			return false
@@ -1969,7 +1978,8 @@ func (h Handler) syncDecodeUpdate() error {
 	var methodExist bool
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("decode%s", h.model.UpdateTypeName()) {
+		if t, ok := node.(*ast.FuncDecl); ok &&
+			t.Name.String() == fmt.Sprintf("decode%s", h.model.UpdateTypeName()) {
 			methodExist = true
 			method = t
 			return false
@@ -2006,7 +2016,10 @@ func (h Handler) astStruct() *ast.TypeSpec {
 								Name: h.model.ProtoPackage,
 							},
 							Sel: &ast.Ident{
-								Name: fmt.Sprintf("Unimplemented%sServiceServer", h.model.ModelName()),
+								Name: fmt.Sprintf(
+									"Unimplemented%sServiceServer",
+									h.model.ModelName(),
+								),
 							},
 						},
 					},
@@ -2189,7 +2202,8 @@ func (h Handler) syncConstructor() error {
 	var methodExist bool
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("New%s", h.model.GRPCHandlerTypeName()) {
+		if t, ok := node.(*ast.FuncDecl); ok &&
+			t.Name.String() == fmt.Sprintf("New%s", h.model.GRPCHandlerTypeName()) {
 			methodExist = true
 			method = t
 			return false

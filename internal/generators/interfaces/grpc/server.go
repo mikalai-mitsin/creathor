@@ -3,13 +3,14 @@ package grpc
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 type Server struct {
@@ -322,6 +323,77 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 			},
 		)
 	}
+	middlewares := []ast.Expr{
+		&ast.CallExpr{
+			Fun: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "otelgrpc",
+				},
+				Sel: &ast.Ident{
+					Name: "UnaryServerInterceptor",
+				},
+			},
+		},
+
+		&ast.SelectorExpr{
+			X: &ast.Ident{
+				Name: "requestIDMiddleware",
+			},
+			Sel: &ast.Ident{
+				Name: "UnaryServerInterceptor",
+			},
+		},
+		&ast.CallExpr{
+			Fun: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "grpcZap",
+				},
+				Sel: &ast.Ident{
+					Name: "UnaryServerInterceptor",
+				},
+			},
+			Args: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "logger",
+						},
+						Sel: &ast.Ident{
+							Name: "Logger",
+						},
+					},
+				},
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "grpcZap",
+						},
+						Sel: &ast.Ident{
+							Name: "WithMessageProducer",
+						},
+					},
+					Args: []ast.Expr{
+						&ast.Ident{
+							Name: "DefaultMessageProducer",
+						},
+					},
+				},
+			},
+		},
+	}
+	if s.project.Auth {
+		middlewares = append(
+			middlewares,
+			&ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "authMiddleware",
+				},
+				Sel: &ast.Ident{
+					Name: "UnaryServerInterceptor",
+				},
+			},
+		)
+	}
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
 			Name: "NewServer",
@@ -393,71 +465,7 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 											Name: "ChainUnaryInterceptor",
 										},
 									},
-									Args: []ast.Expr{
-										&ast.CallExpr{
-											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "otelgrpc",
-												},
-												Sel: &ast.Ident{
-													Name: "UnaryServerInterceptor",
-												},
-											},
-										},
-										&ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "authMiddleware",
-											},
-											Sel: &ast.Ident{
-												Name: "UnaryServerInterceptor",
-											},
-										},
-										&ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "requestIDMiddleware",
-											},
-											Sel: &ast.Ident{
-												Name: "UnaryServerInterceptor",
-											},
-										},
-										&ast.CallExpr{
-											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "grpcZap",
-												},
-												Sel: &ast.Ident{
-													Name: "UnaryServerInterceptor",
-												},
-											},
-											Args: []ast.Expr{
-												&ast.CallExpr{
-													Fun: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "logger",
-														},
-														Sel: &ast.Ident{
-															Name: "Logger",
-														},
-													},
-												},
-												&ast.CallExpr{
-													Fun: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "grpcZap",
-														},
-														Sel: &ast.Ident{
-															Name: "WithMessageProducer",
-														},
-													},
-													Args: []ast.Expr{
-														&ast.Ident{
-															Name: "DefaultMessageProducer",
-														},
-													},
-												},
-											},
-										},
-									},
+									Args: middlewares,
 								},
 							},
 						},
@@ -2162,8 +2170,12 @@ func (s Server) file() *ast.File {
 					&ast.ImportSpec{
 						Name: ast.NewIdent(s.project.ProtoPackage()),
 						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/%s/v1"`, s.project.Module, s.project.ProtoPackage()),
+							Kind: token.STRING,
+							Value: fmt.Sprintf(
+								`"%s/pkg/%s/v1"`,
+								s.project.Module,
+								s.project.ProtoPackage(),
+							),
 						},
 					},
 					&ast.ImportSpec{

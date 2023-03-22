@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -12,6 +11,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 func CreateCRUD(model *configs.ModelConfig) error {
@@ -22,40 +23,76 @@ func CreateCRUD(model *configs.ModelConfig) error {
 	files := []*Template{
 
 		{
-			SourcePath:      "templates/internal/usecases/crud_test.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "usecases", model.TestFileName()),
-			Name:            "usecase test",
+			SourcePath: "templates/internal/usecases/crud_test.go.tmpl",
+			DestinationPath: filepath.Join(
+				destinationPath,
+				"internal",
+				"usecases",
+				model.TestFileName(),
+			),
+			Name: "usecase test",
 		},
 
 		{
-			SourcePath:      "templates/internal/interceptors/crud_test.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "interceptors", model.TestFileName()),
-			Name:            "interceptor test",
+			SourcePath: "templates/internal/interceptors/crud_test.go.tmpl",
+			DestinationPath: filepath.Join(
+				destinationPath,
+				"internal",
+				"interceptors",
+				model.TestFileName(),
+			),
+			Name: "interceptor test",
 		},
 
 		{
-			SourcePath:      "templates/internal/repositories/postgres/crud_test.go.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "internal", "repositories", "postgres", model.TestFileName()),
-			Name:            "repository test",
+			SourcePath: "templates/internal/repositories/postgres/crud_test.go.tmpl",
+			DestinationPath: filepath.Join(
+				destinationPath,
+				"internal",
+				"repositories",
+				"postgres",
+				model.TestFileName(),
+			),
+			Name: "repository test",
 		},
 		{
-			SourcePath:      "templates/internal/interfaces/postgres/migrations/crud.up.sql.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", model.MigrationUpFileName()),
-			Name:            "migration up",
+			SourcePath: "templates/internal/interfaces/postgres/migrations/crud.up.sql.tmpl",
+			DestinationPath: path.Join(
+				destinationPath,
+				"internal",
+				"interfaces",
+				"postgres",
+				"migrations",
+				model.MigrationUpFileName(),
+			),
+			Name: "migration up",
 		},
 		{
-			SourcePath:      "templates/internal/interfaces/postgres/migrations/crud.down.sql.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations", model.MigrationDownFileName()),
-			Name:            "migration down",
+			SourcePath: "templates/internal/interfaces/postgres/migrations/crud.down.sql.tmpl",
+			DestinationPath: path.Join(
+				destinationPath,
+				"internal",
+				"interfaces",
+				"postgres",
+				"migrations",
+				model.MigrationDownFileName(),
+			),
+			Name: "migration down",
 		},
 	}
 	if model.RESTEnabled {
 		files = append(
 			files,
 			&Template{
-				SourcePath:      "templates/internal/interfaces/rest/crud.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "rest", model.FileName()),
-				Name:            "rest crud",
+				SourcePath: "templates/internal/interfaces/rest/crud.go.tmpl",
+				DestinationPath: path.Join(
+					destinationPath,
+					"internal",
+					"interfaces",
+					"rest",
+					model.FileName(),
+				),
+				Name: "rest crud",
 			},
 		)
 	}
@@ -63,14 +100,27 @@ func CreateCRUD(model *configs.ModelConfig) error {
 		files = append(
 			files,
 			&Template{
-				SourcePath:      "templates/internal/interfaces/grpc/crud_test.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interfaces", "grpc", model.TestFileName()),
-				Name:            "test grpc service server",
+				SourcePath: "templates/internal/interfaces/grpc/crud_test.go.tmpl",
+				DestinationPath: path.Join(
+					destinationPath,
+					"internal",
+					"interfaces",
+					"grpc",
+					model.TestFileName(),
+				),
+				Name: "test grpc service server",
 			},
 			&Template{
-				SourcePath:      "templates/api/proto/service/v1/crud.proto.tmpl",
-				DestinationPath: path.Join(destinationPath, "api", "proto", model.ProtoPackage, "v1", model.ProtoFileName()),
-				Name:            "proto def",
+				SourcePath: "templates/api/proto/service/v1/crud.proto.tmpl",
+				DestinationPath: path.Join(
+					destinationPath,
+					"api",
+					"proto",
+					model.ProtoPackage,
+					"v1",
+					model.ProtoFileName(),
+				),
+				Name: "proto def",
 			},
 		)
 	}

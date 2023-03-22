@@ -3,13 +3,14 @@ package implementations
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path/filepath"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 type Interceptor struct {
@@ -211,9 +212,11 @@ func (i Interceptor) astConstructor() *ast.FuncDecl {
 				Opening: 0,
 				List: []*ast.Field{
 					{
-						Doc:     nil,
-						Names:   nil,
-						Type:    ast.NewIdent(fmt.Sprintf("interceptors.%s", i.model.InterceptorTypeName())),
+						Doc:   nil,
+						Names: nil,
+						Type: ast.NewIdent(
+							fmt.Sprintf("interceptors.%s", i.model.InterceptorTypeName()),
+						),
 						Tag:     nil,
 						Comment: nil,
 					},
@@ -256,7 +259,8 @@ func (i Interceptor) syncConstructor() error {
 	var structureConstructorExists bool
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("New%s", i.model.InterceptorTypeName()) {
+		if t, ok := node.(*ast.FuncDecl); ok &&
+			t.Name.String() == fmt.Sprintf("New%s", i.model.InterceptorTypeName()) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -280,10 +284,174 @@ func (i Interceptor) syncConstructor() error {
 }
 
 func (i Interceptor) astCreateMethod() *ast.FuncDecl {
+	args := []*ast.Field{
+		{
+			Names: []*ast.Ident{ast.NewIdent("ctx")},
+			Type:  ast.NewIdent("context.Context"),
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("create")},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X:   ast.NewIdent("models"),
+					Sel: ast.NewIdent(i.model.CreateTypeName()),
+				},
+			},
+		},
+	}
+	var body []ast.Stmt
+	if i.model.Auth {
+		args = append(args, &ast.Field{
+			Names: []*ast.Ident{ast.NewIdent("requestUser")},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X:   ast.NewIdent("models"),
+					Sel: ast.NewIdent("User"),
+				},
+			},
+		})
+		body = append(body,
+			&ast.IfStmt{
+				Init: &ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent("err"),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("i"),
+									Sel: ast.NewIdent("authUseCase"),
+								},
+								Sel: ast.NewIdent("HasPermission"),
+							},
+							Args: []ast.Expr{
+								ast.NewIdent("ctx"),
+								ast.NewIdent("requestUser"),
+								&ast.SelectorExpr{
+									X:   ast.NewIdent("models"),
+									Sel: ast.NewIdent(i.model.PermissionIDCreate()),
+								},
+							},
+						},
+					},
+				},
+				Cond: &ast.BinaryExpr{
+					X:  ast.NewIdent("err"),
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								ast.NewIdent("nil"),
+								ast.NewIdent("err"),
+							},
+						},
+					},
+				},
+			},
+			&ast.IfStmt{
+				Init: &ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent("err"),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("i"),
+									Sel: ast.NewIdent("authUseCase"),
+								},
+								Sel: ast.NewIdent("HasObjectPermission"),
+							},
+							Lparen: 0,
+							Args: []ast.Expr{
+								ast.NewIdent("ctx"),
+								ast.NewIdent("requestUser"),
+								&ast.SelectorExpr{
+									X:   ast.NewIdent("models"),
+									Sel: ast.NewIdent(i.model.PermissionIDCreate()),
+								},
+								ast.NewIdent("create"),
+							},
+						},
+					},
+				},
+				Cond: &ast.BinaryExpr{
+					X:  ast.NewIdent("err"),
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								ast.NewIdent("nil"),
+								ast.NewIdent("err"),
+							},
+						},
+					},
+				},
+			},
+		)
+	}
+	body = append(body,
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				ast.NewIdent(i.model.Variable()),
+				ast.NewIdent("err"),
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent("i"),
+							Sel: ast.NewIdent(i.model.UseCaseVariableName()),
+						},
+						Sel: ast.NewIdent("Create"),
+					},
+					Args: []ast.Expr{
+						ast.NewIdent("ctx"),
+						ast.NewIdent("create"),
+					},
+				},
+			},
+		},
+		// Check error
+		&ast.IfStmt{
+			Init: nil,
+			Cond: &ast.BinaryExpr{
+				X:  ast.NewIdent("err"),
+				Op: token.NEQ,
+				Y:  ast.NewIdent("nil"),
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							ast.NewIdent("nil"),
+							ast.NewIdent("err"),
+						},
+					},
+				},
+			},
+			Else: nil,
+		},
+		// Return created model and nil error
+		&ast.ReturnStmt{
+			Results: []ast.Expr{
+				ast.NewIdent(i.model.Variable()),
+				ast.NewIdent("nil"),
+			},
+		},
+	)
 	return &ast.FuncDecl{
-		Doc: nil,
 		Recv: &ast.FieldList{
-			Opening: 0,
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
@@ -294,37 +462,11 @@ func (i Interceptor) astCreateMethod() *ast.FuncDecl {
 					},
 				},
 			},
-			Closing: 0,
 		},
 		Name: ast.NewIdent("Create"),
 		Type: &ast.FuncType{
-			Func:       0,
-			TypeParams: nil,
 			Params: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Names: []*ast.Ident{ast.NewIdent("ctx")},
-						Type:  ast.NewIdent("context.Context"),
-					},
-					{
-						Names: []*ast.Ident{ast.NewIdent("create")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(i.model.CreateTypeName()),
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{ast.NewIdent("requestUser")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent("User"),
-							},
-						},
-					},
-				},
+				List: args,
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
@@ -343,147 +485,7 @@ func (i Interceptor) astCreateMethod() *ast.FuncDecl {
 			},
 		},
 		Body: &ast.BlockStmt{
-			List: []ast.Stmt{
-				// Check permission
-				&ast.IfStmt{
-					Init: &ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("i"),
-										Sel: ast.NewIdent("authUseCase"),
-									},
-									Sel: ast.NewIdent("HasPermission"),
-								},
-								Lparen: 0,
-								Args: []ast.Expr{
-									ast.NewIdent("ctx"),
-									ast.NewIdent("requestUser"),
-									&ast.SelectorExpr{
-										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.model.PermissionIDCreate()),
-									},
-								},
-							},
-						},
-					},
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("nil"),
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-				},
-				// Check permission
-				&ast.IfStmt{
-					Init: &ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("i"),
-										Sel: ast.NewIdent("authUseCase"),
-									},
-									Sel: ast.NewIdent("HasObjectPermission"),
-								},
-								Lparen: 0,
-								Args: []ast.Expr{
-									ast.NewIdent("ctx"),
-									ast.NewIdent("requestUser"),
-									&ast.SelectorExpr{
-										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.model.PermissionIDCreate()),
-									},
-									ast.NewIdent("create"),
-								},
-							},
-						},
-					},
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("nil"),
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-				},
-				// Try to create model at use case
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent(i.model.Variable()),
-						ast.NewIdent("err"),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("i"),
-									Sel: ast.NewIdent(i.model.UseCaseVariableName()),
-								},
-								Sel: ast.NewIdent("Create"),
-							},
-							Args: []ast.Expr{
-								ast.NewIdent("ctx"),
-								ast.NewIdent("create"),
-							},
-						},
-					},
-				},
-				// Check error
-				&ast.IfStmt{
-					Init: nil,
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("nil"),
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-					Else: nil,
-				},
-				// Return created model and nil error
-				&ast.ReturnStmt{
-					Results: []ast.Expr{
-						ast.NewIdent(i.model.Variable()),
-						ast.NewIdent("nil"),
-					},
-				},
-			},
+			List: body,
 		},
 	}
 }
@@ -511,10 +513,12 @@ func (i Interceptor) syncCreateMethod() error {
 		param := param
 		ast.Inspect(method, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
-				if t, ok := cl.Type.(*ast.SelectorExpr); ok && t.Sel.String() == i.model.ModelName() {
+				if t, ok := cl.Type.(*ast.SelectorExpr); ok &&
+					t.Sel.String() == i.model.ModelName() {
 					for _, elt := range cl.Elts {
 						if kv, ok := elt.(*ast.KeyValueExpr); ok {
-							if key, ok := kv.Key.(*ast.Ident); ok && key.String() == param.GetName() {
+							if key, ok := kv.Key.(*ast.Ident); ok &&
+								key.String() == param.GetName() {
 								return false
 							}
 						}
@@ -548,10 +552,183 @@ func (i Interceptor) syncCreateMethod() error {
 }
 
 func (i Interceptor) astListMethod() *ast.FuncDecl {
+	args := []*ast.Field{
+		{
+			Names: []*ast.Ident{ast.NewIdent("ctx")},
+			Type:  ast.NewIdent("context.Context"),
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("filter")},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X:   ast.NewIdent("models"),
+					Sel: ast.NewIdent(i.model.FilterTypeName()),
+				},
+			},
+		},
+	}
+	var body []ast.Stmt
+	if i.model.Auth {
+		args = append(args, &ast.Field{
+			Names: []*ast.Ident{ast.NewIdent("requestUser")},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X:   ast.NewIdent("models"),
+					Sel: ast.NewIdent("User"),
+				},
+			},
+		})
+		body = append(body,
+			// Check permission
+			&ast.IfStmt{
+				Init: &ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent("err"),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("i"),
+									Sel: ast.NewIdent("authUseCase"),
+								},
+								Sel: ast.NewIdent("HasPermission"),
+							},
+							Lparen: 0,
+							Args: []ast.Expr{
+								ast.NewIdent("ctx"),
+								ast.NewIdent("requestUser"),
+								&ast.SelectorExpr{
+									X:   ast.NewIdent("models"),
+									Sel: ast.NewIdent(i.model.PermissionIDList()),
+								},
+							},
+						},
+					},
+				},
+				Cond: &ast.BinaryExpr{
+					X:  ast.NewIdent("err"),
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								ast.NewIdent("nil"),
+								ast.NewIdent("0"),
+								ast.NewIdent("err"),
+							},
+						},
+					},
+				},
+			},
+			// Check filter permission
+			&ast.IfStmt{
+				Init: &ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent("err"),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("i"),
+									Sel: ast.NewIdent("authUseCase"),
+								},
+								Sel: ast.NewIdent("HasObjectPermission"),
+							},
+							Lparen: 0,
+							Args: []ast.Expr{
+								ast.NewIdent("ctx"),
+								ast.NewIdent("requestUser"),
+								&ast.SelectorExpr{
+									X:   ast.NewIdent("models"),
+									Sel: ast.NewIdent(i.model.PermissionIDList()),
+								},
+								ast.NewIdent("filter"),
+							},
+						},
+					},
+				},
+				Cond: &ast.BinaryExpr{
+					X:  ast.NewIdent("err"),
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								ast.NewIdent("nil"),
+								ast.NewIdent("0"),
+								ast.NewIdent("err"),
+							},
+						},
+					},
+				},
+			},
+		)
+	}
+	body = append(body,
+		// Try to update model at use case
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				ast.NewIdent(i.model.ListVariable()),
+				ast.NewIdent("count"),
+				ast.NewIdent("err"),
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent("i"),
+							Sel: ast.NewIdent(i.model.UseCaseVariableName()),
+						},
+						Sel: ast.NewIdent("List"),
+					},
+					Args: []ast.Expr{
+						ast.NewIdent("ctx"),
+						ast.NewIdent("filter"),
+					},
+				},
+			},
+		},
+		// Check error
+		&ast.IfStmt{
+			Init: nil,
+			Cond: &ast.BinaryExpr{
+				X:  ast.NewIdent("err"),
+				Op: token.NEQ,
+				Y:  ast.NewIdent("nil"),
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							ast.NewIdent("nil"),
+							ast.NewIdent("0"),
+							ast.NewIdent("err"),
+						},
+					},
+				},
+			},
+			Else: nil,
+		},
+		// Return created model and nil error
+		&ast.ReturnStmt{
+			Results: []ast.Expr{
+				ast.NewIdent(i.model.ListVariable()),
+				ast.NewIdent("count"),
+				ast.NewIdent("nil"),
+			},
+		},
+	)
 	return &ast.FuncDecl{
-		Doc: nil,
 		Recv: &ast.FieldList{
-			Opening: 0,
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
@@ -566,33 +743,8 @@ func (i Interceptor) astListMethod() *ast.FuncDecl {
 		},
 		Name: ast.NewIdent("List"),
 		Type: &ast.FuncType{
-			Func:       0,
-			TypeParams: nil,
 			Params: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Names: []*ast.Ident{ast.NewIdent("ctx")},
-						Type:  ast.NewIdent("context.Context"),
-					},
-					{
-						Names: []*ast.Ident{ast.NewIdent("filter")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(i.model.FilterTypeName()),
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{ast.NewIdent("requestUser")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent("User"),
-							},
-						},
-					},
-				},
+				List: args,
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
@@ -616,152 +768,7 @@ func (i Interceptor) astListMethod() *ast.FuncDecl {
 			},
 		},
 		Body: &ast.BlockStmt{
-			List: []ast.Stmt{
-				// Check permission
-				&ast.IfStmt{
-					Init: &ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("i"),
-										Sel: ast.NewIdent("authUseCase"),
-									},
-									Sel: ast.NewIdent("HasPermission"),
-								},
-								Lparen: 0,
-								Args: []ast.Expr{
-									ast.NewIdent("ctx"),
-									ast.NewIdent("requestUser"),
-									&ast.SelectorExpr{
-										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.model.PermissionIDList()),
-									},
-								},
-							},
-						},
-					},
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("nil"),
-									ast.NewIdent("0"),
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-				},
-				// Check filter permission
-				&ast.IfStmt{
-					Init: &ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("i"),
-										Sel: ast.NewIdent("authUseCase"),
-									},
-									Sel: ast.NewIdent("HasObjectPermission"),
-								},
-								Lparen: 0,
-								Args: []ast.Expr{
-									ast.NewIdent("ctx"),
-									ast.NewIdent("requestUser"),
-									&ast.SelectorExpr{
-										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.model.PermissionIDList()),
-									},
-									ast.NewIdent("filter"),
-								},
-							},
-						},
-					},
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("nil"),
-									ast.NewIdent("0"),
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-				},
-				// Try to update model at use case
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent(i.model.ListVariable()),
-						ast.NewIdent("count"),
-						ast.NewIdent("err"),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("i"),
-									Sel: ast.NewIdent(i.model.UseCaseVariableName()),
-								},
-								Sel: ast.NewIdent("List"),
-							},
-							Args: []ast.Expr{
-								ast.NewIdent("ctx"),
-								ast.NewIdent("filter"),
-							},
-						},
-					},
-				},
-				// Check error
-				&ast.IfStmt{
-					Init: nil,
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("nil"),
-									ast.NewIdent("0"),
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-					Else: nil,
-				},
-				// Return created model and nil error
-				&ast.ReturnStmt{
-					Results: []ast.Expr{
-						ast.NewIdent(i.model.ListVariable()),
-						ast.NewIdent("count"),
-						ast.NewIdent("nil"),
-					},
-				},
-			},
+			List: body,
 		},
 	}
 }
@@ -799,10 +806,185 @@ func (i Interceptor) syncListMethod() error {
 }
 
 func (i Interceptor) astGetMethod() *ast.FuncDecl {
+	args := []*ast.Field{
+		{
+			Names: []*ast.Ident{ast.NewIdent("ctx")},
+			Type:  ast.NewIdent("context.Context"),
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("id")},
+			Type: &ast.SelectorExpr{
+				X:   ast.NewIdent("models"),
+				Sel: ast.NewIdent("UUID"),
+			},
+		},
+	}
+	var body []ast.Stmt
+	if i.model.Auth {
+		args = append(args, &ast.Field{
+			Names: []*ast.Ident{ast.NewIdent("requestUser")},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X:   ast.NewIdent("models"),
+					Sel: ast.NewIdent("User"),
+				},
+			},
+		})
+		body = append(
+			body,
+			&ast.IfStmt{
+				Init: &ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent("err"),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("i"),
+									Sel: ast.NewIdent("authUseCase"),
+								},
+								Sel: ast.NewIdent("HasPermission"),
+							},
+							Lparen: 0,
+							Args: []ast.Expr{
+								ast.NewIdent("ctx"),
+								ast.NewIdent("requestUser"),
+								&ast.SelectorExpr{
+									X:   ast.NewIdent("models"),
+									Sel: ast.NewIdent(i.model.PermissionIDDetail()),
+								},
+							},
+						},
+					},
+				},
+				Cond: &ast.BinaryExpr{
+					X:  ast.NewIdent("err"),
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								ast.NewIdent("nil"),
+								ast.NewIdent("err"),
+							},
+						},
+					},
+				},
+			},
+		)
+	}
+	body = append(
+		body,
+		// Try to get model from use case
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				ast.NewIdent(i.model.Variable()),
+				ast.NewIdent("err"),
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent("i"),
+							Sel: ast.NewIdent(i.model.UseCaseVariableName()),
+						},
+						Sel: ast.NewIdent("Get"),
+					},
+					Args: []ast.Expr{
+						ast.NewIdent("ctx"),
+						ast.NewIdent("id"),
+					},
+				},
+			},
+		},
+		// Check error
+		&ast.IfStmt{
+			Init: nil,
+			Cond: &ast.BinaryExpr{
+				X:  ast.NewIdent("err"),
+				Op: token.NEQ,
+				Y:  ast.NewIdent("nil"),
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							ast.NewIdent("nil"),
+							ast.NewIdent("err"),
+						},
+					},
+				},
+			},
+			Else: nil,
+		},
+	)
+	if i.model.Auth {
+		body = append(
+			body,
+			// Check object permission
+			&ast.IfStmt{
+				Init: &ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent("err"),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("i"),
+									Sel: ast.NewIdent("authUseCase"),
+								},
+								Sel: ast.NewIdent("HasObjectPermission"),
+							},
+							Lparen: 0,
+							Args: []ast.Expr{
+								ast.NewIdent("ctx"),
+								ast.NewIdent("requestUser"),
+								&ast.SelectorExpr{
+									X:   ast.NewIdent("models"),
+									Sel: ast.NewIdent(i.model.PermissionIDDetail()),
+								},
+								ast.NewIdent(i.model.Variable()),
+							},
+						},
+					},
+				},
+				Cond: &ast.BinaryExpr{
+					X:  ast.NewIdent("err"),
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								ast.NewIdent("nil"),
+								ast.NewIdent("err"),
+							},
+						},
+					},
+				},
+			},
+		)
+	}
+	body = append(
+		body,
+		// Return created model and nil error
+		&ast.ReturnStmt{
+			Results: []ast.Expr{
+				ast.NewIdent(i.model.Variable()),
+				ast.NewIdent("nil"),
+			},
+		},
+	)
 	return &ast.FuncDecl{
-		Doc: nil,
 		Recv: &ast.FieldList{
-			Opening: 0,
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
@@ -813,35 +995,11 @@ func (i Interceptor) astGetMethod() *ast.FuncDecl {
 					},
 				},
 			},
-			Closing: 0,
 		},
 		Name: ast.NewIdent("Get"),
 		Type: &ast.FuncType{
-			Func:       0,
-			TypeParams: nil,
 			Params: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Names: []*ast.Ident{ast.NewIdent("ctx")},
-						Type:  ast.NewIdent("context.Context"),
-					},
-					{
-						Names: []*ast.Ident{ast.NewIdent("id")},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("models"),
-							Sel: ast.NewIdent("UUID"),
-						},
-					},
-					{
-						Names: []*ast.Ident{ast.NewIdent("requestUser")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent("User"),
-							},
-						},
-					},
-				},
+				List: args,
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
@@ -860,147 +1018,7 @@ func (i Interceptor) astGetMethod() *ast.FuncDecl {
 			},
 		},
 		Body: &ast.BlockStmt{
-			List: []ast.Stmt{
-				// Check permission
-				&ast.IfStmt{
-					Init: &ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("i"),
-										Sel: ast.NewIdent("authUseCase"),
-									},
-									Sel: ast.NewIdent("HasPermission"),
-								},
-								Lparen: 0,
-								Args: []ast.Expr{
-									ast.NewIdent("ctx"),
-									ast.NewIdent("requestUser"),
-									&ast.SelectorExpr{
-										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.model.PermissionIDDetail()),
-									},
-								},
-							},
-						},
-					},
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("nil"),
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-				},
-				// Try to get model from use case
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent(i.model.Variable()),
-						ast.NewIdent("err"),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("i"),
-									Sel: ast.NewIdent(i.model.UseCaseVariableName()),
-								},
-								Sel: ast.NewIdent("Get"),
-							},
-							Args: []ast.Expr{
-								ast.NewIdent("ctx"),
-								ast.NewIdent("id"),
-							},
-						},
-					},
-				},
-				// Check error
-				&ast.IfStmt{
-					Init: nil,
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("nil"),
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-					Else: nil,
-				},
-				// Check object permission
-				&ast.IfStmt{
-					Init: &ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("i"),
-										Sel: ast.NewIdent("authUseCase"),
-									},
-									Sel: ast.NewIdent("HasObjectPermission"),
-								},
-								Lparen: 0,
-								Args: []ast.Expr{
-									ast.NewIdent("ctx"),
-									ast.NewIdent("requestUser"),
-									&ast.SelectorExpr{
-										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.model.PermissionIDDetail()),
-									},
-									ast.NewIdent(i.model.Variable()),
-								},
-							},
-						},
-					},
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("nil"),
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-				},
-				// Return created model and nil error
-				&ast.ReturnStmt{
-					Results: []ast.Expr{
-						ast.NewIdent(i.model.Variable()),
-						ast.NewIdent("nil"),
-					},
-				},
-			},
+			List: body,
 		},
 	}
 }
@@ -1038,10 +1056,225 @@ func (i Interceptor) syncGetMethod() error {
 }
 
 func (i Interceptor) astUpdateMethod() *ast.FuncDecl {
+	args := []*ast.Field{
+		{
+			Names: []*ast.Ident{ast.NewIdent("ctx")},
+			Type:  ast.NewIdent("context.Context"),
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("update")},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X:   ast.NewIdent("models"),
+					Sel: ast.NewIdent(i.model.UpdateTypeName()),
+				},
+			},
+		},
+	}
+	var body []ast.Stmt
+	if i.model.Auth {
+		args = append(args, &ast.Field{
+			Names: []*ast.Ident{ast.NewIdent("requestUser")},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X:   ast.NewIdent("models"),
+					Sel: ast.NewIdent("User"),
+				},
+			},
+		})
+		body = append(body,
+			// Check permission
+			&ast.IfStmt{
+				Init: &ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent("err"),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("i"),
+									Sel: ast.NewIdent("authUseCase"),
+								},
+								Sel: ast.NewIdent("HasPermission"),
+							},
+							Lparen: 0,
+							Args: []ast.Expr{
+								ast.NewIdent("ctx"),
+								ast.NewIdent("requestUser"),
+								&ast.SelectorExpr{
+									X:   ast.NewIdent("models"),
+									Sel: ast.NewIdent(i.model.PermissionIDUpdate()),
+								},
+							},
+						},
+					},
+				},
+				Cond: &ast.BinaryExpr{
+					X:  ast.NewIdent("err"),
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								ast.NewIdent("nil"),
+								ast.NewIdent("err"),
+							},
+						},
+					},
+				},
+			},
+			// Try to get model from use case
+			&ast.AssignStmt{
+				Lhs: []ast.Expr{
+					ast.NewIdent(i.model.Variable()),
+					ast.NewIdent("err"),
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("i"),
+								Sel: ast.NewIdent(i.model.UseCaseVariableName()),
+							},
+							Sel: ast.NewIdent("Get"),
+						},
+						Args: []ast.Expr{
+							ast.NewIdent("ctx"),
+							&ast.SelectorExpr{
+								X:   ast.NewIdent("update"),
+								Sel: ast.NewIdent("ID"),
+							},
+						},
+					},
+				},
+			},
+			// Check error
+			&ast.IfStmt{
+				Init: nil,
+				Cond: &ast.BinaryExpr{
+					X:  ast.NewIdent("err"),
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								ast.NewIdent("nil"),
+								ast.NewIdent("err"),
+							},
+						},
+					},
+				},
+				Else: nil,
+			},
+			// Check object permission
+			&ast.IfStmt{
+				Init: &ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent("err"),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("i"),
+									Sel: ast.NewIdent("authUseCase"),
+								},
+								Sel: ast.NewIdent("HasObjectPermission"),
+							},
+							Lparen: 0,
+							Args: []ast.Expr{
+								ast.NewIdent("ctx"),
+								ast.NewIdent("requestUser"),
+								&ast.SelectorExpr{
+									X:   ast.NewIdent("models"),
+									Sel: ast.NewIdent(i.model.PermissionIDUpdate()),
+								},
+								ast.NewIdent(i.model.Variable()),
+							},
+						},
+					},
+				},
+				Cond: &ast.BinaryExpr{
+					X:  ast.NewIdent("err"),
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								ast.NewIdent("nil"),
+								ast.NewIdent("err"),
+							},
+						},
+					},
+				},
+			},
+		)
+	}
+
+	body = append(body,
+		// Try to update model at use case
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				ast.NewIdent("updated"),
+				ast.NewIdent("err"),
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent("i"),
+							Sel: ast.NewIdent(i.model.UseCaseVariableName()),
+						},
+						Sel: ast.NewIdent("Update"),
+					},
+					Args: []ast.Expr{
+						ast.NewIdent("ctx"),
+						ast.NewIdent("update"),
+					},
+				},
+			},
+		},
+		// Check error
+		&ast.IfStmt{
+			Init: nil,
+			Cond: &ast.BinaryExpr{
+				X:  ast.NewIdent("err"),
+				Op: token.NEQ,
+				Y:  ast.NewIdent("nil"),
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							ast.NewIdent("nil"),
+							ast.NewIdent("err"),
+						},
+					},
+				},
+			},
+			Else: nil,
+		},
+		// Return created model and nil error
+		&ast.ReturnStmt{
+			Results: []ast.Expr{
+				ast.NewIdent("updated"),
+				ast.NewIdent("nil"),
+			},
+		},
+	)
 	return &ast.FuncDecl{
-		Doc: nil,
 		Recv: &ast.FieldList{
-			Opening: 0,
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
@@ -1052,37 +1285,11 @@ func (i Interceptor) astUpdateMethod() *ast.FuncDecl {
 					},
 				},
 			},
-			Closing: 0,
 		},
 		Name: ast.NewIdent("Update"),
 		Type: &ast.FuncType{
-			Func:       0,
-			TypeParams: nil,
 			Params: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Names: []*ast.Ident{ast.NewIdent("ctx")},
-						Type:  ast.NewIdent("context.Context"),
-					},
-					{
-						Names: []*ast.Ident{ast.NewIdent("update")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(i.model.UpdateTypeName()),
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{ast.NewIdent("requestUser")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent("User"),
-							},
-						},
-					},
-				},
+				List: args,
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
@@ -1101,193 +1308,7 @@ func (i Interceptor) astUpdateMethod() *ast.FuncDecl {
 			},
 		},
 		Body: &ast.BlockStmt{
-			List: []ast.Stmt{
-				// Check permission
-				&ast.IfStmt{
-					Init: &ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("i"),
-										Sel: ast.NewIdent("authUseCase"),
-									},
-									Sel: ast.NewIdent("HasPermission"),
-								},
-								Lparen: 0,
-								Args: []ast.Expr{
-									ast.NewIdent("ctx"),
-									ast.NewIdent("requestUser"),
-									&ast.SelectorExpr{
-										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.model.PermissionIDUpdate()),
-									},
-								},
-							},
-						},
-					},
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("nil"),
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-				},
-				// Try to get model from use case
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent(i.model.Variable()),
-						ast.NewIdent("err"),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("i"),
-									Sel: ast.NewIdent(i.model.UseCaseVariableName()),
-								},
-								Sel: ast.NewIdent("Get"),
-							},
-							Args: []ast.Expr{
-								ast.NewIdent("ctx"),
-								&ast.SelectorExpr{
-									X:   ast.NewIdent("update"),
-									Sel: ast.NewIdent("ID"),
-								},
-							},
-						},
-					},
-				},
-				// Check error
-				&ast.IfStmt{
-					Init: nil,
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("nil"),
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-					Else: nil,
-				},
-				// Check object permission
-				&ast.IfStmt{
-					Init: &ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("i"),
-										Sel: ast.NewIdent("authUseCase"),
-									},
-									Sel: ast.NewIdent("HasObjectPermission"),
-								},
-								Lparen: 0,
-								Args: []ast.Expr{
-									ast.NewIdent("ctx"),
-									ast.NewIdent("requestUser"),
-									&ast.SelectorExpr{
-										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.model.PermissionIDUpdate()),
-									},
-									ast.NewIdent(i.model.Variable()),
-								},
-							},
-						},
-					},
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("nil"),
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-				},
-				// Try to update model at use case
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent("updated"),
-						ast.NewIdent("err"),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("i"),
-									Sel: ast.NewIdent(i.model.UseCaseVariableName()),
-								},
-								Sel: ast.NewIdent("Update"),
-							},
-							Args: []ast.Expr{
-								ast.NewIdent("ctx"),
-								ast.NewIdent("update"),
-							},
-						},
-					},
-				},
-				// Check error
-				&ast.IfStmt{
-					Init: nil,
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("nil"),
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-					Else: nil,
-				},
-				// Return created model and nil error
-				&ast.ReturnStmt{
-					Results: []ast.Expr{
-						ast.NewIdent("updated"),
-						ast.NewIdent("nil"),
-					},
-				},
-			},
+			List: body,
 		},
 	}
 }
@@ -1325,10 +1346,210 @@ func (i Interceptor) syncUpdateMethod() error {
 }
 
 func (i Interceptor) astDeleteMethod() *ast.FuncDecl {
+	args := []*ast.Field{
+		{
+			Names: []*ast.Ident{ast.NewIdent("ctx")},
+			Type:  ast.NewIdent("context.Context"),
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("id")},
+			Type: &ast.SelectorExpr{
+				X:   ast.NewIdent("models"),
+				Sel: ast.NewIdent("UUID"),
+			},
+		},
+	}
+	var body []ast.Stmt
+	if i.model.Auth {
+		args = append(args, &ast.Field{
+			Names: []*ast.Ident{ast.NewIdent("requestUser")},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X:   ast.NewIdent("models"),
+					Sel: ast.NewIdent("User"),
+				},
+			},
+		})
+		body = append(body,
+			// Check permission
+			&ast.IfStmt{
+				Init: &ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent("err"),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("i"),
+									Sel: ast.NewIdent("authUseCase"),
+								},
+								Sel: ast.NewIdent("HasPermission"),
+							},
+							Lparen: 0,
+							Args: []ast.Expr{
+								ast.NewIdent("ctx"),
+								ast.NewIdent("requestUser"),
+								&ast.SelectorExpr{
+									X:   ast.NewIdent("models"),
+									Sel: ast.NewIdent(i.model.PermissionIDDelete()),
+								},
+							},
+						},
+					},
+				},
+				Cond: &ast.BinaryExpr{
+					X:  ast.NewIdent("err"),
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								ast.NewIdent("err"),
+							},
+						},
+					},
+				},
+			},
+			// Try to get model from use case
+			&ast.AssignStmt{
+				Lhs: []ast.Expr{
+					ast.NewIdent(i.model.Variable()),
+					ast.NewIdent("err"),
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("i"),
+								Sel: ast.NewIdent(i.model.UseCaseVariableName()),
+							},
+							Sel: ast.NewIdent("Get"),
+						},
+						Args: []ast.Expr{
+							ast.NewIdent("ctx"),
+							ast.NewIdent("id"),
+						},
+					},
+				},
+			},
+			// Check error
+			&ast.IfStmt{
+				Init: nil,
+				Cond: &ast.BinaryExpr{
+					X:  ast.NewIdent("err"),
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								ast.NewIdent("err"),
+							},
+						},
+					},
+				},
+				Else: nil,
+			},
+			// Check object permission
+			&ast.IfStmt{
+				Init: &ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent("err"),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("i"),
+									Sel: ast.NewIdent("authUseCase"),
+								},
+								Sel: ast.NewIdent("HasObjectPermission"),
+							},
+							Lparen: 0,
+							Args: []ast.Expr{
+								ast.NewIdent("ctx"),
+								ast.NewIdent("requestUser"),
+								&ast.SelectorExpr{
+									X:   ast.NewIdent("models"),
+									Sel: ast.NewIdent(i.model.PermissionIDDelete()),
+								},
+								ast.NewIdent(i.model.Variable()),
+							},
+						},
+					},
+				},
+				Cond: &ast.BinaryExpr{
+					X:  ast.NewIdent("err"),
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								ast.NewIdent("err"),
+							},
+						},
+					},
+				},
+			},
+		)
+	}
+	body = append(body,
+		// Try to delete model at use case
+		&ast.IfStmt{
+			Init: &ast.AssignStmt{
+				Lhs: []ast.Expr{
+					ast.NewIdent("err"),
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("i"),
+								Sel: ast.NewIdent(i.model.UseCaseVariableName()),
+							},
+							Sel: ast.NewIdent("Delete"),
+						},
+						Args: []ast.Expr{
+							ast.NewIdent("ctx"),
+							ast.NewIdent("id"),
+						},
+					},
+				},
+			},
+			Cond: &ast.BinaryExpr{
+				X:  ast.NewIdent("err"),
+				Op: token.NEQ,
+				Y:  ast.NewIdent("nil"),
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							ast.NewIdent("err"),
+						},
+					},
+				},
+			},
+		},
+		// Return created model and nil error
+		&ast.ReturnStmt{
+			Results: []ast.Expr{
+				ast.NewIdent("nil"),
+			},
+		},
+	)
 	return &ast.FuncDecl{
-		Doc: nil,
 		Recv: &ast.FieldList{
-			Opening: 0,
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
@@ -1339,35 +1560,11 @@ func (i Interceptor) astDeleteMethod() *ast.FuncDecl {
 					},
 				},
 			},
-			Closing: 0,
 		},
 		Name: ast.NewIdent("Delete"),
 		Type: &ast.FuncType{
-			Func:       0,
-			TypeParams: nil,
 			Params: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Names: []*ast.Ident{ast.NewIdent("ctx")},
-						Type:  ast.NewIdent("context.Context"),
-					},
-					{
-						Names: []*ast.Ident{ast.NewIdent("id")},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("models"),
-							Sel: ast.NewIdent("UUID"),
-						},
-					},
-					{
-						Names: []*ast.Ident{ast.NewIdent("requestUser")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent("User"),
-							},
-						},
-					},
-				},
+				List: args,
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
@@ -1378,180 +1575,7 @@ func (i Interceptor) astDeleteMethod() *ast.FuncDecl {
 			},
 		},
 		Body: &ast.BlockStmt{
-			List: []ast.Stmt{
-				// Check permission
-				&ast.IfStmt{
-					Init: &ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("i"),
-										Sel: ast.NewIdent("authUseCase"),
-									},
-									Sel: ast.NewIdent("HasPermission"),
-								},
-								Args: []ast.Expr{
-									ast.NewIdent("ctx"),
-									ast.NewIdent("requestUser"),
-									&ast.SelectorExpr{
-										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.model.PermissionIDDelete()),
-									},
-								},
-							},
-						},
-					},
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-				},
-				// Try to get model from use case
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent(i.model.Variable()),
-						ast.NewIdent("err"),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("i"),
-									Sel: ast.NewIdent(i.model.UseCaseVariableName()),
-								},
-								Sel: ast.NewIdent("Get"),
-							},
-							Args: []ast.Expr{
-								ast.NewIdent("ctx"),
-								ast.NewIdent("id"),
-							},
-						},
-					},
-				},
-				// Check error
-				&ast.IfStmt{
-					Init: nil,
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-					Else: nil,
-				},
-				// Check object permission
-				&ast.IfStmt{
-					Init: &ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("i"),
-										Sel: ast.NewIdent("authUseCase"),
-									},
-									Sel: ast.NewIdent("HasObjectPermission"),
-								},
-								Lparen: 0,
-								Args: []ast.Expr{
-									ast.NewIdent("ctx"),
-									ast.NewIdent("requestUser"),
-									&ast.SelectorExpr{
-										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(i.model.PermissionIDDelete()),
-									},
-									ast.NewIdent(i.model.Variable()),
-								},
-							},
-						},
-					},
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-				},
-				// Try to delete model at use case
-				&ast.IfStmt{
-					Init: &ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("i"),
-										Sel: ast.NewIdent(i.model.UseCaseVariableName()),
-									},
-									Sel: ast.NewIdent("Delete"),
-								},
-								Args: []ast.Expr{
-									ast.NewIdent("ctx"),
-									ast.NewIdent("id"),
-								},
-							},
-						},
-					},
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-				},
-				// Return created model and nil error
-				&ast.ReturnStmt{
-					Results: []ast.Expr{
-						ast.NewIdent("nil"),
-					},
-				},
-			},
+			List: body,
 		},
 	}
 }

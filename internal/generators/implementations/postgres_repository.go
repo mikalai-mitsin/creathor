@@ -3,13 +3,14 @@ package implementations
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path/filepath"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 type PostgresRepository struct {
@@ -469,7 +470,8 @@ func (r PostgresRepository) syncDTOConstructor() error {
 	var structureConstructorExists bool
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("New%sFromModel", r.model.PostgresDTOTypeName()) {
+		if t, ok := node.(*ast.FuncDecl); ok &&
+			t.Name.String() == fmt.Sprintf("New%sFromModel", r.model.PostgresDTOTypeName()) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -483,12 +485,14 @@ func (r PostgresRepository) syncDTOConstructor() error {
 		param := param
 		ast.Inspect(structureConstructor, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
-				if i, ok := cl.Type.(*ast.Ident); ok && i.String() == r.model.PostgresDTOTypeName() {
+				if i, ok := cl.Type.(*ast.Ident); ok &&
+					i.String() == r.model.PostgresDTOTypeName() {
 					_ = i
 					for _, elt := range cl.Elts {
 						elt := elt
 						if kv, ok := elt.(*ast.KeyValueExpr); ok {
-							if key, ok := kv.Key.(*ast.Ident); ok && key.String() == param.GetName() {
+							if key, ok := kv.Key.(*ast.Ident); ok &&
+								key.String() == param.GetName() {
 								return false
 							}
 						}
@@ -1105,7 +1109,8 @@ func (r PostgresRepository) syncConstructor() error {
 	var structureConstructorExists bool
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("New%s", r.model.RepositoryTypeName()) {
+		if t, ok := node.(*ast.FuncDecl); ok &&
+			t.Name.String() == fmt.Sprintf("New%s", r.model.RepositoryTypeName()) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -1245,7 +1250,9 @@ func (r PostgresRepository) astCreateMethod() *ast.FuncDecl {
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
-							Fun: ast.NewIdent(fmt.Sprintf("New%sDTOFromModel", r.model.ModelName())),
+							Fun: ast.NewIdent(
+								fmt.Sprintf("New%sDTOFromModel", r.model.ModelName()),
+							),
 							Args: []ast.Expr{
 								ast.NewIdent(r.model.Variable()),
 							},
@@ -1272,8 +1279,11 @@ func (r PostgresRepository) astCreateMethod() *ast.FuncDecl {
 													},
 													Args: []ast.Expr{
 														&ast.BasicLit{
-															Kind:  token.STRING,
-															Value: fmt.Sprintf("\"public.%s\"", r.model.TableName()),
+															Kind: token.STRING,
+															Value: fmt.Sprintf(
+																"\"public.%s\"",
+																r.model.TableName(),
+															),
 														},
 													},
 												},
@@ -1449,7 +1459,8 @@ func (r PostgresRepository) syncCreateMethod() error {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Columns" {
 					for _, arg := range call.Args {
 						arg := arg
-						if bl, ok := arg.(*ast.BasicLit); ok && bl.Value == fmt.Sprintf("\"%s\"", param.Tag()) {
+						if bl, ok := arg.(*ast.BasicLit); ok &&
+							bl.Value == fmt.Sprintf("\"%s\"", param.Tag()) {
 							return false
 						}
 					}
@@ -1467,7 +1478,8 @@ func (r PostgresRepository) syncCreateMethod() error {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Values" {
 					for _, arg := range call.Args {
 						arg := arg
-						if bl, ok := arg.(*ast.SelectorExpr); ok && bl.Sel.String() == param.GetName() {
+						if bl, ok := arg.(*ast.SelectorExpr); ok &&
+							bl.Sel.String() == param.GetName() {
 							return false
 						}
 					}
@@ -4017,9 +4029,15 @@ func (r PostgresRepository) syncUpdateMethod() error {
 				for _, updateStmt := range update.List {
 					ast.Inspect(updateStmt, func(node ast.Node) bool {
 						if call, ok := node.(*ast.CallExpr); ok {
-							if callSelector, ok := call.Fun.(*ast.SelectorExpr); ok && callSelector.Sel.String() == "Set" {
+							if callSelector, ok := call.Fun.(*ast.SelectorExpr); ok &&
+								callSelector.Sel.String() == "Set" {
 								for _, arg := range call.Args {
-									if bl, ok := arg.(*ast.BasicLit); ok && bl.Value == fmt.Sprintf("\"%s.%s\"", tableName, param.Tag()) {
+									if bl, ok := arg.(*ast.BasicLit); ok &&
+										bl.Value == fmt.Sprintf(
+											"\"%s.%s\"",
+											tableName,
+											param.Tag(),
+										) {
 										exists = true
 										return false
 									}
@@ -4216,8 +4234,11 @@ func (r PostgresRepository) astDeleteMethod() *ast.FuncDecl {
 									},
 									Args: []ast.Expr{
 										&ast.BasicLit{
-											Kind:  token.STRING,
-											Value: fmt.Sprintf("\"public.%s\"", r.model.TableName()),
+											Kind: token.STRING,
+											Value: fmt.Sprintf(
+												"\"public.%s\"",
+												r.model.TableName(),
+											),
 										},
 									},
 								},
@@ -4643,7 +4664,8 @@ func (r PostgresRepository) syncDTOListType() error {
 	var structureExists bool
 	var dtoListType *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.model.PostgresDTOListTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok &&
+			t.Name.String() == r.model.PostgresDTOListTypeName() {
 			dtoListType = t
 			structureExists = true
 			return false

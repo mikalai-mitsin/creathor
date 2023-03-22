@@ -3,13 +3,14 @@ package uptrace
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 type Provider struct {

@@ -3,13 +3,14 @@ package domain
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 type InterceptorInterface struct {
@@ -74,10 +75,18 @@ func (i InterceptorInterface) Sync() error {
 			Doc: &ast.CommentGroup{
 				List: []*ast.Comment{
 					{
-						Text: fmt.Sprintf("//%s - domain layer interceptor interface", i.model.InterceptorTypeName()),
+						Text: fmt.Sprintf(
+							"//%s - domain layer interceptor interface",
+							i.model.InterceptorTypeName(),
+						),
 					},
 					{
-						Text: fmt.Sprintf("//go:generate mockgen -build_flags=-mod=mod -destination mock/%s %s/internal/domain/interceptors %s", i.model.FileName(), i.model.Module, i.model.InterceptorTypeName()),
+						Text: fmt.Sprintf(
+							"//go:generate mockgen -build_flags=-mod=mod -destination mock/%s %s/internal/domain/interceptors %s",
+							i.model.FileName(),
+							i.model.Module,
+							i.model.InterceptorTypeName(),
+						),
 					},
 				},
 			},

@@ -3,13 +3,15 @@ package containers
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path"
+	"path/filepath"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 type FxContainer struct {
@@ -43,6 +45,133 @@ func (f FxContainer) Sync() error {
 		}
 	}
 	return nil
+}
+
+func (f FxContainer) filename() string {
+	return filepath.Join("internal", "containers", "fx.go")
+}
+
+func (f FxContainer) file() *ast.File {
+	imports := []ast.Spec{
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"context"`,
+			},
+		},
+		&ast.ImportSpec{
+			Name: ast.NewIdent("postgresInterface"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/interfaces/postgres"`, f.project.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Name: ast.NewIdent("jwtRepositories"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/repositories/jwt"`, f.project.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Name: ast.NewIdent("postgresRepositories"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/repositories/postgres"`, f.project.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/pkg/log"`, f.project.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"go.uber.org/fx/fxevent"`,
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"go.uber.org/fx"`,
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/interceptors"`, f.project.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/usecases"`, f.project.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/pkg/clock"`, f.project.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/configs"`, f.project.Module),
+			},
+		},
+	}
+	if f.project.GRPCEnabled {
+		imports = append(imports, &ast.ImportSpec{
+			Name: ast.NewIdent("grpcInterface"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/interfaces/grpc"`, f.project.Module),
+			},
+		})
+	}
+	if f.project.UptraceEnabled {
+		imports = append(imports, &ast.ImportSpec{
+			Name: ast.NewIdent("uptraceInterface"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/interfaces/uptrace"`, f.project.Module),
+			},
+		})
+	}
+	if f.project.GRPCEnabled && f.project.GatewayEnabled {
+		imports = append(imports, &ast.ImportSpec{
+			Name: ast.NewIdent("gatewayInterface"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/interfaces/gateway"`, f.project.Module),
+			},
+		})
+	}
+	if f.project.RESTEnabled {
+		imports = append(imports, &ast.ImportSpec{
+			Name: ast.NewIdent("restInterface"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/interfaces/rest"`, f.project.Module),
+			},
+		})
+	}
+	return &ast.File{
+		Name: &ast.Ident{
+			Name: "containers",
+		},
+		Decls: []ast.Decl{
+			&ast.GenDecl{
+				Tok:   token.IMPORT,
+				Specs: imports,
+			},
+		},
+		Imports:  nil,
+		Comments: nil,
+	}
 }
 
 func (f FxContainer) toProvide() []ast.Expr {
@@ -137,6 +266,19 @@ func (f FxContainer) toProvide() []ast.Expr {
 				},
 			)
 		}
+	}
+	if f.project.UptraceEnabled {
+		toProvide = append(
+			toProvide,
+			&ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "uptraceInterface",
+				},
+				Sel: &ast.Ident{
+					Name: "NewProvider",
+				},
+			},
+		)
 	}
 	if f.project.RESTEnabled {
 		toProvide = append(toProvide, &ast.SelectorExpr{
@@ -372,6 +514,206 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 		},
 	}
 	toProvide = append(toProvide, f.toProvide()...)
+	exprs := []ast.Expr{
+		&ast.CallExpr{
+			Fun: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "fx",
+				},
+				Sel: &ast.Ident{
+					Name: "WithLogger",
+				},
+			},
+			Args: []ast.Expr{
+				&ast.FuncLit{
+					Type: &ast.FuncType{
+						Params: &ast.FieldList{
+							List: []*ast.Field{
+								{
+									Names: []*ast.Ident{
+										{
+											Name: "logger",
+										},
+									},
+									Type: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "log",
+										},
+										Sel: &ast.Ident{
+											Name: "Logger",
+										},
+									},
+								},
+							},
+						},
+						Results: &ast.FieldList{
+							List: []*ast.Field{
+								{
+									Type: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "fxevent",
+										},
+										Sel: &ast.Ident{
+											Name: "Logger",
+										},
+									},
+								},
+							},
+						},
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.ReturnStmt{
+								Results: []ast.Expr{
+									&ast.Ident{
+										Name: "logger",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		&ast.CallExpr{
+			Fun: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "fx",
+				},
+				Sel: &ast.Ident{
+					Name: "Provide",
+				},
+			},
+			Args: toProvide,
+		},
+	}
+	if f.project.UptraceEnabled {
+		exprs = append(exprs, &ast.CallExpr{
+			Fun: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "fx",
+				},
+				Sel: &ast.Ident{
+					Name: "Invoke",
+				},
+			},
+			Args: []ast.Expr{
+				&ast.FuncLit{
+					Type: &ast.FuncType{
+						Params: &ast.FieldList{
+							List: []*ast.Field{
+								{
+									Names: []*ast.Ident{
+										{
+											Name: "lifecycle",
+										},
+									},
+									Type: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "fx",
+										},
+										Sel: &ast.Ident{
+											Name: "Lifecycle",
+										},
+									},
+								},
+								{
+									Names: []*ast.Ident{
+										{
+											Name: "server",
+										},
+									},
+									Type: &ast.StarExpr{
+										X: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "uptrace",
+											},
+											Sel: &ast.Ident{
+												Name: "Provider",
+											},
+										},
+									},
+								},
+								{
+									Names: []*ast.Ident{
+										{
+											Name: "config",
+										},
+									},
+									Type: &ast.StarExpr{
+										X: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "configs",
+											},
+											Sel: &ast.Ident{
+												Name: "Config",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.ExprStmt{
+								X: &ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "lifecycle",
+										},
+										Sel: &ast.Ident{
+											Name: "Append",
+										},
+									},
+									Args: []ast.Expr{
+										&ast.CompositeLit{
+											Type: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "fx",
+												},
+												Sel: &ast.Ident{
+													Name: "Hook",
+												},
+											},
+											Elts: []ast.Expr{
+												&ast.KeyValueExpr{
+													Key: &ast.Ident{
+														Name: "OnStart",
+													},
+													Value: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "server",
+														},
+														Sel: &ast.Ident{
+															Name: "Start",
+														},
+													},
+												},
+												&ast.KeyValueExpr{
+													Key: &ast.Ident{
+														Name: "OnStop",
+													},
+													Value: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "server",
+														},
+														Sel: &ast.Ident{
+															Name: "Stop",
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		})
+	}
 	return &ast.ValueSpec{
 		Names: []*ast.Ident{
 			{
@@ -388,79 +730,7 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 						Name: "Options",
 					},
 				},
-				Args: []ast.Expr{
-					&ast.CallExpr{
-						Fun: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "fx",
-							},
-							Sel: &ast.Ident{
-								Name: "WithLogger",
-							},
-						},
-						Args: []ast.Expr{
-							&ast.FuncLit{
-								Type: &ast.FuncType{
-									Params: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "logger",
-													},
-												},
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "log",
-													},
-													Sel: &ast.Ident{
-														Name: "Logger",
-													},
-												},
-											},
-										},
-									},
-									Results: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "fxevent",
-													},
-													Sel: &ast.Ident{
-														Name: "Logger",
-													},
-												},
-											},
-										},
-									},
-								},
-								Body: &ast.BlockStmt{
-									List: []ast.Stmt{
-										&ast.ReturnStmt{
-											Results: []ast.Expr{
-												&ast.Ident{
-													Name: "logger",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-					&ast.CallExpr{
-						Fun: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "fx",
-							},
-							Sel: &ast.Ident{
-								Name: "Provide",
-							},
-						},
-						Args: toProvide,
-					},
-				},
+				Args: exprs,
 			},
 		},
 	}
@@ -468,10 +738,10 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 
 func (f FxContainer) syncFxModule() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "containers", "fx.go")
+	filename := f.filename()
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
-		return err
+		file = f.file()
 	}
 	var varExists bool
 	var fxModule *ast.ValueSpec
@@ -495,7 +765,8 @@ func (f FxContainer) syncFxModule() error {
 		if ok {
 			ast.Inspect(fxModule, func(node ast.Node) bool {
 				if call, ok := node.(*ast.CallExpr); ok {
-					if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Provide" {
+					if fun, ok := call.Fun.(*ast.SelectorExpr); ok &&
+						fun.Sel.String() == "Provide" {
 						for _, arg := range call.Args {
 							arg := arg
 							if argSelector, ok := arg.(*ast.SelectorExpr); ok {
@@ -541,9 +812,9 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
-					&ast.Field{
+					{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "config",
 							},
 						},
@@ -555,7 +826,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
-					&ast.Field{
+					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
@@ -605,7 +876,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 												Params: &ast.FieldList{},
 												Results: &ast.FieldList{
 													List: []*ast.Field{
-														&ast.Field{
+														{
 															Type: &ast.Ident{
 																Name: "string",
 															},
@@ -644,9 +915,9 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 											Type: &ast.FuncType{
 												Params: &ast.FieldList{
 													List: []*ast.Field{
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "lifecycle",
 																},
 															},
@@ -659,9 +930,9 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "logger",
 																},
 															},
@@ -674,9 +945,9 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "server",
 																},
 															},
@@ -691,9 +962,9 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "shutdowner",
 																},
 															},
@@ -740,9 +1011,9 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 																				Type: &ast.FuncType{
 																					Params: &ast.FieldList{
 																						List: []*ast.Field{
-																							&ast.Field{
+																							{
 																								Names: []*ast.Ident{
-																									&ast.Ident{
+																									{
 																										Name: "ctx",
 																									},
 																								},
@@ -759,7 +1030,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 																					},
 																					Results: &ast.FieldList{
 																						List: []*ast.Field{
-																							&ast.Field{
+																							{
 																								Type: &ast.Ident{
 																									Name: "error",
 																								},
@@ -970,9 +1241,9 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
-					&ast.Field{
+					{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "config",
 							},
 						},
@@ -984,7 +1255,7 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
-					&ast.Field{
+					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
@@ -1034,7 +1305,7 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 												Params: &ast.FieldList{},
 												Results: &ast.FieldList{
 													List: []*ast.Field{
-														&ast.Field{
+														{
 															Type: &ast.Ident{
 																Name: "string",
 															},
@@ -1073,9 +1344,9 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 											Type: &ast.FuncType{
 												Params: &ast.FieldList{
 													List: []*ast.Field{
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "lifecycle",
 																},
 															},
@@ -1088,9 +1359,9 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "logger",
 																},
 															},
@@ -1103,9 +1374,9 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "server",
 																},
 															},
@@ -1120,9 +1391,9 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "shutdowner",
 																},
 															},
@@ -1169,9 +1440,9 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 																				Type: &ast.FuncType{
 																					Params: &ast.FieldList{
 																						List: []*ast.Field{
-																							&ast.Field{
+																							{
 																								Names: []*ast.Ident{
-																									&ast.Ident{
+																									{
 																										Name: "ctx",
 																									},
 																								},
@@ -1188,7 +1459,7 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 																					},
 																					Results: &ast.FieldList{
 																						List: []*ast.Field{
-																							&ast.Field{
+																							{
 																								Type: &ast.Ident{
 																									Name: "error",
 																								},
@@ -1386,9 +1657,9 @@ func (f FxContainer) astRestContainer() *ast.FuncDecl {
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
-					&ast.Field{
+					{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "config",
 							},
 						},
@@ -1400,7 +1671,7 @@ func (f FxContainer) astRestContainer() *ast.FuncDecl {
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
-					&ast.Field{
+					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
@@ -1450,7 +1721,7 @@ func (f FxContainer) astRestContainer() *ast.FuncDecl {
 												Params: &ast.FieldList{},
 												Results: &ast.FieldList{
 													List: []*ast.Field{
-														&ast.Field{
+														{
 															Type: &ast.Ident{
 																Name: "string",
 															},
@@ -1489,9 +1760,9 @@ func (f FxContainer) astRestContainer() *ast.FuncDecl {
 											Type: &ast.FuncType{
 												Params: &ast.FieldList{
 													List: []*ast.Field{
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "lifecycle",
 																},
 															},
@@ -1504,9 +1775,9 @@ func (f FxContainer) astRestContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "logger",
 																},
 															},
@@ -1519,9 +1790,9 @@ func (f FxContainer) astRestContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "server",
 																},
 															},
@@ -1536,9 +1807,9 @@ func (f FxContainer) astRestContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "shutdowner",
 																},
 															},
@@ -1585,9 +1856,9 @@ func (f FxContainer) astRestContainer() *ast.FuncDecl {
 																				Type: &ast.FuncType{
 																					Params: &ast.FieldList{
 																						List: []*ast.Field{
-																							&ast.Field{
+																							{
 																								Names: []*ast.Ident{
-																									&ast.Ident{
+																									{
 																										Name: "ctx",
 																									},
 																								},
@@ -1604,7 +1875,7 @@ func (f FxContainer) astRestContainer() *ast.FuncDecl {
 																					},
 																					Results: &ast.FieldList{
 																						List: []*ast.Field{
-																							&ast.Field{
+																							{
 																								Type: &ast.Ident{
 																									Name: "error",
 																								},
@@ -1815,9 +2086,9 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
-					&ast.Field{
+					{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "config",
 							},
 						},
@@ -1829,7 +2100,7 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
-					&ast.Field{
+					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
@@ -1879,7 +2150,7 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 												Params: &ast.FieldList{},
 												Results: &ast.FieldList{
 													List: []*ast.Field{
-														&ast.Field{
+														{
 															Type: &ast.Ident{
 																Name: "string",
 															},
@@ -1918,9 +2189,9 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 											Type: &ast.FuncType{
 												Params: &ast.FieldList{
 													List: []*ast.Field{
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "lifecycle",
 																},
 															},
@@ -1933,9 +2204,9 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "logger",
 																},
 															},
@@ -1948,9 +2219,9 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "manager",
 																},
 															},
@@ -1965,9 +2236,9 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 																},
 															},
 														},
-														&ast.Field{
+														{
 															Names: []*ast.Ident{
-																&ast.Ident{
+																{
 																	Name: "shutdowner",
 																},
 															},
@@ -2014,9 +2285,9 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 																				Type: &ast.FuncType{
 																					Params: &ast.FieldList{
 																						List: []*ast.Field{
-																							&ast.Field{
+																							{
 																								Names: []*ast.Ident{
-																									&ast.Ident{
+																									{
 																										Name: "ctx",
 																									},
 																								},
@@ -2033,7 +2304,7 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 																					},
 																					Results: &ast.FieldList{
 																						List: []*ast.Field{
-																							&ast.Field{
+																							{
 																								Type: &ast.Ident{
 																									Name: "error",
 																								},

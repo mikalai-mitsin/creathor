@@ -2,17 +2,29 @@ package fake
 
 import (
 	"fmt"
-	"github.com/iancoleman/strcase"
 	"go/ast"
 	"go/token"
 	"strings"
+
+	"github.com/iancoleman/strcase"
 )
 
 func FakeAst(t string) ast.Expr {
 	var fake ast.Expr
 	typeName := strings.TrimPrefix(t, "*")
 	switch typeName {
-	case "int", "int64", "int8", "int16", "int32", "float32", "float64", "uint", "uint8", "uint16", "uint32", "uint64":
+	case "int",
+		"int64",
+		"int8",
+		"int16",
+		"int32",
+		"float32",
+		"float64",
+		"uint",
+		"uint8",
+		"uint16",
+		"uint32",
+		"uint64":
 		fake = &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
 				X: &ast.CallExpr{
@@ -32,7 +44,18 @@ func FakeAst(t string) ast.Expr {
 			Ellipsis: token.NoPos,
 			Rparen:   0,
 		}
-	case "[]int", "[]int8", "[]int16", "[]int32", "[]int64", "[]float32", "[]float64", "[]uint", "[]uint8", "[]uint16", "[]uint32", "[]uint64":
+	case "[]int",
+		"[]int8",
+		"[]int16",
+		"[]int32",
+		"[]int64",
+		"[]float32",
+		"[]float64",
+		"[]uint",
+		"[]uint8",
+		"[]uint16",
+		"[]uint32",
+		"[]uint64":
 		fake = &ast.CompositeLit{
 			Type: &ast.ArrayType{
 				Lbrack: 0,

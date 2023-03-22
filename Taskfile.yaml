@@ -22,6 +22,7 @@ tasks:
   clean:
     cmds:
       - golangci-lint run ./... --fix
+      - golines . -w --ignore-generated
 
   log:
     cmds:

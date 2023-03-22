@@ -250,7 +250,9 @@ func Test{{ .InterceptorTypeName }}_Create(t *testing.T) {
     create := mock_models.New{{ .CreateTypeName }}(t)
     type fields struct {
         {{ .UseCaseVariableName }} usecases.{{ .UseCaseTypeName }}
+{{- if .Auth }}
         authUseCase     usecases.AuthUseCase
+{{- end }}
         logger          log.Logger
     }
     type args struct {
@@ -412,13 +414,17 @@ func Test{{ .InterceptorTypeName }}_Update(t *testing.T) {
     update := mock_models.New{{ .UpdateTypeName }}(t)
     type fields struct {
         {{ .UseCaseVariableName }} usecases.{{ .UseCaseTypeName }}
+{{- if .Auth }}
         authUseCase     usecases.AuthUseCase
+{{- end }}
         logger          log.Logger
     }
     type args struct {
         ctx    context.Context
         update *models.{{ .UpdateTypeName }}
+{{- if .Auth }}
         requestUser    *models.User
+{{- end }}
     }
     tests := []struct {
         name    string
@@ -612,7 +618,9 @@ func Test{{ .InterceptorTypeName }}_Delete(t *testing.T) {
     type args struct {
         ctx context.Context
         id  models.UUID
+{{- if .Auth }}
         requestUser *models.User
+{{- end }}
     }
     tests := []struct {
         name    string

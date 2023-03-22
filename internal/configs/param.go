@@ -2,14 +2,15 @@ package configs
 
 import (
 	"fmt"
+	"strings"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/iancoleman/strcase"
-	"strings"
 )
 
 type Param struct {
-	Name   string `json:"name" yaml:"name"`
-	Type   string `json:"type" yaml:"type"`
+	Name   string `json:"name"   yaml:"name"`
+	Type   string `json:"type"   yaml:"type"`
 	Search bool   `json:"search" yaml:"search"`
 }
 
@@ -69,8 +70,21 @@ func (p *Param) Fake() string {
 		fake = fmt.Sprintf("%s(faker.RandomInt(2, 100))", p.Type)
 	case "[]int":
 		fake = "[]int{faker.RandomInt(2, 100), faker.RandomInt(2, 100)}"
-	case "[]int8", "[]int16", "[]int32", "[]int64", "[]uint", "[]uint8", "[]uint16", "[]uint32", "[]uint64":
-		fake = fmt.Sprintf("%s{%s(faker.RandomInt(2, 100)), %s(faker.RandomInt(2, 100))}", p.Type, p.SliceType(), p.SliceType())
+	case "[]int8",
+		"[]int16",
+		"[]int32",
+		"[]int64",
+		"[]uint",
+		"[]uint8",
+		"[]uint16",
+		"[]uint32",
+		"[]uint64":
+		fake = fmt.Sprintf(
+			"%s{%s(faker.RandomInt(2, 100)), %s(faker.RandomInt(2, 100))}",
+			p.Type,
+			p.SliceType(),
+			p.SliceType(),
+		)
 	case "string":
 		fake = "faker.Lorem().String()"
 	case "[]string":

@@ -4,6 +4,15 @@ import (
     "{{ .Module }}/internal/domain/errs"
     "github.com/ilyakaznacheev/cleanenv"
 )
+
+{{- if .UptraceEnabled }}
+type otel struct {
+    URL         string `env:"OTEL_URL" toml:"url"`
+    Enabled     bool   `env:"OTEL_ENABLED" toml:"enabled"`
+    Environment string `env:"OTEL_ENVIRONMENT" toml:"environment"`
+}
+{{- end }}
+
 {{ if .Auth }}
 type auth struct {
     PublicKey  string `env:"AUTH_PUBLIC_KEY" toml:"public_key"`
@@ -25,6 +34,9 @@ type Config struct {
     Database database `toml:"database"`
 {{- if .Auth }}
     Auth     auth     `toml:"auth"`
+{{- end }}
+{{- if .UptraceEnabled }}
+    Otel     otel     `toml:"otel"`
 {{- end }}
 }
 

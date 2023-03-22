@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/018bf/creathor/internal/configs"
-	"github.com/018bf/creathor/internal/generators/containers"
 	"os"
 	"path"
+
+	"github.com/018bf/creathor/internal/configs"
+	"github.com/018bf/creathor/internal/generators/containers"
 )
 
 func CreateDI(data *configs.Project) error {
@@ -14,18 +15,6 @@ func CreateDI(data *configs.Project) error {
 	for _, directory := range directories {
 		if err := os.MkdirAll(directory, 0777); err != nil {
 			return NewUnexpectedBehaviorError(err.Error())
-		}
-	}
-	files := []*Template{
-		{
-			SourcePath:      "templates/internal/containers/fx.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "containers", "fx.go"),
-			Name:            "Uber FX DI container",
-		},
-	}
-	for _, tmpl := range files {
-		if err := tmpl.renderToFile(data); err != nil {
-			return err
 		}
 	}
 	fx := containers.NewFxContainer(data)

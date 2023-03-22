@@ -3,13 +3,14 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
-	"github.com/iancoleman/strcase"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/018bf/creathor/internal/configs"
+	"github.com/iancoleman/strcase"
 )
 
 func CreateDeployment(data *configs.Project) error {
@@ -33,19 +34,37 @@ func CreateDeployment(data *configs.Project) error {
 	}
 	files := []*Template{
 		{
-			SourcePath:      "templates/deployments/helm_vars/development/values.yaml.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "deployments", "helm_vars", "development", "values.yaml"),
-			Name:            "development values",
+			SourcePath: "templates/deployments/helm_vars/development/values.yaml.tmpl",
+			DestinationPath: filepath.Join(
+				destinationPath,
+				"deployments",
+				"helm_vars",
+				"development",
+				"values.yaml",
+			),
+			Name: "development values",
 		},
 		{
-			SourcePath:      "templates/deployments/helm_vars/staging/values.yaml.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "deployments", "helm_vars", "staging", "values.yaml"),
-			Name:            "staging values",
+			SourcePath: "templates/deployments/helm_vars/staging/values.yaml.tmpl",
+			DestinationPath: filepath.Join(
+				destinationPath,
+				"deployments",
+				"helm_vars",
+				"staging",
+				"values.yaml",
+			),
+			Name: "staging values",
 		},
 		{
-			SourcePath:      "templates/deployments/helm_vars/production/values.yaml.tmpl",
-			DestinationPath: filepath.Join(destinationPath, "deployments", "helm_vars", "production", "values.yaml"),
-			Name:            "production values",
+			SourcePath: "templates/deployments/helm_vars/production/values.yaml.tmpl",
+			DestinationPath: filepath.Join(
+				destinationPath,
+				"deployments",
+				"helm_vars",
+				"production",
+				"values.yaml",
+			),
+			Name: "production values",
 		},
 	}
 	for _, tmpl := range files {

@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/018bf/creathor/internal/configs"
 	"os"
 	"path/filepath"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 func CreateCI(project *configs.Project) error {

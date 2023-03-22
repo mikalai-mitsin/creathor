@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/018bf/creathor/internal/configs"
 	"path/filepath"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 func CreateBuild(data *configs.Project) error {

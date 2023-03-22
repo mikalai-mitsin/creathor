@@ -3,13 +3,14 @@ package implementations
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path/filepath"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 type UseCase struct {
@@ -298,7 +299,8 @@ func (u UseCase) syncConstructor() error {
 	var structureConstructorExists bool
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == fmt.Sprintf("New%s", u.model.UseCaseTypeName()) {
+		if t, ok := node.(*ast.FuncDecl); ok &&
+			t.Name.String() == fmt.Sprintf("New%s", u.model.UseCaseTypeName()) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -552,10 +554,12 @@ func (u UseCase) syncCreateMethod() error {
 		param := param
 		ast.Inspect(method, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
-				if t, ok := cl.Type.(*ast.SelectorExpr); ok && t.Sel.String() == u.model.ModelName() {
+				if t, ok := cl.Type.(*ast.SelectorExpr); ok &&
+					t.Sel.String() == u.model.ModelName() {
 					for _, elt := range cl.Elts {
 						if kv, ok := elt.(*ast.KeyValueExpr); ok {
-							if key, ok := kv.Key.(*ast.Ident); ok && key.String() == param.GetName() {
+							if key, ok := kv.Key.(*ast.Ident); ok &&
+								key.String() == param.GetName() {
 								return false
 							}
 						}

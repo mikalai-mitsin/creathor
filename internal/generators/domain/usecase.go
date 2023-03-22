@@ -3,13 +3,14 @@ package domain
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 type UseCaseInterface struct {
@@ -74,10 +75,18 @@ func (i UseCaseInterface) Sync() error {
 			Doc: &ast.CommentGroup{
 				List: []*ast.Comment{
 					{
-						Text: fmt.Sprintf("//%s - domain layer use case interface", i.model.UseCaseTypeName()),
+						Text: fmt.Sprintf(
+							"//%s - domain layer use case interface",
+							i.model.UseCaseTypeName(),
+						),
 					},
 					{
-						Text: fmt.Sprintf("//go:generate mockgen -build_flags=-mod=mod -destination mock/%s %s/internal/domain/usecases %s", i.model.FileName(), i.model.Module, i.model.UseCaseTypeName()),
+						Text: fmt.Sprintf(
+							"//go:generate mockgen -build_flags=-mod=mod -destination mock/%s %s/internal/domain/usecases %s",
+							i.model.FileName(),
+							i.model.Module,
+							i.model.UseCaseTypeName(),
+						),
 					},
 				},
 			},

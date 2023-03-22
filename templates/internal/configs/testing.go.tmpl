@@ -12,6 +12,7 @@ func NewMockConfig(t *testing.T) *Config {
             MaxOpenConnections: 50,
             MaxIDLEConnections: 10,
         },
+{{- if .Auth }}
         Auth: auth{
 			PublicKey: `-----BEGIN PUBLIC KEY-----
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChTrU+r2uTQPQOxBCwKVAM0AJP
@@ -38,5 +39,6 @@ gjOIscTm3jUVsz8bCkXrVlFsWRVCnvQwKx788Awq6mdw
 			RefreshTTL: 172800,
 			AccessTTL:  86400,
 		},
+{{- end }}
     }
 }

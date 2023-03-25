@@ -38,6 +38,9 @@ func NewServer(
     authHandler *AuthHandler,
     userHandler *UserHandler,
 {{- end }}
+{{- range $value := .Models }}
+    {{ $value.RESTHandlerVariableName }} *{{ $value.RESTHandlerTypeName }},
+{{- end }}
 ) *Server {
     router := gin.Default()
 {{- if .Auth }}
@@ -56,8 +59,9 @@ func NewServer(
 {{- if .Auth }}
     authHandler.Register(apiV1)
     userHandler.Register(apiV1)
-{{- else }}
-    _ = apiV1
+{{- end }}
+{{- range $value := .Models }}
+    {{ $value.RESTHandlerVariableName }}.Register(apiV1)
 {{- end }}
     return &Server{
         router: router,

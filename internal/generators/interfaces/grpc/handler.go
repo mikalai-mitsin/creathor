@@ -41,12 +41,6 @@ func (h Handler) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"fmt\"",
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
 							Value: "\"github.com/018bf/example/internal/domain/interceptors\"",
 						},
 					},
@@ -81,18 +75,6 @@ func (h Handler) file() *ast.File {
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
 							Value: "\"google.golang.org/protobuf/types/known/emptypb\"",
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: "\"google.golang.org/grpc\"",
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: "\"google.golang.org/grpc/metadata\"",
 						},
 					},
 					&ast.ImportSpec{
@@ -2906,75 +2888,6 @@ func (h Handler) astListMethod() *ast.FuncDecl {
 											},
 										},
 									},
-								},
-							},
-						},
-					},
-				},
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "header",
-						},
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "metadata",
-								},
-								Sel: &ast.Ident{
-									Name: "Pairs",
-								},
-							},
-							Args: []ast.Expr{
-								&ast.BasicLit{
-									Kind:  token.STRING,
-									Value: "\"count\"",
-								},
-								&ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "fmt",
-										},
-										Sel: &ast.Ident{
-											Name: "Sprint",
-										},
-									},
-									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "count",
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "_",
-						},
-					},
-					Tok: token.ASSIGN,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "grpc",
-								},
-								Sel: &ast.Ident{
-									Name: "SendHeader",
-								},
-							},
-							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "ctx",
-								},
-								&ast.Ident{
-									Name: "header",
 								},
 							},
 						},

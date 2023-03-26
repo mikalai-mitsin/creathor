@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -47,25 +48,25 @@ func (m AuthMiddleware) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/internal/configs\"",
+							Value: fmt.Sprintf("\"%s/internal/configs\"", m.project.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/internal/domain/interceptors\"",
+							Value: fmt.Sprintf("\"%s/internal/domain/interceptors\"", m.project.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/internal/domain/models\"",
+							Value: fmt.Sprintf("\"%s/internal/domain/models\"", m.project.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/pkg/log\"",
+							Value: fmt.Sprintf("%s/pkg/log", m.project.Module),
 						},
 					},
 					&ast.ImportSpec{

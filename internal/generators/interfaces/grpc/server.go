@@ -242,7 +242,7 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 				X: &ast.CallExpr{
 					Fun: &ast.SelectorExpr{
 						X: &ast.Ident{
-							Name: "examplepb",
+							Name: s.project.ProtoPackage(),
 						},
 						Sel: &ast.Ident{
 							Name: "RegisterAuthServiceServer",
@@ -262,7 +262,7 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 				X: &ast.CallExpr{
 					Fun: &ast.SelectorExpr{
 						X: &ast.Ident{
-							Name: "examplepb",
+							Name: s.project.ProtoPackage(),
 						},
 						Sel: &ast.Ident{
 							Name: "RegisterUserServiceServer",

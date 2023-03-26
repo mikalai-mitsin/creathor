@@ -41,13 +41,13 @@ func (h Handler) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/internal/domain/interceptors\"",
+							Value: fmt.Sprintf(`"%s/internal/domain/interceptors"`, h.model.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/internal/domain/models\"",
+							Value: fmt.Sprintf(`"%s/internal/domain/models"`, h.model.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -56,19 +56,19 @@ func (h Handler) file() *ast.File {
 						},
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/pkg/examplepb/v1\"",
+							Value: fmt.Sprintf("%s/pkg/%s/v1", h.model.Module, h.model.ProtoPackage),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/pkg/log\"",
+							Value: fmt.Sprintf("\"%s/pkg/log\"", h.model.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/pkg/utils\"",
+							Value: fmt.Sprintf("\"%s/pkg/utils\"", h.model.Module),
 						},
 					},
 					&ast.ImportSpec{

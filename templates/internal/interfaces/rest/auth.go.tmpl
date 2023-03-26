@@ -31,15 +31,20 @@ func (h *AuthHandler) Register(router *gin.RouterGroup) {
 // @Produce        json
 // @Param          Login  body   models.Login  true  "Login JSON"
 // @Success        200   {object}  models.TokenPair
+// @Failure        400   {object}  errs.Error
+// @Failure        401   {object}  errs.Error
+// @Failure        403   {object}  errs.Error
+// @Failure        404   {object}  errs.Error
+// @Failure        405   {object}  errs.Error
+// @Failure        500   {object}  errs.Error
+// @Failure        503   {object}  errs.Error
 // @Router         /auth [post]
 func (h *AuthHandler) CreateTokenPair(ctx *gin.Context) {
 	create := &models.Login{}
-	if err := ctx.Bind(create); err != nil {
-		return
-	}
+	_ = ctx.Bind(create)
 	marks, err := h.authInterceptor.CreateToken(ctx.Request.Context(), create)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, marks)
@@ -56,15 +61,20 @@ type Refresh struct {
 // @Produce        json
 // @Param          Refresh  body   Refresh  true  "Refresh token JSON"
 // @Success        200   {object}  models.TokenPair
+// @Failure        400   {object}  errs.Error
+// @Failure        401   {object}  errs.Error
+// @Failure        403   {object}  errs.Error
+// @Failure        404   {object}  errs.Error
+// @Failure        405   {object}  errs.Error
+// @Failure        500   {object}  errs.Error
+// @Failure        503   {object}  errs.Error
 // @Router         /auth [patch]
 func (h *AuthHandler) RefreshTokenPair(ctx *gin.Context) {
 	form := &Refresh{}
-	if err := ctx.Bind(form); err != nil {
-		return
-	}
+	_ = ctx.Bind(form)
 	marks, err := h.authInterceptor.RefreshToken(ctx.Request.Context(), form.Token)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, marks)

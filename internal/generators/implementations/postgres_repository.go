@@ -1137,11 +1137,11 @@ func (r PostgresRepository) astCreateMethod() *ast.FuncDecl {
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: "\"updated_at\"",
+			Value: `"updated_at"`,
 		},
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: "\"created_at\"",
+			Value: `"created_at"`,
 		},
 	}
 	values := []ast.Expr{
@@ -1157,7 +1157,7 @@ func (r PostgresRepository) astCreateMethod() *ast.FuncDecl {
 	for _, param := range r.model.Params {
 		columns = append(columns, &ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s\"", param.Tag()),
+			Value: fmt.Sprintf(`"%s"`, param.Tag()),
 		})
 		values = append(values, &ast.SelectorExpr{
 			X:   ast.NewIdent("dto"),
@@ -1281,7 +1281,7 @@ func (r PostgresRepository) astCreateMethod() *ast.FuncDecl {
 														&ast.BasicLit{
 															Kind: token.STRING,
 															Value: fmt.Sprintf(
-																"\"public.%s\"",
+																`"public.%s"`,
 																r.model.TableName(),
 															),
 														},
@@ -1300,7 +1300,7 @@ func (r PostgresRepository) astCreateMethod() *ast.FuncDecl {
 							Args: []ast.Expr{
 								&ast.BasicLit{
 									Kind:  token.STRING,
-									Value: "\"RETURNING id\"",
+									Value: `"RETURNING id"`,
 								},
 							},
 						},
@@ -1460,13 +1460,13 @@ func (r PostgresRepository) syncCreateMethod() error {
 					for _, arg := range call.Args {
 						arg := arg
 						if bl, ok := arg.(*ast.BasicLit); ok &&
-							bl.Value == fmt.Sprintf("\"%s\"", param.Tag()) {
+							bl.Value == fmt.Sprintf(`"%s"`, param.Tag()) {
 							return false
 						}
 					}
 					call.Args = append(call.Args, &ast.BasicLit{
 						Kind:  token.STRING,
-						Value: fmt.Sprintf("\"%s\"", param.Tag()),
+						Value: fmt.Sprintf(`"%s"`, param.Tag()),
 					})
 					return false
 				}
@@ -1519,7 +1519,7 @@ func (r PostgresRepository) search() ast.Stmt {
 		if param.Search {
 			columns = append(columns, &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf("\"%s\"", param.Tag()),
+				Value: fmt.Sprintf(`"%s"`, param.Tag()),
 			})
 		}
 	}
@@ -1574,7 +1574,7 @@ func (r PostgresRepository) search() ast.Stmt {
 											},
 											Value: &ast.BasicLit{
 												Kind:  token.STRING,
-												Value: "\"english\"",
+												Value: `"english"`,
 											},
 										},
 										&ast.KeyValueExpr{
@@ -1622,15 +1622,15 @@ func (r PostgresRepository) astListMethod() *ast.FuncDecl {
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.id\"", tableName),
+			Value: fmt.Sprintf(`"%s.id"`, tableName),
 		},
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.updated_at\"", tableName),
+			Value: fmt.Sprintf(`"%s.updated_at"`, tableName),
 		},
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.created_at\"", tableName),
+			Value: fmt.Sprintf(`"%s.created_at"`, tableName),
 		},
 	}
 	for _, param := range r.model.Params {
@@ -1638,7 +1638,7 @@ func (r PostgresRepository) astListMethod() *ast.FuncDecl {
 			columns,
 			&ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf("\"%s.%s\"", tableName, param.Tag()),
+				Value: fmt.Sprintf(`"%s.%s"`, tableName, param.Tag()),
 			},
 		)
 	}
@@ -1892,7 +1892,7 @@ func (r PostgresRepository) astListMethod() *ast.FuncDecl {
 									Args: []ast.Expr{
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: fmt.Sprintf("\"public.%s\"", tableName),
+											Value: fmt.Sprintf(`"public.%s"`, tableName),
 										},
 									},
 								},
@@ -1965,7 +1965,7 @@ func (r PostgresRepository) astListMethod() *ast.FuncDecl {
 													&ast.KeyValueExpr{
 														Key: &ast.BasicLit{
 															Kind:  token.STRING,
-															Value: "\"id\"",
+															Value: `"id"`,
 														},
 														Value: &ast.SelectorExpr{
 															X:   ast.NewIdent("filter"),
@@ -2342,7 +2342,7 @@ func (r PostgresRepository) syncListMethod() error {
 	}
 	for _, param := range r.model.Params {
 		param := param
-		column := fmt.Sprintf("\"%s.%s\"", r.model.TableName(), param.Tag())
+		column := fmt.Sprintf(`"%s.%s"`, r.model.TableName(), param.Tag())
 		ast.Inspect(method, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Select" {
@@ -2380,15 +2380,15 @@ func (r PostgresRepository) astCountMethod() *ast.FuncDecl {
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.id\"", tableName),
+			Value: fmt.Sprintf(`"%s.id"`, tableName),
 		},
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.updated_at\"", tableName),
+			Value: fmt.Sprintf(`"%s.updated_at"`, tableName),
 		},
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.created_at\"", tableName),
+			Value: fmt.Sprintf(`"%s.created_at"`, tableName),
 		},
 	}
 	for _, param := range r.model.Params {
@@ -2396,7 +2396,7 @@ func (r PostgresRepository) astCountMethod() *ast.FuncDecl {
 			columns,
 			&ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf("\"%s.%s\"", tableName, param.Tag()),
+				Value: fmt.Sprintf(`"%s.%s"`, tableName, param.Tag()),
 			},
 		)
 	}
@@ -2539,7 +2539,7 @@ func (r PostgresRepository) astCountMethod() *ast.FuncDecl {
 									Args: []ast.Expr{
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: "\"count(id)\"",
+											Value: `"count(id)"`,
 										},
 									},
 								},
@@ -2550,7 +2550,7 @@ func (r PostgresRepository) astCountMethod() *ast.FuncDecl {
 							Args: []ast.Expr{
 								&ast.BasicLit{
 									Kind:  token.STRING,
-									Value: fmt.Sprintf("\"public.%s\"", r.model.TableName()),
+									Value: fmt.Sprintf(`"public.%s"`, r.model.TableName()),
 								},
 							},
 						},
@@ -2613,7 +2613,7 @@ func (r PostgresRepository) astCountMethod() *ast.FuncDecl {
 													&ast.KeyValueExpr{
 														Key: &ast.BasicLit{
 															Kind:  token.STRING,
-															Value: "\"id\"",
+															Value: `"id"`,
 														},
 														Value: &ast.SelectorExpr{
 															X:   ast.NewIdent("filter"),
@@ -2925,15 +2925,15 @@ func (r PostgresRepository) astGetMethod() *ast.FuncDecl {
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.id\"", tableName),
+			Value: fmt.Sprintf(`"%s.id"`, tableName),
 		},
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.updated_at\"", tableName),
+			Value: fmt.Sprintf(`"%s.updated_at"`, tableName),
 		},
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.created_at\"", tableName),
+			Value: fmt.Sprintf(`"%s.created_at"`, tableName),
 		},
 	}
 	for _, param := range r.model.Params {
@@ -2941,7 +2941,7 @@ func (r PostgresRepository) astGetMethod() *ast.FuncDecl {
 			columns,
 			&ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf("\"%s.%s\"", tableName, param.Tag()),
+				Value: fmt.Sprintf(`"%s.%s"`, tableName, param.Tag()),
 			},
 		)
 	}
@@ -3117,7 +3117,7 @@ func (r PostgresRepository) astGetMethod() *ast.FuncDecl {
 											Args: []ast.Expr{
 												&ast.BasicLit{
 													Kind:  token.STRING,
-													Value: fmt.Sprintf("\"public.%s\"", tableName),
+													Value: fmt.Sprintf(`"public.%s"`, tableName),
 												},
 											},
 										},
@@ -3139,7 +3139,7 @@ func (r PostgresRepository) astGetMethod() *ast.FuncDecl {
 												&ast.KeyValueExpr{
 													Key: &ast.BasicLit{
 														Kind:  token.STRING,
-														Value: "\"id\"",
+														Value: `"id"`,
 													},
 													Value: &ast.Ident{
 														Name: "id",
@@ -3286,7 +3286,7 @@ func (r PostgresRepository) astGetMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
+												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.Ident{
@@ -3358,7 +3358,7 @@ func (r PostgresRepository) syncGetMethod() error {
 	}
 	for _, param := range r.model.Params {
 		param := param
-		column := fmt.Sprintf("\"%s.%s\"", r.model.TableName(), param.Tag())
+		column := fmt.Sprintf(`"%s.%s"`, r.model.TableName(), param.Tag())
 		ast.Inspect(method, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Select" {
@@ -3415,7 +3415,7 @@ func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
 						Args: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
-								Value: fmt.Sprintf("\"%s.%s\"", tableName, "updated_at"),
+								Value: fmt.Sprintf(`"%s.%s"`, tableName, "updated_at"),
 							},
 							&ast.SelectorExpr{
 								X: &ast.Ident{
@@ -3452,7 +3452,7 @@ func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
 					Args: []ast.Expr{
 						&ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf("\"%s.%s\"", tableName, param.Tag()),
+							Value: fmt.Sprintf(`"%s.%s"`, tableName, param.Tag()),
 						},
 						&ast.SelectorExpr{
 							X: &ast.Ident{
@@ -3621,7 +3621,7 @@ func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
 									Args: []ast.Expr{
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: fmt.Sprintf("\"public.%s\"", tableName),
+											Value: fmt.Sprintf(`"public.%s"`, tableName),
 										},
 									},
 								},
@@ -3643,7 +3643,7 @@ func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
 										&ast.KeyValueExpr{
 											Key: &ast.BasicLit{
 												Kind:  token.STRING,
-												Value: "\"id\"",
+												Value: `"id"`,
 											},
 											Value: &ast.SelectorExpr{
 												X: &ast.Ident{
@@ -3785,7 +3785,7 @@ func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
+												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -3882,7 +3882,7 @@ func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
+												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -3951,7 +3951,7 @@ func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
+												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -4034,7 +4034,7 @@ func (r PostgresRepository) syncUpdateMethod() error {
 								for _, arg := range call.Args {
 									if bl, ok := arg.(*ast.BasicLit); ok &&
 										bl.Value == fmt.Sprintf(
-											"\"%s.%s\"",
+											`"%s.%s"`,
 											tableName,
 											param.Tag(),
 										) {
@@ -4070,7 +4070,7 @@ func (r PostgresRepository) syncUpdateMethod() error {
 									Args: []ast.Expr{
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: fmt.Sprintf("\"%s.%s\"", tableName, param.Tag()),
+											Value: fmt.Sprintf(`"%s.%s"`, tableName, param.Tag()),
 										},
 										&ast.SelectorExpr{
 											X: &ast.Ident{
@@ -4236,7 +4236,7 @@ func (r PostgresRepository) astDeleteMethod() *ast.FuncDecl {
 										&ast.BasicLit{
 											Kind: token.STRING,
 											Value: fmt.Sprintf(
-												"\"public.%s\"",
+												`"public.%s"`,
 												r.model.TableName(),
 											),
 										},
@@ -4260,7 +4260,7 @@ func (r PostgresRepository) astDeleteMethod() *ast.FuncDecl {
 										&ast.KeyValueExpr{
 											Key: &ast.BasicLit{
 												Kind:  token.STRING,
-												Value: "\"id\"",
+												Value: `"id"`,
 											},
 											Value: &ast.Ident{
 												Name: "id",
@@ -4396,7 +4396,7 @@ func (r PostgresRepository) astDeleteMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
+												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -4494,7 +4494,7 @@ func (r PostgresRepository) astDeleteMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
+												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -4565,7 +4565,7 @@ func (r PostgresRepository) astDeleteMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
+												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{

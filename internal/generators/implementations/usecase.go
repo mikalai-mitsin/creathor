@@ -328,7 +328,7 @@ func (u UseCase) astCreateMethod() *ast.FuncDecl {
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("ID"),
 			Colon: 0,
-			Value: ast.NewIdent("\"\""),
+			Value: ast.NewIdent(`""`),
 		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("UpdatedAt"),

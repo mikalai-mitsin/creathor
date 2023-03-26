@@ -35,7 +35,7 @@ func (h Handler) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"context\"",
+							Value: `"context"`,
 						},
 					},
 					&ast.ImportSpec{
@@ -56,43 +56,43 @@ func (h Handler) file() *ast.File {
 						},
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf("%s/pkg/%s/v1", h.model.Module, h.model.ProtoPackage),
+							Value: fmt.Sprintf(`"%s/pkg/%s/v1"`, h.model.Module, h.model.ProtoPackage),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf("\"%s/pkg/log\"", h.model.Module),
+							Value: fmt.Sprintf(`"%s/pkg/log"`, h.model.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf("\"%s/pkg/utils\"", h.model.Module),
+							Value: fmt.Sprintf(`"%s/pkg/utils"`, h.model.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"google.golang.org/protobuf/types/known/emptypb\"",
+							Value: `"google.golang.org/protobuf/types/known/emptypb"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"google.golang.org/protobuf/types/known/structpb\"",
+							Value: `"google.golang.org/protobuf/types/known/structpb"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"google.golang.org/protobuf/types/known/timestamppb\"",
+							Value: `"google.golang.org/protobuf/types/known/timestamppb"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"google.golang.org/protobuf/types/known/wrapperspb\"",
+							Value: `"google.golang.org/protobuf/types/known/wrapperspb"`,
 						},
 					},
 				},

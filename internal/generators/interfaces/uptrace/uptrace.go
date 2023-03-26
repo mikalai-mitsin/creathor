@@ -33,7 +33,7 @@ func (u Provider) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"context\"",
+							Value: `"context"`,
 						},
 					},
 					&ast.ImportSpec{

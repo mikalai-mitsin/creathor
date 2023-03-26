@@ -36,7 +36,7 @@ func (m RequestIDMiddleware) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"context\"",
+							Value: `"context"`,
 						},
 					},
 					&ast.ImportSpec{
@@ -48,13 +48,13 @@ func (m RequestIDMiddleware) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/google/uuid\"",
+							Value: `"github.com/google/uuid"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"google.golang.org/grpc\"",
+							Value: `"google.golang.org/grpc"`,
 						},
 					},
 				},

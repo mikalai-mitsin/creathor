@@ -51,7 +51,7 @@ func (h *{{ .RESTHandlerTypeName }}) Create(ctx *gin.Context) {
 	_ = ctx.Bind(create)
     {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Create(ctx.Request.Context(), create{{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
-		decodeError(c, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusCreated, {{ .Variable }})
@@ -80,7 +80,7 @@ func (h *{{ .RESTHandlerTypeName }}) List(ctx *gin.Context) {
 	_ = ctx.Bind(filter)
     {{ .ListVariable }}, count, err := h.{{ .InterceptorVariableName }}.List(ctx.Request.Context(), filter{{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
-		decodeError(c, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.Header("count", fmt.Sprint(count))
@@ -102,16 +102,16 @@ func (h *{{ .RESTHandlerTypeName }}) List(ctx *gin.Context) {
 // @Failure        500   {object}  errs.Error
 // @Failure        503   {object}  errs.Error
 // @Router       /{{ .RESTHandlerPath }}/{uuid} [get]
-func (h *{{ .RESTHandlerTypeName }}) Get(c *gin.Context) {
+func (h *{{ .RESTHandlerTypeName }}) Get(ctx *gin.Context) {
 {{- if .Auth }}
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 {{- end }}
-    {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Get(c.Request.Context(), models.UUID(c.Param("id")){{- if .Auth -}}, requestUser{{- end -}})
+    {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Get(ctx.Request.Context(), models.UUID(ctx.Param("id")){{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
-		decodeError(c, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.JSON(http.StatusOK, {{ .Variable }})
+	ctx.JSON(http.StatusOK, {{ .Variable }})
 }
 
 // Update        godoc
@@ -130,19 +130,19 @@ func (h *{{ .RESTHandlerTypeName }}) Get(c *gin.Context) {
 // @Failure        500   {object}  errs.Error
 // @Failure        503   {object}  errs.Error
 // @Router       /{{ .RESTHandlerPath }}/{uuid} [PATCH]
-func (h *{{ .RESTHandlerTypeName }}) Update(c *gin.Context) {
+func (h *{{ .RESTHandlerTypeName }}) Update(ctx *gin.Context) {
 {{- if .Auth }}
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 {{- end }}
 	update := &models.{{ .UpdateTypeName }}{}
-	_ = c.Bind(update)
-	update.ID = models.UUID(c.Param("id"))
-    {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Update(c.Request.Context(), update{{- if .Auth -}}, requestUser{{- end -}})
+	_ = ctx.Bind(update)
+	update.ID = models.UUID(ctx.Param("id"))
+    {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Update(ctx.Request.Context(), update{{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
-		decodeError(c, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.JSON(http.StatusOK, {{ .Variable }})
+	ctx.JSON(http.StatusOK, {{ .Variable }})
 }
 
 // Delete        godoc
@@ -159,14 +159,14 @@ func (h *{{ .RESTHandlerTypeName }}) Update(c *gin.Context) {
 // @Failure        500   {object}  errs.Error
 // @Failure        503   {object}  errs.Error
 // @Router       /{{ .RESTHandlerPath }}/{uuid} [delete]
-func (h *{{ .RESTHandlerTypeName }}) Delete(c *gin.Context) {
+func (h *{{ .RESTHandlerTypeName }}) Delete(ctx *gin.Context) {
 {{- if .Auth }}
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 {{- end }}
-	err := h.{{ .InterceptorVariableName }}.Delete(c.Request.Context(), models.UUID(c.Param("id")){{- if .Auth -}}, requestUser{{- end -}})
+	err := h.{{ .InterceptorVariableName }}.Delete(ctx.Request.Context(), models.UUID(ctx.Param("id")){{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
-		decodeError(c, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.Status(http.StatusNoContent)
+	ctx.Status(http.StatusNoContent)
 }

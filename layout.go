@@ -351,29 +351,14 @@ func CreateLayout(project *configs.Project) error {
 				Name: "auth repository",
 			},
 			&Template{
-				SourcePath:      "templates/internal/usecases/auth.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "usecases", "auth.go"),
-				Name:            "auth usecase implementation",
-			},
-			&Template{
 				SourcePath:      "templates/internal/usecases/auth_test.go.tmpl",
 				DestinationPath: path.Join(destinationPath, "internal", "usecases", "auth_test.go"),
 				Name:            "test auth usecase implementation",
 			},
 			&Template{
-				SourcePath:      "templates/internal/usecases/user.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "usecases", "user.go"),
-				Name:            "user usecase implementation",
-			},
-			&Template{
 				SourcePath:      "templates/internal/usecases/user_test.go.tmpl",
 				DestinationPath: path.Join(destinationPath, "internal", "usecases", "user_test.go"),
 				Name:            "test user usecase implementation",
-			},
-			&Template{
-				SourcePath:      "templates/internal/interceptors/user.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interceptors", "user.go"),
-				Name:            "user interceptor implementation",
 			},
 			&Template{
 				SourcePath: "templates/internal/interceptors/user_test.go.tmpl",
@@ -384,11 +369,6 @@ func CreateLayout(project *configs.Project) error {
 					"user_test.go",
 				),
 				Name: "test user interceptor implementation",
-			},
-			&Template{
-				SourcePath:      "templates/internal/interceptors/auth.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "interceptors", "auth.go"),
-				Name:            "auth interceptor implementation",
 			},
 			&Template{
 				SourcePath: "templates/internal/interceptors/auth_test.go.tmpl",

@@ -37,11 +37,20 @@ func (g CrudGenerator) Sync() error {
 			domain.NewUseCaseInterface(m),
 			domain.NewInterceptorInterface(m),
 
-			implementations.NewInterceptor(m),
-			implementations.NewUseCase(m),
-			implementations.NewPostgresRepository(m),
+			implementations.NewInterceptorCrud(m),
+			implementations.NewUseCaseCrud(m),
+			implementations.NewPostgresRepositoryCrud(m),
 
 			grpc.NewHandler(m),
+		)
+	}
+	if g.project.Auth {
+		generators = append(
+			generators,
+			implementations.NewUseCaseUser(g.project),
+			implementations.NewUseCaseAuth(g.project),
+			implementations.NewInterceptorUser(g.project),
+			implementations.NewInterceptorAuth(g.project),
 		)
 	}
 	for _, generator := range generators {

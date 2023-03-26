@@ -13,15 +13,15 @@ import (
 	"github.com/018bf/creathor/internal/configs"
 )
 
-type Interceptor struct {
+type InterceptorCrud struct {
 	model *configs.ModelConfig
 }
 
-func NewInterceptor(model *configs.ModelConfig) *Interceptor {
-	return &Interceptor{model: model}
+func NewInterceptorCrud(model *configs.ModelConfig) *InterceptorCrud {
+	return &InterceptorCrud{model: model}
 }
 
-func (i Interceptor) Sync() error {
+func (i InterceptorCrud) Sync() error {
 	if err := i.syncStruct(); err != nil {
 		return err
 	}
@@ -46,11 +46,11 @@ func (i Interceptor) Sync() error {
 	return nil
 }
 
-func (i Interceptor) filename() string {
+func (i InterceptorCrud) filename() string {
 	return filepath.Join("internal", "interceptors", i.model.FileName())
 }
 
-func (i Interceptor) astStruct() *ast.TypeSpec {
+func (i InterceptorCrud) astStruct() *ast.TypeSpec {
 	fields := []*ast.Field{
 		{
 			Doc:   nil,
@@ -96,7 +96,7 @@ func (i Interceptor) astStruct() *ast.TypeSpec {
 	return structure
 }
 
-func (i Interceptor) syncStruct() error {
+func (i InterceptorCrud) syncStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -136,7 +136,7 @@ func (i Interceptor) syncStruct() error {
 	return nil
 }
 
-func (i Interceptor) astConstructor() *ast.FuncDecl {
+func (i InterceptorCrud) astConstructor() *ast.FuncDecl {
 	fields := []*ast.Field{
 		{
 			Doc:   nil,
@@ -250,7 +250,7 @@ func (i Interceptor) astConstructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (i Interceptor) syncConstructor() error {
+func (i InterceptorCrud) syncConstructor() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -283,7 +283,7 @@ func (i Interceptor) syncConstructor() error {
 	return nil
 }
 
-func (i Interceptor) astCreateMethod() *ast.FuncDecl {
+func (i InterceptorCrud) astCreateMethod() *ast.FuncDecl {
 	args := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent("ctx")},
@@ -490,7 +490,7 @@ func (i Interceptor) astCreateMethod() *ast.FuncDecl {
 	}
 }
 
-func (i Interceptor) syncCreateMethod() error {
+func (i InterceptorCrud) syncCreateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -551,7 +551,7 @@ func (i Interceptor) syncCreateMethod() error {
 	return nil
 }
 
-func (i Interceptor) astListMethod() *ast.FuncDecl {
+func (i InterceptorCrud) astListMethod() *ast.FuncDecl {
 	args := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent("ctx")},
@@ -773,7 +773,7 @@ func (i Interceptor) astListMethod() *ast.FuncDecl {
 	}
 }
 
-func (i Interceptor) syncListMethod() error {
+func (i InterceptorCrud) syncListMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -805,7 +805,7 @@ func (i Interceptor) syncListMethod() error {
 	return nil
 }
 
-func (i Interceptor) astGetMethod() *ast.FuncDecl {
+func (i InterceptorCrud) astGetMethod() *ast.FuncDecl {
 	args := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent("ctx")},
@@ -1023,7 +1023,7 @@ func (i Interceptor) astGetMethod() *ast.FuncDecl {
 	}
 }
 
-func (i Interceptor) syncGetMethod() error {
+func (i InterceptorCrud) syncGetMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1055,7 +1055,7 @@ func (i Interceptor) syncGetMethod() error {
 	return nil
 }
 
-func (i Interceptor) astUpdateMethod() *ast.FuncDecl {
+func (i InterceptorCrud) astUpdateMethod() *ast.FuncDecl {
 	args := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent("ctx")},
@@ -1313,7 +1313,7 @@ func (i Interceptor) astUpdateMethod() *ast.FuncDecl {
 	}
 }
 
-func (i Interceptor) syncUpdateMethod() error {
+func (i InterceptorCrud) syncUpdateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1345,7 +1345,7 @@ func (i Interceptor) syncUpdateMethod() error {
 	return nil
 }
 
-func (i Interceptor) astDeleteMethod() *ast.FuncDecl {
+func (i InterceptorCrud) astDeleteMethod() *ast.FuncDecl {
 	args := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent("ctx")},
@@ -1580,7 +1580,7 @@ func (i Interceptor) astDeleteMethod() *ast.FuncDecl {
 	}
 }
 
-func (i Interceptor) syncDeleteMethod() error {
+func (i InterceptorCrud) syncDeleteMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1612,7 +1612,7 @@ func (i Interceptor) syncDeleteMethod() error {
 	return nil
 }
 
-func (i Interceptor) file() *ast.File {
+func (i InterceptorCrud) file() *ast.File {
 	return &ast.File{
 		Name: ast.NewIdent("interceptors"),
 		Decls: []ast.Decl{

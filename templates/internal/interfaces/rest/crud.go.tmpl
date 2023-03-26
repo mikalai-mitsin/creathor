@@ -51,7 +51,7 @@ func (h *{{ .RESTHandlerTypeName }}) Create(ctx *gin.Context) {
 	_ = ctx.Bind(create)
     {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Create(ctx.Request.Context(), create{{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(c, err)
 		return
 	}
 	ctx.JSON(http.StatusCreated, {{ .Variable }})
@@ -80,7 +80,7 @@ func (h *{{ .RESTHandlerTypeName }}) List(ctx *gin.Context) {
 	_ = ctx.Bind(filter)
     {{ .ListVariable }}, count, err := h.{{ .InterceptorVariableName }}.List(ctx.Request.Context(), filter{{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(c, err)
 		return
 	}
 	ctx.Header("count", fmt.Sprint(count))

@@ -1,4 +1,4 @@
-package domain
+package interceptors
 
 import (
 	"bytes"
@@ -13,15 +13,15 @@ import (
 	"github.com/018bf/creathor/internal/configs"
 )
 
-type InterceptorInterface struct {
+type InterceptorInterfaceCrud struct {
 	model *configs.ModelConfig
 }
 
-func NewInterceptorInterface(config *configs.ModelConfig) *InterceptorInterface {
-	return &InterceptorInterface{model: config}
+func NewInterceptorInterfaceCrud(config *configs.ModelConfig) *InterceptorInterfaceCrud {
+	return &InterceptorInterfaceCrud{model: config}
 }
 
-func (i InterceptorInterface) file() *ast.File {
+func (i InterceptorInterfaceCrud) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
 			Name: "interceptors",
@@ -50,7 +50,7 @@ func (i InterceptorInterface) file() *ast.File {
 	}
 }
 
-func (i InterceptorInterface) Sync() error {
+func (i InterceptorInterfaceCrud) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "domain", "interceptors", i.model.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -82,9 +82,8 @@ func (i InterceptorInterface) Sync() error {
 					},
 					{
 						Text: fmt.Sprintf(
-							"//go:generate mockgen -build_flags=-mod=mod -destination mock/%s %s/internal/domain/interceptors %s",
+							"//go:generate mockgen -build_flags=-mod=mod -destination mock/%s . %s",
 							i.model.FileName(),
-							i.model.Module,
 							i.model.InterceptorTypeName(),
 						),
 					},
@@ -105,7 +104,7 @@ func (i InterceptorInterface) Sync() error {
 	return nil
 }
 
-func (i InterceptorInterface) astInterface() *ast.TypeSpec {
+func (i InterceptorInterfaceCrud) astInterface() *ast.TypeSpec {
 	requestUser := &ast.Field{
 		Names: []*ast.Ident{
 			{

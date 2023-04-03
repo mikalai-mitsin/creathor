@@ -217,17 +217,6 @@ func CreateLayout(project *configs.Project) error {
 		files = append(
 			files,
 			&Template{
-				SourcePath: "templates/internal/domain/usecases/auth.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"usecases",
-					"auth.go",
-				),
-				Name: "auth usecase",
-			},
-			&Template{
 				SourcePath: "templates/internal/domain/models/auth.go.tmpl",
 				DestinationPath: path.Join(
 					destinationPath,
@@ -295,39 +284,7 @@ func CreateLayout(project *configs.Project) error {
 				),
 				Name: "user repository",
 			},
-			&Template{
-				SourcePath: "templates/internal/domain/usecases/user.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"usecases",
-					"user.go",
-				),
-				Name: "user usecase",
-			},
-			&Template{
-				SourcePath: "templates/internal/domain/interceptors/user.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"interceptors",
-					"user.go",
-				),
-				Name: "user interceptor",
-			},
-			&Template{
-				SourcePath: "templates/internal/domain/interceptors/auth.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"interceptors",
-					"auth.go",
-				),
-				Name: "auth interceptor",
-			},
+
 			&Template{
 				SourcePath: "templates/internal/domain/repositories/permission.go.tmpl",
 				DestinationPath: path.Join(

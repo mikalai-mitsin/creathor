@@ -53,8 +53,11 @@ func (m AuthMiddleware) file() *ast.File {
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/interceptors"`, m.project.Module),
+							Kind: token.STRING,
+							Value: fmt.Sprintf(
+								`"%s/internal/domain/interceptors"`,
+								m.project.Module,
+							),
 						},
 					},
 					&ast.ImportSpec{

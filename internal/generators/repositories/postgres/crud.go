@@ -1,4 +1,4 @@
-package implementations
+package postgres
 
 import (
 	"bytes"
@@ -13,19 +13,19 @@ import (
 	"github.com/018bf/creathor/internal/configs"
 )
 
-type PostgresRepositoryCrud struct {
+type RepositoryCrud struct {
 	model *configs.ModelConfig
 }
 
-func NewPostgresRepositoryCrud(config *configs.ModelConfig) *PostgresRepositoryCrud {
-	return &PostgresRepositoryCrud{model: config}
+func NewRepositoryCrud(config *configs.ModelConfig) *RepositoryCrud {
+	return &RepositoryCrud{model: config}
 }
 
-func (r PostgresRepositoryCrud) filename() string {
+func (r RepositoryCrud) filename() string {
 	return filepath.Join("internal", "repositories", "postgres", r.model.FileName())
 }
 
-func (r PostgresRepositoryCrud) Sync() error {
+func (r RepositoryCrud) Sync() error {
 	if err := r.syncStruct(); err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (r PostgresRepositoryCrud) Sync() error {
 	return nil
 }
 
-func (r PostgresRepositoryCrud) astDTOStruct() *ast.TypeSpec {
+func (r RepositoryCrud) astDTOStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Name: &ast.Ident{
 			Name: r.model.PostgresDTOTypeName(),
@@ -160,7 +160,7 @@ func (r PostgresRepositoryCrud) astDTOStruct() *ast.TypeSpec {
 	return structure
 }
 
-func (r PostgresRepositoryCrud) syncDTOStruct() error {
+func (r RepositoryCrud) syncDTOStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -225,7 +225,7 @@ func (r PostgresRepositoryCrud) syncDTOStruct() error {
 	return nil
 }
 
-func (r PostgresRepositoryCrud) astDTOConstructor() *ast.FuncDecl {
+func (r RepositoryCrud) astDTOConstructor() *ast.FuncDecl {
 	dto := &ast.CompositeLit{
 		Type: &ast.Ident{
 			Name: r.model.PostgresDTOTypeName(),
@@ -461,7 +461,7 @@ func (r PostgresRepositoryCrud) astDTOConstructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (r PostgresRepositoryCrud) syncDTOConstructor() error {
+func (r RepositoryCrud) syncDTOConstructor() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -556,7 +556,7 @@ func (r PostgresRepositoryCrud) syncDTOConstructor() error {
 	return nil
 }
 
-func (r PostgresRepositoryCrud) astDTOToModel() *ast.FuncDecl {
+func (r RepositoryCrud) astDTOToModel() *ast.FuncDecl {
 	model := &ast.CompositeLit{
 		Type: &ast.SelectorExpr{
 			X: &ast.Ident{
@@ -809,7 +809,7 @@ func (r PostgresRepositoryCrud) astDTOToModel() *ast.FuncDecl {
 	return method
 }
 
-func (r PostgresRepositoryCrud) syncDTOToModel() error {
+func (r RepositoryCrud) syncDTOToModel() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -842,7 +842,7 @@ func (r PostgresRepositoryCrud) syncDTOToModel() error {
 	return nil
 }
 
-func (r PostgresRepositoryCrud) astStruct() *ast.TypeSpec {
+func (r RepositoryCrud) astStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Doc:        nil,
 		Name:       ast.NewIdent(r.model.RepositoryTypeName()),
@@ -883,7 +883,7 @@ func (r PostgresRepositoryCrud) astStruct() *ast.TypeSpec {
 	return structure
 }
 
-func (r PostgresRepositoryCrud) file() *ast.File {
+func (r RepositoryCrud) file() *ast.File {
 	return &ast.File{
 		Name: ast.NewIdent("postgres"),
 		Decls: []ast.Decl{
@@ -969,7 +969,7 @@ func (r PostgresRepositoryCrud) file() *ast.File {
 	}
 }
 
-func (r PostgresRepositoryCrud) syncStruct() error {
+func (r RepositoryCrud) syncStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1009,7 +1009,7 @@ func (r PostgresRepositoryCrud) syncStruct() error {
 	return nil
 }
 
-func (r PostgresRepositoryCrud) astConstructor() *ast.FuncDecl {
+func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
 		Doc:  nil,
 		Recv: nil,
@@ -1100,7 +1100,7 @@ func (r PostgresRepositoryCrud) astConstructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (r PostgresRepositoryCrud) syncConstructor() error {
+func (r RepositoryCrud) syncConstructor() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1133,7 +1133,7 @@ func (r PostgresRepositoryCrud) syncConstructor() error {
 	return nil
 }
 
-func (r PostgresRepositoryCrud) astCreateMethod() *ast.FuncDecl {
+func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
@@ -1433,7 +1433,7 @@ func (r PostgresRepositoryCrud) astCreateMethod() *ast.FuncDecl {
 	return fun
 }
 
-func (r PostgresRepositoryCrud) syncCreateMethod() error {
+func (r RepositoryCrud) syncCreateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1507,7 +1507,7 @@ func (r PostgresRepositoryCrud) syncCreateMethod() error {
 	return nil
 }
 
-func (r PostgresRepositoryCrud) search() ast.Stmt {
+func (r RepositoryCrud) search() ast.Stmt {
 	if !r.model.SearchEnabled() {
 		return &ast.EmptyStmt{
 			Semicolon: 0,
@@ -1617,7 +1617,7 @@ func (r PostgresRepositoryCrud) search() ast.Stmt {
 	return stmt
 }
 
-func (r PostgresRepositoryCrud) astListMethod() *ast.FuncDecl {
+func (r RepositoryCrud) astListMethod() *ast.FuncDecl {
 	tableName := r.model.TableName()
 	columns := []ast.Expr{
 		&ast.BasicLit{
@@ -2321,7 +2321,7 @@ func (r PostgresRepositoryCrud) astListMethod() *ast.FuncDecl {
 	}
 }
 
-func (r PostgresRepositoryCrud) syncListMethod() error {
+func (r RepositoryCrud) syncListMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -2375,7 +2375,7 @@ func (r PostgresRepositoryCrud) syncListMethod() error {
 	return nil
 }
 
-func (r PostgresRepositoryCrud) astCountMethod() *ast.FuncDecl {
+func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 	tableName := r.model.TableName()
 	columns := []ast.Expr{
 		&ast.BasicLit{
@@ -2888,7 +2888,7 @@ func (r PostgresRepositoryCrud) astCountMethod() *ast.FuncDecl {
 	}
 }
 
-func (r PostgresRepositoryCrud) syncCountMethod() error {
+func (r RepositoryCrud) syncCountMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -2920,7 +2920,7 @@ func (r PostgresRepositoryCrud) syncCountMethod() error {
 	return nil
 }
 
-func (r PostgresRepositoryCrud) astGetMethod() *ast.FuncDecl {
+func (r RepositoryCrud) astGetMethod() *ast.FuncDecl {
 	tableName := r.model.TableName()
 	columns := []ast.Expr{
 		&ast.BasicLit{
@@ -3337,7 +3337,7 @@ func (r PostgresRepositoryCrud) astGetMethod() *ast.FuncDecl {
 	}
 }
 
-func (r PostgresRepositoryCrud) syncGetMethod() error {
+func (r RepositoryCrud) syncGetMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -3391,7 +3391,7 @@ func (r PostgresRepositoryCrud) syncGetMethod() error {
 	return nil
 }
 
-func (r PostgresRepositoryCrud) astUpdateMethod() *ast.FuncDecl {
+func (r RepositoryCrud) astUpdateMethod() *ast.FuncDecl {
 	tableName := r.model.TableName()
 	updateBlock := &ast.BlockStmt{
 		List: []ast.Stmt{
@@ -4000,7 +4000,7 @@ func (r PostgresRepositoryCrud) astUpdateMethod() *ast.FuncDecl {
 	return method
 }
 
-func (r PostgresRepositoryCrud) syncUpdateMethod() error {
+func (r RepositoryCrud) syncUpdateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -4102,7 +4102,7 @@ func (r PostgresRepositoryCrud) syncUpdateMethod() error {
 	return nil
 }
 
-func (r PostgresRepositoryCrud) astDeleteMethod() *ast.FuncDecl {
+func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -4608,7 +4608,7 @@ func (r PostgresRepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 	}
 }
 
-func (r PostgresRepositoryCrud) syncDeleteMethod() error {
+func (r RepositoryCrud) syncDeleteMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -4640,7 +4640,7 @@ func (r PostgresRepositoryCrud) syncDeleteMethod() error {
 	return nil
 }
 
-func (r PostgresRepositoryCrud) astDTOListType() *ast.TypeSpec {
+func (r RepositoryCrud) astDTOListType() *ast.TypeSpec {
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
 			Name: r.model.PostgresDTOListTypeName(),
@@ -4655,7 +4655,7 @@ func (r PostgresRepositoryCrud) astDTOListType() *ast.TypeSpec {
 	}
 }
 
-func (r PostgresRepositoryCrud) syncDTOListType() error {
+func (r RepositoryCrud) syncDTOListType() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -4696,7 +4696,7 @@ func (r PostgresRepositoryCrud) syncDTOListType() error {
 	return nil
 }
 
-func (r PostgresRepositoryCrud) astDTOToModels() *ast.FuncDecl {
+func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -4832,7 +4832,7 @@ func (r PostgresRepositoryCrud) astDTOToModels() *ast.FuncDecl {
 	}
 }
 
-func (r PostgresRepositoryCrud) syncDTOListToModels() error {
+func (r RepositoryCrud) syncDTOListToModels() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {

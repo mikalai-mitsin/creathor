@@ -1,4 +1,4 @@
-package domain
+package usecases
 
 import (
 	"bytes"
@@ -13,15 +13,15 @@ import (
 	"github.com/018bf/creathor/internal/configs"
 )
 
-type UseCaseInterface struct {
+type UseCaseInterfaceCrud struct {
 	model *configs.ModelConfig
 }
 
-func NewUseCaseInterface(config *configs.ModelConfig) *UseCaseInterface {
-	return &UseCaseInterface{model: config}
+func NewUseCaseInterfaceCrud(config *configs.ModelConfig) *UseCaseInterfaceCrud {
+	return &UseCaseInterfaceCrud{model: config}
 }
 
-func (i UseCaseInterface) file() *ast.File {
+func (i UseCaseInterfaceCrud) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
 			Name: "usecases",
@@ -50,7 +50,7 @@ func (i UseCaseInterface) file() *ast.File {
 	}
 }
 
-func (i UseCaseInterface) Sync() error {
+func (i UseCaseInterfaceCrud) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "domain", "usecases", i.model.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -82,9 +82,8 @@ func (i UseCaseInterface) Sync() error {
 					},
 					{
 						Text: fmt.Sprintf(
-							"//go:generate mockgen -build_flags=-mod=mod -destination mock/%s %s/internal/domain/usecases %s",
+							"//go:generate mockgen -build_flags=-mod=mod -destination mock/%s . %s",
 							i.model.FileName(),
-							i.model.Module,
 							i.model.UseCaseTypeName(),
 						),
 					},
@@ -105,7 +104,7 @@ func (i UseCaseInterface) Sync() error {
 	return nil
 }
 
-func (i UseCaseInterface) astInterface() *ast.TypeSpec {
+func (i UseCaseInterfaceCrud) astInterface() *ast.TypeSpec {
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
 			Name: i.model.UseCaseTypeName(),

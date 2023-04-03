@@ -10,7 +10,7 @@ import (
 )
 
 //nolint: lll
-//go:generate mockgen -build_flags=-mod=mod -destination mock/log_mock.go {{ .Module }}/pkg/log Logger
+//go:generate mockgen -build_flags=-mod=mod -destination mock/log_mock.go . Logger
 
 type ctxKey int
 

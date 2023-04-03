@@ -55,8 +55,12 @@ func (h Handler) file() *ast.File {
 							Name: h.model.ProtoPackage,
 						},
 						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/%s/v1"`, h.model.Module, h.model.ProtoPackage),
+							Kind: token.STRING,
+							Value: fmt.Sprintf(
+								`"%s/pkg/%s/v1"`,
+								h.model.Module,
+								h.model.ProtoPackage,
+							),
 						},
 					},
 					&ast.ImportSpec{

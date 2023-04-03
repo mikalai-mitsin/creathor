@@ -2,10 +2,16 @@ package generators
 
 import (
 	"github.com/018bf/creathor/internal/configs"
-	"github.com/018bf/creathor/internal/generators/domain"
-	"github.com/018bf/creathor/internal/generators/implementations"
+	"github.com/018bf/creathor/internal/generators/domain/errs"
+	interceptorInterfaces "github.com/018bf/creathor/internal/generators/domain/interceptors"
+	"github.com/018bf/creathor/internal/generators/domain/models"
+	"github.com/018bf/creathor/internal/generators/domain/repositories"
+	useCaseInterfaces "github.com/018bf/creathor/internal/generators/domain/usecases"
+	"github.com/018bf/creathor/internal/generators/interceptors"
 	"github.com/018bf/creathor/internal/generators/interfaces/grpc"
 	"github.com/018bf/creathor/internal/generators/interfaces/uptrace"
+	"github.com/018bf/creathor/internal/generators/repositories/postgres"
+	"github.com/018bf/creathor/internal/generators/usecases"
 )
 
 type Generator interface {
@@ -24,22 +30,22 @@ func (g CrudGenerator) Sync() error {
 	generators := []Generator{
 		grpc.NewServer(g.project),
 		uptrace.NewProvider(g.project),
-		domain.NewErrors(g.project),
+		errs.NewErrors(g.project),
 	}
 	for _, m := range g.project.Models {
 		generators = append(
 			generators,
-			domain.NewMainModel(m),
-			domain.NewCreateModel(m),
-			domain.NewUpdateModel(m),
-			domain.NewFilterModel(m),
-			domain.NewRepositoryInterface(m),
-			domain.NewUseCaseInterface(m),
-			domain.NewInterceptorInterface(m),
+			models.NewMainModel(m),
+			models.NewCreateModel(m),
+			models.NewUpdateModel(m),
+			models.NewFilterModel(m),
+			repositories.NewRepositoryInterfaceCrud(m),
+			useCaseInterfaces.NewUseCaseInterfaceCrud(m),
+			interceptorInterfaces.NewInterceptorInterfaceCrud(m),
 
-			implementations.NewInterceptorCrud(m),
-			implementations.NewUseCaseCrud(m),
-			implementations.NewPostgresRepositoryCrud(m),
+			interceptors.NewInterceptorCrud(m),
+			usecases.NewUseCaseCrud(m),
+			postgres.NewRepositoryCrud(m),
 
 			grpc.NewHandler(m),
 		)
@@ -47,10 +53,15 @@ func (g CrudGenerator) Sync() error {
 	if g.project.Auth {
 		generators = append(
 			generators,
-			implementations.NewUseCaseUser(g.project),
-			implementations.NewUseCaseAuth(g.project),
-			implementations.NewInterceptorUser(g.project),
-			implementations.NewInterceptorAuth(g.project),
+			useCaseInterfaces.NewUseCaseInterfaceAuth(g.project),
+			useCaseInterfaces.NewUseCaseInterfaceUser(g.project),
+			interceptorInterfaces.NewInterceptorInterfaceAuth(g.project),
+			interceptorInterfaces.NewInterceptorInterfaceUser(g.project),
+
+			usecases.NewUseCaseUser(g.project),
+			usecases.NewUseCaseAuth(g.project),
+			interceptors.NewInterceptorUser(g.project),
+			interceptors.NewInterceptorAuth(g.project),
 		)
 	}
 	for _, generator := range generators {

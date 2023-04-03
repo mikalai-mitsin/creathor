@@ -1,28 +1,29 @@
-package implementations
+package usecases
 
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path/filepath"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
-type UseCaseAuth struct {
+type UseCaseUser struct {
 	project *configs.Project
 }
 
-func NewUseCaseAuth(project *configs.Project) *UseCaseAuth {
-	return &UseCaseAuth{project: project}
+func NewUseCaseUser(project *configs.Project) *UseCaseUser {
+	return &UseCaseUser{project: project}
 }
 
-func (u UseCaseAuth) Sync() error {
+func (u UseCaseUser) Sync() error {
 	fileset := token.NewFileSet()
-	filename := filepath.Join("internal", "usecases", "auth.go")
+	filename := filepath.Join("internal", "usecases", "user.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		file = u.file()
@@ -37,7 +38,7 @@ func (u UseCaseAuth) Sync() error {
 	return nil
 }
 
-func (u UseCaseAuth) file() *ast.File {
+func (u UseCaseUser) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
 			Name: "usecases",
@@ -55,19 +56,40 @@ func (u UseCaseAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/models"`, u.project.Module),
+							Value: `"strings"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/repositories"`, u.project.Module),
+							Value: `"time"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/domain/models"`, u.project.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind: token.STRING,
+							Value: fmt.Sprintf(
+								`"%s/internal/domain/repositories"`,
+								u.project.Module,
+							),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
 							Value: fmt.Sprintf(`"%s/internal/domain/usecases"`, u.project.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/pkg/clock"`, u.project.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -83,26 +105,11 @@ func (u UseCaseAuth) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: "AuthUseCase",
+							Name: "UserUseCase",
 						},
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "authRepository",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "repositories",
-											},
-											Sel: &ast.Ident{
-												Name: "AuthRepository",
-											},
-										},
-									},
 									{
 										Names: []*ast.Ident{
 											{
@@ -121,15 +128,15 @@ func (u UseCaseAuth) file() *ast.File {
 									{
 										Names: []*ast.Ident{
 											{
-												Name: "permissionRepository",
+												Name: "clock",
 											},
 										},
 										Type: &ast.SelectorExpr{
 											X: &ast.Ident{
-												Name: "repositories",
+												Name: "clock",
 											},
 											Sel: &ast.Ident{
-												Name: "PermissionRepository",
+												Name: "Clock",
 											},
 										},
 									},
@@ -156,26 +163,11 @@ func (u UseCaseAuth) file() *ast.File {
 			},
 			&ast.FuncDecl{
 				Name: &ast.Ident{
-					Name: "NewAuthUseCase",
+					Name: "NewUserUseCase",
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "authRepository",
-									},
-								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "repositories",
-									},
-									Sel: &ast.Ident{
-										Name: "AuthRepository",
-									},
-								},
-							},
 							{
 								Names: []*ast.Ident{
 									{
@@ -194,15 +186,15 @@ func (u UseCaseAuth) file() *ast.File {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: "permissionRepository",
+										Name: "clock",
 									},
 								},
 								Type: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "repositories",
+										Name: "clock",
 									},
 									Sel: &ast.Ident{
-										Name: "PermissionRepository",
+										Name: "Clock",
 									},
 								},
 							},
@@ -231,7 +223,7 @@ func (u UseCaseAuth) file() *ast.File {
 										Name: "usecases",
 									},
 									Sel: &ast.Ident{
-										Name: "AuthUseCase",
+										Name: "UserUseCase",
 									},
 								},
 							},
@@ -246,19 +238,11 @@ func (u UseCaseAuth) file() *ast.File {
 									Op: token.AND,
 									X: &ast.CompositeLit{
 										Type: &ast.Ident{
-											Name: "AuthUseCase",
+											Name: "UserUseCase",
 										},
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
 												Key: &ast.Ident{
-													Name: "authRepository",
-												},
-												Value: &ast.Ident{
-													Name: "authRepository",
-												},
-											},
-											&ast.KeyValueExpr{
-												Key: &ast.Ident{
 													Name: "userRepository",
 												},
 												Value: &ast.Ident{
@@ -267,10 +251,10 @@ func (u UseCaseAuth) file() *ast.File {
 											},
 											&ast.KeyValueExpr{
 												Key: &ast.Ident{
-													Name: "permissionRepository",
+													Name: "clock",
 												},
 												Value: &ast.Ident{
-													Name: "permissionRepository",
+													Name: "clock",
 												},
 											},
 											&ast.KeyValueExpr{
@@ -298,14 +282,16 @@ func (u UseCaseAuth) file() *ast.File {
 									Name: "u",
 								},
 							},
-							Type: &ast.Ident{
-								Name: "AuthUseCase",
+							Type: &ast.StarExpr{
+								X: &ast.Ident{
+									Name: "UserUseCase",
+								},
 							},
 						},
 					},
 				},
 				Name: &ast.Ident{
-					Name: "CreateToken",
+					Name: "Get",
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -328,17 +314,15 @@ func (u UseCaseAuth) file() *ast.File {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: "login",
+										Name: "id",
 									},
 								},
-								Type: &ast.StarExpr{
-									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "models",
-										},
-										Sel: &ast.Ident{
-											Name: "Login",
-										},
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "models",
+									},
+									Sel: &ast.Ident{
+										Name: "UUID",
 									},
 								},
 							},
@@ -353,7 +337,155 @@ func (u UseCaseAuth) file() *ast.File {
 											Name: "models",
 										},
 										Sel: &ast.Ident{
-											Name: "TokenPair",
+											Name: "User",
+										},
+									},
+								},
+							},
+							{
+								Type: &ast.Ident{
+									Name: "error",
+								},
+							},
+						},
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
+								&ast.Ident{
+									Name: "user",
+								},
+								&ast.Ident{
+									Name: "err",
+								},
+							},
+							Tok: token.DEFINE,
+							Rhs: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "u",
+											},
+											Sel: &ast.Ident{
+												Name: "userRepository",
+											},
+										},
+										Sel: &ast.Ident{
+											Name: "Get",
+										},
+									},
+									Args: []ast.Expr{
+										&ast.Ident{
+											Name: "ctx",
+										},
+										&ast.Ident{
+											Name: "id",
+										},
+									},
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.BinaryExpr{
+								X: &ast.Ident{
+									Name: "err",
+								},
+								Op: token.NEQ,
+								Y: &ast.Ident{
+									Name: "nil",
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.ReturnStmt{
+										Results: []ast.Expr{
+											&ast.Ident{
+												Name: "nil",
+											},
+											&ast.Ident{
+												Name: "err",
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								&ast.Ident{
+									Name: "user",
+								},
+								&ast.Ident{
+									Name: "nil",
+								},
+							},
+						},
+					},
+				},
+			},
+			&ast.FuncDecl{
+				Recv: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Names: []*ast.Ident{
+								{
+									Name: "u",
+								},
+							},
+							Type: &ast.StarExpr{
+								X: &ast.Ident{
+									Name: "UserUseCase",
+								},
+							},
+						},
+					},
+				},
+				Name: &ast.Ident{
+					Name: "GetByEmail",
+				},
+				Type: &ast.FuncType{
+					Params: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "ctx",
+									},
+								},
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "context",
+									},
+									Sel: &ast.Ident{
+										Name: "Context",
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "email",
+									},
+								},
+								Type: &ast.Ident{
+									Name: "string",
+								},
+							},
+						},
+					},
+					Results: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Type: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "models",
+										},
+										Sel: &ast.Ident{
+											Name: "User",
 										},
 									},
 								},
@@ -397,12 +529,19 @@ func (u UseCaseAuth) file() *ast.File {
 										&ast.Ident{
 											Name: "ctx",
 										},
-										&ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "login",
+										&ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "strings",
+												},
+												Sel: &ast.Ident{
+													Name: "ToLower",
+												},
 											},
-											Sel: &ast.Ident{
-												Name: "Email",
+											Args: []ast.Expr{
+												&ast.Ident{
+													Name: "email",
+												},
 											},
 										},
 									},
@@ -434,6 +573,334 @@ func (u UseCaseAuth) file() *ast.File {
 								},
 							},
 						},
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								&ast.Ident{
+									Name: "user",
+								},
+								&ast.Ident{
+									Name: "nil",
+								},
+							},
+						},
+					},
+				},
+			},
+			&ast.FuncDecl{
+				Recv: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Names: []*ast.Ident{
+								{
+									Name: "u",
+								},
+							},
+							Type: &ast.StarExpr{
+								X: &ast.Ident{
+									Name: "UserUseCase",
+								},
+							},
+						},
+					},
+				},
+				Name: &ast.Ident{
+					Name: "List",
+				},
+				Type: &ast.FuncType{
+					Params: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "ctx",
+									},
+								},
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "context",
+									},
+									Sel: &ast.Ident{
+										Name: "Context",
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "filter",
+									},
+								},
+								Type: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "models",
+										},
+										Sel: &ast.Ident{
+											Name: "UserFilter",
+										},
+									},
+								},
+							},
+						},
+					},
+					Results: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Type: &ast.ArrayType{
+									Elt: &ast.StarExpr{
+										X: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "models",
+											},
+											Sel: &ast.Ident{
+												Name: "User",
+											},
+										},
+									},
+								},
+							},
+							{
+								Type: &ast.Ident{
+									Name: "uint64",
+								},
+							},
+							{
+								Type: &ast.Ident{
+									Name: "error",
+								},
+							},
+						},
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
+								&ast.Ident{
+									Name: "users",
+								},
+								&ast.Ident{
+									Name: "err",
+								},
+							},
+							Tok: token.DEFINE,
+							Rhs: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "u",
+											},
+											Sel: &ast.Ident{
+												Name: "userRepository",
+											},
+										},
+										Sel: &ast.Ident{
+											Name: "List",
+										},
+									},
+									Args: []ast.Expr{
+										&ast.Ident{
+											Name: "ctx",
+										},
+										&ast.Ident{
+											Name: "filter",
+										},
+									},
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.BinaryExpr{
+								X: &ast.Ident{
+									Name: "err",
+								},
+								Op: token.NEQ,
+								Y: &ast.Ident{
+									Name: "nil",
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.ReturnStmt{
+										Results: []ast.Expr{
+											&ast.Ident{
+												Name: "nil",
+											},
+											&ast.BasicLit{
+												Kind:  token.INT,
+												Value: "0",
+											},
+											&ast.Ident{
+												Name: "err",
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
+								&ast.Ident{
+									Name: "count",
+								},
+								&ast.Ident{
+									Name: "err",
+								},
+							},
+							Tok: token.DEFINE,
+							Rhs: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "u",
+											},
+											Sel: &ast.Ident{
+												Name: "userRepository",
+											},
+										},
+										Sel: &ast.Ident{
+											Name: "Count",
+										},
+									},
+									Args: []ast.Expr{
+										&ast.Ident{
+											Name: "ctx",
+										},
+										&ast.Ident{
+											Name: "filter",
+										},
+									},
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.BinaryExpr{
+								X: &ast.Ident{
+									Name: "err",
+								},
+								Op: token.NEQ,
+								Y: &ast.Ident{
+									Name: "nil",
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.ReturnStmt{
+										Results: []ast.Expr{
+											&ast.Ident{
+												Name: "nil",
+											},
+											&ast.BasicLit{
+												Kind:  token.INT,
+												Value: "0",
+											},
+											&ast.Ident{
+												Name: "err",
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								&ast.Ident{
+									Name: "users",
+								},
+								&ast.Ident{
+									Name: "count",
+								},
+								&ast.Ident{
+									Name: "nil",
+								},
+							},
+						},
+					},
+				},
+			},
+			&ast.FuncDecl{
+				Recv: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Names: []*ast.Ident{
+								{
+									Name: "u",
+								},
+							},
+							Type: &ast.StarExpr{
+								X: &ast.Ident{
+									Name: "UserUseCase",
+								},
+							},
+						},
+					},
+				},
+				Name: &ast.Ident{
+					Name: "Create",
+				},
+				Type: &ast.FuncType{
+					Params: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "ctx",
+									},
+								},
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "context",
+									},
+									Sel: &ast.Ident{
+										Name: "Context",
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "create",
+									},
+								},
+								Type: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "models",
+										},
+										Sel: &ast.Ident{
+											Name: "UserCreate",
+										},
+									},
+								},
+							},
+						},
+					},
+					Results: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Type: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "models",
+										},
+										Sel: &ast.Ident{
+											Name: "User",
+										},
+									},
+								},
+							},
+							{
+								Type: &ast.Ident{
+									Name: "error",
+								},
+							},
+						},
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
 						&ast.IfStmt{
 							Init: &ast.AssignStmt{
 								Lhs: []ast.Expr{
@@ -446,492 +913,190 @@ func (u UseCaseAuth) file() *ast.File {
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
 											X: &ast.Ident{
-												Name: "user",
+												Name: "create",
 											},
 											Sel: &ast.Ident{
-												Name: "CheckPassword",
+												Name: "Validate",
 											},
 										},
-										Args: []ast.Expr{
-											&ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "login",
+									},
+								},
+							},
+							Cond: &ast.BinaryExpr{
+								X: &ast.Ident{
+									Name: "err",
+								},
+								Op: token.NEQ,
+								Y: &ast.Ident{
+									Name: "nil",
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.ReturnStmt{
+										Results: []ast.Expr{
+											&ast.Ident{
+												Name: "nil",
+											},
+											&ast.Ident{
+												Name: "err",
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
+								&ast.Ident{
+									Name: "user",
+								},
+							},
+							Tok: token.DEFINE,
+							Rhs: []ast.Expr{
+								&ast.UnaryExpr{
+									Op: token.AND,
+									X: &ast.CompositeLit{
+										Type: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "models",
+											},
+											Sel: &ast.Ident{
+												Name: "User",
+											},
+										},
+										Elts: []ast.Expr{
+											&ast.KeyValueExpr{
+												Key: &ast.Ident{
+													Name: "ID",
 												},
-												Sel: &ast.Ident{
+												Value: &ast.BasicLit{
+													Kind:  token.STRING,
+													Value: `""`,
+												},
+											},
+											&ast.KeyValueExpr{
+												Key: &ast.Ident{
+													Name: "FirstName",
+												},
+												Value: &ast.BasicLit{
+													Kind:  token.STRING,
+													Value: `""`,
+												},
+											},
+											&ast.KeyValueExpr{
+												Key: &ast.Ident{
+													Name: "LastName",
+												},
+												Value: &ast.BasicLit{
+													Kind:  token.STRING,
+													Value: `""`,
+												},
+											},
+											&ast.KeyValueExpr{
+												Key: &ast.Ident{
 													Name: "Password",
 												},
+												Value: &ast.BasicLit{
+													Kind:  token.STRING,
+													Value: `""`,
+												},
 											},
-										},
-									},
-								},
-							},
-							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
-								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
-							},
-							Body: &ast.BlockStmt{
-								List: []ast.Stmt{
-									&ast.ReturnStmt{
-										Results: []ast.Expr{
-											&ast.Ident{
-												Name: "nil",
+											&ast.KeyValueExpr{
+												Key: &ast.Ident{
+													Name: "Email",
+												},
+												Value: &ast.CallExpr{
+													Fun: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "strings",
+														},
+														Sel: &ast.Ident{
+															Name: "ToLower",
+														},
+													},
+													Args: []ast.Expr{
+														&ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "create",
+															},
+															Sel: &ast.Ident{
+																Name: "Email",
+															},
+														},
+													},
+												},
 											},
-											&ast.Ident{
-												Name: "err",
+											&ast.KeyValueExpr{
+												Key: &ast.Ident{
+													Name: "CreatedAt",
+												},
+												Value: &ast.CompositeLit{
+													Type: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "time",
+														},
+														Sel: &ast.Ident{
+															Name: "Time",
+														},
+													},
+												},
 											},
-										},
-									},
-								},
-							},
-						},
-						&ast.AssignStmt{
-							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "tokenPair",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
-							},
-							Tok: token.DEFINE,
-							Rhs: []ast.Expr{
-								&ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "u",
+											&ast.KeyValueExpr{
+												Key: &ast.Ident{
+													Name: "UpdatedAt",
+												},
+												Value: &ast.CompositeLit{
+													Type: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "time",
+														},
+														Sel: &ast.Ident{
+															Name: "Time",
+														},
+													},
+												},
 											},
-											Sel: &ast.Ident{
-												Name: "authRepository",
-											},
-										},
-										Sel: &ast.Ident{
-											Name: "Create",
-										},
-									},
-									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "ctx",
-										},
-										&ast.Ident{
-											Name: "user",
-										},
-									},
-								},
-							},
-						},
-						&ast.IfStmt{
-							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
-								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
-							},
-							Body: &ast.BlockStmt{
-								List: []ast.Stmt{
-									&ast.ReturnStmt{
-										Results: []ast.Expr{
-											&ast.Ident{
-												Name: "nil",
-											},
-											&ast.Ident{
-												Name: "err",
+											&ast.KeyValueExpr{
+												Key: &ast.Ident{
+													Name: "GroupID",
+												},
+												Value: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "models",
+													},
+													Sel: &ast.Ident{
+														Name: "GroupIDUser",
+													},
+												},
 											},
 										},
 									},
 								},
 							},
 						},
-						&ast.ReturnStmt{
-							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "tokenPair",
-								},
-								&ast.Ident{
-									Name: "nil",
-								},
-							},
-						},
-					},
-				},
-			},
-			&ast.FuncDecl{
-				Recv: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{
-								{
-									Name: "u",
-								},
-							},
-							Type: &ast.Ident{
-								Name: "AuthUseCase",
-							},
-						},
-					},
-				},
-				Name: &ast.Ident{
-					Name: "CreateTokenByUser",
-				},
-				Type: &ast.FuncType{
-					Params: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "ctx",
-									},
-								},
-								Type: &ast.SelectorExpr{
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
 										Name: "user",
 									},
+									Sel: &ast.Ident{
+										Name: "SetPassword",
+									},
 								},
-								Type: &ast.StarExpr{
-									X: &ast.SelectorExpr{
+								Args: []ast.Expr{
+									&ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: "models",
+											Name: "create",
 										},
 										Sel: &ast.Ident{
-											Name: "User",
+											Name: "Password",
 										},
 									},
 								},
 							},
 						},
-					},
-					Results: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Type: &ast.StarExpr{
-									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "models",
-										},
-										Sel: &ast.Ident{
-											Name: "TokenPair",
-										},
-									},
-								},
-							},
-							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
-							},
-						},
-					},
-				},
-				Body: &ast.BlockStmt{
-					List: []ast.Stmt{
-						&ast.AssignStmt{
-							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "tokenPair",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
-							},
-							Tok: token.DEFINE,
-							Rhs: []ast.Expr{
-								&ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "u",
-											},
-											Sel: &ast.Ident{
-												Name: "authRepository",
-											},
-										},
-										Sel: &ast.Ident{
-											Name: "Create",
-										},
-									},
-									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "ctx",
-										},
-										&ast.Ident{
-											Name: "user",
-										},
-									},
-								},
-							},
-						},
-						&ast.IfStmt{
-							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
-								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
-							},
-							Body: &ast.BlockStmt{
-								List: []ast.Stmt{
-									&ast.ReturnStmt{
-										Results: []ast.Expr{
-											&ast.Ident{
-												Name: "nil",
-											},
-											&ast.Ident{
-												Name: "err",
-											},
-										},
-									},
-								},
-							},
-						},
-						&ast.ReturnStmt{
-							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "tokenPair",
-								},
-								&ast.Ident{
-									Name: "nil",
-								},
-							},
-						},
-					},
-				},
-			},
-			&ast.FuncDecl{
-				Recv: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{
-								{
-									Name: "u",
-								},
-							},
-							Type: &ast.Ident{
-								Name: "AuthUseCase",
-							},
-						},
-					},
-				},
-				Name: &ast.Ident{
-					Name: "RefreshToken",
-				},
-				Type: &ast.FuncType{
-					Params: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "ctx",
-									},
-								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "refresh",
-									},
-								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "models",
-									},
-									Sel: &ast.Ident{
-										Name: "Token",
-									},
-								},
-							},
-						},
-					},
-					Results: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Type: &ast.StarExpr{
-									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "models",
-										},
-										Sel: &ast.Ident{
-											Name: "TokenPair",
-										},
-									},
-								},
-							},
-							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
-							},
-						},
-					},
-				},
-				Body: &ast.BlockStmt{
-					List: []ast.Stmt{
-						&ast.AssignStmt{
-							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "pair",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
-							},
-							Tok: token.DEFINE,
-							Rhs: []ast.Expr{
-								&ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "u",
-											},
-											Sel: &ast.Ident{
-												Name: "authRepository",
-											},
-										},
-										Sel: &ast.Ident{
-											Name: "RefreshToken",
-										},
-									},
-									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "ctx",
-										},
-										&ast.Ident{
-											Name: "refresh",
-										},
-									},
-								},
-							},
-						},
-						&ast.IfStmt{
-							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
-								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
-							},
-							Body: &ast.BlockStmt{
-								List: []ast.Stmt{
-									&ast.ReturnStmt{
-										Results: []ast.Expr{
-											&ast.Ident{
-												Name: "nil",
-											},
-											&ast.Ident{
-												Name: "err",
-											},
-										},
-									},
-								},
-							},
-						},
-						&ast.ReturnStmt{
-							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "pair",
-								},
-								&ast.Ident{
-									Name: "nil",
-								},
-							},
-						},
-					},
-				},
-			},
-			&ast.FuncDecl{
-				Recv: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{
-								{
-									Name: "u",
-								},
-							},
-							Type: &ast.Ident{
-								Name: "AuthUseCase",
-							},
-						},
-					},
-				},
-				Name: &ast.Ident{
-					Name: "ValidateToken",
-				},
-				Type: &ast.FuncType{
-					Params: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "ctx",
-									},
-								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "access",
-									},
-								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "models",
-									},
-									Sel: &ast.Ident{
-										Name: "Token",
-									},
-								},
-							},
-						},
-					},
-					Results: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
-							},
-						},
-					},
-				},
-				Body: &ast.BlockStmt{
-					List: []ast.Stmt{
 						&ast.IfStmt{
 							Init: &ast.AssignStmt{
 								Lhs: []ast.Expr{
@@ -948,11 +1113,11 @@ func (u UseCaseAuth) file() *ast.File {
 													Name: "u",
 												},
 												Sel: &ast.Ident{
-													Name: "authRepository",
+													Name: "userRepository",
 												},
 											},
 											Sel: &ast.Ident{
-												Name: "Validate",
+												Name: "Create",
 											},
 										},
 										Args: []ast.Expr{
@@ -960,7 +1125,7 @@ func (u UseCaseAuth) file() *ast.File {
 												Name: "ctx",
 											},
 											&ast.Ident{
-												Name: "access",
+												Name: "user",
 											},
 										},
 									},
@@ -980,6 +1145,9 @@ func (u UseCaseAuth) file() *ast.File {
 									&ast.ReturnStmt{
 										Results: []ast.Expr{
 											&ast.Ident{
+												Name: "nil",
+											},
+											&ast.Ident{
 												Name: "err",
 											},
 										},
@@ -989,6 +1157,9 @@ func (u UseCaseAuth) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
+								&ast.Ident{
+									Name: "user",
+								},
 								&ast.Ident{
 									Name: "nil",
 								},
@@ -1006,14 +1177,16 @@ func (u UseCaseAuth) file() *ast.File {
 									Name: "u",
 								},
 							},
-							Type: &ast.Ident{
-								Name: "AuthUseCase",
+							Type: &ast.StarExpr{
+								X: &ast.Ident{
+									Name: "UserUseCase",
+								},
 							},
 						},
 					},
 				},
 				Name: &ast.Ident{
-					Name: "Auth",
+					Name: "Update",
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -1036,15 +1209,17 @@ func (u UseCaseAuth) file() *ast.File {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: "access",
+										Name: "update",
 									},
 								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "models",
-									},
-									Sel: &ast.Ident{
-										Name: "Token",
+								Type: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "models",
+										},
+										Sel: &ast.Ident{
+											Name: "UserUpdate",
+										},
 									},
 								},
 							},
@@ -1074,43 +1249,27 @@ func (u UseCaseAuth) file() *ast.File {
 				},
 				Body: &ast.BlockStmt{
 					List: []ast.Stmt{
-						&ast.AssignStmt{
-							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "userID",
+						&ast.IfStmt{
+							Init: &ast.AssignStmt{
+								Lhs: []ast.Expr{
+									&ast.Ident{
+										Name: "err",
+									},
 								},
-								&ast.Ident{
-									Name: "err",
-								},
-							},
-							Tok: token.DEFINE,
-							Rhs: []ast.Expr{
-								&ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.SelectorExpr{
+								Tok: token.DEFINE,
+								Rhs: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
 											X: &ast.Ident{
-												Name: "u",
+												Name: "update",
 											},
 											Sel: &ast.Ident{
-												Name: "authRepository",
+												Name: "Validate",
 											},
-										},
-										Sel: &ast.Ident{
-											Name: "GetSubject",
-										},
-									},
-									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "ctx",
-										},
-										&ast.Ident{
-											Name: "access",
 										},
 									},
 								},
 							},
-						},
-						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
 								X: &ast.Ident{
 									Name: "err",
@@ -1164,18 +1323,81 @@ func (u UseCaseAuth) file() *ast.File {
 										&ast.Ident{
 											Name: "ctx",
 										},
-										&ast.CallExpr{
-											Fun: &ast.SelectorExpr{
+										&ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "update",
+											},
+											Sel: &ast.Ident{
+												Name: "ID",
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.BinaryExpr{
+								X: &ast.Ident{
+									Name: "err",
+								},
+								Op: token.NEQ,
+								Y: &ast.Ident{
+									Name: "nil",
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.ReturnStmt{
+										Results: []ast.Expr{
+											&ast.Ident{
+												Name: "nil",
+											},
+											&ast.Ident{
+												Name: "err",
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.BinaryExpr{
+								X: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "update",
+									},
+									Sel: &ast.Ident{
+										Name: "FirstName",
+									},
+								},
+								Op: token.NEQ,
+								Y: &ast.Ident{
+									Name: "nil",
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.AssignStmt{
+										Lhs: []ast.Expr{
+											&ast.SelectorExpr{
 												X: &ast.Ident{
-													Name: "models",
+													Name: "user",
 												},
 												Sel: &ast.Ident{
-													Name: "UUID",
+													Name: "FirstName",
 												},
 											},
-											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "userID",
+										},
+										Tok: token.ASSIGN,
+										Rhs: []ast.Expr{
+											&ast.StarExpr{
+												X: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "update",
+													},
+													Sel: &ast.Ident{
+														Name: "FirstName",
+													},
 												},
 											},
 										},
@@ -1184,6 +1406,185 @@ func (u UseCaseAuth) file() *ast.File {
 							},
 						},
 						&ast.IfStmt{
+							Cond: &ast.BinaryExpr{
+								X: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "update",
+									},
+									Sel: &ast.Ident{
+										Name: "LastName",
+									},
+								},
+								Op: token.NEQ,
+								Y: &ast.Ident{
+									Name: "nil",
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.AssignStmt{
+										Lhs: []ast.Expr{
+											&ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "user",
+												},
+												Sel: &ast.Ident{
+													Name: "LastName",
+												},
+											},
+										},
+										Tok: token.ASSIGN,
+										Rhs: []ast.Expr{
+											&ast.StarExpr{
+												X: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "update",
+													},
+													Sel: &ast.Ident{
+														Name: "LastName",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.BinaryExpr{
+								X: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "update",
+									},
+									Sel: &ast.Ident{
+										Name: "Password",
+									},
+								},
+								Op: token.NEQ,
+								Y: &ast.Ident{
+									Name: "nil",
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.ExprStmt{
+										X: &ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "user",
+												},
+												Sel: &ast.Ident{
+													Name: "SetPassword",
+												},
+											},
+											Args: []ast.Expr{
+												&ast.StarExpr{
+													X: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "update",
+														},
+														Sel: &ast.Ident{
+															Name: "Password",
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.BinaryExpr{
+								X: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "update",
+									},
+									Sel: &ast.Ident{
+										Name: "Email",
+									},
+								},
+								Op: token.NEQ,
+								Y: &ast.Ident{
+									Name: "nil",
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.AssignStmt{
+										Lhs: []ast.Expr{
+											&ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "user",
+												},
+												Sel: &ast.Ident{
+													Name: "Email",
+												},
+											},
+										},
+										Tok: token.ASSIGN,
+										Rhs: []ast.Expr{
+											&ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "strings",
+													},
+													Sel: &ast.Ident{
+														Name: "ToLower",
+													},
+												},
+												Args: []ast.Expr{
+													&ast.StarExpr{
+														X: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "update",
+															},
+															Sel: &ast.Ident{
+																Name: "Email",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.IfStmt{
+							Init: &ast.AssignStmt{
+								Lhs: []ast.Expr{
+									&ast.Ident{
+										Name: "err",
+									},
+								},
+								Tok: token.DEFINE,
+								Rhs: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "u",
+												},
+												Sel: &ast.Ident{
+													Name: "userRepository",
+												},
+											},
+											Sel: &ast.Ident{
+												Name: "Update",
+											},
+										},
+										Args: []ast.Expr{
+											&ast.Ident{
+												Name: "ctx",
+											},
+											&ast.Ident{
+												Name: "user",
+											},
+										},
+									},
+								},
+							},
 							Cond: &ast.BinaryExpr{
 								X: &ast.Ident{
 									Name: "err",
@@ -1230,164 +1631,16 @@ func (u UseCaseAuth) file() *ast.File {
 									Name: "u",
 								},
 							},
-							Type: &ast.Ident{
-								Name: "AuthUseCase",
-							},
-						},
-					},
-				},
-				Name: &ast.Ident{
-					Name: "HasPermission",
-				},
-				Type: &ast.FuncType{
-					Params: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "ctx",
-									},
-								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "user",
-									},
-								},
-								Type: &ast.StarExpr{
-									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "models",
-										},
-										Sel: &ast.Ident{
-											Name: "User",
-										},
-									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "permission",
-									},
-								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "models",
-									},
-									Sel: &ast.Ident{
-										Name: "PermissionID",
-									},
-								},
-							},
-						},
-					},
-					Results: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
-							},
-						},
-					},
-				},
-				Body: &ast.BlockStmt{
-					List: []ast.Stmt{
-						&ast.IfStmt{
-							Init: &ast.AssignStmt{
-								Lhs: []ast.Expr{
-									&ast.Ident{
-										Name: "err",
-									},
-								},
-								Tok: token.DEFINE,
-								Rhs: []ast.Expr{
-									&ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "u",
-												},
-												Sel: &ast.Ident{
-													Name: "permissionRepository",
-												},
-											},
-											Sel: &ast.Ident{
-												Name: "HasPermission",
-											},
-										},
-										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "ctx",
-											},
-											&ast.Ident{
-												Name: "permission",
-											},
-											&ast.Ident{
-												Name: "user",
-											},
-										},
-									},
-								},
-							},
-							Cond: &ast.BinaryExpr{
+							Type: &ast.StarExpr{
 								X: &ast.Ident{
-									Name: "err",
+									Name: "UserUseCase",
 								},
-								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
-							},
-							Body: &ast.BlockStmt{
-								List: []ast.Stmt{
-									&ast.ReturnStmt{
-										Results: []ast.Expr{
-											&ast.Ident{
-												Name: "err",
-											},
-										},
-									},
-								},
-							},
-						},
-						&ast.ReturnStmt{
-							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "nil",
-								},
-							},
-						},
-					},
-				},
-			},
-			&ast.FuncDecl{
-				Recv: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{
-								{
-									Name: "u",
-								},
-							},
-							Type: &ast.Ident{
-								Name: "AuthUseCase",
 							},
 						},
 					},
 				},
 				Name: &ast.Ident{
-					Name: "HasObjectPermission",
+					Name: "Delete",
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -1410,24 +1663,7 @@ func (u UseCaseAuth) file() *ast.File {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: "user",
-									},
-								},
-								Type: &ast.StarExpr{
-									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "models",
-										},
-										Sel: &ast.Ident{
-											Name: "User",
-										},
-									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "permission",
+										Name: "id",
 									},
 								},
 								Type: &ast.SelectorExpr{
@@ -1435,18 +1671,8 @@ func (u UseCaseAuth) file() *ast.File {
 										Name: "models",
 									},
 									Sel: &ast.Ident{
-										Name: "PermissionID",
+										Name: "UUID",
 									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "object",
-									},
-								},
-								Type: &ast.Ident{
-									Name: "any",
 								},
 							},
 						},
@@ -1479,11 +1705,11 @@ func (u UseCaseAuth) file() *ast.File {
 													Name: "u",
 												},
 												Sel: &ast.Ident{
-													Name: "permissionRepository",
+													Name: "userRepository",
 												},
 											},
 											Sel: &ast.Ident{
-												Name: "HasObjectPermission",
+												Name: "Delete",
 											},
 										},
 										Args: []ast.Expr{
@@ -1491,13 +1717,7 @@ func (u UseCaseAuth) file() *ast.File {
 												Name: "ctx",
 											},
 											&ast.Ident{
-												Name: "permission",
-											},
-											&ast.Ident{
-												Name: "user",
-											},
-											&ast.Ident{
-												Name: "object",
+												Name: "id",
 											},
 										},
 									},
@@ -1536,5 +1756,4 @@ func (u UseCaseAuth) file() *ast.File {
 			},
 		},
 	}
-
 }

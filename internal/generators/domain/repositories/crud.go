@@ -1,4 +1,4 @@
-package domain
+package repositories
 
 import (
 	"bytes"
@@ -13,15 +13,15 @@ import (
 	"github.com/018bf/creathor/internal/configs"
 )
 
-type RepositoryInterface struct {
+type RepositoryInterfaceCrud struct {
 	model *configs.ModelConfig
 }
 
-func NewRepositoryInterface(config *configs.ModelConfig) *RepositoryInterface {
-	return &RepositoryInterface{model: config}
+func NewRepositoryInterfaceCrud(config *configs.ModelConfig) *RepositoryInterfaceCrud {
+	return &RepositoryInterfaceCrud{model: config}
 }
 
-func (i RepositoryInterface) file() *ast.File {
+func (i RepositoryInterfaceCrud) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
 			Name: "repositories",
@@ -54,7 +54,7 @@ func (i RepositoryInterface) file() *ast.File {
 	}
 }
 
-func (i RepositoryInterface) Sync() error {
+func (i RepositoryInterfaceCrud) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "domain", "repositories", i.model.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -86,9 +86,8 @@ func (i RepositoryInterface) Sync() error {
 					},
 					{
 						Text: fmt.Sprintf(
-							"//go:generate mockgen -build_flags=-mod=mod -destination mock/%s %s/internal/domain/repositories %s",
+							"//go:generate mockgen -build_flags=-mod=mod -destination mock/%s . %s",
 							i.model.FileName(),
-							i.model.Module,
 							i.model.RepositoryTypeName(),
 						),
 					},
@@ -109,7 +108,7 @@ func (i RepositoryInterface) Sync() error {
 	return nil
 }
 
-func (i RepositoryInterface) astInterface() *ast.TypeSpec {
+func (i RepositoryInterfaceCrud) astInterface() *ast.TypeSpec {
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
 			Name: i.model.RepositoryTypeName(),

@@ -1,15 +1,16 @@
-package implementations
+package interceptors
 
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path/filepath"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 type InterceptorUser struct {
@@ -54,8 +55,11 @@ func (i InterceptorUser) file() *ast.File {
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/interceptors"`, i.project.Module),
+							Kind: token.STRING,
+							Value: fmt.Sprintf(
+								`"%s/internal/domain/interceptors"`,
+								i.project.Module,
+							),
 						},
 					},
 					&ast.ImportSpec{

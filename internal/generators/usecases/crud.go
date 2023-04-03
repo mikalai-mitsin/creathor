@@ -1,4 +1,4 @@
-package implementations
+package usecases
 
 import (
 	"bytes"

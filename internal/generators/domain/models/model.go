@@ -1,4 +1,4 @@
-package domain
+package models
 
 import (
 	"bytes"
@@ -16,62 +16,183 @@ import (
 	"github.com/018bf/creathor/internal/fake"
 )
 
-type CreateModel struct {
+type MainModel struct {
 	model *configs.ModelConfig
 }
 
-func NewCreateModel(modelConfig *configs.ModelConfig) *CreateModel {
-	return &CreateModel{model: modelConfig}
+func NewMainModel(modelConfig *configs.ModelConfig) *MainModel {
+	return &MainModel{model: modelConfig}
 }
 
-func (m *CreateModel) filename() string {
-	return filepath.Join("internal", "domain", "models", m.model.FileName())
-}
-
-func (m *CreateModel) file() *ast.File {
-	return &ast.File{
-		Name: &ast.Ident{
-			Name: "models",
-		},
-		Decls: []ast.Decl{
-			&ast.GenDecl{
-				Tok: token.IMPORT,
-				Specs: []ast.Spec{
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"time"`,
-						},
+func (m *MainModel) file() *ast.File {
+	decls := []ast.Decl{
+		&ast.GenDecl{
+			Tok: token.IMPORT,
+			Specs: []ast.Spec{
+				&ast.ImportSpec{
+					Path: &ast.BasicLit{
+						Kind:  token.STRING,
+						Value: `"time"`,
 					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/errs"`, m.model.Module),
-						},
+				},
+				&ast.ImportSpec{
+					Path: &ast.BasicLit{
+						Kind:  token.STRING,
+						Value: fmt.Sprintf(`"%s/internal/domain/errs"`, m.model.Module),
 					},
-					&ast.ImportSpec{
-						Name: ast.NewIdent("validation"),
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"github.com/go-ozzo/ozzo-validation/v4"`,
-						},
+				},
+				&ast.ImportSpec{
+					Name: ast.NewIdent("validation"),
+					Path: &ast.BasicLit{
+						Kind:  token.STRING,
+						Value: `"github.com/go-ozzo/ozzo-validation/v4"`,
 					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"github.com/go-ozzo/ozzo-validation/v4/is"`,
-						},
+				},
+				&ast.ImportSpec{
+					Path: &ast.BasicLit{
+						Kind:  token.STRING,
+						Value: `"github.com/go-ozzo/ozzo-validation/v4/is"`,
 					},
 				},
 			},
 		},
-		Imports:  nil,
-		Comments: nil,
+	}
+	if m.model.Auth {
+		decls = append(decls, &ast.GenDecl{
+			Tok: token.CONST,
+			Specs: []ast.Spec{
+				&ast.ValueSpec{
+					Names: []*ast.Ident{
+						{
+							Name: m.model.PermissionIDList(),
+						},
+					},
+					Type: &ast.Ident{
+						Name: "PermissionID",
+					},
+					Values: []ast.Expr{
+						&ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s_list"`, m.model.KeyName()),
+						},
+					},
+				},
+				&ast.ValueSpec{
+					Names: []*ast.Ident{
+						{
+							Name: m.model.PermissionIDDetail(),
+						},
+					},
+					Type: &ast.Ident{
+						Name: "PermissionID",
+					},
+					Values: []ast.Expr{
+						&ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s_detail"`, m.model.KeyName()),
+						},
+					},
+				},
+				&ast.ValueSpec{
+					Names: []*ast.Ident{
+						{
+							Name: m.model.PermissionIDCreate(),
+						},
+					},
+					Type: &ast.Ident{
+						Name: "PermissionID",
+					},
+					Values: []ast.Expr{
+						&ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s_create"`, m.model.KeyName()),
+						},
+					},
+				},
+				&ast.ValueSpec{
+					Names: []*ast.Ident{
+						{
+							Name: m.model.PermissionIDUpdate(),
+						},
+					},
+					Type: &ast.Ident{
+						Name: "PermissionID",
+					},
+					Values: []ast.Expr{
+						&ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s_update"`, m.model.KeyName()),
+						},
+					},
+				},
+				&ast.ValueSpec{
+					Names: []*ast.Ident{
+						{
+							Name: m.model.PermissionIDDelete(),
+						},
+					},
+					Type: &ast.Ident{
+						Name: "PermissionID",
+					},
+					Values: []ast.Expr{
+						&ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s_delete"`, m.model.KeyName()),
+						},
+					},
+				},
+			},
+		})
+	}
+	return &ast.File{
+		Name:  ast.NewIdent("models"),
+		Decls: decls,
 	}
 }
 
-func (m *CreateModel) params() []*ast.Field {
-	var fields []*ast.Field
+func (m *MainModel) filename() string {
+	return filepath.Join("internal", "domain", "models", m.model.FileName())
+}
+
+func (m *MainModel) params() []*ast.Field {
+	fields := []*ast.Field{
+		{
+			Doc:   nil,
+			Names: []*ast.Ident{ast.NewIdent("ID")},
+			Type:  ast.NewIdent("UUID"),
+			Tag: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: "`json:\"id\"`",
+			},
+			Comment: nil,
+		},
+		{
+			Doc:   nil,
+			Names: []*ast.Ident{ast.NewIdent("UpdatedAt")},
+			Type: &ast.SelectorExpr{
+				X:   ast.NewIdent("time"),
+				Sel: ast.NewIdent("Time"),
+			},
+			Tag: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: "`json:\"updated_at\"`",
+			},
+			Comment: nil,
+		},
+		{
+			Doc:   nil,
+			Names: []*ast.Ident{ast.NewIdent("CreatedAt")},
+			Type: &ast.SelectorExpr{
+				X:   ast.NewIdent("time"),
+				Sel: ast.NewIdent("Time"),
+			},
+			Tag: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: "`json:\"created_at\"`",
+			},
+			Comment: nil,
+		},
+	}
 	for _, param := range m.model.Params {
 		fields = append(fields, &ast.Field{
 			Doc:   nil,
@@ -87,8 +208,71 @@ func (m *CreateModel) params() []*ast.Field {
 	return fields
 }
 
-func (m *CreateModel) toValidate() []*ast.CallExpr {
-	var fields []*ast.CallExpr
+func (m *MainModel) toValidate() []*ast.CallExpr {
+	fields := []*ast.CallExpr{
+		{
+			Fun: &ast.SelectorExpr{
+				X:   ast.NewIdent("validation"),
+				Sel: ast.NewIdent("Field"),
+			},
+			Args: []ast.Expr{
+				&ast.UnaryExpr{
+					Op: token.AND,
+					X: &ast.SelectorExpr{
+						X:   ast.NewIdent("m"),
+						Sel: ast.NewIdent("ID"),
+					},
+				},
+				&ast.SelectorExpr{
+					X:   ast.NewIdent("validation"),
+					Sel: ast.NewIdent("Required"),
+				},
+				&ast.SelectorExpr{
+					X:   ast.NewIdent("is"),
+					Sel: ast.NewIdent("UUID"),
+				},
+			},
+		},
+		{
+			Fun: &ast.SelectorExpr{
+				X:   ast.NewIdent("validation"),
+				Sel: ast.NewIdent("Field"),
+			},
+			Args: []ast.Expr{
+				&ast.UnaryExpr{
+					Op: token.AND,
+					X: &ast.SelectorExpr{
+						X:   ast.NewIdent("m"),
+						Sel: ast.NewIdent("UpdatedAt"),
+					},
+				},
+				&ast.SelectorExpr{
+					X:   ast.NewIdent("validation"),
+					Sel: ast.NewIdent("Required"),
+				},
+			},
+		},
+		{
+			Fun: &ast.SelectorExpr{
+				X:   ast.NewIdent("validation"),
+				Sel: ast.NewIdent("Field"),
+			},
+			Args: []ast.Expr{
+				&ast.UnaryExpr{
+					Op: token.AND,
+					X: &ast.SelectorExpr{
+						X:   ast.NewIdent("m"),
+						Sel: ast.NewIdent("CreatedAt"),
+					},
+				},
+				&ast.SelectorExpr{
+					X:   ast.NewIdent("validation"),
+					Sel: ast.NewIdent("Required"),
+				},
+			},
+		},
+	}
+
 	for _, param := range m.model.Params {
 		call := &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
@@ -128,7 +312,7 @@ func (m *CreateModel) toValidate() []*ast.CallExpr {
 	return fields
 }
 
-func (m *CreateModel) syncStruct() error {
+func (m *MainModel) syncStruct() error {
 	fileset := token.NewFileSet()
 	filename := m.filename()
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -138,7 +322,7 @@ func (m *CreateModel) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == m.model.CreateTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == m.model.ModelName() {
 			structure = t
 			structureExists = true
 			return false
@@ -188,10 +372,10 @@ func (m *CreateModel) syncStruct() error {
 	return nil
 }
 
-func (m *CreateModel) astStruct() *ast.TypeSpec {
+func (m *MainModel) astStruct() *ast.TypeSpec {
 	return &ast.TypeSpec{
-		Name:       ast.NewIdent(m.model.CreateTypeName()),
 		Doc:        nil,
+		Name:       ast.NewIdent(m.model.ModelName()),
 		TypeParams: nil,
 		Assign:     0,
 		Type: &ast.StructType{
@@ -207,7 +391,7 @@ func (m *CreateModel) astStruct() *ast.TypeSpec {
 	}
 }
 
-func (m *CreateModel) astValidate() *ast.FuncDecl {
+func (m *MainModel) astValidate() *ast.FuncDecl {
 	exprs := []ast.Expr{
 		ast.NewIdent("m"),
 	}
@@ -225,7 +409,7 @@ func (m *CreateModel) astValidate() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						Star: 0,
-						X:    ast.NewIdent(m.model.CreateTypeName()),
+						X:    ast.NewIdent(m.model.ModelName()),
 					},
 					Tag:     nil,
 					Comment: nil,
@@ -308,7 +492,7 @@ func (m *CreateModel) astValidate() *ast.FuncDecl {
 	}
 }
 
-func (m *CreateModel) syncValidate() error {
+func (m *MainModel) syncValidate() error {
 	fileset := token.NewFileSet()
 	filename := m.filename()
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -322,7 +506,7 @@ func (m *CreateModel) syncValidate() error {
 			for _, field := range fun.Recv.List {
 				if expr, ok := field.Type.(*ast.StarExpr); ok {
 					ident, ok := expr.X.(*ast.Ident)
-					if ok && ident.Name == m.model.CreateTypeName() {
+					if ok && ident.Name == m.model.ModelName() {
 						validator = fun
 						validatorExists = true
 						return false
@@ -378,8 +562,21 @@ func (m *CreateModel) syncValidate() error {
 	return nil
 }
 
-func (m *CreateModel) astFakeValues() []*ast.KeyValueExpr {
-	var kvs []*ast.KeyValueExpr
+func (m *MainModel) astFakeValues() []*ast.KeyValueExpr {
+	kvs := []*ast.KeyValueExpr{
+		{
+			Key:   ast.NewIdent("ID"),
+			Value: fake.FakeAst("UUID"),
+		},
+		{
+			Key:   ast.NewIdent("UpdatedAt"),
+			Value: fake.FakeAst("time.Time"),
+		},
+		{
+			Key:   ast.NewIdent("CreatedAt"),
+			Value: fake.FakeAst("time.Time"),
+		},
+	}
 	for _, param := range m.model.Params {
 		kvs = append(kvs, &ast.KeyValueExpr{
 			Key:   ast.NewIdent(param.GetName()),
@@ -390,7 +587,7 @@ func (m *CreateModel) astFakeValues() []*ast.KeyValueExpr {
 	return kvs
 }
 
-func (m *CreateModel) mockFile() *ast.File {
+func (m *MainModel) mockFile() *ast.File {
 	return &ast.File{
 		Package: 1,
 		Name: &ast.Ident{
@@ -444,14 +641,14 @@ func (m *CreateModel) mockFile() *ast.File {
 	}
 }
 
-func (m *CreateModel) syncMock() error {
+func (m *MainModel) syncMock() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "domain", "models", "mock", m.model.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		file = m.mockFile()
 	}
-	mockName := fmt.Sprintf("New%s", m.model.CreateTypeName())
+	mockName := fmt.Sprintf("New%s", m.model.ModelName())
 	var mockExists bool
 	var mock *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
@@ -499,7 +696,7 @@ func (m *CreateModel) syncMock() error {
 								Star: 0,
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(m.model.CreateTypeName()),
+									Sel: ast.NewIdent(m.model.ModelName()),
 								},
 							},
 							Tag:     nil,
@@ -535,7 +732,7 @@ func (m *CreateModel) syncMock() error {
 								X: &ast.CompositeLit{
 									Type: &ast.SelectorExpr{
 										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(m.model.CreateTypeName()),
+										Sel: ast.NewIdent(m.model.ModelName()),
 									},
 									Lbrace:     0,
 									Elts:       nil,
@@ -561,7 +758,7 @@ func (m *CreateModel) syncMock() error {
 		ast.Inspect(mock.Body, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
 				if sel, ok := cl.Type.(*ast.SelectorExpr); ok {
-					if sel.Sel.Name != m.model.CreateTypeName() {
+					if sel.Sel.Name != m.model.ModelName() {
 						return true
 					}
 				}
@@ -590,7 +787,7 @@ func (m *CreateModel) syncMock() error {
 	return nil
 }
 
-func (m *CreateModel) Sync() error {
+func (m *MainModel) Sync() error {
 	if err := m.syncStruct(); err != nil {
 		return err
 	}

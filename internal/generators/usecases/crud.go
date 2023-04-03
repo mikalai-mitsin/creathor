@@ -1,4 +1,4 @@
-package implementations
+package usecases
 
 import (
 	"bytes"
@@ -13,15 +13,15 @@ import (
 	"github.com/018bf/creathor/internal/configs"
 )
 
-type UseCase struct {
+type UseCaseCrud struct {
 	model *configs.ModelConfig
 }
 
-func NewUseCase(model *configs.ModelConfig) *UseCase {
-	return &UseCase{model: model}
+func NewUseCaseCrud(model *configs.ModelConfig) *UseCaseCrud {
+	return &UseCaseCrud{model: model}
 }
 
-func (u UseCase) Sync() error {
+func (u UseCaseCrud) Sync() error {
 	if err := u.syncStruct(); err != nil {
 		return err
 	}
@@ -46,11 +46,11 @@ func (u UseCase) Sync() error {
 	return nil
 }
 
-func (u UseCase) filename() string {
+func (u UseCaseCrud) filename() string {
 	return filepath.Join("internal", "usecases", u.model.FileName())
 }
 
-func (u UseCase) astStruct() *ast.TypeSpec {
+func (u UseCaseCrud) astStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Name: ast.NewIdent(u.model.UseCaseTypeName()),
 		Type: &ast.StructType{
@@ -93,7 +93,7 @@ func (u UseCase) astStruct() *ast.TypeSpec {
 	return structure
 }
 
-func (u UseCase) file() *ast.File {
+func (u UseCaseCrud) file() *ast.File {
 	return &ast.File{
 		Name: ast.NewIdent("usecases"),
 		Decls: []ast.Decl{
@@ -142,7 +142,7 @@ func (u UseCase) file() *ast.File {
 	}
 }
 
-func (u UseCase) syncStruct() error {
+func (u UseCaseCrud) syncStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -182,7 +182,7 @@ func (u UseCase) syncStruct() error {
 	return nil
 }
 
-func (u UseCase) astConstructor() *ast.FuncDecl {
+func (u UseCaseCrud) astConstructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
 		Doc:  nil,
 		Recv: nil,
@@ -290,7 +290,7 @@ func (u UseCase) astConstructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (u UseCase) syncConstructor() error {
+func (u UseCaseCrud) syncConstructor() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -323,12 +323,12 @@ func (u UseCase) syncConstructor() error {
 	return nil
 }
 
-func (u UseCase) astCreateMethod() *ast.FuncDecl {
+func (u UseCaseCrud) astCreateMethod() *ast.FuncDecl {
 	params := []ast.Expr{
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("ID"),
 			Colon: 0,
-			Value: ast.NewIdent("\"\""),
+			Value: ast.NewIdent(`""`),
 		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("UpdatedAt"),
@@ -531,7 +531,7 @@ func (u UseCase) astCreateMethod() *ast.FuncDecl {
 	return fun
 }
 
-func (u UseCase) syncCreateMethod() error {
+func (u UseCaseCrud) syncCreateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -592,7 +592,7 @@ func (u UseCase) syncCreateMethod() error {
 	return nil
 }
 
-func (u UseCase) astListMethod() *ast.FuncDecl {
+func (u UseCaseCrud) astListMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Doc: nil,
 		Recv: &ast.FieldList{
@@ -749,7 +749,7 @@ func (u UseCase) astListMethod() *ast.FuncDecl {
 	}
 }
 
-func (u UseCase) syncListMethod() error {
+func (u UseCaseCrud) syncListMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -781,7 +781,7 @@ func (u UseCase) syncListMethod() error {
 	return nil
 }
 
-func (u UseCase) astGetMethod() *ast.FuncDecl {
+func (u UseCaseCrud) astGetMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Doc: nil,
 		Recv: &ast.FieldList{
@@ -884,7 +884,7 @@ func (u UseCase) astGetMethod() *ast.FuncDecl {
 	}
 }
 
-func (u UseCase) syncGetMethod() error {
+func (u UseCaseCrud) syncGetMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -916,7 +916,7 @@ func (u UseCase) syncGetMethod() error {
 	return nil
 }
 
-func (u UseCase) astUpdateMethod() *ast.FuncDecl {
+func (u UseCaseCrud) astUpdateMethod() *ast.FuncDecl {
 	block := &ast.BlockStmt{
 		Lbrace: 0,
 		List:   []ast.Stmt{},
@@ -1167,7 +1167,7 @@ func (u UseCase) astUpdateMethod() *ast.FuncDecl {
 	return fun
 }
 
-func (u UseCase) syncUpdateMethod() error {
+func (u UseCaseCrud) syncUpdateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1255,7 +1255,7 @@ func (u UseCase) syncUpdateMethod() error {
 	return nil
 }
 
-func (u UseCase) astDeleteMethod() *ast.FuncDecl {
+func (u UseCaseCrud) astDeleteMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Doc: nil,
 		Recv: &ast.FieldList{
@@ -1346,7 +1346,7 @@ func (u UseCase) astDeleteMethod() *ast.FuncDecl {
 	}
 }
 
-func (u UseCase) syncDeleteMethod() error {
+func (u UseCaseCrud) syncDeleteMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {

@@ -242,7 +242,7 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 				X: &ast.CallExpr{
 					Fun: &ast.SelectorExpr{
 						X: &ast.Ident{
-							Name: "examplepb",
+							Name: s.project.ProtoPackage(),
 						},
 						Sel: &ast.Ident{
 							Name: "RegisterAuthServiceServer",
@@ -262,7 +262,7 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 				X: &ast.CallExpr{
 					Fun: &ast.SelectorExpr{
 						X: &ast.Ident{
-							Name: "examplepb",
+							Name: s.project.ProtoPackage(),
 						},
 						Sel: &ast.Ident{
 							Name: "RegisterUserServiceServer",
@@ -720,7 +720,7 @@ func (s Server) astServerStart() *ast.FuncDecl {
 							Args: []ast.Expr{
 								&ast.BasicLit{
 									Kind:  token.STRING,
-									Value: "\"tcp\"",
+									Value: `"tcp"`,
 								},
 								&ast.SelectorExpr{
 									X: &ast.SelectorExpr{
@@ -1088,7 +1088,7 @@ func (s Server) astMessageProducer() *ast.FuncDecl {
 									Args: []ast.Expr{
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: "\"grpc.code\"",
+											Value: `"grpc.code"`,
 										},
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
@@ -1117,7 +1117,7 @@ func (s Server) astMessageProducer() *ast.FuncDecl {
 									Args: []ast.Expr{
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: "\"request_id\"",
+											Value: `"request_id"`,
 										},
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
@@ -1440,7 +1440,7 @@ func (s Server) astMessageProducer() *ast.FuncDecl {
 															Args: []ast.Expr{
 																&ast.BasicLit{
 																	Kind:  token.STRING,
-																	Value: "\"params\"",
+																	Value: `"params"`,
 																},
 																&ast.Ident{
 																	Name: "errParams",
@@ -1930,7 +1930,7 @@ func (s Server) astDecodeError() *ast.FuncDecl {
 																		},
 																		Value: &ast.BasicLit{
 																			Kind:  token.STRING,
-																			Value: "\"\"",
+																			Value: `""`,
 																		},
 																	},
 																	&ast.KeyValueExpr{

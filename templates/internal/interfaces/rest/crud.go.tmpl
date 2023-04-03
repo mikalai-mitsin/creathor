@@ -35,18 +35,23 @@ func (h *{{ .RESTHandlerTypeName }}) Register(router *gin.RouterGroup) {
 // @Produce      json
 // @Param        {{ .ModelName }}  body   models.{{ .CreateTypeName }}  true  "{{ .ModelName }} JSON"
 // @Success      201   {object}  models.{{ .ModelName }}
-// @Router       /{{ .RESTHandlerPath }} [post]
+// @Failure        400   {object}  errs.Error
+// @Failure        401   {object}  errs.Error
+// @Failure        403   {object}  errs.Error
+// @Failure        404   {object}  errs.Error
+// @Failure        405   {object}  errs.Error
+// @Failure        500   {object}  errs.Error
+// @Failure        503   {object}  errs.Error
+// @Router       /{{ .RESTHandlerPath }}/ [post]
 func (h *{{ .RESTHandlerTypeName }}) Create(ctx *gin.Context) {
 {{- if .Auth }}
 	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 {{- end }}
 	create := &models.{{ .CreateTypeName }}{}
-	if err := ctx.Bind(create); err != nil {
-		return
-	}
+	_ = ctx.Bind(create)
     {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Create(ctx.Request.Context(), create{{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusCreated, {{ .Variable }})
@@ -59,18 +64,23 @@ func (h *{{ .RESTHandlerTypeName }}) Create(ctx *gin.Context) {
 // @Produce      json
 // @Param        filter  query   models.{{ .FilterTypeName }} false "{{ .ModelName }} filter"
 // @Success      200  {array}  models.{{ .ModelName }}
+// @Failure        400   {object}  errs.Error
+// @Failure        401   {object}  errs.Error
+// @Failure        403   {object}  errs.Error
+// @Failure        404   {object}  errs.Error
+// @Failure        405   {object}  errs.Error
+// @Failure        500   {object}  errs.Error
+// @Failure        503   {object}  errs.Error
 // @Router       /{{ .RESTHandlerPath }} [get]
 func (h *{{ .RESTHandlerTypeName }}) List(ctx *gin.Context) {
 {{- if .Auth }}
 	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 {{- end }}
 	filter := &models.{{ .FilterTypeName }}{}
-	if err := ctx.Bind(filter); err != nil {
-		return
-	}
+	_ = ctx.Bind(filter)
     {{ .ListVariable }}, count, err := h.{{ .InterceptorVariableName }}.List(ctx.Request.Context(), filter{{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.Header("count", fmt.Sprint(count))
@@ -84,17 +94,24 @@ func (h *{{ .RESTHandlerTypeName }}) List(ctx *gin.Context) {
 // @Produce      json
 // @Param        uuid  path      string  true  "search {{ .ModelName }} by UUID"
 // @Success      200  {object}  models.{{ .ModelName }}
+// @Failure        400   {object}  errs.Error
+// @Failure        401   {object}  errs.Error
+// @Failure        403   {object}  errs.Error
+// @Failure        404   {object}  errs.Error
+// @Failure        405   {object}  errs.Error
+// @Failure        500   {object}  errs.Error
+// @Failure        503   {object}  errs.Error
 // @Router       /{{ .RESTHandlerPath }}/{uuid} [get]
-func (h *{{ .RESTHandlerTypeName }}) Get(c *gin.Context) {
+func (h *{{ .RESTHandlerTypeName }}) Get(ctx *gin.Context) {
 {{- if .Auth }}
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 {{- end }}
-    {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Get(c.Request.Context(), models.UUID(c.Param("id")){{- if .Auth -}}, requestUser{{- end -}})
+    {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Get(ctx.Request.Context(), models.UUID(ctx.Param("id")){{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.JSON(http.StatusOK, {{ .Variable }})
+	ctx.JSON(http.StatusOK, {{ .Variable }})
 }
 
 // Update        godoc
@@ -105,22 +122,27 @@ func (h *{{ .RESTHandlerTypeName }}) Get(c *gin.Context) {
 // @Param        uuid  path      string  true  "update {{ .ModelName }} by UUID"
 // @Param        {{ .ModelName }}  body   models.{{ .UpdateTypeName }}  true  "{{ .ModelName }} JSON"
 // @Success      201  {object}  models.{{ .ModelName }}
+// @Failure        400   {object}  errs.Error
+// @Failure        401   {object}  errs.Error
+// @Failure        403   {object}  errs.Error
+// @Failure        404   {object}  errs.Error
+// @Failure        405   {object}  errs.Error
+// @Failure        500   {object}  errs.Error
+// @Failure        503   {object}  errs.Error
 // @Router       /{{ .RESTHandlerPath }}/{uuid} [PATCH]
-func (h *{{ .RESTHandlerTypeName }}) Update(c *gin.Context) {
+func (h *{{ .RESTHandlerTypeName }}) Update(ctx *gin.Context) {
 {{- if .Auth }}
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 {{- end }}
 	update := &models.{{ .UpdateTypeName }}{}
-	if err := c.Bind(update); err != nil {
-		return
-	}
-	update.ID = models.UUID(c.Param("id"))
-    {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Update(c.Request.Context(), update{{- if .Auth -}}, requestUser{{- end -}})
+	_ = ctx.Bind(update)
+	update.ID = models.UUID(ctx.Param("id"))
+    {{ .Variable }}, err := h.{{ .InterceptorVariableName }}.Update(ctx.Request.Context(), update{{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.JSON(http.StatusOK, {{ .Variable }})
+	ctx.JSON(http.StatusOK, {{ .Variable }})
 }
 
 // Delete        godoc
@@ -129,15 +151,22 @@ func (h *{{ .RESTHandlerTypeName }}) Update(c *gin.Context) {
 // @Tags         {{ .ModelName }}
 // @Param        uuid  path      string  true  "delete {{ .ModelName }} by UUID"
 // @Success      204
+// @Failure        400   {object}  errs.Error
+// @Failure        401   {object}  errs.Error
+// @Failure        403   {object}  errs.Error
+// @Failure        404   {object}  errs.Error
+// @Failure        405   {object}  errs.Error
+// @Failure        500   {object}  errs.Error
+// @Failure        503   {object}  errs.Error
 // @Router       /{{ .RESTHandlerPath }}/{uuid} [delete]
-func (h *{{ .RESTHandlerTypeName }}) Delete(c *gin.Context) {
+func (h *{{ .RESTHandlerTypeName }}) Delete(ctx *gin.Context) {
 {{- if .Auth }}
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 {{- end }}
-	err := h.{{ .InterceptorVariableName }}.Delete(c.Request.Context(), models.UUID(c.Param("id")){{- if .Auth -}}, requestUser{{- end -}})
+	err := h.{{ .InterceptorVariableName }}.Delete(ctx.Request.Context(), models.UUID(ctx.Param("id")){{- if .Auth -}}, requestUser{{- end -}})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.Status(http.StatusNoContent)
+	ctx.Status(http.StatusNoContent)
 }

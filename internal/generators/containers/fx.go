@@ -1098,7 +1098,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 																																Args: []ast.Expr{
 																																	&ast.BasicLit{
 																																		Kind:  token.STRING,
-																																		Value: "\"shutdown\"",
+																																		Value: `"shutdown"`,
 																																	},
 																																	&ast.CallExpr{
 																																		Fun: &ast.SelectorExpr{
@@ -1112,7 +1112,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 																																		Args: []ast.Expr{
 																																			&ast.BasicLit{
 																																				Kind:  token.STRING,
-																																				Value: "\"error\"",
+																																				Value: `"error"`,
 																																			},
 																																			&ast.Ident{
 																																				Name: "err",
@@ -1527,7 +1527,7 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 																																Args: []ast.Expr{
 																																	&ast.BasicLit{
 																																		Kind:  token.STRING,
-																																		Value: "\"shutdown\"",
+																																		Value: `"shutdown"`,
 																																	},
 																																	&ast.CallExpr{
 																																		Fun: &ast.SelectorExpr{
@@ -1541,7 +1541,7 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 																																		Args: []ast.Expr{
 																																			&ast.BasicLit{
 																																				Kind:  token.STRING,
-																																				Value: "\"error\"",
+																																				Value: `"error"`,
 																																			},
 																																			&ast.Ident{
 																																				Name: "err",
@@ -1943,7 +1943,7 @@ func (f FxContainer) astRestContainer() *ast.FuncDecl {
 																																Args: []ast.Expr{
 																																	&ast.BasicLit{
 																																		Kind:  token.STRING,
-																																		Value: "\"shutdown\"",
+																																		Value: `"shutdown"`,
 																																	},
 																																	&ast.CallExpr{
 																																		Fun: &ast.SelectorExpr{
@@ -1957,7 +1957,7 @@ func (f FxContainer) astRestContainer() *ast.FuncDecl {
 																																		Args: []ast.Expr{
 																																			&ast.BasicLit{
 																																				Kind:  token.STRING,
-																																				Value: "\"error\"",
+																																				Value: `"error"`,
 																																			},
 																																			&ast.Ident{
 																																				Name: "err",
@@ -2372,7 +2372,7 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 																																Args: []ast.Expr{
 																																	&ast.BasicLit{
 																																		Kind:  token.STRING,
-																																		Value: "\"shutdown\"",
+																																		Value: `"shutdown"`,
 																																	},
 																																	&ast.CallExpr{
 																																		Fun: &ast.SelectorExpr{
@@ -2386,7 +2386,7 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 																																		Args: []ast.Expr{
 																																			&ast.BasicLit{
 																																				Kind:  token.STRING,
-																																				Value: "\"error\"",
+																																				Value: `"error"`,
 																																			},
 																																			&ast.Ident{
 																																				Name: "err",

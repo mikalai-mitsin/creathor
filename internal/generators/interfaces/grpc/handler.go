@@ -35,25 +35,19 @@ func (h Handler) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"context\"",
+							Value: `"context"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"fmt\"",
+							Value: fmt.Sprintf(`"%s/internal/domain/interceptors"`, h.model.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/internal/domain/interceptors\"",
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/internal/domain/models\"",
+							Value: fmt.Sprintf(`"%s/internal/domain/models"`, h.model.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -61,56 +55,48 @@ func (h Handler) file() *ast.File {
 							Name: h.model.ProtoPackage,
 						},
 						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/pkg/examplepb/v1\"",
+							Kind: token.STRING,
+							Value: fmt.Sprintf(
+								`"%s/pkg/%s/v1"`,
+								h.model.Module,
+								h.model.ProtoPackage,
+							),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/pkg/log\"",
+							Value: fmt.Sprintf(`"%s/pkg/log"`, h.model.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/pkg/utils\"",
+							Value: fmt.Sprintf(`"%s/pkg/utils"`, h.model.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"google.golang.org/protobuf/types/known/emptypb\"",
+							Value: `"google.golang.org/protobuf/types/known/emptypb"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"google.golang.org/grpc\"",
+							Value: `"google.golang.org/protobuf/types/known/structpb"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"google.golang.org/grpc/metadata\"",
+							Value: `"google.golang.org/protobuf/types/known/timestamppb"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"google.golang.org/protobuf/types/known/structpb\"",
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: "\"google.golang.org/protobuf/types/known/timestamppb\"",
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: "\"google.golang.org/protobuf/types/known/wrapperspb\"",
+							Value: `"google.golang.org/protobuf/types/known/wrapperspb"`,
 						},
 					},
 				},
@@ -2906,75 +2892,6 @@ func (h Handler) astListMethod() *ast.FuncDecl {
 											},
 										},
 									},
-								},
-							},
-						},
-					},
-				},
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "header",
-						},
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "metadata",
-								},
-								Sel: &ast.Ident{
-									Name: "Pairs",
-								},
-							},
-							Args: []ast.Expr{
-								&ast.BasicLit{
-									Kind:  token.STRING,
-									Value: "\"count\"",
-								},
-								&ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "fmt",
-										},
-										Sel: &ast.Ident{
-											Name: "Sprint",
-										},
-									},
-									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "count",
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "_",
-						},
-					},
-					Tok: token.ASSIGN,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "grpc",
-								},
-								Sel: &ast.Ident{
-									Name: "SendHeader",
-								},
-							},
-							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "ctx",
-								},
-								&ast.Ident{
-									Name: "header",
 								},
 							},
 						},

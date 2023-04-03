@@ -2,7 +2,10 @@ package rest
 
 import (
     "context"
+	"errors"
     "{{ .Module }}/internal/configs"
+	"{{ .Module }}/internal/domain/errs"
+    "github.com/gin-contrib/cors"
     "net/http"
 
     "{{ .Module }}/pkg/log"
@@ -30,6 +33,13 @@ type Server struct {
 // @description     TBD
 // @host      127.0.0.1:8000
 // @BasePath  /api/v1
+// @schemes https http
+//
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+//
+// @security ApiKeyAuth
 func NewServer(
     logger log.Logger,
     config *configs.Config,
@@ -38,11 +48,15 @@ func NewServer(
     authHandler *AuthHandler,
     userHandler *UserHandler,
 {{- end }}
+{{- range $value := .Models }}
+    {{ $value.RESTHandlerVariableName }} *{{ $value.RESTHandlerTypeName }},
+{{- end }}
 ) *Server {
     router := gin.Default()
 {{- if .Auth }}
     router.Use(authMiddleware.Middleware())
 {{- end }}
+    router.Use(cors.Default())
     router.Use(RequestMiddleware)
     router.GET("/", func(c *gin.Context) {
         c.Status(http.StatusOK)
@@ -56,8 +70,9 @@ func NewServer(
 {{- if .Auth }}
     authHandler.Register(apiV1)
     userHandler.Register(apiV1)
-{{- else }}
-    _ = apiV1
+{{- end }}
+{{- range $value := .Models }}
+    {{ $value.RESTHandlerVariableName }}.Register(apiV1)
 {{- end }}
     return &Server{
         router: router,
@@ -72,4 +87,51 @@ func(s *Server) Start(_ context.Context) error {
 
 func(s *Server) Stop(_ context.Context) error {
     return nil
+}
+
+func decodeError(ctx *gin.Context, err error) {
+	ctx.JSON(http.StatusBadRequest, err)
+	var domainError *errs.Error
+	if errors.As(err, &domainError) {
+		switch domainError.Code {
+		case errs.ErrorCodeOK:
+			ctx.JSON(http.StatusOK, err)
+		case errs.ErrorCodeCanceled:
+			ctx.JSON(http.StatusInternalServerError, err)
+		case errs.ErrorCodeUnknown:
+			ctx.JSON(http.StatusInternalServerError, err)
+		case errs.ErrorCodeInvalidArgument:
+			ctx.JSON(http.StatusBadRequest, err)
+		case errs.ErrorCodeDeadlineExceeded:
+			ctx.JSON(http.StatusInternalServerError, err)
+		case errs.ErrorCodeNotFound:
+			ctx.JSON(http.StatusNotFound, err)
+		case errs.ErrorCodeAlreadyExists:
+			ctx.JSON(http.StatusBadRequest, err)
+		case errs.ErrorCodePermissionDenied:
+			ctx.JSON(http.StatusForbidden, err)
+		case errs.ErrorCodeResourceExhausted:
+			ctx.JSON(http.StatusInternalServerError, err)
+		case errs.ErrorCodeFailedPrecondition:
+			ctx.JSON(http.StatusBadRequest, err)
+		case errs.ErrorCodeAborted:
+			ctx.JSON(http.StatusInternalServerError, err)
+		case errs.ErrorCodeOutOfRange:
+			ctx.JSON(http.StatusInternalServerError, err)
+		case errs.ErrorCodeUnimplemented:
+			ctx.JSON(http.StatusMethodNotAllowed, err)
+		case errs.ErrorCodeInternal:
+			ctx.JSON(http.StatusInternalServerError, err)
+		case errs.ErrorCodeUnavailable:
+			ctx.JSON(http.StatusServiceUnavailable, err)
+		case errs.ErrorCodeDataLoss:
+			ctx.JSON(http.StatusInternalServerError, err)
+		case errs.ErrorCodeUnauthenticated:
+			ctx.JSON(http.StatusUnauthorized, err)
+		default:
+			ctx.JSON(http.StatusInternalServerError, err)
+		}
+		return
+	}
+	ctx.String(http.StatusInternalServerError, err.Error())
 }

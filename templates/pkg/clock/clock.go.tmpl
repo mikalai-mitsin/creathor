@@ -3,7 +3,7 @@ package clock
 import "time"
 
 //nolint: lll
-//go:generate mockgen -destination mock/clock_mock.go {{ .Module }}/pkg/clock Clock
+//go:generate mockgen -destination mock/clock_mock.go . Clock
 
 type Clock interface {
     Now() time.Time

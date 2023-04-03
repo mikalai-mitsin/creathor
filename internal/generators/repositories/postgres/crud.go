@@ -1,4 +1,4 @@
-package implementations
+package postgres
 
 import (
 	"bytes"
@@ -13,19 +13,19 @@ import (
 	"github.com/018bf/creathor/internal/configs"
 )
 
-type PostgresRepository struct {
+type RepositoryCrud struct {
 	model *configs.ModelConfig
 }
 
-func NewPostgresRepository(config *configs.ModelConfig) *PostgresRepository {
-	return &PostgresRepository{model: config}
+func NewRepositoryCrud(config *configs.ModelConfig) *RepositoryCrud {
+	return &RepositoryCrud{model: config}
 }
 
-func (r PostgresRepository) filename() string {
+func (r RepositoryCrud) filename() string {
 	return filepath.Join("internal", "repositories", "postgres", r.model.FileName())
 }
 
-func (r PostgresRepository) Sync() error {
+func (r RepositoryCrud) Sync() error {
 	if err := r.syncStruct(); err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (r PostgresRepository) Sync() error {
 	return nil
 }
 
-func (r PostgresRepository) astDTOStruct() *ast.TypeSpec {
+func (r RepositoryCrud) astDTOStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Name: &ast.Ident{
 			Name: r.model.PostgresDTOTypeName(),
@@ -160,7 +160,7 @@ func (r PostgresRepository) astDTOStruct() *ast.TypeSpec {
 	return structure
 }
 
-func (r PostgresRepository) syncDTOStruct() error {
+func (r RepositoryCrud) syncDTOStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -225,7 +225,7 @@ func (r PostgresRepository) syncDTOStruct() error {
 	return nil
 }
 
-func (r PostgresRepository) astDTOConstructor() *ast.FuncDecl {
+func (r RepositoryCrud) astDTOConstructor() *ast.FuncDecl {
 	dto := &ast.CompositeLit{
 		Type: &ast.Ident{
 			Name: r.model.PostgresDTOTypeName(),
@@ -461,7 +461,7 @@ func (r PostgresRepository) astDTOConstructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (r PostgresRepository) syncDTOConstructor() error {
+func (r RepositoryCrud) syncDTOConstructor() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -556,7 +556,7 @@ func (r PostgresRepository) syncDTOConstructor() error {
 	return nil
 }
 
-func (r PostgresRepository) astDTOToModel() *ast.FuncDecl {
+func (r RepositoryCrud) astDTOToModel() *ast.FuncDecl {
 	model := &ast.CompositeLit{
 		Type: &ast.SelectorExpr{
 			X: &ast.Ident{
@@ -809,7 +809,7 @@ func (r PostgresRepository) astDTOToModel() *ast.FuncDecl {
 	return method
 }
 
-func (r PostgresRepository) syncDTOToModel() error {
+func (r RepositoryCrud) syncDTOToModel() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -842,7 +842,7 @@ func (r PostgresRepository) syncDTOToModel() error {
 	return nil
 }
 
-func (r PostgresRepository) astStruct() *ast.TypeSpec {
+func (r RepositoryCrud) astStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Doc:        nil,
 		Name:       ast.NewIdent(r.model.RepositoryTypeName()),
@@ -883,7 +883,7 @@ func (r PostgresRepository) astStruct() *ast.TypeSpec {
 	return structure
 }
 
-func (r PostgresRepository) file() *ast.File {
+func (r RepositoryCrud) file() *ast.File {
 	return &ast.File{
 		Name: ast.NewIdent("postgres"),
 		Decls: []ast.Decl{
@@ -969,7 +969,7 @@ func (r PostgresRepository) file() *ast.File {
 	}
 }
 
-func (r PostgresRepository) syncStruct() error {
+func (r RepositoryCrud) syncStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1009,7 +1009,7 @@ func (r PostgresRepository) syncStruct() error {
 	return nil
 }
 
-func (r PostgresRepository) astConstructor() *ast.FuncDecl {
+func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
 		Doc:  nil,
 		Recv: nil,
@@ -1100,7 +1100,7 @@ func (r PostgresRepository) astConstructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (r PostgresRepository) syncConstructor() error {
+func (r RepositoryCrud) syncConstructor() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1133,15 +1133,15 @@ func (r PostgresRepository) syncConstructor() error {
 	return nil
 }
 
-func (r PostgresRepository) astCreateMethod() *ast.FuncDecl {
+func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: "\"updated_at\"",
+			Value: `"updated_at"`,
 		},
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: "\"created_at\"",
+			Value: `"created_at"`,
 		},
 	}
 	values := []ast.Expr{
@@ -1157,7 +1157,7 @@ func (r PostgresRepository) astCreateMethod() *ast.FuncDecl {
 	for _, param := range r.model.Params {
 		columns = append(columns, &ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s\"", param.Tag()),
+			Value: fmt.Sprintf(`"%s"`, param.Tag()),
 		})
 		values = append(values, &ast.SelectorExpr{
 			X:   ast.NewIdent("dto"),
@@ -1281,7 +1281,7 @@ func (r PostgresRepository) astCreateMethod() *ast.FuncDecl {
 														&ast.BasicLit{
 															Kind: token.STRING,
 															Value: fmt.Sprintf(
-																"\"public.%s\"",
+																`"public.%s"`,
 																r.model.TableName(),
 															),
 														},
@@ -1300,7 +1300,7 @@ func (r PostgresRepository) astCreateMethod() *ast.FuncDecl {
 							Args: []ast.Expr{
 								&ast.BasicLit{
 									Kind:  token.STRING,
-									Value: "\"RETURNING id\"",
+									Value: `"RETURNING id"`,
 								},
 							},
 						},
@@ -1433,7 +1433,7 @@ func (r PostgresRepository) astCreateMethod() *ast.FuncDecl {
 	return fun
 }
 
-func (r PostgresRepository) syncCreateMethod() error {
+func (r RepositoryCrud) syncCreateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1460,13 +1460,13 @@ func (r PostgresRepository) syncCreateMethod() error {
 					for _, arg := range call.Args {
 						arg := arg
 						if bl, ok := arg.(*ast.BasicLit); ok &&
-							bl.Value == fmt.Sprintf("\"%s\"", param.Tag()) {
+							bl.Value == fmt.Sprintf(`"%s"`, param.Tag()) {
 							return false
 						}
 					}
 					call.Args = append(call.Args, &ast.BasicLit{
 						Kind:  token.STRING,
-						Value: fmt.Sprintf("\"%s\"", param.Tag()),
+						Value: fmt.Sprintf(`"%s"`, param.Tag()),
 					})
 					return false
 				}
@@ -1507,7 +1507,7 @@ func (r PostgresRepository) syncCreateMethod() error {
 	return nil
 }
 
-func (r PostgresRepository) search() ast.Stmt {
+func (r RepositoryCrud) search() ast.Stmt {
 	if !r.model.SearchEnabled() {
 		return &ast.EmptyStmt{
 			Semicolon: 0,
@@ -1519,7 +1519,7 @@ func (r PostgresRepository) search() ast.Stmt {
 		if param.Search {
 			columns = append(columns, &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf("\"%s\"", param.Tag()),
+				Value: fmt.Sprintf(`"%s"`, param.Tag()),
 			})
 		}
 	}
@@ -1574,7 +1574,7 @@ func (r PostgresRepository) search() ast.Stmt {
 											},
 											Value: &ast.BasicLit{
 												Kind:  token.STRING,
-												Value: "\"english\"",
+												Value: `"english"`,
 											},
 										},
 										&ast.KeyValueExpr{
@@ -1617,20 +1617,20 @@ func (r PostgresRepository) search() ast.Stmt {
 	return stmt
 }
 
-func (r PostgresRepository) astListMethod() *ast.FuncDecl {
+func (r RepositoryCrud) astListMethod() *ast.FuncDecl {
 	tableName := r.model.TableName()
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.id\"", tableName),
+			Value: fmt.Sprintf(`"%s.id"`, tableName),
 		},
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.updated_at\"", tableName),
+			Value: fmt.Sprintf(`"%s.updated_at"`, tableName),
 		},
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.created_at\"", tableName),
+			Value: fmt.Sprintf(`"%s.created_at"`, tableName),
 		},
 	}
 	for _, param := range r.model.Params {
@@ -1638,7 +1638,7 @@ func (r PostgresRepository) astListMethod() *ast.FuncDecl {
 			columns,
 			&ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf("\"%s.%s\"", tableName, param.Tag()),
+				Value: fmt.Sprintf(`"%s.%s"`, tableName, param.Tag()),
 			},
 		)
 	}
@@ -1892,7 +1892,7 @@ func (r PostgresRepository) astListMethod() *ast.FuncDecl {
 									Args: []ast.Expr{
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: fmt.Sprintf("\"public.%s\"", tableName),
+											Value: fmt.Sprintf(`"public.%s"`, tableName),
 										},
 									},
 								},
@@ -1965,7 +1965,7 @@ func (r PostgresRepository) astListMethod() *ast.FuncDecl {
 													&ast.KeyValueExpr{
 														Key: &ast.BasicLit{
 															Kind:  token.STRING,
-															Value: "\"id\"",
+															Value: `"id"`,
 														},
 														Value: &ast.SelectorExpr{
 															X:   ast.NewIdent("filter"),
@@ -2321,7 +2321,7 @@ func (r PostgresRepository) astListMethod() *ast.FuncDecl {
 	}
 }
 
-func (r PostgresRepository) syncListMethod() error {
+func (r RepositoryCrud) syncListMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -2342,7 +2342,7 @@ func (r PostgresRepository) syncListMethod() error {
 	}
 	for _, param := range r.model.Params {
 		param := param
-		column := fmt.Sprintf("\"%s.%s\"", r.model.TableName(), param.Tag())
+		column := fmt.Sprintf(`"%s.%s"`, r.model.TableName(), param.Tag())
 		ast.Inspect(method, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Select" {
@@ -2375,20 +2375,20 @@ func (r PostgresRepository) syncListMethod() error {
 	return nil
 }
 
-func (r PostgresRepository) astCountMethod() *ast.FuncDecl {
+func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 	tableName := r.model.TableName()
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.id\"", tableName),
+			Value: fmt.Sprintf(`"%s.id"`, tableName),
 		},
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.updated_at\"", tableName),
+			Value: fmt.Sprintf(`"%s.updated_at"`, tableName),
 		},
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.created_at\"", tableName),
+			Value: fmt.Sprintf(`"%s.created_at"`, tableName),
 		},
 	}
 	for _, param := range r.model.Params {
@@ -2396,7 +2396,7 @@ func (r PostgresRepository) astCountMethod() *ast.FuncDecl {
 			columns,
 			&ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf("\"%s.%s\"", tableName, param.Tag()),
+				Value: fmt.Sprintf(`"%s.%s"`, tableName, param.Tag()),
 			},
 		)
 	}
@@ -2539,7 +2539,7 @@ func (r PostgresRepository) astCountMethod() *ast.FuncDecl {
 									Args: []ast.Expr{
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: "\"count(id)\"",
+											Value: `"count(id)"`,
 										},
 									},
 								},
@@ -2550,7 +2550,7 @@ func (r PostgresRepository) astCountMethod() *ast.FuncDecl {
 							Args: []ast.Expr{
 								&ast.BasicLit{
 									Kind:  token.STRING,
-									Value: fmt.Sprintf("\"public.%s\"", r.model.TableName()),
+									Value: fmt.Sprintf(`"public.%s"`, r.model.TableName()),
 								},
 							},
 						},
@@ -2613,7 +2613,7 @@ func (r PostgresRepository) astCountMethod() *ast.FuncDecl {
 													&ast.KeyValueExpr{
 														Key: &ast.BasicLit{
 															Kind:  token.STRING,
-															Value: "\"id\"",
+															Value: `"id"`,
 														},
 														Value: &ast.SelectorExpr{
 															X:   ast.NewIdent("filter"),
@@ -2888,7 +2888,7 @@ func (r PostgresRepository) astCountMethod() *ast.FuncDecl {
 	}
 }
 
-func (r PostgresRepository) syncCountMethod() error {
+func (r RepositoryCrud) syncCountMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -2920,20 +2920,20 @@ func (r PostgresRepository) syncCountMethod() error {
 	return nil
 }
 
-func (r PostgresRepository) astGetMethod() *ast.FuncDecl {
+func (r RepositoryCrud) astGetMethod() *ast.FuncDecl {
 	tableName := r.model.TableName()
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.id\"", tableName),
+			Value: fmt.Sprintf(`"%s.id"`, tableName),
 		},
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.updated_at\"", tableName),
+			Value: fmt.Sprintf(`"%s.updated_at"`, tableName),
 		},
 		&ast.BasicLit{
 			Kind:  token.STRING,
-			Value: fmt.Sprintf("\"%s.created_at\"", tableName),
+			Value: fmt.Sprintf(`"%s.created_at"`, tableName),
 		},
 	}
 	for _, param := range r.model.Params {
@@ -2941,7 +2941,7 @@ func (r PostgresRepository) astGetMethod() *ast.FuncDecl {
 			columns,
 			&ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf("\"%s.%s\"", tableName, param.Tag()),
+				Value: fmt.Sprintf(`"%s.%s"`, tableName, param.Tag()),
 			},
 		)
 	}
@@ -3117,7 +3117,7 @@ func (r PostgresRepository) astGetMethod() *ast.FuncDecl {
 											Args: []ast.Expr{
 												&ast.BasicLit{
 													Kind:  token.STRING,
-													Value: fmt.Sprintf("\"public.%s\"", tableName),
+													Value: fmt.Sprintf(`"public.%s"`, tableName),
 												},
 											},
 										},
@@ -3139,7 +3139,7 @@ func (r PostgresRepository) astGetMethod() *ast.FuncDecl {
 												&ast.KeyValueExpr{
 													Key: &ast.BasicLit{
 														Kind:  token.STRING,
-														Value: "\"id\"",
+														Value: `"id"`,
 													},
 													Value: &ast.Ident{
 														Name: "id",
@@ -3286,7 +3286,7 @@ func (r PostgresRepository) astGetMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
+												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.Ident{
@@ -3337,7 +3337,7 @@ func (r PostgresRepository) astGetMethod() *ast.FuncDecl {
 	}
 }
 
-func (r PostgresRepository) syncGetMethod() error {
+func (r RepositoryCrud) syncGetMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -3358,7 +3358,7 @@ func (r PostgresRepository) syncGetMethod() error {
 	}
 	for _, param := range r.model.Params {
 		param := param
-		column := fmt.Sprintf("\"%s.%s\"", r.model.TableName(), param.Tag())
+		column := fmt.Sprintf(`"%s.%s"`, r.model.TableName(), param.Tag())
 		ast.Inspect(method, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Select" {
@@ -3391,7 +3391,7 @@ func (r PostgresRepository) syncGetMethod() error {
 	return nil
 }
 
-func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
+func (r RepositoryCrud) astUpdateMethod() *ast.FuncDecl {
 	tableName := r.model.TableName()
 	updateBlock := &ast.BlockStmt{
 		List: []ast.Stmt{
@@ -3415,7 +3415,7 @@ func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
 						Args: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
-								Value: fmt.Sprintf("\"%s.%s\"", tableName, "updated_at"),
+								Value: fmt.Sprintf(`"%s.%s"`, tableName, "updated_at"),
 							},
 							&ast.SelectorExpr{
 								X: &ast.Ident{
@@ -3452,7 +3452,7 @@ func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
 					Args: []ast.Expr{
 						&ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf("\"%s.%s\"", tableName, param.Tag()),
+							Value: fmt.Sprintf(`"%s.%s"`, tableName, param.Tag()),
 						},
 						&ast.SelectorExpr{
 							X: &ast.Ident{
@@ -3621,7 +3621,7 @@ func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
 									Args: []ast.Expr{
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: fmt.Sprintf("\"public.%s\"", tableName),
+											Value: fmt.Sprintf(`"public.%s"`, tableName),
 										},
 									},
 								},
@@ -3643,7 +3643,7 @@ func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
 										&ast.KeyValueExpr{
 											Key: &ast.BasicLit{
 												Kind:  token.STRING,
-												Value: "\"id\"",
+												Value: `"id"`,
 											},
 											Value: &ast.SelectorExpr{
 												X: &ast.Ident{
@@ -3785,7 +3785,7 @@ func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
+												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -3882,7 +3882,7 @@ func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
+												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -3951,7 +3951,7 @@ func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
+												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -4000,7 +4000,7 @@ func (r PostgresRepository) astUpdateMethod() *ast.FuncDecl {
 	return method
 }
 
-func (r PostgresRepository) syncUpdateMethod() error {
+func (r RepositoryCrud) syncUpdateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -4034,7 +4034,7 @@ func (r PostgresRepository) syncUpdateMethod() error {
 								for _, arg := range call.Args {
 									if bl, ok := arg.(*ast.BasicLit); ok &&
 										bl.Value == fmt.Sprintf(
-											"\"%s.%s\"",
+											`"%s.%s"`,
 											tableName,
 											param.Tag(),
 										) {
@@ -4070,7 +4070,7 @@ func (r PostgresRepository) syncUpdateMethod() error {
 									Args: []ast.Expr{
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: fmt.Sprintf("\"%s.%s\"", tableName, param.Tag()),
+											Value: fmt.Sprintf(`"%s.%s"`, tableName, param.Tag()),
 										},
 										&ast.SelectorExpr{
 											X: &ast.Ident{
@@ -4102,7 +4102,7 @@ func (r PostgresRepository) syncUpdateMethod() error {
 	return nil
 }
 
-func (r PostgresRepository) astDeleteMethod() *ast.FuncDecl {
+func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -4236,7 +4236,7 @@ func (r PostgresRepository) astDeleteMethod() *ast.FuncDecl {
 										&ast.BasicLit{
 											Kind: token.STRING,
 											Value: fmt.Sprintf(
-												"\"public.%s\"",
+												`"public.%s"`,
 												r.model.TableName(),
 											),
 										},
@@ -4260,7 +4260,7 @@ func (r PostgresRepository) astDeleteMethod() *ast.FuncDecl {
 										&ast.KeyValueExpr{
 											Key: &ast.BasicLit{
 												Kind:  token.STRING,
-												Value: "\"id\"",
+												Value: `"id"`,
 											},
 											Value: &ast.Ident{
 												Name: "id",
@@ -4396,7 +4396,7 @@ func (r PostgresRepository) astDeleteMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
+												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -4494,7 +4494,7 @@ func (r PostgresRepository) astDeleteMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
+												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -4565,7 +4565,7 @@ func (r PostgresRepository) astDeleteMethod() *ast.FuncDecl {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf("\"%s_id\"", r.model.KeyName()),
+												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -4608,7 +4608,7 @@ func (r PostgresRepository) astDeleteMethod() *ast.FuncDecl {
 	}
 }
 
-func (r PostgresRepository) syncDeleteMethod() error {
+func (r RepositoryCrud) syncDeleteMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -4640,7 +4640,7 @@ func (r PostgresRepository) syncDeleteMethod() error {
 	return nil
 }
 
-func (r PostgresRepository) astDTOListType() *ast.TypeSpec {
+func (r RepositoryCrud) astDTOListType() *ast.TypeSpec {
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
 			Name: r.model.PostgresDTOListTypeName(),
@@ -4655,7 +4655,7 @@ func (r PostgresRepository) astDTOListType() *ast.TypeSpec {
 	}
 }
 
-func (r PostgresRepository) syncDTOListType() error {
+func (r RepositoryCrud) syncDTOListType() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -4696,7 +4696,7 @@ func (r PostgresRepository) syncDTOListType() error {
 	return nil
 }
 
-func (r PostgresRepository) astDTOToModels() *ast.FuncDecl {
+func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -4832,7 +4832,7 @@ func (r PostgresRepository) astDTOToModels() *ast.FuncDecl {
 	}
 }
 
-func (r PostgresRepository) syncDTOListToModels() error {
+func (r RepositoryCrud) syncDTOListToModels() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {

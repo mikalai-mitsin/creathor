@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -35,61 +36,64 @@ func (m AuthMiddleware) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"context\"",
+							Value: `"context"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"strings\"",
+							Value: `"strings"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/internal/configs\"",
+							Value: fmt.Sprintf(`"%s/internal/configs"`, m.project.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind: token.STRING,
+							Value: fmt.Sprintf(
+								`"%s/internal/domain/interceptors"`,
+								m.project.Module,
+							),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/internal/domain/interceptors\"",
+							Value: fmt.Sprintf(`"%s/internal/domain/models"`, m.project.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/internal/domain/models\"",
+							Value: fmt.Sprintf(`"%s/pkg/log"`, m.project.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/pkg/log\"",
+							Value: `"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils\"",
+							Value: `"google.golang.org/grpc/codes"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"google.golang.org/grpc/codes\"",
+							Value: `"google.golang.org/grpc"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"google.golang.org/grpc\"",
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: "\"google.golang.org/grpc/status\"",
+							Value: `"google.golang.org/grpc/status"`,
 						},
 					},
 				},
@@ -146,7 +150,7 @@ func (m AuthMiddleware) file() *ast.File {
 						Values: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
-								Value: "\"authorization\"",
+								Value: `"authorization"`,
 							},
 						},
 					},
@@ -159,7 +163,7 @@ func (m AuthMiddleware) file() *ast.File {
 						Values: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
-								Value: "\"bearer\"",
+								Value: `"bearer"`,
 							},
 						},
 					},
@@ -251,7 +255,7 @@ func (m AuthMiddleware) file() *ast.File {
 								Op: token.EQL,
 								Y: &ast.BasicLit{
 									Kind:  token.STRING,
-									Value: "\"\"",
+									Value: `""`,
 								},
 							},
 							Body: &ast.BlockStmt{
@@ -260,7 +264,7 @@ func (m AuthMiddleware) file() *ast.File {
 										Results: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: "\"\"",
+												Value: `""`,
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -283,7 +287,7 @@ func (m AuthMiddleware) file() *ast.File {
 													&ast.BinaryExpr{
 														X: &ast.BasicLit{
 															Kind:  token.STRING,
-															Value: "\"Request unauthenticated with \"",
+															Value: `"Request unauthenticated with "`,
 														},
 														Op: token.ADD,
 														Y: &ast.Ident{
@@ -320,7 +324,7 @@ func (m AuthMiddleware) file() *ast.File {
 										},
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: "\" \"",
+											Value: `" "`,
 										},
 										&ast.BasicLit{
 											Kind:  token.INT,
@@ -354,7 +358,7 @@ func (m AuthMiddleware) file() *ast.File {
 										Results: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: "\"\"",
+												Value: `""`,
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -376,7 +380,7 @@ func (m AuthMiddleware) file() *ast.File {
 													},
 													&ast.BasicLit{
 														Kind:  token.STRING,
-														Value: "\"Bad authorization string\"",
+														Value: `"Bad authorization string"`,
 													},
 												},
 											},
@@ -419,7 +423,7 @@ func (m AuthMiddleware) file() *ast.File {
 										Results: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: "\"\"",
+												Value: `""`,
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -442,7 +446,7 @@ func (m AuthMiddleware) file() *ast.File {
 													&ast.BinaryExpr{
 														X: &ast.BasicLit{
 															Kind:  token.STRING,
-															Value: "\"Request unauthenticated with \"",
+															Value: `"Request unauthenticated with "`,
 														},
 														Op: token.ADD,
 														Y: &ast.Ident{
@@ -892,7 +896,7 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 						Op: token.EQL,
 						Y: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"\"",
+							Value: `""`,
 						},
 					},
 					Body: &ast.BlockStmt{

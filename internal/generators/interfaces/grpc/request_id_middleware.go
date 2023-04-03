@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -35,25 +36,25 @@ func (m RequestIDMiddleware) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"context\"",
+							Value: `"context"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/018bf/example/pkg/log\"",
+							Value: fmt.Sprintf(`"%s/pkg/log"`, m.project.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/google/uuid\"",
+							Value: `"github.com/google/uuid"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"google.golang.org/grpc\"",
+							Value: `"google.golang.org/grpc"`,
 						},
 					},
 				},

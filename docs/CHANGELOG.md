@@ -2,8 +2,24 @@
 ## [Unreleased]
 
 
-<a name="0.4.5"></a>
-## [0.4.5] - 2023-03-22
+<a name="0.4.6"></a>
+## [0.4.6] - 2023-04-03
+### Feat
+- **implementations:** generate auth and user from ast
+- **rest:** handle error
+- **rest:** update docs
+- **rest:** register handlers
+
+### Fix
+- imports
+- **generators:** fix module name
+
+### Refactor
+- separate implementation packages
+
+
+<a name="v0.4.5"></a>
+## [v0.4.5] - 2023-03-22
 ### Feat
 - **auth:** update handler params
 - **fx:** sync with file
@@ -250,8 +266,9 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/018bf/creathor/compare/0.4.5...HEAD
-[0.4.5]: https://github.com/018bf/creathor/compare/v0.4.4...0.4.5
+[Unreleased]: https://github.com/018bf/creathor/compare/0.4.6...HEAD
+[0.4.6]: https://github.com/018bf/creathor/compare/v0.4.5...0.4.6
+[v0.4.5]: https://github.com/018bf/creathor/compare/v0.4.4...v0.4.5
 [v0.4.4]: https://github.com/018bf/creathor/compare/v0.4.3...v0.4.4
 [v0.4.3]: https://github.com/018bf/creathor/compare/v0.4.2...v0.4.3
 [v0.4.2]: https://github.com/018bf/creathor/compare/v0.4.1...v0.4.2

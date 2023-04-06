@@ -8,7 +8,7 @@ import (
 
 // DayUseCase - domain layer use case interface
 //
-//go:generate mockgen -build_flags=-mod=mod -destination mock/day.go github.com/018bf/example/internal/domain/usecases DayUseCase
+//go:generate mockgen -build_flags=-mod=mod -destination mock/day.go . DayUseCase
 type DayUseCase interface {
 	Get(ctx context.Context, id models.UUID) (*models.Day, error)
 	List(ctx context.Context, filter *models.DayFilter) ([]*models.Day, uint64, error)

@@ -35,16 +35,21 @@ func (h *PlanHandler) Register(router *gin.RouterGroup) {
 // @Produce      json
 // @Param        Plan  body   models.PlanCreate  true  "Plan JSON"
 // @Success      201   {object}  models.Plan
-// @Router       /plans [post]
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
+// @Router       /plans/ [post]
 func (h *PlanHandler) Create(ctx *gin.Context) {
 	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	create := &models.PlanCreate{}
-	if err := ctx.Bind(create); err != nil {
-		return
-	}
+	_ = ctx.Bind(create)
 	plan, err := h.planInterceptor.Create(ctx.Request.Context(), create, requestUser)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusCreated, plan)
@@ -57,16 +62,21 @@ func (h *PlanHandler) Create(ctx *gin.Context) {
 // @Produce      json
 // @Param        filter  query   models.PlanFilter false "Plan filter"
 // @Success      200  {array}  models.Plan
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /plans [get]
 func (h *PlanHandler) List(ctx *gin.Context) {
 	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	filter := &models.PlanFilter{}
-	if err := ctx.Bind(filter); err != nil {
-		return
-	}
+	_ = ctx.Bind(filter)
 	listPlans, count, err := h.planInterceptor.List(ctx.Request.Context(), filter, requestUser)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.Header("count", fmt.Sprint(count))
@@ -80,15 +90,26 @@ func (h *PlanHandler) List(ctx *gin.Context) {
 // @Produce      json
 // @Param        uuid  path      string  true  "search Plan by UUID"
 // @Success      200  {object}  models.Plan
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /plans/{uuid} [get]
-func (h *PlanHandler) Get(c *gin.Context) {
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
-	plan, err := h.planInterceptor.Get(c.Request.Context(), models.UUID(c.Param("id")), requestUser)
+func (h *PlanHandler) Get(ctx *gin.Context) {
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
+	plan, err := h.planInterceptor.Get(
+		ctx.Request.Context(),
+		models.UUID(ctx.Param("id")),
+		requestUser,
+	)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.JSON(http.StatusOK, plan)
+	ctx.JSON(http.StatusOK, plan)
 }
 
 // Update        godoc
@@ -99,20 +120,25 @@ func (h *PlanHandler) Get(c *gin.Context) {
 // @Param        uuid  path      string  true  "update Plan by UUID"
 // @Param        Plan  body   models.PlanUpdate  true  "Plan JSON"
 // @Success      201  {object}  models.Plan
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /plans/{uuid} [PATCH]
-func (h *PlanHandler) Update(c *gin.Context) {
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+func (h *PlanHandler) Update(ctx *gin.Context) {
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	update := &models.PlanUpdate{}
-	if err := c.Bind(update); err != nil {
-		return
-	}
-	update.ID = models.UUID(c.Param("id"))
-	plan, err := h.planInterceptor.Update(c.Request.Context(), update, requestUser)
+	_ = ctx.Bind(update)
+	update.ID = models.UUID(ctx.Param("id"))
+	plan, err := h.planInterceptor.Update(ctx.Request.Context(), update, requestUser)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.JSON(http.StatusOK, plan)
+	ctx.JSON(http.StatusOK, plan)
 }
 
 // Delete        godoc
@@ -121,13 +147,24 @@ func (h *PlanHandler) Update(c *gin.Context) {
 // @Tags         Plan
 // @Param        uuid  path      string  true  "delete Plan by UUID"
 // @Success      204
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /plans/{uuid} [delete]
-func (h *PlanHandler) Delete(c *gin.Context) {
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
-	err := h.planInterceptor.Delete(c.Request.Context(), models.UUID(c.Param("id")), requestUser)
+func (h *PlanHandler) Delete(ctx *gin.Context) {
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
+	err := h.planInterceptor.Delete(
+		ctx.Request.Context(),
+		models.UUID(ctx.Param("id")),
+		requestUser,
+	)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.Status(http.StatusNoContent)
+	ctx.JSON(http.StatusNoContent, nil)
 }

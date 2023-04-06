@@ -8,7 +8,7 @@ import (
 
 // ArchInterceptor - domain layer interceptor interface
 //
-//go:generate mockgen -build_flags=-mod=mod -destination mock/arch.go github.com/018bf/example/internal/domain/interceptors ArchInterceptor
+//go:generate mockgen -build_flags=-mod=mod -destination mock/arch.go . ArchInterceptor
 type ArchInterceptor interface {
 	Get(ctx context.Context, id models.UUID, requestUser *models.User) (*models.Arch, error)
 	List(

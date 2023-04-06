@@ -6,9 +6,9 @@ import (
 	"github.com/018bf/example/internal/domain/models"
 )
 
-//nolint: lll
-//go:generate mockgen -build_flags=-mod=mod -build_flags=-mod=mod -destination mock/permission_mock.go github.com/018bf/example/internal/domain/repositories PermissionRepository
-
+// PermissionRepository - domain layer repository interface
+//
+//go:generate mockgen -build_flags=-mod=mod -destination mock/permission.go . PermissionRepository
 type PermissionRepository interface {
 	HasPermission(
 		ctx context.Context,

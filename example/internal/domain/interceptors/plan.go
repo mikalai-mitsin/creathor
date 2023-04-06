@@ -8,7 +8,7 @@ import (
 
 // PlanInterceptor - domain layer interceptor interface
 //
-//go:generate mockgen -build_flags=-mod=mod -destination mock/plan.go github.com/018bf/example/internal/domain/interceptors PlanInterceptor
+//go:generate mockgen -build_flags=-mod=mod -destination mock/plan.go . PlanInterceptor
 type PlanInterceptor interface {
 	Get(ctx context.Context, id models.UUID, requestUser *models.User) (*models.Plan, error)
 	List(

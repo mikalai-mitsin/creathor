@@ -5,6 +5,12 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
+type otel struct {
+	URL         string `env:"OTEL_URL"         toml:"url"`
+	Enabled     bool   `env:"OTEL_ENABLED"     toml:"enabled"`
+	Environment string `env:"OTEL_ENVIRONMENT" toml:"environment"`
+}
+
 type auth struct {
 	PublicKey  string `env:"AUTH_PUBLIC_KEY"  toml:"public_key"`
 	PrivateKey string `env:"AUTH_PRIVATE_KEY" toml:"private_key"`
@@ -23,6 +29,7 @@ type Config struct {
 	LogLevel string   `env:"LOG_LEVEL" toml:"log_level" env-default:"debug"`
 	Database database `                toml:"database"`
 	Auth     auth     `                toml:"auth"`
+	Otel     otel     `                toml:"otel"`
 }
 
 func ParseConfig(configPath string) (*Config, error) {

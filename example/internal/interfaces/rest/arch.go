@@ -35,16 +35,21 @@ func (h *ArchHandler) Register(router *gin.RouterGroup) {
 // @Produce      json
 // @Param        Arch  body   models.ArchCreate  true  "Arch JSON"
 // @Success      201   {object}  models.Arch
-// @Router       /arches [post]
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
+// @Router       /arches/ [post]
 func (h *ArchHandler) Create(ctx *gin.Context) {
 	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	create := &models.ArchCreate{}
-	if err := ctx.Bind(create); err != nil {
-		return
-	}
+	_ = ctx.Bind(create)
 	arch, err := h.archInterceptor.Create(ctx.Request.Context(), create, requestUser)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusCreated, arch)
@@ -57,16 +62,21 @@ func (h *ArchHandler) Create(ctx *gin.Context) {
 // @Produce      json
 // @Param        filter  query   models.ArchFilter false "Arch filter"
 // @Success      200  {array}  models.Arch
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /arches [get]
 func (h *ArchHandler) List(ctx *gin.Context) {
 	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	filter := &models.ArchFilter{}
-	if err := ctx.Bind(filter); err != nil {
-		return
-	}
+	_ = ctx.Bind(filter)
 	listArches, count, err := h.archInterceptor.List(ctx.Request.Context(), filter, requestUser)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.Header("count", fmt.Sprint(count))
@@ -80,15 +90,26 @@ func (h *ArchHandler) List(ctx *gin.Context) {
 // @Produce      json
 // @Param        uuid  path      string  true  "search Arch by UUID"
 // @Success      200  {object}  models.Arch
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /arches/{uuid} [get]
-func (h *ArchHandler) Get(c *gin.Context) {
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
-	arch, err := h.archInterceptor.Get(c.Request.Context(), models.UUID(c.Param("id")), requestUser)
+func (h *ArchHandler) Get(ctx *gin.Context) {
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
+	arch, err := h.archInterceptor.Get(
+		ctx.Request.Context(),
+		models.UUID(ctx.Param("id")),
+		requestUser,
+	)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.JSON(http.StatusOK, arch)
+	ctx.JSON(http.StatusOK, arch)
 }
 
 // Update        godoc
@@ -99,20 +120,25 @@ func (h *ArchHandler) Get(c *gin.Context) {
 // @Param        uuid  path      string  true  "update Arch by UUID"
 // @Param        Arch  body   models.ArchUpdate  true  "Arch JSON"
 // @Success      201  {object}  models.Arch
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /arches/{uuid} [PATCH]
-func (h *ArchHandler) Update(c *gin.Context) {
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+func (h *ArchHandler) Update(ctx *gin.Context) {
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	update := &models.ArchUpdate{}
-	if err := c.Bind(update); err != nil {
-		return
-	}
-	update.ID = models.UUID(c.Param("id"))
-	arch, err := h.archInterceptor.Update(c.Request.Context(), update, requestUser)
+	_ = ctx.Bind(update)
+	update.ID = models.UUID(ctx.Param("id"))
+	arch, err := h.archInterceptor.Update(ctx.Request.Context(), update, requestUser)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.JSON(http.StatusOK, arch)
+	ctx.JSON(http.StatusOK, arch)
 }
 
 // Delete        godoc
@@ -121,13 +147,24 @@ func (h *ArchHandler) Update(c *gin.Context) {
 // @Tags         Arch
 // @Param        uuid  path      string  true  "delete Arch by UUID"
 // @Success      204
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /arches/{uuid} [delete]
-func (h *ArchHandler) Delete(c *gin.Context) {
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
-	err := h.archInterceptor.Delete(c.Request.Context(), models.UUID(c.Param("id")), requestUser)
+func (h *ArchHandler) Delete(ctx *gin.Context) {
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
+	err := h.archInterceptor.Delete(
+		ctx.Request.Context(),
+		models.UUID(ctx.Param("id")),
+		requestUser,
+	)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.Status(http.StatusNoContent)
+	ctx.JSON(http.StatusNoContent, nil)
 }

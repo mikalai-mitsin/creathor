@@ -41,11 +41,7 @@ func (i *AuthInterceptor) CreateToken(
 	}
 	return pair, nil
 }
-
-func (i *AuthInterceptor) ValidateToken(
-	ctx context.Context,
-	token models.Token,
-) error {
+func (i *AuthInterceptor) ValidateToken(ctx context.Context, token models.Token) error {
 	if err := i.authUseCase.ValidateToken(ctx, token); err != nil {
 		return err
 	}
@@ -62,11 +58,7 @@ func (i *AuthInterceptor) RefreshToken(
 	}
 	return pair, nil
 }
-
-func (i *AuthInterceptor) Auth(
-	ctx context.Context,
-	access models.Token,
-) (*models.User, error) {
+func (i *AuthInterceptor) Auth(ctx context.Context, access models.Token) (*models.User, error) {
 	user, err := i.authUseCase.Auth(ctx, access)
 	if err != nil {
 		return nil, err

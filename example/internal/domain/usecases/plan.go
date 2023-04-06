@@ -8,7 +8,7 @@ import (
 
 // PlanUseCase - domain layer use case interface
 //
-//go:generate mockgen -build_flags=-mod=mod -destination mock/plan.go github.com/018bf/example/internal/domain/usecases PlanUseCase
+//go:generate mockgen -build_flags=-mod=mod -destination mock/plan.go . PlanUseCase
 type PlanUseCase interface {
 	Get(ctx context.Context, id models.UUID) (*models.Plan, error)
 	List(ctx context.Context, filter *models.PlanFilter) ([]*models.Plan, uint64, error)

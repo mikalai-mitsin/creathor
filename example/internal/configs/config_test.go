@@ -90,7 +90,7 @@ log_level = 2
 			},
 			want: nil,
 			wantErr: errs.NewUnexpectedBehaviorError(
-				"config file parsing error: toml: cannot load TOML value of type int64 into a Go string",
+				"config file parsing error: toml: line 3 (last key \"log_level\"): incompatible types: TOML value has type int64; destination has type string",
 			),
 		},
 	}

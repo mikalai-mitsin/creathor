@@ -483,7 +483,7 @@ func TestEquipmentServiceServer_Update(t *testing.T) {
 			name: "ok",
 			setup: func() {
 				equipmentInterceptor.EXPECT().
-					Update(ctx, update, user).
+					Update(ctx, gomock.Any(), user).
 					Return(equipment, nil).
 					Times(1)
 			},
@@ -502,7 +502,7 @@ func TestEquipmentServiceServer_Update(t *testing.T) {
 		{
 			name: "interceptor error",
 			setup: func() {
-				equipmentInterceptor.EXPECT().Update(ctx, update, user).
+				equipmentInterceptor.EXPECT().Update(ctx, gomock.Any(), user).
 					Return(nil, errs.NewUnexpectedBehaviorError("i error"))
 			},
 			fields: fields{

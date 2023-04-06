@@ -6,15 +6,11 @@ import (
 	"github.com/018bf/example/internal/domain/models"
 )
 
-//nolint: lll
-//go:generate mockgen -build_flags=-mod=mod -destination mock/user_mock.go github.com/018bf/example/internal/domain/interceptors UserInterceptor
-
+// UserInterceptor - domain layer interceptor interface
+//
+//go:generate mockgen -build_flags=-mod=mod -destination mock/user.go . UserInterceptor
 type UserInterceptor interface {
-	Get(
-		ctx context.Context,
-		id models.UUID,
-		requestUser *models.User,
-	) (*models.User, error)
+	Get(ctx context.Context, id models.UUID, requestUser *models.User) (*models.User, error)
 	List(
 		ctx context.Context,
 		filter *models.UserFilter,
@@ -30,9 +26,5 @@ type UserInterceptor interface {
 		update *models.UserUpdate,
 		requestUser *models.User,
 	) (*models.User, error)
-	Delete(
-		ctx context.Context,
-		id models.UUID,
-		requestUser *models.User,
-	) error
+	Delete(ctx context.Context, id models.UUID, requestUser *models.User) error
 }

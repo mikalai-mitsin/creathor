@@ -6,7 +6,6 @@ import (
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
 	"github.com/018bf/example/internal/domain/usecases"
-
 	"github.com/018bf/example/pkg/log"
 )
 
@@ -21,11 +20,7 @@ func NewUserInterceptor(
 	authUseCase usecases.AuthUseCase,
 	logger log.Logger,
 ) interceptors.UserInterceptor {
-	return &UserInterceptor{
-		userUseCase: userUseCase,
-		authUseCase: authUseCase,
-		logger:      logger,
-	}
+	return &UserInterceptor{userUseCase: userUseCase, authUseCase: authUseCase, logger: logger}
 }
 
 func (i *UserInterceptor) Get(
@@ -55,12 +50,7 @@ func (i *UserInterceptor) List(
 	if err := i.authUseCase.HasPermission(ctx, requestUser, models.PermissionIDUserList); err != nil {
 		return nil, 0, err
 	}
-	if err := i.authUseCase.HasObjectPermission(
-		ctx,
-		requestUser,
-		models.PermissionIDUserList,
-		filter,
-	); err != nil {
+	if err := i.authUseCase.HasObjectPermission(ctx, requestUser, models.PermissionIDUserList, filter); err != nil {
 		return nil, 0, err
 	}
 	users, count, err := i.userUseCase.List(ctx, filter)

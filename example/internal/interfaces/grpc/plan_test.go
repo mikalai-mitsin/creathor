@@ -476,7 +476,7 @@ func TestPlanServiceServer_Update(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				planInterceptor.EXPECT().Update(ctx, update, user).Return(plan, nil).Times(1)
+				planInterceptor.EXPECT().Update(ctx, gomock.Any(), user).Return(plan, nil).Times(1)
 			},
 			fields: fields{
 				UnimplementedPlanServiceServer: examplepb.UnimplementedPlanServiceServer{},
@@ -493,7 +493,7 @@ func TestPlanServiceServer_Update(t *testing.T) {
 		{
 			name: "interceptor error",
 			setup: func() {
-				planInterceptor.EXPECT().Update(ctx, update, user).
+				planInterceptor.EXPECT().Update(ctx, gomock.Any(), user).
 					Return(nil, errs.NewUnexpectedBehaviorError("i error"))
 			},
 			fields: fields{

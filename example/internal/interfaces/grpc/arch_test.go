@@ -476,7 +476,7 @@ func TestArchServiceServer_Update(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				archInterceptor.EXPECT().Update(ctx, update, user).Return(arch, nil).Times(1)
+				archInterceptor.EXPECT().Update(ctx, gomock.Any(), user).Return(arch, nil).Times(1)
 			},
 			fields: fields{
 				UnimplementedArchServiceServer: examplepb.UnimplementedArchServiceServer{},
@@ -493,7 +493,7 @@ func TestArchServiceServer_Update(t *testing.T) {
 		{
 			name: "interceptor error",
 			setup: func() {
-				archInterceptor.EXPECT().Update(ctx, update, user).
+				archInterceptor.EXPECT().Update(ctx, gomock.Any(), user).
 					Return(nil, errs.NewUnexpectedBehaviorError("i error"))
 			},
 			fields: fields{

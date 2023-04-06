@@ -8,7 +8,7 @@ import (
 
 // EquipmentRepository - domain layer repository interface
 //
-//go:generate mockgen -build_flags=-mod=mod -destination mock/equipment.go github.com/018bf/example/internal/domain/repositories EquipmentRepository
+//go:generate mockgen -build_flags=-mod=mod -destination mock/equipment.go . EquipmentRepository
 type EquipmentRepository interface {
 	Get(ctx context.Context, id models.UUID) (*models.Equipment, error)
 	List(ctx context.Context, filter *models.EquipmentFilter) ([]*models.Equipment, error)

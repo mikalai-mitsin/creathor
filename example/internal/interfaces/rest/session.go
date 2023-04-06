@@ -38,16 +38,21 @@ func (h *SessionHandler) Register(router *gin.RouterGroup) {
 // @Produce      json
 // @Param        Session  body   models.SessionCreate  true  "Session JSON"
 // @Success      201   {object}  models.Session
-// @Router       /sessions [post]
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
+// @Router       /sessions/ [post]
 func (h *SessionHandler) Create(ctx *gin.Context) {
 	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	create := &models.SessionCreate{}
-	if err := ctx.Bind(create); err != nil {
-		return
-	}
+	_ = ctx.Bind(create)
 	session, err := h.sessionInterceptor.Create(ctx.Request.Context(), create, requestUser)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusCreated, session)
@@ -60,20 +65,25 @@ func (h *SessionHandler) Create(ctx *gin.Context) {
 // @Produce      json
 // @Param        filter  query   models.SessionFilter false "Session filter"
 // @Success      200  {array}  models.Session
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /sessions [get]
 func (h *SessionHandler) List(ctx *gin.Context) {
 	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	filter := &models.SessionFilter{}
-	if err := ctx.Bind(filter); err != nil {
-		return
-	}
+	_ = ctx.Bind(filter)
 	listSessions, count, err := h.sessionInterceptor.List(
 		ctx.Request.Context(),
 		filter,
 		requestUser,
 	)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.Header("count", fmt.Sprint(count))
@@ -87,19 +97,26 @@ func (h *SessionHandler) List(ctx *gin.Context) {
 // @Produce      json
 // @Param        uuid  path      string  true  "search Session by UUID"
 // @Success      200  {object}  models.Session
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /sessions/{uuid} [get]
-func (h *SessionHandler) Get(c *gin.Context) {
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+func (h *SessionHandler) Get(ctx *gin.Context) {
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	session, err := h.sessionInterceptor.Get(
-		c.Request.Context(),
-		models.UUID(c.Param("id")),
+		ctx.Request.Context(),
+		models.UUID(ctx.Param("id")),
 		requestUser,
 	)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.JSON(http.StatusOK, session)
+	ctx.JSON(http.StatusOK, session)
 }
 
 // Update        godoc
@@ -110,20 +127,25 @@ func (h *SessionHandler) Get(c *gin.Context) {
 // @Param        uuid  path      string  true  "update Session by UUID"
 // @Param        Session  body   models.SessionUpdate  true  "Session JSON"
 // @Success      201  {object}  models.Session
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /sessions/{uuid} [PATCH]
-func (h *SessionHandler) Update(c *gin.Context) {
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+func (h *SessionHandler) Update(ctx *gin.Context) {
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	update := &models.SessionUpdate{}
-	if err := c.Bind(update); err != nil {
-		return
-	}
-	update.ID = models.UUID(c.Param("id"))
-	session, err := h.sessionInterceptor.Update(c.Request.Context(), update, requestUser)
+	_ = ctx.Bind(update)
+	update.ID = models.UUID(ctx.Param("id"))
+	session, err := h.sessionInterceptor.Update(ctx.Request.Context(), update, requestUser)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.JSON(http.StatusOK, session)
+	ctx.JSON(http.StatusOK, session)
 }
 
 // Delete        godoc
@@ -132,13 +154,24 @@ func (h *SessionHandler) Update(c *gin.Context) {
 // @Tags         Session
 // @Param        uuid  path      string  true  "delete Session by UUID"
 // @Success      204
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /sessions/{uuid} [delete]
-func (h *SessionHandler) Delete(c *gin.Context) {
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
-	err := h.sessionInterceptor.Delete(c.Request.Context(), models.UUID(c.Param("id")), requestUser)
+func (h *SessionHandler) Delete(ctx *gin.Context) {
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
+	err := h.sessionInterceptor.Delete(
+		ctx.Request.Context(),
+		models.UUID(ctx.Param("id")),
+		requestUser,
+	)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.Status(http.StatusNoContent)
+	ctx.JSON(http.StatusNoContent, nil)
 }

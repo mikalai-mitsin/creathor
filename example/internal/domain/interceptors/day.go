@@ -8,7 +8,7 @@ import (
 
 // DayInterceptor - domain layer interceptor interface
 //
-//go:generate mockgen -build_flags=-mod=mod -destination mock/day.go github.com/018bf/example/internal/domain/interceptors DayInterceptor
+//go:generate mockgen -build_flags=-mod=mod -destination mock/day.go . DayInterceptor
 type DayInterceptor interface {
 	Get(ctx context.Context, id models.UUID, requestUser *models.User) (*models.Day, error)
 	List(

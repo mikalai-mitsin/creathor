@@ -8,7 +8,7 @@ import (
 
 // EquipmentInterceptor - domain layer interceptor interface
 //
-//go:generate mockgen -build_flags=-mod=mod -destination mock/equipment.go github.com/018bf/example/internal/domain/interceptors EquipmentInterceptor
+//go:generate mockgen -build_flags=-mod=mod -destination mock/equipment.go . EquipmentInterceptor
 type EquipmentInterceptor interface {
 	Get(ctx context.Context, id models.UUID, requestUser *models.User) (*models.Equipment, error)
 	List(

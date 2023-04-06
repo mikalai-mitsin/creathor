@@ -4,7 +4,7 @@ tasks:
     env:
       CGO_ENABLED: 0
     cmds:
-      - go build -ldflags "-X main.version={{ .version }}" -v -o ./dist/example ./cmd/example
+      - go build -ldflags "-X github.com/018bf/example.Version={{ .version }}" -v -o ./dist/example ./cmd/example
     vars:
       version:
         sh: git describe --tags --abbrev=0

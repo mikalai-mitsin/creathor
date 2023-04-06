@@ -3,20 +3,20 @@ package main
 import (
 	"os"
 
+	"github.com/018bf/example"
 	"github.com/018bf/example/internal/containers"
 	"github.com/urfave/cli/v2"
 )
 
 var (
-	version    = "unknown"
 	configPath = ""
 )
 
 func main() {
 	app := &cli.App{
-		Name:    "example",
+		Name:    example.Name,
 		Usage:   "service",
-		Version: version,
+		Version: example.Version,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "config",

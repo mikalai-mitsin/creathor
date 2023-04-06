@@ -94,6 +94,17 @@ func CreateCRUD(model *configs.ModelConfig) error {
 				),
 				Name: "rest crud",
 			},
+			&Template{
+				SourcePath: "templates/internal/interfaces/rest/crud_test.go.tmpl",
+				DestinationPath: path.Join(
+					destinationPath,
+					"internal",
+					"interfaces",
+					"rest",
+					model.TestFileName(),
+				),
+				Name: "rest crud test",
+			},
 		)
 	}
 	if model.GRPCEnabled {

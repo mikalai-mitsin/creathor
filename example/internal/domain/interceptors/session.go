@@ -8,7 +8,7 @@ import (
 
 // SessionInterceptor - domain layer interceptor interface
 //
-//go:generate mockgen -build_flags=-mod=mod -destination mock/session.go github.com/018bf/example/internal/domain/interceptors SessionInterceptor
+//go:generate mockgen -build_flags=-mod=mod -destination mock/session.go . SessionInterceptor
 type SessionInterceptor interface {
 	Get(ctx context.Context, id models.UUID, requestUser *models.User) (*models.Session, error)
 	List(

@@ -38,16 +38,21 @@ func (h *EquipmentHandler) Register(router *gin.RouterGroup) {
 // @Produce      json
 // @Param        Equipment  body   models.EquipmentCreate  true  "Equipment JSON"
 // @Success      201   {object}  models.Equipment
-// @Router       /equipment [post]
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
+// @Router       /equipment/ [post]
 func (h *EquipmentHandler) Create(ctx *gin.Context) {
 	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	create := &models.EquipmentCreate{}
-	if err := ctx.Bind(create); err != nil {
-		return
-	}
+	_ = ctx.Bind(create)
 	equipment, err := h.equipmentInterceptor.Create(ctx.Request.Context(), create, requestUser)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusCreated, equipment)
@@ -60,20 +65,25 @@ func (h *EquipmentHandler) Create(ctx *gin.Context) {
 // @Produce      json
 // @Param        filter  query   models.EquipmentFilter false "Equipment filter"
 // @Success      200  {array}  models.Equipment
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /equipment [get]
 func (h *EquipmentHandler) List(ctx *gin.Context) {
 	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	filter := &models.EquipmentFilter{}
-	if err := ctx.Bind(filter); err != nil {
-		return
-	}
+	_ = ctx.Bind(filter)
 	listEquipment, count, err := h.equipmentInterceptor.List(
 		ctx.Request.Context(),
 		filter,
 		requestUser,
 	)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.Header("count", fmt.Sprint(count))
@@ -87,19 +97,26 @@ func (h *EquipmentHandler) List(ctx *gin.Context) {
 // @Produce      json
 // @Param        uuid  path      string  true  "search Equipment by UUID"
 // @Success      200  {object}  models.Equipment
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /equipment/{uuid} [get]
-func (h *EquipmentHandler) Get(c *gin.Context) {
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+func (h *EquipmentHandler) Get(ctx *gin.Context) {
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	equipment, err := h.equipmentInterceptor.Get(
-		c.Request.Context(),
-		models.UUID(c.Param("id")),
+		ctx.Request.Context(),
+		models.UUID(ctx.Param("id")),
 		requestUser,
 	)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.JSON(http.StatusOK, equipment)
+	ctx.JSON(http.StatusOK, equipment)
 }
 
 // Update        godoc
@@ -110,20 +127,25 @@ func (h *EquipmentHandler) Get(c *gin.Context) {
 // @Param        uuid  path      string  true  "update Equipment by UUID"
 // @Param        Equipment  body   models.EquipmentUpdate  true  "Equipment JSON"
 // @Success      201  {object}  models.Equipment
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /equipment/{uuid} [PATCH]
-func (h *EquipmentHandler) Update(c *gin.Context) {
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+func (h *EquipmentHandler) Update(ctx *gin.Context) {
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	update := &models.EquipmentUpdate{}
-	if err := c.Bind(update); err != nil {
-		return
-	}
-	update.ID = models.UUID(c.Param("id"))
-	equipment, err := h.equipmentInterceptor.Update(c.Request.Context(), update, requestUser)
+	_ = ctx.Bind(update)
+	update.ID = models.UUID(ctx.Param("id"))
+	equipment, err := h.equipmentInterceptor.Update(ctx.Request.Context(), update, requestUser)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.JSON(http.StatusOK, equipment)
+	ctx.JSON(http.StatusOK, equipment)
 }
 
 // Delete        godoc
@@ -132,17 +154,24 @@ func (h *EquipmentHandler) Update(c *gin.Context) {
 // @Tags         Equipment
 // @Param        uuid  path      string  true  "delete Equipment by UUID"
 // @Success      204
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /equipment/{uuid} [delete]
-func (h *EquipmentHandler) Delete(c *gin.Context) {
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+func (h *EquipmentHandler) Delete(ctx *gin.Context) {
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	err := h.equipmentInterceptor.Delete(
-		c.Request.Context(),
-		models.UUID(c.Param("id")),
+		ctx.Request.Context(),
+		models.UUID(ctx.Param("id")),
 		requestUser,
 	)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.Status(http.StatusNoContent)
+	ctx.JSON(http.StatusNoContent, nil)
 }

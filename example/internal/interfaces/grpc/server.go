@@ -45,12 +45,12 @@ func NewServer(
 		grpc.ChainStreamInterceptor(otelgrpc.StreamServerInterceptor()),
 		grpc.ChainUnaryInterceptor(
 			otelgrpc.UnaryServerInterceptor(),
-			authMiddleware.UnaryServerInterceptor,
 			requestIDMiddleware.UnaryServerInterceptor,
 			grpcZap.UnaryServerInterceptor(
 				logger.Logger(),
 				grpcZap.WithMessageProducer(DefaultMessageProducer),
 			),
+			authMiddleware.UnaryServerInterceptor,
 		),
 	)
 	reflection.Register(server)

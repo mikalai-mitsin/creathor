@@ -6,6 +6,7 @@ ci: "github"
 gRPC: true
 gateway: true
 REST: true
+uptrace: true
 models:
   - model: "session"
     params:

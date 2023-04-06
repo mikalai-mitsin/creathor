@@ -8,7 +8,7 @@ import (
 
 // SessionRepository - domain layer repository interface
 //
-//go:generate mockgen -build_flags=-mod=mod -destination mock/session.go github.com/018bf/example/internal/domain/repositories SessionRepository
+//go:generate mockgen -build_flags=-mod=mod -destination mock/session.go . SessionRepository
 type SessionRepository interface {
 	Get(ctx context.Context, id models.UUID) (*models.Session, error)
 	List(ctx context.Context, filter *models.SessionFilter) ([]*models.Session, error)

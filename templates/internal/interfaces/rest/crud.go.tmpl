@@ -35,13 +35,13 @@ func (h *{{ .RESTHandlerTypeName }}) Register(router *gin.RouterGroup) {
 // @Produce      json
 // @Param        {{ .ModelName }}  body   models.{{ .CreateTypeName }}  true  "{{ .ModelName }} JSON"
 // @Success      201   {object}  models.{{ .ModelName }}
-// @Failure        400   {object}  errs.Error
-// @Failure        401   {object}  errs.Error
-// @Failure        403   {object}  errs.Error
-// @Failure        404   {object}  errs.Error
-// @Failure        405   {object}  errs.Error
-// @Failure        500   {object}  errs.Error
-// @Failure        503   {object}  errs.Error
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /{{ .RESTHandlerPath }}/ [post]
 func (h *{{ .RESTHandlerTypeName }}) Create(ctx *gin.Context) {
 {{- if .Auth }}
@@ -64,13 +64,13 @@ func (h *{{ .RESTHandlerTypeName }}) Create(ctx *gin.Context) {
 // @Produce      json
 // @Param        filter  query   models.{{ .FilterTypeName }} false "{{ .ModelName }} filter"
 // @Success      200  {array}  models.{{ .ModelName }}
-// @Failure        400   {object}  errs.Error
-// @Failure        401   {object}  errs.Error
-// @Failure        403   {object}  errs.Error
-// @Failure        404   {object}  errs.Error
-// @Failure        405   {object}  errs.Error
-// @Failure        500   {object}  errs.Error
-// @Failure        503   {object}  errs.Error
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /{{ .RESTHandlerPath }} [get]
 func (h *{{ .RESTHandlerTypeName }}) List(ctx *gin.Context) {
 {{- if .Auth }}
@@ -94,13 +94,13 @@ func (h *{{ .RESTHandlerTypeName }}) List(ctx *gin.Context) {
 // @Produce      json
 // @Param        uuid  path      string  true  "search {{ .ModelName }} by UUID"
 // @Success      200  {object}  models.{{ .ModelName }}
-// @Failure        400   {object}  errs.Error
-// @Failure        401   {object}  errs.Error
-// @Failure        403   {object}  errs.Error
-// @Failure        404   {object}  errs.Error
-// @Failure        405   {object}  errs.Error
-// @Failure        500   {object}  errs.Error
-// @Failure        503   {object}  errs.Error
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /{{ .RESTHandlerPath }}/{uuid} [get]
 func (h *{{ .RESTHandlerTypeName }}) Get(ctx *gin.Context) {
 {{- if .Auth }}
@@ -122,13 +122,13 @@ func (h *{{ .RESTHandlerTypeName }}) Get(ctx *gin.Context) {
 // @Param        uuid  path      string  true  "update {{ .ModelName }} by UUID"
 // @Param        {{ .ModelName }}  body   models.{{ .UpdateTypeName }}  true  "{{ .ModelName }} JSON"
 // @Success      201  {object}  models.{{ .ModelName }}
-// @Failure        400   {object}  errs.Error
-// @Failure        401   {object}  errs.Error
-// @Failure        403   {object}  errs.Error
-// @Failure        404   {object}  errs.Error
-// @Failure        405   {object}  errs.Error
-// @Failure        500   {object}  errs.Error
-// @Failure        503   {object}  errs.Error
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /{{ .RESTHandlerPath }}/{uuid} [PATCH]
 func (h *{{ .RESTHandlerTypeName }}) Update(ctx *gin.Context) {
 {{- if .Auth }}
@@ -151,13 +151,13 @@ func (h *{{ .RESTHandlerTypeName }}) Update(ctx *gin.Context) {
 // @Tags         {{ .ModelName }}
 // @Param        uuid  path      string  true  "delete {{ .ModelName }} by UUID"
 // @Success      204
-// @Failure        400   {object}  errs.Error
-// @Failure        401   {object}  errs.Error
-// @Failure        403   {object}  errs.Error
-// @Failure        404   {object}  errs.Error
-// @Failure        405   {object}  errs.Error
-// @Failure        500   {object}  errs.Error
-// @Failure        503   {object}  errs.Error
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /{{ .RESTHandlerPath }}/{uuid} [delete]
 func (h *{{ .RESTHandlerTypeName }}) Delete(ctx *gin.Context) {
 {{- if .Auth }}
@@ -168,5 +168,5 @@ func (h *{{ .RESTHandlerTypeName }}) Delete(ctx *gin.Context) {
 		decodeError(ctx, err)
 		return
 	}
-	ctx.Status(http.StatusNoContent)
+	ctx.JSON(http.StatusNoContent, nil)
 }

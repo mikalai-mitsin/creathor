@@ -69,21 +69,13 @@ func (u AuthUseCase) RefreshToken(
 	}
 	return pair, nil
 }
-
-func (u AuthUseCase) ValidateToken(
-	ctx context.Context,
-	access models.Token,
-) error {
+func (u AuthUseCase) ValidateToken(ctx context.Context, access models.Token) error {
 	if err := u.authRepository.Validate(ctx, access); err != nil {
 		return err
 	}
 	return nil
 }
-
-func (u AuthUseCase) Auth(
-	ctx context.Context,
-	access models.Token,
-) (*models.User, error) {
+func (u AuthUseCase) Auth(ctx context.Context, access models.Token) (*models.User, error) {
 	userID, err := u.authRepository.GetSubject(ctx, access)
 	if err != nil {
 		return nil, err
@@ -106,7 +98,6 @@ func (u AuthUseCase) HasPermission(
 	return nil
 }
 
-// HasObjectPermission - Check user permissions for object
 func (u AuthUseCase) HasObjectPermission(
 	ctx context.Context,
 	user *models.User,

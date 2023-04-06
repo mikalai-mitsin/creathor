@@ -35,16 +35,21 @@ func (h *DayHandler) Register(router *gin.RouterGroup) {
 // @Produce      json
 // @Param        Day  body   models.DayCreate  true  "Day JSON"
 // @Success      201   {object}  models.Day
-// @Router       /days [post]
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
+// @Router       /days/ [post]
 func (h *DayHandler) Create(ctx *gin.Context) {
 	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	create := &models.DayCreate{}
-	if err := ctx.Bind(create); err != nil {
-		return
-	}
+	_ = ctx.Bind(create)
 	day, err := h.dayInterceptor.Create(ctx.Request.Context(), create, requestUser)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusCreated, day)
@@ -57,16 +62,21 @@ func (h *DayHandler) Create(ctx *gin.Context) {
 // @Produce      json
 // @Param        filter  query   models.DayFilter false "Day filter"
 // @Success      200  {array}  models.Day
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /days [get]
 func (h *DayHandler) List(ctx *gin.Context) {
 	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	filter := &models.DayFilter{}
-	if err := ctx.Bind(filter); err != nil {
-		return
-	}
+	_ = ctx.Bind(filter)
 	listDays, count, err := h.dayInterceptor.List(ctx.Request.Context(), filter, requestUser)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
 	ctx.Header("count", fmt.Sprint(count))
@@ -80,15 +90,26 @@ func (h *DayHandler) List(ctx *gin.Context) {
 // @Produce      json
 // @Param        uuid  path      string  true  "search Day by UUID"
 // @Success      200  {object}  models.Day
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /days/{uuid} [get]
-func (h *DayHandler) Get(c *gin.Context) {
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
-	day, err := h.dayInterceptor.Get(c.Request.Context(), models.UUID(c.Param("id")), requestUser)
+func (h *DayHandler) Get(ctx *gin.Context) {
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
+	day, err := h.dayInterceptor.Get(
+		ctx.Request.Context(),
+		models.UUID(ctx.Param("id")),
+		requestUser,
+	)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.JSON(http.StatusOK, day)
+	ctx.JSON(http.StatusOK, day)
 }
 
 // Update        godoc
@@ -99,20 +120,25 @@ func (h *DayHandler) Get(c *gin.Context) {
 // @Param        uuid  path      string  true  "update Day by UUID"
 // @Param        Day  body   models.DayUpdate  true  "Day JSON"
 // @Success      201  {object}  models.Day
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /days/{uuid} [PATCH]
-func (h *DayHandler) Update(c *gin.Context) {
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
+func (h *DayHandler) Update(ctx *gin.Context) {
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
 	update := &models.DayUpdate{}
-	if err := c.Bind(update); err != nil {
-		return
-	}
-	update.ID = models.UUID(c.Param("id"))
-	day, err := h.dayInterceptor.Update(c.Request.Context(), update, requestUser)
+	_ = ctx.Bind(update)
+	update.ID = models.UUID(ctx.Param("id"))
+	day, err := h.dayInterceptor.Update(ctx.Request.Context(), update, requestUser)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.JSON(http.StatusOK, day)
+	ctx.JSON(http.StatusOK, day)
 }
 
 // Delete        godoc
@@ -121,13 +147,20 @@ func (h *DayHandler) Update(c *gin.Context) {
 // @Tags         Day
 // @Param        uuid  path      string  true  "delete Day by UUID"
 // @Success      204
+// @Failure      400   {object}  errs.Error
+// @Failure      401   {object}  errs.Error
+// @Failure      403   {object}  errs.Error
+// @Failure      404   {object}  errs.Error
+// @Failure      405   {object}  errs.Error
+// @Failure      500   {object}  errs.Error
+// @Failure      503   {object}  errs.Error
 // @Router       /days/{uuid} [delete]
-func (h *DayHandler) Delete(c *gin.Context) {
-	requestUser := c.Request.Context().Value(UserContextKey).(*models.User)
-	err := h.dayInterceptor.Delete(c.Request.Context(), models.UUID(c.Param("id")), requestUser)
+func (h *DayHandler) Delete(ctx *gin.Context) {
+	requestUser := ctx.Request.Context().Value(UserContextKey).(*models.User)
+	err := h.dayInterceptor.Delete(ctx.Request.Context(), models.UUID(ctx.Param("id")), requestUser)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		decodeError(ctx, err)
 		return
 	}
-	c.Status(http.StatusNoContent)
+	ctx.JSON(http.StatusNoContent, nil)
 }

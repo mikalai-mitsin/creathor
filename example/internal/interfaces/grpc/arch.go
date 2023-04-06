@@ -2,15 +2,12 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/018bf/example/internal/domain/interceptors"
 	"github.com/018bf/example/internal/domain/models"
 	examplepb "github.com/018bf/example/pkg/examplepb/v1"
 	"github.com/018bf/example/pkg/log"
 	"github.com/018bf/example/pkg/utils"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -72,8 +69,6 @@ func (s *ArchServiceServer) List(
 	if err != nil {
 		return nil, decodeError(err)
 	}
-	header := metadata.Pairs("count", fmt.Sprint(count))
-	_ = grpc.SendHeader(ctx, header)
 	return decodeListArch(listArches, count), nil
 }
 

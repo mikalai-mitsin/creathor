@@ -10,7 +10,6 @@ type Permission struct {
 	ID   PermissionID `db:"id,omitempty" json:"id"   form:"id"`
 	Name string       `db:"name"         json:"name" form:"name"`
 }
-
 type GroupID string
 
 const (

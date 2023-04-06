@@ -8,7 +8,7 @@ import (
 
 // SessionUseCase - domain layer use case interface
 //
-//go:generate mockgen -build_flags=-mod=mod -destination mock/session.go github.com/018bf/example/internal/domain/usecases SessionUseCase
+//go:generate mockgen -build_flags=-mod=mod -destination mock/session.go . SessionUseCase
 type SessionUseCase interface {
 	Get(ctx context.Context, id models.UUID) (*models.Session, error)
 	List(ctx context.Context, filter *models.SessionFilter) ([]*models.Session, uint64, error)

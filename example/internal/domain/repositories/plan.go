@@ -8,7 +8,7 @@ import (
 
 // PlanRepository - domain layer repository interface
 //
-//go:generate mockgen -build_flags=-mod=mod -destination mock/plan.go github.com/018bf/example/internal/domain/repositories PlanRepository
+//go:generate mockgen -build_flags=-mod=mod -destination mock/plan.go . PlanRepository
 type PlanRepository interface {
 	Get(ctx context.Context, id models.UUID) (*models.Plan, error)
 	List(ctx context.Context, filter *models.PlanFilter) ([]*models.Plan, error)

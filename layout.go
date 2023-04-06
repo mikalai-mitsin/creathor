@@ -206,27 +206,10 @@ func CreateLayout(project *configs.Project) error {
 			),
 			Name: "postgres init migration",
 		},
-
-		{
-			SourcePath:      "templates/internal/domain/models/types.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "domain", "models", "types.go"),
-			Name:            "model types",
-		},
 	}
 	if project.Auth {
 		files = append(
 			files,
-			&Template{
-				SourcePath: "templates/internal/domain/models/auth.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"models",
-					"auth.go",
-				),
-				Name: "auth models",
-			},
 			&Template{
 				SourcePath: "templates/internal/domain/models/auth_mock.go.tmpl",
 				DestinationPath: path.Join(
@@ -240,28 +223,6 @@ func CreateLayout(project *configs.Project) error {
 				Name: "auth mock models",
 			},
 			&Template{
-				SourcePath: "templates/internal/domain/models/permission.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"models",
-					"permission.go",
-				),
-				Name: "auth permission",
-			},
-			&Template{
-				SourcePath: "templates/internal/domain/models/user.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"models",
-					"user.go",
-				),
-				Name: "user model",
-			},
-			&Template{
 				SourcePath: "templates/internal/domain/models/user_mock.go.tmpl",
 				DestinationPath: path.Join(
 					destinationPath,
@@ -272,40 +233,6 @@ func CreateLayout(project *configs.Project) error {
 					"user.go",
 				),
 				Name: "user mock model",
-			},
-			&Template{
-				SourcePath: "templates/internal/domain/repositories/user.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"repositories",
-					"user.go",
-				),
-				Name: "user repository",
-			},
-
-			&Template{
-				SourcePath: "templates/internal/domain/repositories/permission.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"repositories",
-					"permission.go",
-				),
-				Name: "auth permission repository",
-			},
-			&Template{
-				SourcePath: "templates/internal/domain/repositories/auth.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"repositories",
-					"auth.go",
-				),
-				Name: "auth repository",
 			},
 			&Template{
 				SourcePath:      "templates/internal/usecases/auth_test.go.tmpl",
@@ -542,6 +469,17 @@ func CreateLayout(project *configs.Project) error {
 					Name: "rest auth handler",
 				},
 				&Template{
+					SourcePath: "templates/internal/interfaces/rest/auth_test.go.tmpl",
+					DestinationPath: path.Join(
+						destinationPath,
+						"internal",
+						"interfaces",
+						"rest",
+						"auth_test.go",
+					),
+					Name: "rest auth handler tests",
+				},
+				&Template{
 					SourcePath: "templates/internal/interfaces/rest/user.go.tmpl",
 					DestinationPath: path.Join(
 						destinationPath,
@@ -551,6 +489,17 @@ func CreateLayout(project *configs.Project) error {
 						"user.go",
 					),
 					Name: "rest user handler",
+				},
+				&Template{
+					SourcePath: "templates/internal/interfaces/rest/user_test.go.tmpl",
+					DestinationPath: path.Join(
+						destinationPath,
+						"internal",
+						"interfaces",
+						"rest",
+						"user_test.go",
+					),
+					Name: "rest user handler tests",
 				},
 			)
 		}

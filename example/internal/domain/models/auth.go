@@ -20,11 +20,7 @@ type TokenPair struct {
 }
 
 func (c *TokenPair) Validate() error {
-	err := validation.ValidateStruct(
-		c,
-		validation.Field(&c.Access),
-		validation.Field(&c.Refresh),
-	)
+	err := validation.ValidateStruct(c, validation.Field(&c.Access), validation.Field(&c.Refresh))
 	if err != nil {
 		return errs.FromValidationError(err)
 	}

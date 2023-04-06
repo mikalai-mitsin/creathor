@@ -45,19 +45,16 @@ func (u *User) Validate() error {
 	}
 	return nil
 }
-
 func (u *User) SetPassword(password string) {
 	fromPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	u.Password = string(fromPassword)
 }
-
 func (u *User) CheckPassword(password string) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
 		return errs.NewInvalidParameter("email or password")
 	}
 	return nil
 }
-
 func (u *User) FullName() string {
 	return fmt.Sprintf("%s %s", u.FirstName, u.LastName)
 }

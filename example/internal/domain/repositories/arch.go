@@ -8,7 +8,7 @@ import (
 
 // ArchRepository - domain layer repository interface
 //
-//go:generate mockgen -build_flags=-mod=mod -destination mock/arch.go github.com/018bf/example/internal/domain/repositories ArchRepository
+//go:generate mockgen -build_flags=-mod=mod -destination mock/arch.go . ArchRepository
 type ArchRepository interface {
 	Get(ctx context.Context, id models.UUID) (*models.Arch, error)
 	List(ctx context.Context, filter *models.ArchFilter) ([]*models.Arch, error)

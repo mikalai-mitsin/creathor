@@ -8,7 +8,7 @@ import (
 
 // EquipmentUseCase - domain layer use case interface
 //
-//go:generate mockgen -build_flags=-mod=mod -destination mock/equipment.go github.com/018bf/example/internal/domain/usecases EquipmentUseCase
+//go:generate mockgen -build_flags=-mod=mod -destination mock/equipment.go . EquipmentUseCase
 type EquipmentUseCase interface {
 	Get(ctx context.Context, id models.UUID) (*models.Equipment, error)
 	List(ctx context.Context, filter *models.EquipmentFilter) ([]*models.Equipment, uint64, error)

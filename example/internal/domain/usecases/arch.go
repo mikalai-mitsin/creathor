@@ -8,7 +8,7 @@ import (
 
 // ArchUseCase - domain layer use case interface
 //
-//go:generate mockgen -build_flags=-mod=mod -destination mock/arch.go github.com/018bf/example/internal/domain/usecases ArchUseCase
+//go:generate mockgen -build_flags=-mod=mod -destination mock/arch.go . ArchUseCase
 type ArchUseCase interface {
 	Get(ctx context.Context, id models.UUID) (*models.Arch, error)
 	List(ctx context.Context, filter *models.ArchFilter) ([]*models.Arch, uint64, error)

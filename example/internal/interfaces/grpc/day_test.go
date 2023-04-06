@@ -476,7 +476,7 @@ func TestDayServiceServer_Update(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				dayInterceptor.EXPECT().Update(ctx, update, user).Return(day, nil).Times(1)
+				dayInterceptor.EXPECT().Update(ctx, gomock.Any(), user).Return(day, nil).Times(1)
 			},
 			fields: fields{
 				UnimplementedDayServiceServer: examplepb.UnimplementedDayServiceServer{},
@@ -493,7 +493,7 @@ func TestDayServiceServer_Update(t *testing.T) {
 		{
 			name: "interceptor error",
 			setup: func() {
-				dayInterceptor.EXPECT().Update(ctx, update, user).
+				dayInterceptor.EXPECT().Update(ctx, gomock.Any(), user).
 					Return(nil, errs.NewUnexpectedBehaviorError("i error"))
 			},
 			fields: fields{

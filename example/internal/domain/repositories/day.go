@@ -8,7 +8,7 @@ import (
 
 // DayRepository - domain layer repository interface
 //
-//go:generate mockgen -build_flags=-mod=mod -destination mock/day.go github.com/018bf/example/internal/domain/repositories DayRepository
+//go:generate mockgen -build_flags=-mod=mod -destination mock/day.go . DayRepository
 type DayRepository interface {
 	Get(ctx context.Context, id models.UUID) (*models.Day, error)
 	List(ctx context.Context, filter *models.DayFilter) ([]*models.Day, error)

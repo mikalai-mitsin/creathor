@@ -476,7 +476,10 @@ func TestSessionServiceServer_Update(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				sessionInterceptor.EXPECT().Update(ctx, update, user).Return(session, nil).Times(1)
+				sessionInterceptor.EXPECT().
+					Update(ctx, gomock.Any(), user).
+					Return(session, nil).
+					Times(1)
 			},
 			fields: fields{
 				UnimplementedSessionServiceServer: examplepb.UnimplementedSessionServiceServer{},
@@ -493,7 +496,7 @@ func TestSessionServiceServer_Update(t *testing.T) {
 		{
 			name: "interceptor error",
 			setup: func() {
-				sessionInterceptor.EXPECT().Update(ctx, update, user).
+				sessionInterceptor.EXPECT().Update(ctx, gomock.Any(), user).
 					Return(nil, errs.NewUnexpectedBehaviorError("i error"))
 			},
 			fields: fields{

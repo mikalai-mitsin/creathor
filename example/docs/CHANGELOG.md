@@ -2,8 +2,11 @@
 ## [Unreleased]
 
 
-<a name="v0.4.7"></a>
-## [v0.4.7] - 2023-04-06
+<a name="0.4.7"></a>
+## [0.4.7] - 2023-04-06
+### Docs
+- rebuild example
+
 ### Feat
 - **models:** generate auth and user from ast
 - **repositories:** generate interfaces from ast
@@ -275,8 +278,8 @@
 - use err package name
 
 
-[Unreleased]: /compare/v0.4.7...HEAD
-[v0.4.7]: /compare/v0.4.6...v0.4.7
+[Unreleased]: /compare/0.4.7...HEAD
+[0.4.7]: /compare/v0.4.6...0.4.7
 [v0.4.6]: /compare/v0.4.5...v0.4.6
 [v0.4.5]: /compare/v0.4.4...v0.4.5
 [v0.4.4]: /compare/v0.4.3...v0.4.4

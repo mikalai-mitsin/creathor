@@ -48,7 +48,7 @@ func Test{{ .RESTHandlerTypeName }}_Create(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				{{ .InterceptorVariableName }}.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any()).Return({{ .Variable }}, nil)
+				{{ .InterceptorVariableName }}.EXPECT().Create(gomock.Any(), create, models.Guest).Return({{ .Variable }}, nil)
 			},
 			fields: fields{
 				{{ .InterceptorVariableName }}: {{ .InterceptorVariableName }},
@@ -56,6 +56,9 @@ func Test{{ .RESTHandlerTypeName }}_Create(t *testing.T) {
 			},
 			args: args{
 				request: (&http.Request{
+					Header: http.Header{
+						"Content-Type": []string{"application/json"},
+					},
 					Body: io.NopCloser(bytes.NewBuffer(createjson)),
 				}).WithContext(context.WithValue(context.Background(), UserContextKey, models.Guest)),
 			},
@@ -65,14 +68,19 @@ func Test{{ .RESTHandlerTypeName }}_Create(t *testing.T) {
 		{
 			name: "permission denied",
 			setup: func() {
-				{{ .InterceptorVariableName }}.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errs.NewPermissionDenied())
+				{{ .InterceptorVariableName }}.EXPECT().Create(gomock.Any(), create, models.Guest).Return(nil, errs.NewPermissionDenied())
 			},
 			fields: fields{
 				{{ .InterceptorVariableName }}: {{ .InterceptorVariableName }},
 				logger:          logger,
 			},
 			args: args{
-				request: (&http.Request{}).WithContext(context.WithValue(context.Background(), UserContextKey, models.Guest)),
+				request: (&http.Request{
+					Header: http.Header{
+						"Content-Type": []string{"application/json"},
+					},
+					Body: io.NopCloser(bytes.NewBuffer(createjson)),
+				}).WithContext(context.WithValue(context.Background(), UserContextKey, models.Guest)),
 			},
 			wantBody:   bytes.NewBufferString(errs.NewPermissionDenied().Error()),
 			wantStatus: http.StatusForbidden,
@@ -167,11 +175,11 @@ func Test{{ .RESTHandlerTypeName }}_Delete(t *testing.T) {
 			ctx.AddParam("id", string({{ .Variable }}.ID))
 			h.Delete(ctx)
 			if !reflect.DeepEqual(w.Code, tt.wantStatus) {
-				t.Errorf("Create() gotStatus = %v, wantStatus %v", w.Code, tt.wantStatus)
+				t.Errorf("Delete() gotStatus = %v, wantStatus %v", w.Code, tt.wantStatus)
 				return
 			}
 			if !reflect.DeepEqual(w.Body, tt.wantBody) {
-				t.Errorf("Create() gotBody = %v, wantBody %v", w.Body, tt.wantBody)
+				t.Errorf("Delete() gotBody = %v, wantBody %v", w.Body, tt.wantBody)
 				return
 			}
 		})
@@ -245,11 +253,11 @@ func Test{{ .RESTHandlerTypeName }}_Get(t *testing.T) {
 			ctx.AddParam("id", string({{ .Variable }}.ID))
 			h.Get(ctx)
 			if !reflect.DeepEqual(w.Code, tt.wantStatus) {
-				t.Errorf("Create() gotStatus = %v, wantStatus %v", w.Code, tt.wantStatus)
+				t.Errorf("Get() gotStatus = %v, wantStatus %v", w.Code, tt.wantStatus)
 				return
 			}
 			if !reflect.DeepEqual(w.Body, tt.wantBody) {
-				t.Errorf("Create() gotBody = %v, wantBody %v", w.Body, tt.wantBody)
+				t.Errorf("Get() gotBody = %v, wantBody %v", w.Body, tt.wantBody)
 				return
 			}
 		})
@@ -262,7 +270,7 @@ func Test{{ .RESTHandlerTypeName }}_List(t *testing.T) {
 	defer ctrl.Finish()
 	{{ .InterceptorVariableName }} := mock_interceptors.NewMock{{ .InterceptorTypeName }}(ctrl)
 	logger := mock_log.NewMockLogger(ctrl)
-	//filter := mock_models.New{{ .ModelName }}Filter(t)
+	filter := &models.{{ .FilterTypeName }}{}
 	{{ .ListVariable }} := []*models.{{ .ModelName }}{mock_models.New{{ .ModelName }}(t)}
 	{{ .ListVariable }}json, _ := json.Marshal({{ .ListVariable }})
 	type fields struct {
@@ -283,7 +291,7 @@ func Test{{ .RESTHandlerTypeName }}_List(t *testing.T) {
 		{
 			name: "ok",
 			setup: func() {
-				{{ .InterceptorVariableName }}.EXPECT().List(gomock.Any(), &models.{{ .FilterTypeName }}{}, models.Guest).Return({{ .ListVariable }}, uint64(len({{ .ListVariable }})), nil)
+				{{ .InterceptorVariableName }}.EXPECT().List(gomock.Any(), filter, models.Guest).Return({{ .ListVariable }}, uint64(len({{ .ListVariable }})), nil)
 			},
 			fields: fields{
 				{{ .InterceptorVariableName }}: {{ .InterceptorVariableName }},
@@ -298,7 +306,7 @@ func Test{{ .RESTHandlerTypeName }}_List(t *testing.T) {
 		{
 			name: "permission denied",
 			setup: func() {
-				{{ .InterceptorVariableName }}.EXPECT().List(gomock.Any(), &models.{{ .FilterTypeName }}{}, models.Guest).Return(nil, uint64(0), errs.NewPermissionDenied())
+				{{ .InterceptorVariableName }}.EXPECT().List(gomock.Any(), filter, models.Guest).Return(nil, uint64(0), errs.NewPermissionDenied())
 			},
 			fields: fields{
 				{{ .InterceptorVariableName }}: {{ .InterceptorVariableName }},
@@ -323,11 +331,11 @@ func Test{{ .RESTHandlerTypeName }}_List(t *testing.T) {
 			ctx.Request = tt.args.request
 			h.List(ctx)
 			if !reflect.DeepEqual(w.Code, tt.wantStatus) {
-				t.Errorf("Create() gotStatus = %v, wantStatus %v", w.Code, tt.wantStatus)
+				t.Errorf("List() gotStatus = %v, wantStatus %v", w.Code, tt.wantStatus)
 				return
 			}
 			if !reflect.DeepEqual(w.Body, tt.wantBody) {
-				t.Errorf("Create() gotBody = %v, wantBody %v", w.Body, tt.wantBody)
+				t.Errorf("List() gotBody = %v, wantBody %v", w.Body, tt.wantBody)
 				return
 			}
 		})
@@ -454,11 +462,11 @@ func Test{{ .RESTHandlerTypeName }}_Update(t *testing.T) {
 			ctx.AddParam("id", string(update.ID))
 			h.Update(ctx)
 			if !reflect.DeepEqual(w.Code, tt.wantStatus) {
-				t.Errorf("Create() gotStatus = %v, wantStatus %v", w.Code, tt.wantStatus)
+				t.Errorf("Update() gotStatus = %v, wantStatus %v", w.Code, tt.wantStatus)
 				return
 			}
 			if !reflect.DeepEqual(w.Body, tt.wantBody) {
-				t.Errorf("Create() gotBody = %v, wantBody %v", w.Body, tt.wantBody)
+				t.Errorf("Update() gotBody = %v, wantBody %v", w.Body, tt.wantBody)
 				return
 			}
 		})

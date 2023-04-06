@@ -508,6 +508,17 @@ func CreateLayout(project *configs.Project) error {
 					Name: "rest auth handler",
 				},
 				&Template{
+					SourcePath: "templates/internal/interfaces/rest/auth_test.go.tmpl",
+					DestinationPath: path.Join(
+						destinationPath,
+						"internal",
+						"interfaces",
+						"rest",
+						"auth_test.go",
+					),
+					Name: "rest auth handler tests",
+				},
+				&Template{
 					SourcePath: "templates/internal/interfaces/rest/user.go.tmpl",
 					DestinationPath: path.Join(
 						destinationPath,
@@ -517,6 +528,17 @@ func CreateLayout(project *configs.Project) error {
 						"user.go",
 					),
 					Name: "rest user handler",
+				},
+				&Template{
+					SourcePath: "templates/internal/interfaces/rest/user_test.go.tmpl",
+					DestinationPath: path.Join(
+						destinationPath,
+						"internal",
+						"interfaces",
+						"rest",
+						"user_test.go",
+					),
+					Name: "rest user handler tests",
 				},
 			)
 		}

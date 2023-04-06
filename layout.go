@@ -206,27 +206,10 @@ func CreateLayout(project *configs.Project) error {
 			),
 			Name: "postgres init migration",
 		},
-
-		{
-			SourcePath:      "templates/internal/domain/models/types.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "domain", "models", "types.go"),
-			Name:            "model types",
-		},
 	}
 	if project.Auth {
 		files = append(
 			files,
-			&Template{
-				SourcePath: "templates/internal/domain/models/auth.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"models",
-					"auth.go",
-				),
-				Name: "auth models",
-			},
 			&Template{
 				SourcePath: "templates/internal/domain/models/auth_mock.go.tmpl",
 				DestinationPath: path.Join(
@@ -238,28 +221,6 @@ func CreateLayout(project *configs.Project) error {
 					"auth.go",
 				),
 				Name: "auth mock models",
-			},
-			&Template{
-				SourcePath: "templates/internal/domain/models/permission.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"models",
-					"permission.go",
-				),
-				Name: "auth permission",
-			},
-			&Template{
-				SourcePath: "templates/internal/domain/models/user.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"models",
-					"user.go",
-				),
-				Name: "user model",
 			},
 			&Template{
 				SourcePath: "templates/internal/domain/models/user_mock.go.tmpl",

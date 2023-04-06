@@ -32,6 +32,7 @@ func (g CrudGenerator) Sync() error {
 		grpc.NewServer(g.project),
 		uptrace.NewProvider(g.project),
 		errs.NewErrors(g.project),
+		models.NewModelTypes(g.project),
 	}
 	for _, m := range g.project.Models {
 		generators = append(
@@ -54,6 +55,10 @@ func (g CrudGenerator) Sync() error {
 	if g.project.Auth {
 		generators = append(
 			generators,
+			models.NewModelAuth(g.project),
+			models.NewModelUser(g.project),
+			models.NewModelPermission(g.project),
+
 			repositoryInterfaces.NewRepositoryInterfaceUser(g.project),
 			repositoryInterfaces.NewRepositoryInterfacePermission(g.project),
 			repositoryInterfaces.NewRepositoryInterfaceAuth(g.project),

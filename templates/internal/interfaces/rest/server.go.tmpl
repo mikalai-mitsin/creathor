@@ -90,7 +90,6 @@ func(s *Server) Stop(_ context.Context) error {
 }
 
 func decodeError(ctx *gin.Context, err error) {
-	ctx.JSON(http.StatusBadRequest, err)
 	var domainError *errs.Error
 	if errors.As(err, &domainError) {
 		switch domainError.Code {

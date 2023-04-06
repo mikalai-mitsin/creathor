@@ -6,6 +6,7 @@ import (
 	interceptorInterfaces "github.com/018bf/creathor/internal/generators/domain/interceptors"
 	"github.com/018bf/creathor/internal/generators/domain/models"
 	"github.com/018bf/creathor/internal/generators/domain/repositories"
+	repositoryInterfaces "github.com/018bf/creathor/internal/generators/domain/repositories"
 	useCaseInterfaces "github.com/018bf/creathor/internal/generators/domain/usecases"
 	"github.com/018bf/creathor/internal/generators/interceptors"
 	"github.com/018bf/creathor/internal/generators/interfaces/grpc"
@@ -53,6 +54,9 @@ func (g CrudGenerator) Sync() error {
 	if g.project.Auth {
 		generators = append(
 			generators,
+			repositoryInterfaces.NewRepositoryInterfaceUser(g.project),
+			repositoryInterfaces.NewRepositoryInterfacePermission(g.project),
+			repositoryInterfaces.NewRepositoryInterfaceAuth(g.project),
 			useCaseInterfaces.NewUseCaseInterfaceAuth(g.project),
 			useCaseInterfaces.NewUseCaseInterfaceUser(g.project),
 			interceptorInterfaces.NewInterceptorInterfaceAuth(g.project),

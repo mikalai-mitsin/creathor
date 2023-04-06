@@ -274,40 +274,6 @@ func CreateLayout(project *configs.Project) error {
 				Name: "user mock model",
 			},
 			&Template{
-				SourcePath: "templates/internal/domain/repositories/user.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"repositories",
-					"user.go",
-				),
-				Name: "user repository",
-			},
-
-			&Template{
-				SourcePath: "templates/internal/domain/repositories/permission.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"repositories",
-					"permission.go",
-				),
-				Name: "auth permission repository",
-			},
-			&Template{
-				SourcePath: "templates/internal/domain/repositories/auth.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"domain",
-					"repositories",
-					"auth.go",
-				),
-				Name: "auth repository",
-			},
-			&Template{
 				SourcePath:      "templates/internal/usecases/auth_test.go.tmpl",
 				DestinationPath: path.Join(destinationPath, "internal", "usecases", "auth_test.go"),
 				Name:            "test auth usecase implementation",

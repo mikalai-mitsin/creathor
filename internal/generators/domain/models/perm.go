@@ -7,6 +7,7 @@ import (
 	"go/parser"
 	"go/printer"
 	"go/token"
+	"golang.org/x/exp/slices"
 	"os"
 	"path/filepath"
 
@@ -23,7 +24,7 @@ func NewPerm(modelName string, fileName string) *Perm {
 }
 
 func (m *Perm) file() *ast.File {
-	return &ast.File{
+	file := &ast.File{
 		Name: ast.NewIdent("models"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
@@ -53,10 +54,18 @@ func (m *Perm) file() *ast.File {
 			m.perms(),
 		},
 	}
+	return file
 }
 
 func (m *Perm) perms() *ast.GenDecl {
 	return &ast.GenDecl{
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Text: "// Model permissions.",
+				},
+			},
+		},
 		Tok: token.CONST,
 		Specs: []ast.Spec{
 			&ast.ValueSpec{
@@ -153,7 +162,7 @@ func (m *Perm) Sync() error {
 	if err != nil {
 		file = m.file()
 	}
-	// TODO: add sync nolint:godoc
+	m.fill(file)
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
@@ -162,4 +171,25 @@ func (m *Perm) Sync() error {
 		return err
 	}
 	return nil
+}
+
+func (m *Perm) fill(file *ast.File) {
+	var perms *ast.GenDecl
+	ast.Inspect(file, func(node ast.Node) bool {
+		if genDecl, ok := node.(*ast.GenDecl); ok && genDecl.Doc != nil {
+			contains := slices.ContainsFunc(genDecl.Doc.List, func(comment *ast.Comment) bool {
+				return comment.Text == "// Model permissions."
+			})
+			if contains {
+				perms = genDecl
+				return false
+			}
+			return true
+		}
+		return true
+	})
+	if perms == nil {
+		perms = m.perms()
+		file.Decls = append(file.Decls, perms)
+	}
 }

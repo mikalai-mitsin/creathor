@@ -30,7 +30,6 @@ func NewCrudGenerator(project *configs.Project) *CrudGenerator {
 func (g CrudGenerator) Sync() error {
 	generators := []Generator{
 		grpc.NewServer(g.project),
-		uptrace.NewProvider(g.project),
 		errs.NewErrors(g.project),
 		models.NewModelTypes(g.project),
 	}
@@ -51,6 +50,9 @@ func (g CrudGenerator) Sync() error {
 
 			grpc.NewHandler(m),
 		)
+	}
+	if g.project.UptraceEnabled {
+		generators = append(generators, uptrace.NewProvider(g.project))
 	}
 	if g.project.Auth {
 		generators = append(

@@ -8,12 +8,10 @@ import (
 	"go/printer"
 	"go/token"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
 	"github.com/018bf/creathor/internal/configs"
-	"github.com/018bf/creathor/internal/fake"
 )
 
 type MainModel struct {
@@ -197,7 +195,7 @@ func (m *MainModel) params() []*ast.Field {
 		fields = append(fields, &ast.Field{
 			Doc:   nil,
 			Names: []*ast.Ident{ast.NewIdent(param.GetName())},
-			Type:  ast.NewIdent(param.Type),
+			Type:  AstType(param.Type),
 			Tag: &ast.BasicLit{
 				Kind:  token.STRING,
 				Value: fmt.Sprintf("`json:\"%s\"`", param.Tag()),
@@ -382,7 +380,7 @@ func (m *MainModel) astStruct() *ast.TypeSpec {
 			Struct: 0,
 			Fields: &ast.FieldList{
 				Opening: 0,
-				List:    nil,
+				List:    m.params(),
 				Closing: 0,
 			},
 			Incomplete: false,
@@ -562,231 +560,6 @@ func (m *MainModel) syncValidate() error {
 	return nil
 }
 
-func (m *MainModel) astFakeValues() []*ast.KeyValueExpr {
-	kvs := []*ast.KeyValueExpr{
-		{
-			Key:   ast.NewIdent("ID"),
-			Value: fake.FakeAst("UUID"),
-		},
-		{
-			Key:   ast.NewIdent("UpdatedAt"),
-			Value: fake.FakeAst("time.Time"),
-		},
-		{
-			Key:   ast.NewIdent("CreatedAt"),
-			Value: fake.FakeAst("time.Time"),
-		},
-	}
-	for _, param := range m.model.Params {
-		kvs = append(kvs, &ast.KeyValueExpr{
-			Key:   ast.NewIdent(param.GetName()),
-			Colon: 0,
-			Value: fake.FakeAst(param.Type),
-		})
-	}
-	return kvs
-}
-
-func (m *MainModel) mockFile() *ast.File {
-	return &ast.File{
-		Package: 1,
-		Name: &ast.Ident{
-			Name: "mock_models",
-		},
-		Decls: []ast.Decl{
-			&ast.GenDecl{
-				Tok: token.IMPORT,
-				Specs: []ast.Spec{
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/models"`, m.model.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/utils"`, m.model.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"github.com/google/uuid"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"github.com/jaswdr/faker"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"testing"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"time"`,
-						},
-					},
-				},
-			},
-		},
-		Imports:  nil,
-		Comments: nil,
-	}
-}
-
-func (m *MainModel) syncMock() error {
-	fileset := token.NewFileSet()
-	filename := path.Join("internal", "domain", "models", "mock", m.model.FileName())
-	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
-	if err != nil {
-		file = m.mockFile()
-	}
-	mockName := fmt.Sprintf("New%s", m.model.ModelName())
-	var mockExists bool
-	var mock *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if fun, ok := node.(*ast.FuncDecl); ok && fun.Name.Name == mockName {
-			mock = fun
-			mockExists = true
-			return false
-		}
-		return true
-	})
-	if mock == nil {
-		mock = &ast.FuncDecl{
-			Doc:  nil,
-			Recv: nil,
-			Name: ast.NewIdent(mockName),
-			Type: &ast.FuncType{
-				Func:       0,
-				TypeParams: nil,
-				Params: &ast.FieldList{
-					Opening: 0,
-					List: []*ast.Field{
-						{
-							Doc:   nil,
-							Names: []*ast.Ident{ast.NewIdent("t")},
-							Type: &ast.StarExpr{
-								Star: 0,
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("testing"),
-									Sel: ast.NewIdent("T"),
-								},
-							},
-							Tag:     nil,
-							Comment: nil,
-						},
-					},
-					Closing: 0,
-				},
-				Results: &ast.FieldList{
-					Opening: 0,
-					List: []*ast.Field{
-						{
-							Doc:   nil,
-							Names: nil,
-							Type: &ast.StarExpr{
-								Star: 0,
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(m.model.ModelName()),
-								},
-							},
-							Tag:     nil,
-							Comment: nil,
-						},
-					},
-					Closing: 0,
-				},
-			},
-			Body: &ast.BlockStmt{
-				Lbrace: 0,
-				List: []ast.Stmt{
-					&ast.ExprStmt{
-						X: &ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X:   ast.NewIdent("t"),
-								Sel: ast.NewIdent("Helper"),
-							},
-							Lparen:   0,
-							Args:     nil,
-							Ellipsis: 0,
-							Rparen:   0,
-						},
-					},
-					&ast.AssignStmt{
-						Lhs:    []ast.Expr{ast.NewIdent("m")},
-						TokPos: 0,
-						Tok:    token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.UnaryExpr{
-								OpPos: 0,
-								Op:    token.AND,
-								X: &ast.CompositeLit{
-									Type: &ast.SelectorExpr{
-										X:   ast.NewIdent("models"),
-										Sel: ast.NewIdent(m.model.ModelName()),
-									},
-									Lbrace:     0,
-									Elts:       nil,
-									Rbrace:     0,
-									Incomplete: false,
-								},
-							},
-						},
-					},
-					&ast.ReturnStmt{
-						Return:  0,
-						Results: []ast.Expr{ast.NewIdent("m")},
-					},
-				},
-				Rbrace: 0,
-			},
-		}
-	}
-	if !mockExists {
-		file.Decls = append(file.Decls, mock)
-	}
-	for _, param := range m.astFakeValues() {
-		ast.Inspect(mock.Body, func(node ast.Node) bool {
-			if cl, ok := node.(*ast.CompositeLit); ok {
-				if sel, ok := cl.Type.(*ast.SelectorExpr); ok {
-					if sel.Sel.Name != m.model.ModelName() {
-						return true
-					}
-				}
-				for _, elt := range cl.Elts {
-					if kve, ok := elt.(*ast.KeyValueExpr); ok {
-						if ident, ok := kve.Key.(*ast.Ident); ok {
-							if n, ok := param.Key.(*ast.Ident); ok && ident.String() == n.String() {
-								return false
-							}
-						}
-					}
-				}
-				cl.Elts = append(cl.Elts, param)
-				return false
-			}
-			return true
-		})
-	}
-	buff := &bytes.Buffer{}
-	if err := printer.Fprint(buff, fileset, file); err != nil {
-		return err
-	}
-	if err := os.WriteFile(filename, buff.Bytes(), 0777); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (m *MainModel) Sync() error {
 	if err := m.syncStruct(); err != nil {
 		return err
@@ -794,7 +567,8 @@ func (m *MainModel) Sync() error {
 	if err := m.syncValidate(); err != nil {
 		return err
 	}
-	if err := m.syncMock(); err != nil {
+	mock := NewMock(m.astStruct(), m.model.FileName())
+	if err := mock.Sync(); err != nil {
 		return err
 	}
 	return nil

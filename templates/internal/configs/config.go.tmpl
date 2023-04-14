@@ -4,6 +4,13 @@ import (
     "{{ .Module }}/internal/domain/errs"
     "github.com/ilyakaznacheev/cleanenv"
 )
+{{- if .KafkaEnabled }}
+type kafka struct {
+    Topic string `env:"KAFKA_TOPIC" toml:"topic" `
+    Host  string `env:"KAFKA_HOST"  toml:"host"`
+    Port  int    `env:"KAFKA_PORT"  toml:"port" `
+}
+{{- end }}
 
 {{- if .UptraceEnabled }}
 type otel struct {
@@ -37,6 +44,9 @@ type Config struct {
 {{- end }}
 {{- if .UptraceEnabled }}
     Otel     otel     `toml:"otel"`
+{{- end }}
+{{- if .KafkaEnabled }}
+    Kafka    kafka    `toml:"kafka"`
 {{- end }}
 }
 

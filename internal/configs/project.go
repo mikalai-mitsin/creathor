@@ -23,6 +23,7 @@ type Project struct {
 	MakeEnabled    bool           `yaml:"make"`
 	TaskEnabled    bool           `yaml:"task"`
 	UptraceEnabled bool           `yaml:"uptrace"`
+	KafkaEnabled   bool           `yaml:"kafka"`
 }
 
 func NewProject(configPath string) (*Project, error) {

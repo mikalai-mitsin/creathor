@@ -75,6 +75,13 @@ func (g CrudGenerator) Sync() error {
 			interceptors.NewInterceptorAuth(g.project),
 		)
 	}
+	if g.project.KafkaEnabled {
+		generators = append(
+			generators,
+			models.NewModelEvent(g.project),
+			repositoryInterfaces.NewRepositoryInterfaceEvent(g.project),
+		)
+	}
 	for _, generator := range generators {
 		if err := generator.Sync(); err != nil {
 			return err

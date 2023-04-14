@@ -63,6 +63,13 @@ func createDirectories(project *configs.Project) error {
 			path.Join(destinationPath, "internal", "interfaces", "uptrace"),
 		)
 	}
+	if project.KafkaEnabled {
+		directories = append(
+			directories,
+			path.Join(destinationPath, "internal", "repositories", "kafka"),
+			path.Join(destinationPath, "internal", "interfaces", "kafka"),
+		)
+	}
 	for _, directory := range directories {
 		if err := os.MkdirAll(directory, 0777); err != nil {
 			return NewUnexpectedBehaviorError(err.Error())
@@ -620,6 +627,20 @@ func CreateLayout(project *configs.Project) error {
 					"server.go",
 				),
 				Name: "gateway server",
+			},
+		)
+	}
+	if project.KafkaEnabled {
+		files = append(
+			files, &Template{
+				SourcePath:      "templates/internal/repositories/kafka/event.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "repositories", "kafka", "event.go"),
+				Name:            "kafka events",
+			},
+			&Template{
+				SourcePath:      "templates/internal/repositories/kafka/event_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "repositories", "kafka", "event_test.go"),
+				Name:            "kafka events tests",
 			},
 		)
 	}

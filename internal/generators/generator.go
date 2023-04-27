@@ -41,7 +41,6 @@ func (g CrudGenerator) Sync() error {
 			models.NewFilterModel(m),
 
 			interceptors.NewInterceptorCrud(m),
-			usecases.NewUseCaseCrud(m),
 			postgres.NewRepositoryCrud(m),
 
 			grpc.NewHandler(m),
@@ -53,6 +52,8 @@ func (g CrudGenerator) Sync() error {
 			repositoryInterfaces.NewRepositoryInterfaceCrud(mod),
 			useCaseInterfaces.NewUseCaseInterfaceCrud(mod),
 			interceptorInterfaces.NewInterceptorInterfaceCrud(mod),
+
+			usecases.NewUseCaseCrud(mod),
 		)
 	}
 	if g.project.UptraceEnabled {

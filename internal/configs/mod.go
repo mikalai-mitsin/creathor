@@ -7,6 +7,7 @@ import (
 
 type Model struct {
 	Name       string
+	Variable   string
 	Params     []*Param
 	Validation bool
 	Mock       bool
@@ -15,14 +16,17 @@ type Model struct {
 func NewCreateModel(modelConfig *ModelConfig) *Model {
 	return &Model{
 		Name:       modelConfig.CreateTypeName(),
+		Variable:   "create",
 		Params:     modelConfig.Params,
 		Validation: true,
 		Mock:       true,
 	}
 }
+
 func NewUpdateModel(modelConfig *ModelConfig) *Model {
 	model := &Model{
-		Name: modelConfig.UpdateTypeName(),
+		Name:     modelConfig.UpdateTypeName(),
+		Variable: "update",
 		Params: []*Param{
 			{
 				Name: "ID",
@@ -43,7 +47,8 @@ func NewUpdateModel(modelConfig *ModelConfig) *Model {
 
 func NewMainModel(modelConfig *ModelConfig) *Model {
 	model := &Model{
-		Name: modelConfig.CreateTypeName(),
+		Name:     modelConfig.ModelName(),
+		Variable: modelConfig.Variable(),
 		Params: []*Param{
 			{
 				Name:   "ID",
@@ -65,6 +70,38 @@ func NewMainModel(modelConfig *ModelConfig) *Model {
 		Mock:       true,
 	}
 	model.Params = append(model.Params, modelConfig.Params...)
+	return model
+}
+
+func NewFilterModel(modelConfig *ModelConfig) *Model {
+	model := &Model{
+		Name:     modelConfig.FilterTypeName(),
+		Variable: "filter",
+		Params: []*Param{
+			{
+				Name:   "PageSize",
+				Type:   "*uint64",
+				Search: false,
+			},
+			{
+				Name:   "PageNumber",
+				Type:   "*uint64",
+				Search: false,
+			},
+			{
+				Name:   "Search",
+				Type:   "*string",
+				Search: false,
+			},
+			{
+				Name:   "OrderBy",
+				Type:   "[]string",
+				Search: false,
+			},
+		},
+		Validation: true,
+		Mock:       true,
+	}
 	return model
 }
 
@@ -264,13 +301,15 @@ func NewUseCase(m *ModelConfig) *UseCase {
 }
 
 type Repository struct {
-	Name    string
-	Methods []*Method
+	Name     string
+	Variable string
+	Methods  []*Method
 }
 
 func NewRepository(m *ModelConfig) *Repository {
 	return &Repository{
-		Name: m.RepositoryTypeName(),
+		Name:     m.RepositoryTypeName(),
+		Variable: m.RepositoryVariableName(),
 		Methods: []*Method{
 			{
 				Name: "Create",
@@ -674,10 +713,14 @@ func NewInterceptor(m *ModelConfig) *Interceptor {
 }
 
 type Mod struct {
-	Name        string
-	Module      string
-	Filename    string
-	Models      []*Model
+	Name     string
+	Module   string
+	Filename string
+	//Models      []*Model
+	CreateModel *Model
+	UpdateModel *Model
+	MainModel   *Model
+	FilterModel *Model
 	UseCase     *UseCase
 	Repository  *Repository
 	Interceptor *Interceptor

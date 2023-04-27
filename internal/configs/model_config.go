@@ -27,6 +27,7 @@ type ModelConfig struct {
 	GRPCEnabled    bool     `                     yaml:"gRPC"`
 	GatewayEnabled bool     `                     yaml:"gateway"`
 	RESTEnabled    bool     `                     yaml:"REST"`
+	KafkaEnabled   bool     `yaml:"kafka"`
 }
 
 func (m *ModelConfig) Validate() error {

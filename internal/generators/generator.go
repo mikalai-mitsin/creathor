@@ -5,7 +5,6 @@ import (
 	"github.com/018bf/creathor/internal/generators/domain/errs"
 	interceptorInterfaces "github.com/018bf/creathor/internal/generators/domain/interceptors"
 	"github.com/018bf/creathor/internal/generators/domain/models"
-	"github.com/018bf/creathor/internal/generators/domain/repositories"
 	repositoryInterfaces "github.com/018bf/creathor/internal/generators/domain/repositories"
 	useCaseInterfaces "github.com/018bf/creathor/internal/generators/domain/usecases"
 	"github.com/018bf/creathor/internal/generators/interceptors"
@@ -40,15 +39,20 @@ func (g CrudGenerator) Sync() error {
 			models.NewCreateModel(m),
 			models.NewUpdateModel(m),
 			models.NewFilterModel(m),
-			repositories.NewRepositoryInterfaceCrud(m),
-			useCaseInterfaces.NewUseCaseInterfaceCrud(m),
-			interceptorInterfaces.NewInterceptorInterfaceCrud(m),
 
 			interceptors.NewInterceptorCrud(m),
 			usecases.NewUseCaseCrud(m),
 			postgres.NewRepositoryCrud(m),
 
 			grpc.NewHandler(m),
+		)
+	}
+	for _, mod := range g.project.Mods {
+		generators = append(
+			generators,
+			repositoryInterfaces.NewRepositoryInterfaceCrud(mod),
+			useCaseInterfaces.NewUseCaseInterfaceCrud(mod),
+			interceptorInterfaces.NewInterceptorInterfaceCrud(mod),
 		)
 	}
 	if g.project.UptraceEnabled {

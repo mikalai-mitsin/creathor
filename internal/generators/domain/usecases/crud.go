@@ -14,18 +14,16 @@ import (
 )
 
 type UseCaseInterfaceCrud struct {
-	model *configs.ModelConfig
+	mod *configs.Mod
 }
 
-func NewUseCaseInterfaceCrud(config *configs.ModelConfig) *UseCaseInterfaceCrud {
-	return &UseCaseInterfaceCrud{model: config}
+func NewUseCaseInterfaceCrud(mod *configs.Mod) *UseCaseInterfaceCrud {
+	return &UseCaseInterfaceCrud{mod: mod}
 }
 
 func (i UseCaseInterfaceCrud) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "usecases",
-		},
+		Name: ast.NewIdent("usecases"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -39,20 +37,18 @@ func (i UseCaseInterfaceCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/models"`, i.model.Module),
+							Value: fmt.Sprintf(`"%s/internal/domain/models"`, i.mod.Module),
 						},
 					},
 				},
 			},
 		},
-		Imports:  nil,
-		Comments: nil,
 	}
 }
 
 func (i UseCaseInterfaceCrud) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "domain", "usecases", i.model.FileName())
+	filename := path.Join("internal", "domain", "usecases", i.mod.Filename)
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		file = i.file()
@@ -60,7 +56,7 @@ func (i UseCaseInterfaceCrud) Sync() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.model.UseCaseTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.mod.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -77,14 +73,14 @@ func (i UseCaseInterfaceCrud) Sync() error {
 					{
 						Text: fmt.Sprintf(
 							"//%s - domain layer use case interface",
-							i.model.UseCaseTypeName(),
+							i.mod.UseCase.Name,
 						),
 					},
 					{
 						Text: fmt.Sprintf(
 							"//go:generate mockgen -build_flags=-mod=mod -destination mock/%s . %s",
-							i.model.FileName(),
-							i.model.UseCaseTypeName(),
+							i.mod.Filename,
+							i.mod.UseCase.Name,
 						),
 					},
 				},
@@ -105,335 +101,31 @@ func (i UseCaseInterfaceCrud) Sync() error {
 }
 
 func (i UseCaseInterfaceCrud) astInterface() *ast.TypeSpec {
+	methods := make([]*ast.Field, len(i.mod.UseCase.Methods))
+	for i, method := range i.mod.UseCase.Methods {
+		methods[i] = &ast.Field{
+			Names: []*ast.Ident{
+				{
+					Name: method.Name,
+				},
+			},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: method.Args,
+				},
+				Results: &ast.FieldList{
+					List: method.Return,
+				},
+			},
+		}
+	}
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
-			Name: i.model.UseCaseTypeName(),
+			Name: i.mod.UseCase.Name,
 		},
 		Type: &ast.InterfaceType{
 			Methods: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "Get",
-							},
-						},
-						Type: &ast.FuncType{
-							Params: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "ctx",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "context",
-											},
-											Sel: &ast.Ident{
-												Name: "Context",
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "id",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "models",
-											},
-											Sel: &ast.Ident{
-												Name: "UUID",
-											},
-										},
-									},
-								},
-							},
-							Results: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "models",
-												},
-												Sel: &ast.Ident{
-													Name: i.model.ModelName(),
-												},
-											},
-										},
-									},
-									{
-										Type: &ast.Ident{
-											Name: "error",
-										},
-									},
-								},
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "List",
-							},
-						},
-						Type: &ast.FuncType{
-							Params: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "ctx",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "context",
-											},
-											Sel: &ast.Ident{
-												Name: "Context",
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "filter",
-											},
-										},
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "models",
-												},
-												Sel: &ast.Ident{
-													Name: i.model.FilterTypeName(),
-												},
-											},
-										},
-									},
-								},
-							},
-							Results: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Type: &ast.ArrayType{
-											Elt: &ast.StarExpr{
-												X: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "models",
-													},
-													Sel: &ast.Ident{
-														Name: i.model.ModelName(),
-													},
-												},
-											},
-										},
-									},
-									{
-										Type: &ast.Ident{
-											Name: "uint64",
-										},
-									},
-									{
-										Type: &ast.Ident{
-											Name: "error",
-										},
-									},
-								},
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "Update",
-							},
-						},
-						Type: &ast.FuncType{
-							Params: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "ctx",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "context",
-											},
-											Sel: &ast.Ident{
-												Name: "Context",
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "update",
-											},
-										},
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "models",
-												},
-												Sel: &ast.Ident{
-													Name: i.model.UpdateTypeName(),
-												},
-											},
-										},
-									},
-								},
-							},
-							Results: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "models",
-												},
-												Sel: &ast.Ident{
-													Name: i.model.ModelName(),
-												},
-											},
-										},
-									},
-									{
-										Type: &ast.Ident{
-											Name: "error",
-										},
-									},
-								},
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "Create",
-							},
-						},
-						Type: &ast.FuncType{
-							Params: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "ctx",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "context",
-											},
-											Sel: &ast.Ident{
-												Name: "Context",
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "create",
-											},
-										},
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "models",
-												},
-												Sel: &ast.Ident{
-													Name: i.model.CreateTypeName(),
-												},
-											},
-										},
-									},
-								},
-							},
-							Results: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "models",
-												},
-												Sel: &ast.Ident{
-													Name: i.model.ModelName(),
-												},
-											},
-										},
-									},
-									{
-										Type: &ast.Ident{
-											Name: "error",
-										},
-									},
-								},
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "Delete",
-							},
-						},
-						Type: &ast.FuncType{
-							Params: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "ctx",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "context",
-											},
-											Sel: &ast.Ident{
-												Name: "Context",
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "id",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "models",
-											},
-											Sel: &ast.Ident{
-												Name: "UUID",
-											},
-										},
-									},
-								},
-							},
-							Results: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Type: &ast.Ident{
-											Name: "error",
-										},
-									},
-								},
-							},
-						},
-					},
-				},
+				List: methods,
 			},
 		},
 	}

@@ -14,24 +14,19 @@ import (
 )
 
 type RepositoryInterfaceCrud struct {
-	model *configs.ModelConfig
+	mod *configs.Mod
 }
 
-func NewRepositoryInterfaceCrud(config *configs.ModelConfig) *RepositoryInterfaceCrud {
-	return &RepositoryInterfaceCrud{model: config}
+func NewRepositoryInterfaceCrud(mod *configs.Mod) *RepositoryInterfaceCrud {
+	return &RepositoryInterfaceCrud{mod: mod}
 }
 
 func (i RepositoryInterfaceCrud) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "repositories",
-		},
+		Name: ast.NewIdent("repositories"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
-				Doc:    nil,
-				TokPos: 0,
-				Tok:    token.IMPORT,
-				Lparen: 0,
+				Tok: token.IMPORT,
 				Specs: []ast.Spec{
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
@@ -42,21 +37,18 @@ func (i RepositoryInterfaceCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/models"`, i.model.Module),
+							Value: fmt.Sprintf(`"%s/internal/domain/models"`, i.mod.Module),
 						},
 					},
 				},
-				Rparen: 0,
 			},
 		},
-		Imports:  nil,
-		Comments: nil,
 	}
 }
 
 func (i RepositoryInterfaceCrud) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "domain", "repositories", i.model.FileName())
+	filename := path.Join("internal", "domain", "repositories", i.mod.Filename)
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		file = i.file()
@@ -64,7 +56,7 @@ func (i RepositoryInterfaceCrud) Sync() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.model.RepositoryTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.mod.Repository.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -81,14 +73,14 @@ func (i RepositoryInterfaceCrud) Sync() error {
 					{
 						Text: fmt.Sprintf(
 							"//%s - domain layer repository interface",
-							i.model.RepositoryTypeName(),
+							i.mod.Repository.Name,
 						),
 					},
 					{
 						Text: fmt.Sprintf(
 							"//go:generate mockgen -build_flags=-mod=mod -destination mock/%s . %s",
-							i.model.FileName(),
-							i.model.RepositoryTypeName(),
+							i.mod.Filename,
+							i.mod.Repository.Name,
 						),
 					},
 				},
@@ -109,365 +101,29 @@ func (i RepositoryInterfaceCrud) Sync() error {
 }
 
 func (i RepositoryInterfaceCrud) astInterface() *ast.TypeSpec {
+	methods := make([]*ast.Field, len(i.mod.Repository.Methods))
+	for i, method := range i.mod.Repository.Methods {
+		methods[i] = &ast.Field{
+			Names: []*ast.Ident{
+				{
+					Name: method.Name,
+				},
+			},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: method.Args,
+				},
+				Results: &ast.FieldList{
+					List: method.Return,
+				},
+			},
+		}
+	}
 	return &ast.TypeSpec{
-		Name: &ast.Ident{
-			Name: i.model.RepositoryTypeName(),
-		},
+		Name: ast.NewIdent(i.mod.Repository.Name),
 		Type: &ast.InterfaceType{
 			Methods: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "Get",
-							},
-						},
-						Type: &ast.FuncType{
-							Params: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "ctx",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "context",
-											},
-											Sel: &ast.Ident{
-												Name: "Context",
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "id",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "models",
-											},
-											Sel: &ast.Ident{
-												Name: "UUID",
-											},
-										},
-									},
-								},
-							},
-							Results: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "models",
-												},
-												Sel: &ast.Ident{
-													Name: i.model.ModelName(),
-												},
-											},
-										},
-									},
-									{
-										Type: &ast.Ident{
-											Name: "error",
-										},
-									},
-								},
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "List",
-							},
-						},
-						Type: &ast.FuncType{
-							Params: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "ctx",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "context",
-											},
-											Sel: &ast.Ident{
-												Name: "Context",
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "filter",
-											},
-										},
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "models",
-												},
-												Sel: &ast.Ident{
-													Name: i.model.FilterTypeName(),
-												},
-											},
-										},
-									},
-								},
-							},
-							Results: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Type: &ast.ArrayType{
-											Elt: &ast.StarExpr{
-												X: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "models",
-													},
-													Sel: &ast.Ident{
-														Name: i.model.ModelName(),
-													},
-												},
-											},
-										},
-									},
-									{
-										Type: &ast.Ident{
-											Name: "error",
-										},
-									},
-								},
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "Count",
-							},
-						},
-						Type: &ast.FuncType{
-							Params: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "ctx",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "context",
-											},
-											Sel: &ast.Ident{
-												Name: "Context",
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "filter",
-											},
-										},
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "models",
-												},
-												Sel: &ast.Ident{
-													Name: i.model.FilterTypeName(),
-												},
-											},
-										},
-									},
-								},
-							},
-							Results: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Type: &ast.Ident{
-											Name: "uint64",
-										},
-									},
-									{
-										Type: &ast.Ident{
-											Name: "error",
-										},
-									},
-								},
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "Update",
-							},
-						},
-						Type: &ast.FuncType{
-							Params: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "ctx",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "context",
-											},
-											Sel: &ast.Ident{
-												Name: "Context",
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "update",
-											},
-										},
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "models",
-												},
-												Sel: &ast.Ident{
-													Name: i.model.ModelName(),
-												},
-											},
-										},
-									},
-								},
-							},
-							Results: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Type: &ast.Ident{
-											Name: "error",
-										},
-									},
-								},
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "Create",
-							},
-						},
-						Type: &ast.FuncType{
-							Params: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "ctx",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "context",
-											},
-											Sel: &ast.Ident{
-												Name: "Context",
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "create",
-											},
-										},
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "models",
-												},
-												Sel: &ast.Ident{
-													Name: i.model.ModelName(),
-												},
-											},
-										},
-									},
-								},
-							},
-							Results: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Type: &ast.Ident{
-											Name: "error",
-										},
-									},
-								},
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "Delete",
-							},
-						},
-						Type: &ast.FuncType{
-							Params: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "ctx",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "context",
-											},
-											Sel: &ast.Ident{
-												Name: "Context",
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "id",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "models",
-											},
-											Sel: &ast.Ident{
-												Name: "UUID",
-											},
-										},
-									},
-								},
-							},
-							Results: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Type: &ast.Ident{
-											Name: "error",
-										},
-									},
-								},
-							},
-						},
-					},
-				},
+				List: methods,
 			},
 		},
 	}

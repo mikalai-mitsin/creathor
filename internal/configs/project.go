@@ -24,20 +24,25 @@ type Project struct {
 	TaskEnabled    bool           `yaml:"task"`
 	UptraceEnabled bool           `yaml:"uptrace"`
 	KafkaEnabled   bool           `yaml:"kafka"`
+	Mods           []*Mod
 }
 
 func NewProject(configPath string) (*Project, error) {
 	project := &Project{
-		Name:        "",
-		Module:      "",
-		GoVersion:   "1.19",
-		Auth:        true,
-		CI:          "github",
-		Models:      nil,
-		GRPCEnabled: true,
-		RESTEnabled: true,
-		MakeEnabled: false,
-		TaskEnabled: true,
+		Name:           "",
+		Module:         "",
+		GoVersion:      "1.20",
+		Auth:           true,
+		CI:             "github",
+		Models:         nil,
+		GRPCEnabled:    true,
+		GatewayEnabled: false,
+		RESTEnabled:    true,
+		MakeEnabled:    false,
+		TaskEnabled:    true,
+		UptraceEnabled: false,
+		KafkaEnabled:   false,
+		Mods:           []*Mod{},
 	}
 	file, err := os.ReadFile(configPath)
 	if err != nil {
@@ -54,6 +59,18 @@ func NewProject(configPath string) (*Project, error) {
 		model.GRPCEnabled = project.GRPCEnabled
 		model.GatewayEnabled = project.GatewayEnabled
 		model.RESTEnabled = project.RESTEnabled
+	}
+	for _, m := range project.Models {
+		mod := &Mod{
+			Name:        m.Model,
+			Module:      project.Module,
+			Filename:    m.FileName(),
+			Models:      []*Model{NewMainModel(m), NewCreateModel(m), NewUpdateModel(m)},
+			UseCase:     NewUseCase(m),
+			Repository:  NewRepository(m),
+			Interceptor: NewInterceptor(m),
+		}
+		project.Mods = append(project.Mods, mod)
 	}
 	return project, nil
 }

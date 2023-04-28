@@ -27,60 +27,35 @@ func (u UseCaseCrud) Sync() error {
 	if err := u.syncConstructor(); err != nil {
 		return err
 	}
-	if err := u.syncCreateMethod(); err != nil {
-		return err
-	}
-	if err := u.syncGetMethod(); err != nil {
-		return err
-	}
-	if err := u.syncListMethod(); err != nil {
-		return err
-	}
-	if err := u.syncUpdateMethod(); err != nil {
-		return err
-	}
-	if err := u.syncDeleteMethod(); err != nil {
-		return err
+	for _, method := range u.mod.UseCase.Methods {
+		switch method.Name {
+		case "Create":
+			if err := u.syncCreateMethod(); err != nil {
+				return err
+			}
+		case "Get":
+			if err := u.syncGetMethod(); err != nil {
+				return err
+			}
+		case "List":
+			if err := u.syncListMethod(); err != nil {
+				return err
+			}
+		case "Update":
+			if err := u.syncUpdateMethod(); err != nil {
+				return err
+			}
+		case "Delete":
+			if err := u.syncDeleteMethod(); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
 
 func (u UseCaseCrud) filename() string {
 	return filepath.Join("internal", "usecases", u.mod.Filename)
-}
-
-func (u UseCaseCrud) astStruct() *ast.TypeSpec {
-	structure := &ast.TypeSpec{
-		Name: ast.NewIdent(u.mod.UseCase.Name),
-		Type: &ast.StructType{
-			Fields: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Names: []*ast.Ident{ast.NewIdent(u.mod.Repository.Variable)},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("repositories"),
-							Sel: ast.NewIdent(u.mod.Repository.Name),
-						},
-					},
-					{
-						Names: []*ast.Ident{ast.NewIdent("clock")},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("clock"),
-							Sel: ast.NewIdent("Clock"),
-						},
-					},
-					{
-						Names: []*ast.Ident{ast.NewIdent("logger")},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("log"),
-							Sel: ast.NewIdent("Logger"),
-						},
-					},
-				},
-			},
-		},
-	}
-	return structure
 }
 
 func (u UseCaseCrud) file() *ast.File {
@@ -132,6 +107,40 @@ func (u UseCaseCrud) file() *ast.File {
 	}
 }
 
+func (u UseCaseCrud) structure() *ast.TypeSpec {
+	structure := &ast.TypeSpec{
+		Name: ast.NewIdent(u.mod.UseCase.Name),
+		Type: &ast.StructType{
+			Fields: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{ast.NewIdent(u.mod.Repository.Variable)},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("repositories"),
+							Sel: ast.NewIdent(u.mod.Repository.Name),
+						},
+					},
+					{
+						Names: []*ast.Ident{ast.NewIdent("clock")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("clock"),
+							Sel: ast.NewIdent("Clock"),
+						},
+					},
+					{
+						Names: []*ast.Ident{ast.NewIdent("logger")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("log"),
+							Sel: ast.NewIdent("Logger"),
+						},
+					},
+				},
+			},
+		},
+	}
+	return structure
+}
+
 func (u UseCaseCrud) syncStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
@@ -149,7 +158,7 @@ func (u UseCaseCrud) syncStruct() error {
 		return true
 	})
 	if structure == nil {
-		structure = u.astStruct()
+		structure = u.structure()
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
@@ -533,7 +542,7 @@ func (u UseCaseCrud) syncCreateMethod() error {
 	return nil
 }
 
-func (u UseCaseCrud) astListMethod() *ast.FuncDecl {
+func (u UseCaseCrud) list() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			Opening: 0,
@@ -706,7 +715,7 @@ func (u UseCaseCrud) syncListMethod() error {
 		return true
 	})
 	if method == nil {
-		method = u.astListMethod()
+		method = u.list()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -1188,7 +1197,7 @@ func (u UseCaseCrud) syncUpdateMethod() error {
 	return nil
 }
 
-func (u UseCaseCrud) astDeleteMethod() *ast.FuncDecl {
+func (u UseCaseCrud) delete() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Doc: nil,
 		Recv: &ast.FieldList{
@@ -1296,7 +1305,7 @@ func (u UseCaseCrud) syncDeleteMethod() error {
 		return true
 	})
 	if method == nil {
-		method = u.astDeleteMethod()
+		method = u.delete()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)

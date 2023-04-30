@@ -35,18 +35,15 @@ func (g CrudGenerator) Sync() error {
 	for _, m := range g.project.Models {
 		generators = append(
 			generators,
-			models.NewMainModel(m),
-			models.NewCreateModel(m),
-			models.NewUpdateModel(m),
-			models.NewFilterModel(m),
-
 			interceptors.NewInterceptorCrud(m),
 			postgres.NewRepositoryCrud(m),
-
 			grpc.NewHandler(m),
 		)
 	}
 	for _, mod := range g.project.Mods {
+		for _, model := range mod.Models {
+			generators = append(generators, models.NewModel(model, mod.Filename))
+		}
 		generators = append(
 			generators,
 			repositoryInterfaces.NewRepositoryInterfaceCrud(mod),

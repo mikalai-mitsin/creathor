@@ -113,6 +113,11 @@ func NewFilterModel(modelConfig *ModelConfig) *Model {
 				Type:   "[]string",
 				Search: false,
 			},
+			{
+				Name:   "IDs",
+				Type:   "[]UUID",
+				Search: false,
+			},
 		},
 		Validation: true,
 		Mock:       true,

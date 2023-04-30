@@ -4,90 +4,69 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"strings"
 
 	"github.com/018bf/creathor/internal/configs"
 )
 
-type MainModel struct {
-	model *configs.ModelConfig
-}
-
-func NewMainModel(modelConfig *configs.ModelConfig) *MainModel {
-	return &MainModel{model: modelConfig}
-}
-
-func (m *MainModel) params() []*ast.Field {
-	fields := []*ast.Field{
-		{
-			Doc:   nil,
-			Names: []*ast.Ident{ast.NewIdent("ID")},
-			Type:  ast.NewIdent("UUID"),
-			Tag: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: "`json:\"id\"`",
-			},
-			Comment: nil,
-		},
-		{
-			Doc:   nil,
-			Names: []*ast.Ident{ast.NewIdent("UpdatedAt")},
-			Type: &ast.SelectorExpr{
-				X:   ast.NewIdent("time"),
-				Sel: ast.NewIdent("Time"),
-			},
-			Tag: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: "`json:\"updated_at\"`",
-			},
-			Comment: nil,
-		},
-		{
-			Doc:   nil,
-			Names: []*ast.Ident{ast.NewIdent("CreatedAt")},
-			Type: &ast.SelectorExpr{
-				X:   ast.NewIdent("time"),
-				Sel: ast.NewIdent("Time"),
-			},
-			Tag: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: "`json:\"created_at\"`",
-			},
-			Comment: nil,
-		},
+func astType(t string) ast.Expr {
+	if strings.HasPrefix(t, "*") {
+		return &ast.StarExpr{
+			X: astType(strings.TrimPrefix(t, "*")),
+		}
 	}
-	for _, param := range m.model.Params {
-		fields = append(fields, &ast.Field{
-			Doc:   nil,
+	if strings.HasPrefix(t, "[]") {
+		return &ast.ArrayType{
+			Elt: astType(strings.TrimPrefix(t, "[]")),
+		}
+	}
+	return ast.NewIdent(t)
+}
+
+type Model struct {
+	model    *configs.Model
+	filename string
+}
+
+func NewModel(model *configs.Model, filename string) *Model {
+	return &Model{model: model, filename: filename}
+}
+
+func (m *Model) params() []*ast.Field {
+	fields := make([]*ast.Field, len(m.model.Params))
+	for i, param := range m.model.Params {
+		fields[i] = &ast.Field{
 			Names: []*ast.Ident{ast.NewIdent(param.GetName())},
 			Type:  astType(param.Type),
 			Tag: &ast.BasicLit{
 				Kind:  token.STRING,
 				Value: fmt.Sprintf("`json:\"%s\"`", param.Tag()),
 			},
-			Comment: nil,
-		})
+		}
 	}
 	return fields
 }
 
-func (m *MainModel) Sync() error {
-	if m.model.Auth {
-		permissions := NewPerm(m.model.ModelName(), m.model.FileName())
-		if err := permissions.Sync(); err != nil {
-			return err
-		}
+func (m *Model) Sync() error {
+	permissions := NewPerm(m.model.Name, m.filename)
+	if err := permissions.Sync(); err != nil {
+		return err
 	}
-	structure := NewStructure(m.model.FileName(), m.model.ModelName(), m.params())
+	structure := NewStructure(m.filename, m.model.Name, m.params())
 	if err := structure.Sync(); err != nil {
 		return err
 	}
-	validate := NewValidate(structure.spec(), m.model.FileName())
-	if err := validate.Sync(); err != nil {
-		return err
+	if m.model.Validation {
+		validate := NewValidate(structure.spec(), m.filename)
+		if err := validate.Sync(); err != nil {
+			return err
+		}
 	}
-	mock := NewMock(structure.spec(), m.model.FileName())
-	if err := mock.Sync(); err != nil {
-		return err
+	if m.model.Mock {
+		mock := NewMock(structure.spec(), m.filename)
+		if err := mock.Sync(); err != nil {
+			return err
+		}
 	}
 	return nil
 }

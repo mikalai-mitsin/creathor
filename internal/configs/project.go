@@ -62,13 +62,15 @@ func NewProject(configPath string) (*Project, error) {
 	}
 	for _, m := range project.Models {
 		mod := &Mod{
-			Name:        m.Model,
-			Module:      project.Module,
-			Filename:    m.FileName(),
-			MainModel:   NewMainModel(m),
-			FilterModel: NewFilterModel(m),
-			CreateModel: NewCreateModel(m),
-			UpdateModel: NewUpdateModel(m),
+			Name:     m.Model,
+			Module:   project.Module,
+			Filename: m.FileName(),
+			Models: []*Model{
+				NewMainModel(m),
+				NewFilterModel(m),
+				NewCreateModel(m),
+				NewUpdateModel(m),
+			},
 			UseCase:     NewUseCase(m),
 			Repository:  NewRepository(m),
 			Interceptor: NewInterceptor(m),

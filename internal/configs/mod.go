@@ -3,9 +3,20 @@ package configs
 import (
 	"fmt"
 	"go/ast"
+	"golang.org/x/exp/slices"
+)
+
+type ModelType uint8
+
+const (
+	ModelTypeMain = iota
+	ModelTypeCreate
+	ModelTypeUpdate
+	ModelTypeFilter
 )
 
 type Model struct {
+	Type       ModelType
 	Name       string
 	Variable   string
 	Params     []*Param
@@ -15,6 +26,7 @@ type Model struct {
 
 func NewCreateModel(modelConfig *ModelConfig) *Model {
 	return &Model{
+		Type:       ModelTypeCreate,
 		Name:       modelConfig.CreateTypeName(),
 		Variable:   "create",
 		Params:     modelConfig.Params,
@@ -25,6 +37,7 @@ func NewCreateModel(modelConfig *ModelConfig) *Model {
 
 func NewUpdateModel(modelConfig *ModelConfig) *Model {
 	model := &Model{
+		Type:     ModelTypeUpdate,
 		Name:     modelConfig.UpdateTypeName(),
 		Variable: "update",
 		Params: []*Param{
@@ -47,6 +60,7 @@ func NewUpdateModel(modelConfig *ModelConfig) *Model {
 
 func NewMainModel(modelConfig *ModelConfig) *Model {
 	model := &Model{
+		Type:     ModelTypeMain,
 		Name:     modelConfig.ModelName(),
 		Variable: modelConfig.Variable(),
 		Params: []*Param{
@@ -75,6 +89,7 @@ func NewMainModel(modelConfig *ModelConfig) *Model {
 
 func NewFilterModel(modelConfig *ModelConfig) *Model {
 	model := &Model{
+		Type:     ModelTypeFilter,
 		Name:     modelConfig.FilterTypeName(),
 		Variable: "filter",
 		Params: []*Param{
@@ -713,15 +728,43 @@ func NewInterceptor(m *ModelConfig) *Interceptor {
 }
 
 type Mod struct {
-	Name     string
-	Module   string
-	Filename string
-	//Models      []*Model
-	CreateModel *Model
-	UpdateModel *Model
-	MainModel   *Model
-	FilterModel *Model
+	Name        string
+	Module      string
+	Filename    string
+	Models      []*Model
 	UseCase     *UseCase
 	Repository  *Repository
 	Interceptor *Interceptor
+}
+
+func (m *Mod) GetMainModel() *Model {
+	index := slices.IndexFunc(m.Models, func(model *Model) bool { return model.Type == ModelTypeMain })
+	if index >= 0 {
+		return m.Models[index]
+	}
+	return nil
+}
+
+func (m *Mod) GetCrateModel() *Model {
+	index := slices.IndexFunc(m.Models, func(model *Model) bool { return model.Type == ModelTypeCreate })
+	if index > 0 {
+		return m.Models[index]
+	}
+	return nil
+}
+
+func (m *Mod) GetUpdateModel() *Model {
+	index := slices.IndexFunc(m.Models, func(model *Model) bool { return model.Type == ModelTypeUpdate })
+	if index > 0 {
+		return m.Models[index]
+	}
+	return nil
+}
+
+func (m *Mod) GetFilterModel() *Model {
+	index := slices.IndexFunc(m.Models, func(model *Model) bool { return model.Type == ModelTypeFilter })
+	if index > 0 {
+		return m.Models[index]
+	}
+	return nil
 }

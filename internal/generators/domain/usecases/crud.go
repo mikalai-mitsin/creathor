@@ -56,7 +56,7 @@ func (i UseCaseInterfaceCrud) Sync() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.mod.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.mod.UseCase.Name {
 			structure = t
 			structureExists = true
 			return false

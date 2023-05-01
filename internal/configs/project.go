@@ -74,6 +74,7 @@ func NewProject(configPath string) (*Project, error) {
 			UseCase:     NewUseCase(m),
 			Repository:  NewRepository(m),
 			Interceptor: NewInterceptor(m),
+			Auth:        project.Auth,
 		}
 		project.Mods = append(project.Mods, mod)
 	}

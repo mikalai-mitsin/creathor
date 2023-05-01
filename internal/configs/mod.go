@@ -2,6 +2,7 @@ package configs
 
 import (
 	"fmt"
+	"github.com/iancoleman/strcase"
 	"go/ast"
 	"golang.org/x/exp/slices"
 )
@@ -13,6 +14,17 @@ const (
 	ModelTypeCreate
 	ModelTypeUpdate
 	ModelTypeFilter
+)
+
+type MethodType uint8
+
+const (
+	MethodTypeGet = iota
+	MethodTypeList
+	MethodTypeCount
+	MethodTypeCreate
+	MethodTypeUpdate
+	MethodTypeDelete
 )
 
 type Model struct {
@@ -127,21 +139,25 @@ func NewFilterModel(modelConfig *ModelConfig) *Model {
 
 type Method struct {
 	Name   string
+	Type   MethodType
 	Args   []*ast.Field
 	Return []*ast.Field
 }
 
 type UseCase struct {
-	Name    string
-	Methods []*Method
+	Name     string
+	Variable string
+	Methods  []*Method
 }
 
 func NewUseCase(m *ModelConfig) *UseCase {
 	return &UseCase{
-		Name: m.UseCaseTypeName(),
+		Name:     m.UseCaseTypeName(),
+		Variable: m.UseCaseVariableName(),
 		Methods: []*Method{
 			{
 				Name: "Create",
+				Type: MethodTypeCreate,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -180,6 +196,7 @@ func NewUseCase(m *ModelConfig) *UseCase {
 			},
 			{
 				Name: "List",
+				Type: MethodTypeList,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -216,6 +233,7 @@ func NewUseCase(m *ModelConfig) *UseCase {
 			},
 			{
 				Name: "Get",
+				Type: MethodTypeGet,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -252,6 +270,7 @@ func NewUseCase(m *ModelConfig) *UseCase {
 			},
 			{
 				Name: "Update",
+				Type: MethodTypeUpdate,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -290,6 +309,7 @@ func NewUseCase(m *ModelConfig) *UseCase {
 			},
 			{
 				Name: "Delete",
+				Type: MethodTypeDelete,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -333,6 +353,7 @@ func NewRepository(m *ModelConfig) *Repository {
 		Methods: []*Method{
 			{
 				Name: "Create",
+				Type: MethodTypeCreate,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -363,6 +384,7 @@ func NewRepository(m *ModelConfig) *Repository {
 			},
 			{
 				Name: "List",
+				Type: MethodTypeList,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -396,6 +418,7 @@ func NewRepository(m *ModelConfig) *Repository {
 			},
 			{
 				Name: "Count",
+				Type: MethodTypeCount,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -429,6 +452,7 @@ func NewRepository(m *ModelConfig) *Repository {
 			},
 			{
 				Name: "Get",
+				Type: MethodTypeGet,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -465,6 +489,7 @@ func NewRepository(m *ModelConfig) *Repository {
 			},
 			{
 				Name: "Update",
+				Type: MethodTypeUpdate,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -495,6 +520,7 @@ func NewRepository(m *ModelConfig) *Repository {
 			},
 			{
 				Name: "Delete",
+				Type: MethodTypeDelete,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -526,10 +552,11 @@ func NewRepository(m *ModelConfig) *Repository {
 }
 
 type Interceptor struct {
-	Auth    bool
-	Events  bool
-	Name    string
-	Methods []*Method
+	Auth     bool
+	Events   bool
+	Name     string
+	Variable string
+	Methods  []*Method
 }
 
 func NewInterceptor(m *ModelConfig) *Interceptor {
@@ -540,6 +567,7 @@ func NewInterceptor(m *ModelConfig) *Interceptor {
 		Methods: []*Method{
 			{
 				Name: "Create",
+				Type: MethodTypeCreate,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -578,6 +606,7 @@ func NewInterceptor(m *ModelConfig) *Interceptor {
 			},
 			{
 				Name: "List",
+				Type: MethodTypeList,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -614,6 +643,7 @@ func NewInterceptor(m *ModelConfig) *Interceptor {
 			},
 			{
 				Name: "Get",
+				Type: MethodTypeGet,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -650,6 +680,7 @@ func NewInterceptor(m *ModelConfig) *Interceptor {
 			},
 			{
 				Name: "Update",
+				Type: MethodTypeUpdate,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -688,6 +719,7 @@ func NewInterceptor(m *ModelConfig) *Interceptor {
 			},
 			{
 				Name: "Delete",
+				Type: MethodTypeDelete,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -732,6 +764,31 @@ func NewInterceptor(m *ModelConfig) *Interceptor {
 	return interceptor
 }
 
+func (i *Interceptor) GetMethod(t MethodType) *Method {
+	index := slices.IndexFunc(i.Methods, func(method *Method) bool { return method.Type == t })
+	if index >= 0 {
+		return i.Methods[index]
+	}
+	return nil
+}
+
+func (m *Interceptor) GetCreateMethod() *Method {
+	return m.GetMethod(MethodTypeCreate)
+}
+func (m *Interceptor) GetUpdateMethod() *Method {
+	return m.GetMethod(MethodTypeUpdate)
+}
+func (m *Interceptor) GetDeleteMethod() *Method {
+	return m.GetMethod(MethodTypeDelete)
+}
+func (m *Interceptor) GetListMethod() *Method {
+	return m.GetMethod(MethodTypeList)
+}
+
+func (m *Interceptor) GetGetMethod() *Method {
+	return m.GetMethod(MethodTypeGet)
+}
+
 type Mod struct {
 	Name        string
 	Module      string
@@ -740,6 +797,7 @@ type Mod struct {
 	UseCase     *UseCase
 	Repository  *Repository
 	Interceptor *Interceptor
+	Auth        bool
 }
 
 func (m *Mod) GetMainModel() *Model {
@@ -752,7 +810,7 @@ func (m *Mod) GetMainModel() *Model {
 
 func (m *Mod) GetCrateModel() *Model {
 	index := slices.IndexFunc(m.Models, func(model *Model) bool { return model.Type == ModelTypeCreate })
-	if index > 0 {
+	if index >= 0 {
 		return m.Models[index]
 	}
 	return nil
@@ -772,4 +830,24 @@ func (m *Mod) GetFilterModel() *Model {
 		return m.Models[index]
 	}
 	return nil
+}
+
+func (m *Mod) PermissionIDCreate() string {
+	return fmt.Sprintf("PermissionID%sCreate", strcase.ToCamel(m.Name))
+}
+
+func (m *Mod) PermissionIDUpdate() string {
+	return fmt.Sprintf("PermissionID%sUpdate", strcase.ToCamel(m.Name))
+}
+
+func (m *Mod) PermissionIDDelete() string {
+	return fmt.Sprintf("PermissionID%sDelete", strcase.ToCamel(m.Name))
+}
+
+func (m *Mod) PermissionIDDetail() string {
+	return fmt.Sprintf("PermissionID%sDetail", strcase.ToCamel(m.Name))
+}
+
+func (m *Mod) PermissionIDList() string {
+	return fmt.Sprintf("PermissionID%sList", strcase.ToCamel(m.Name))
 }

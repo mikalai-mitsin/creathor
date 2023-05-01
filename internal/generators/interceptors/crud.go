@@ -14,11 +14,11 @@ import (
 )
 
 type InterceptorCrud struct {
-	model *configs.ModelConfig
+	mod *configs.Mod
 }
 
-func NewInterceptorCrud(model *configs.ModelConfig) *InterceptorCrud {
-	return &InterceptorCrud{model: model}
+func NewInterceptorCrud(mod *configs.Mod) *InterceptorCrud {
+	return &InterceptorCrud{mod: mod}
 }
 
 func (i InterceptorCrud) Sync() error {
@@ -28,52 +28,55 @@ func (i InterceptorCrud) Sync() error {
 	if err := i.syncConstructor(); err != nil {
 		return err
 	}
-	if err := i.syncCreateMethod(); err != nil {
-		return err
-	}
-	if err := i.syncGetMethod(); err != nil {
-		return err
-	}
-	if err := i.syncListMethod(); err != nil {
-		return err
-	}
-	if err := i.syncUpdateMethod(); err != nil {
-		return err
-	}
-	if err := i.syncDeleteMethod(); err != nil {
-		return err
+	for _, method := range i.mod.Interceptor.Methods {
+		switch method.Type {
+		case configs.MethodTypeCreate:
+			if err := i.syncCreateMethod(); err != nil {
+				return err
+			}
+		case configs.MethodTypeGet:
+			if err := i.syncGetMethod(); err != nil {
+				return err
+			}
+		case configs.MethodTypeList:
+			if err := i.syncListMethod(); err != nil {
+				return err
+			}
+		case configs.MethodTypeUpdate:
+			if err := i.syncUpdateMethod(); err != nil {
+				return err
+			}
+		case configs.MethodTypeDelete:
+			if err := i.syncDeleteMethod(); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
 
 func (i InterceptorCrud) filename() string {
-	return filepath.Join("internal", "interceptors", i.model.FileName())
+	return filepath.Join("internal", "interceptors", i.mod.Filename)
 }
 
-func (i InterceptorCrud) astStruct() *ast.TypeSpec {
+func (i InterceptorCrud) structure() *ast.TypeSpec {
 	fields := []*ast.Field{
 		{
-			Doc:   nil,
-			Names: []*ast.Ident{ast.NewIdent(i.model.UseCaseVariableName())},
+			Names: []*ast.Ident{ast.NewIdent(i.mod.UseCase.Variable)},
 			Type: &ast.SelectorExpr{
 				X:   ast.NewIdent("usecases"),
-				Sel: ast.NewIdent(i.model.UseCaseTypeName()),
+				Sel: ast.NewIdent(i.mod.UseCase.Name),
 			},
-			Tag:     nil,
-			Comment: nil,
 		},
 		{
-			Doc:   nil,
 			Names: []*ast.Ident{ast.NewIdent("logger")},
 			Type: &ast.SelectorExpr{
 				X:   ast.NewIdent("log"),
 				Sel: ast.NewIdent("Logger"),
 			},
-			Tag:     nil,
-			Comment: nil,
 		},
 	}
-	if i.model.Auth {
+	if i.mod.Auth {
 		fields = append(
 			fields,
 			&ast.Field{
@@ -86,7 +89,7 @@ func (i InterceptorCrud) astStruct() *ast.TypeSpec {
 		)
 	}
 	structure := &ast.TypeSpec{
-		Name: ast.NewIdent(i.model.InterceptorTypeName()),
+		Name: ast.NewIdent(i.mod.Interceptor.Name),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: fields,
@@ -105,7 +108,7 @@ func (i InterceptorCrud) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.model.InterceptorTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.mod.Interceptor.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -113,16 +116,12 @@ func (i InterceptorCrud) syncStruct() error {
 		return true
 	})
 	if structure == nil {
-		structure = i.astStruct()
+		structure = i.structure()
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
-			Doc:    nil,
-			TokPos: 0,
-			Tok:    token.TYPE,
-			Lparen: 0,
-			Specs:  []ast.Spec{structure},
-			Rparen: 0,
+			Tok:   token.TYPE,
+			Specs: []ast.Spec{structure},
 		}
 		file.Decls = append(file.Decls, gd)
 	}
@@ -136,48 +135,34 @@ func (i InterceptorCrud) syncStruct() error {
 	return nil
 }
 
-func (i InterceptorCrud) astConstructor() *ast.FuncDecl {
+func (i InterceptorCrud) constructor() *ast.FuncDecl {
 	fields := []*ast.Field{
 		{
-			Doc:   nil,
-			Names: []*ast.Ident{ast.NewIdent(i.model.UseCaseVariableName())},
+			Names: []*ast.Ident{ast.NewIdent(i.mod.UseCase.Variable)},
 			Type: &ast.SelectorExpr{
 				X:   ast.NewIdent("usecases"),
-				Sel: ast.NewIdent(i.model.UseCaseTypeName()),
+				Sel: ast.NewIdent(i.mod.UseCase.Name),
 			},
-			Tag:     nil,
-			Comment: nil,
 		},
 		{
-			Doc:   nil,
 			Names: []*ast.Ident{ast.NewIdent("logger")},
 			Type: &ast.SelectorExpr{
 				X:   ast.NewIdent("log"),
 				Sel: ast.NewIdent("Logger"),
 			},
-			Tag:     nil,
-			Comment: nil,
 		},
 	}
 	exprs := []ast.Expr{
 		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: i.model.UseCaseVariableName(),
-			},
-			Value: &ast.Ident{
-				Name: i.model.UseCaseVariableName(),
-			},
+			Key:   ast.NewIdent(i.mod.UseCase.Variable),
+			Value: ast.NewIdent(i.mod.UseCase.Variable),
 		},
 		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "logger",
-			},
-			Value: &ast.Ident{
-				Name: "logger",
-			},
+			Key:   ast.NewIdent("logger"),
+			Value: ast.NewIdent("logger"),
 		},
 	}
-	if i.model.Auth {
+	if i.mod.Auth {
 		fields = append(
 			fields,
 			&ast.Field{
@@ -197,54 +182,35 @@ func (i InterceptorCrud) astConstructor() *ast.FuncDecl {
 		)
 	}
 	constructor := &ast.FuncDecl{
-		Doc:  nil,
-		Recv: nil,
-		Name: ast.NewIdent(fmt.Sprintf("New%s", i.model.InterceptorTypeName())),
+		Name: ast.NewIdent(fmt.Sprintf("New%s", i.mod.Interceptor.Name)),
 		Type: &ast.FuncType{
-			Func:       0,
-			TypeParams: nil,
 			Params: &ast.FieldList{
-				Opening: 0,
-				List:    fields,
-				Closing: 0,
+				List: fields,
 			},
 			Results: &ast.FieldList{
-				Opening: 0,
 				List: []*ast.Field{
 					{
-						Doc:   nil,
-						Names: nil,
 						Type: ast.NewIdent(
-							fmt.Sprintf("interceptors.%s", i.model.InterceptorTypeName()),
+							fmt.Sprintf("interceptors.%s", i.mod.Interceptor.Name),
 						),
-						Tag:     nil,
-						Comment: nil,
 					},
 				},
-				Closing: 0,
 			},
 		},
 		Body: &ast.BlockStmt{
-			Lbrace: 0,
 			List: []ast.Stmt{
 				&ast.ReturnStmt{
-					Return: 0,
 					Results: []ast.Expr{
 						&ast.UnaryExpr{
-							OpPos: 0,
-							Op:    token.AND,
+							Op: token.AND,
 							X: &ast.CompositeLit{
-								Type:       ast.NewIdent(i.model.InterceptorTypeName()),
-								Lbrace:     0,
-								Elts:       exprs,
-								Rbrace:     0,
-								Incomplete: false,
+								Type: ast.NewIdent(i.mod.Interceptor.Name),
+								Elts: exprs,
 							},
 						},
 					},
 				},
 			},
-			Rbrace: 0,
 		},
 	}
 	return constructor
@@ -260,7 +226,7 @@ func (i InterceptorCrud) syncConstructor() error {
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", i.model.InterceptorTypeName()) {
+			t.Name.String() == fmt.Sprintf("New%s", i.mod.Interceptor.Name) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -268,7 +234,7 @@ func (i InterceptorCrud) syncConstructor() error {
 		return true
 	})
 	if structureConstructor == nil {
-		structureConstructor = i.astConstructor()
+		structureConstructor = i.constructor()
 	}
 	if !structureConstructorExists {
 		file.Decls = append(file.Decls, structureConstructor)
@@ -283,33 +249,10 @@ func (i InterceptorCrud) syncConstructor() error {
 	return nil
 }
 
-func (i InterceptorCrud) astCreateMethod() *ast.FuncDecl {
-	args := []*ast.Field{
-		{
-			Names: []*ast.Ident{ast.NewIdent("ctx")},
-			Type:  ast.NewIdent("context.Context"),
-		},
-		{
-			Names: []*ast.Ident{ast.NewIdent("create")},
-			Type: &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X:   ast.NewIdent("models"),
-					Sel: ast.NewIdent(i.model.CreateTypeName()),
-				},
-			},
-		},
-	}
+func (i InterceptorCrud) createMethod() *ast.FuncDecl {
+
 	var body []ast.Stmt
-	if i.model.Auth {
-		args = append(args, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent("requestUser")},
-			Type: &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X:   ast.NewIdent("models"),
-					Sel: ast.NewIdent("User"),
-				},
-			},
-		})
+	if i.mod.Auth {
 		body = append(body,
 			&ast.IfStmt{
 				Init: &ast.AssignStmt{
@@ -331,7 +274,7 @@ func (i InterceptorCrud) astCreateMethod() *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(i.model.PermissionIDCreate()),
+									Sel: ast.NewIdent(i.mod.PermissionIDCreate()),
 								},
 							},
 						},
@@ -368,13 +311,12 @@ func (i InterceptorCrud) astCreateMethod() *ast.FuncDecl {
 								},
 								Sel: ast.NewIdent("HasObjectPermission"),
 							},
-							Lparen: 0,
 							Args: []ast.Expr{
 								ast.NewIdent("ctx"),
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(i.model.PermissionIDCreate()),
+									Sel: ast.NewIdent(i.mod.PermissionIDCreate()),
 								},
 								ast.NewIdent("create"),
 							},
@@ -402,7 +344,7 @@ func (i InterceptorCrud) astCreateMethod() *ast.FuncDecl {
 	body = append(body,
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(i.model.Variable()),
+				ast.NewIdent(i.mod.GetMainModel().Variable),
 				ast.NewIdent("err"),
 			},
 			Tok: token.DEFINE,
@@ -411,7 +353,7 @@ func (i InterceptorCrud) astCreateMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.model.UseCaseVariableName()),
+							Sel: ast.NewIdent(i.mod.UseCase.Variable),
 						},
 						Sel: ast.NewIdent("Create"),
 					},
@@ -445,7 +387,7 @@ func (i InterceptorCrud) astCreateMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(i.model.Variable()),
+				ast.NewIdent(i.mod.GetMainModel().Variable),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -458,7 +400,7 @@ func (i InterceptorCrud) astCreateMethod() *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.model.InterceptorTypeName()),
+						X: ast.NewIdent(i.mod.Interceptor.Name),
 					},
 				},
 			},
@@ -466,22 +408,10 @@ func (i InterceptorCrud) astCreateMethod() *ast.FuncDecl {
 		Name: ast.NewIdent("Create"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
-				List: args,
+				List: i.mod.Interceptor.GetCreateMethod().Args,
 			},
 			Results: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(i.model.ModelName()),
-							},
-						},
-					},
-					{
-						Type: ast.NewIdent("error"),
-					},
-				},
+				List: i.mod.Interceptor.GetCreateMethod().Return,
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -507,36 +437,36 @@ func (i InterceptorCrud) syncCreateMethod() error {
 		return true
 	})
 	if method == nil {
-		method = i.astCreateMethod()
+		method = i.createMethod()
 	}
-	for _, param := range i.model.Params {
-		param := param
-		ast.Inspect(method, func(node ast.Node) bool {
-			if cl, ok := node.(*ast.CompositeLit); ok {
-				if t, ok := cl.Type.(*ast.SelectorExpr); ok &&
-					t.Sel.String() == i.model.ModelName() {
-					for _, elt := range cl.Elts {
-						if kv, ok := elt.(*ast.KeyValueExpr); ok {
-							if key, ok := kv.Key.(*ast.Ident); ok &&
-								key.String() == param.GetName() {
-								return false
-							}
-						}
-					}
-					cl.Elts = append(cl.Elts, &ast.KeyValueExpr{
-						Key:   ast.NewIdent(param.GetName()),
-						Colon: 0,
-						Value: &ast.SelectorExpr{
-							X:   ast.NewIdent("create"),
-							Sel: ast.NewIdent(param.GetName()),
-						},
-					})
-					return false
-				}
-			}
-			return true
-		})
-	}
+	//for _, param := range i.model.Params {
+	//	param := param
+	//	ast.Inspect(method, func(node ast.Node) bool {
+	//		if cl, ok := node.(*ast.CompositeLit); ok {
+	//			if t, ok := cl.Type.(*ast.SelectorExpr); ok &&
+	//				t.Sel.String() == i.mod.GetMainModel().Name {
+	//				for _, elt := range cl.Elts {
+	//					if kv, ok := elt.(*ast.KeyValueExpr); ok {
+	//						if key, ok := kv.Key.(*ast.Ident); ok &&
+	//							key.String() == param.GetName() {
+	//							return false
+	//						}
+	//					}
+	//				}
+	//				cl.Elts = append(cl.Elts, &ast.KeyValueExpr{
+	//					Key:   ast.NewIdent(param.GetName()),
+	//					Colon: 0,
+	//					Value: &ast.SelectorExpr{
+	//						X:   ast.NewIdent("create"),
+	//						Sel: ast.NewIdent(param.GetName()),
+	//					},
+	//				})
+	//				return false
+	//			}
+	//		}
+	//		return true
+	//	})
+	//}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
 	}
@@ -562,13 +492,13 @@ func (i InterceptorCrud) astListMethod() *ast.FuncDecl {
 			Type: &ast.StarExpr{
 				X: &ast.SelectorExpr{
 					X:   ast.NewIdent("models"),
-					Sel: ast.NewIdent(i.model.FilterTypeName()),
+					Sel: ast.NewIdent(i.mod.GetFilterModel().Name),
 				},
 			},
 		},
 	}
 	var body []ast.Stmt
-	if i.model.Auth {
+	if i.mod.Auth {
 		args = append(args, &ast.Field{
 			Names: []*ast.Ident{ast.NewIdent("requestUser")},
 			Type: &ast.StarExpr{
@@ -601,7 +531,7 @@ func (i InterceptorCrud) astListMethod() *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(i.model.PermissionIDList()),
+									Sel: ast.NewIdent(i.mod.PermissionIDList()),
 								},
 							},
 						},
@@ -646,7 +576,7 @@ func (i InterceptorCrud) astListMethod() *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(i.model.PermissionIDList()),
+									Sel: ast.NewIdent(i.mod.PermissionIDList()),
 								},
 								ast.NewIdent("filter"),
 							},
@@ -676,7 +606,7 @@ func (i InterceptorCrud) astListMethod() *ast.FuncDecl {
 		// Try to update model at use case
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(i.model.ListVariable()),
+				ast.NewIdent("items"),
 				ast.NewIdent("count"),
 				ast.NewIdent("err"),
 			},
@@ -686,7 +616,7 @@ func (i InterceptorCrud) astListMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.model.UseCaseVariableName()),
+							Sel: ast.NewIdent(i.mod.UseCase.Variable),
 						},
 						Sel: ast.NewIdent("List"),
 					},
@@ -721,7 +651,7 @@ func (i InterceptorCrud) astListMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(i.model.ListVariable()),
+				ast.NewIdent("items"),
 				ast.NewIdent("count"),
 				ast.NewIdent("nil"),
 			},
@@ -735,7 +665,7 @@ func (i InterceptorCrud) astListMethod() *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.model.InterceptorTypeName()),
+						X: ast.NewIdent(i.mod.Interceptor.Name),
 					},
 				},
 			},
@@ -744,27 +674,10 @@ func (i InterceptorCrud) astListMethod() *ast.FuncDecl {
 		Name: ast.NewIdent("List"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
-				List: args,
+				List: i.mod.Interceptor.GetListMethod().Args,
 			},
 			Results: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Type: &ast.ArrayType{
-							Elt: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(i.model.ModelName()),
-								},
-							},
-						},
-					},
-					{
-						Type: ast.NewIdent("uint64"),
-					},
-					{
-						Type: ast.NewIdent("error"),
-					},
-				},
+				List: i.mod.Interceptor.GetListMethod().Return,
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -820,7 +733,7 @@ func (i InterceptorCrud) astGetMethod() *ast.FuncDecl {
 		},
 	}
 	var body []ast.Stmt
-	if i.model.Auth {
+	if i.mod.Auth {
 		args = append(args, &ast.Field{
 			Names: []*ast.Ident{ast.NewIdent("requestUser")},
 			Type: &ast.StarExpr{
@@ -853,7 +766,7 @@ func (i InterceptorCrud) astGetMethod() *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(i.model.PermissionIDDetail()),
+									Sel: ast.NewIdent(i.mod.PermissionIDDetail()),
 								},
 							},
 						},
@@ -882,7 +795,7 @@ func (i InterceptorCrud) astGetMethod() *ast.FuncDecl {
 		// Try to get model from use case
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(i.model.Variable()),
+				ast.NewIdent(i.mod.GetMainModel().Variable),
 				ast.NewIdent("err"),
 			},
 			Tok: token.DEFINE,
@@ -891,7 +804,7 @@ func (i InterceptorCrud) astGetMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.model.UseCaseVariableName()),
+							Sel: ast.NewIdent(i.mod.UseCase.Variable),
 						},
 						Sel: ast.NewIdent("Get"),
 					},
@@ -923,7 +836,7 @@ func (i InterceptorCrud) astGetMethod() *ast.FuncDecl {
 			Else: nil,
 		},
 	)
-	if i.model.Auth {
+	if i.mod.Auth {
 		body = append(
 			body,
 			// Check object permission
@@ -948,9 +861,9 @@ func (i InterceptorCrud) astGetMethod() *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(i.model.PermissionIDDetail()),
+									Sel: ast.NewIdent(i.mod.PermissionIDDetail()),
 								},
-								ast.NewIdent(i.model.Variable()),
+								ast.NewIdent(i.mod.GetMainModel().Variable),
 							},
 						},
 					},
@@ -978,7 +891,7 @@ func (i InterceptorCrud) astGetMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(i.model.Variable()),
+				ast.NewIdent(i.mod.GetMainModel().Variable),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -991,7 +904,7 @@ func (i InterceptorCrud) astGetMethod() *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.model.InterceptorTypeName()),
+						X: ast.NewIdent(i.mod.Interceptor.Name),
 					},
 				},
 			},
@@ -999,22 +912,10 @@ func (i InterceptorCrud) astGetMethod() *ast.FuncDecl {
 		Name: ast.NewIdent("Get"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
-				List: args,
+				List: i.mod.Interceptor.GetGetMethod().Args,
 			},
 			Results: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(i.model.ModelName()),
-							},
-						},
-					},
-					{
-						Type: ast.NewIdent("error"),
-					},
-				},
+				List: i.mod.Interceptor.GetGetMethod().Return,
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -1055,7 +956,7 @@ func (i InterceptorCrud) syncGetMethod() error {
 	return nil
 }
 
-func (i InterceptorCrud) astUpdateMethod() *ast.FuncDecl {
+func (i InterceptorCrud) updateMethod() *ast.FuncDecl {
 	args := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent("ctx")},
@@ -1066,13 +967,13 @@ func (i InterceptorCrud) astUpdateMethod() *ast.FuncDecl {
 			Type: &ast.StarExpr{
 				X: &ast.SelectorExpr{
 					X:   ast.NewIdent("models"),
-					Sel: ast.NewIdent(i.model.UpdateTypeName()),
+					Sel: ast.NewIdent(i.mod.GetUpdateModel().Name),
 				},
 			},
 		},
 	}
 	var body []ast.Stmt
-	if i.model.Auth {
+	if i.mod.Auth {
 		args = append(args, &ast.Field{
 			Names: []*ast.Ident{ast.NewIdent("requestUser")},
 			Type: &ast.StarExpr{
@@ -1105,7 +1006,7 @@ func (i InterceptorCrud) astUpdateMethod() *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(i.model.PermissionIDUpdate()),
+									Sel: ast.NewIdent(i.mod.PermissionIDUpdate()),
 								},
 							},
 						},
@@ -1130,7 +1031,7 @@ func (i InterceptorCrud) astUpdateMethod() *ast.FuncDecl {
 			// Try to get model from use case
 			&ast.AssignStmt{
 				Lhs: []ast.Expr{
-					ast.NewIdent(i.model.Variable()),
+					ast.NewIdent(i.mod.GetMainModel().Variable),
 					ast.NewIdent("err"),
 				},
 				Tok: token.DEFINE,
@@ -1139,7 +1040,7 @@ func (i InterceptorCrud) astUpdateMethod() *ast.FuncDecl {
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("i"),
-								Sel: ast.NewIdent(i.model.UseCaseVariableName()),
+								Sel: ast.NewIdent(i.mod.UseCase.Variable),
 							},
 							Sel: ast.NewIdent("Get"),
 						},
@@ -1195,9 +1096,9 @@ func (i InterceptorCrud) astUpdateMethod() *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(i.model.PermissionIDUpdate()),
+									Sel: ast.NewIdent(i.mod.PermissionIDUpdate()),
 								},
-								ast.NewIdent(i.model.Variable()),
+								ast.NewIdent(i.mod.GetMainModel().Variable),
 							},
 						},
 					},
@@ -1234,7 +1135,7 @@ func (i InterceptorCrud) astUpdateMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.model.UseCaseVariableName()),
+							Sel: ast.NewIdent(i.mod.UseCase.Variable),
 						},
 						Sel: ast.NewIdent("Update"),
 					},
@@ -1281,7 +1182,7 @@ func (i InterceptorCrud) astUpdateMethod() *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.model.InterceptorTypeName()),
+						X: ast.NewIdent(i.mod.Interceptor.Name),
 					},
 				},
 			},
@@ -1289,22 +1190,10 @@ func (i InterceptorCrud) astUpdateMethod() *ast.FuncDecl {
 		Name: ast.NewIdent("Update"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
-				List: args,
+				List: i.mod.Interceptor.GetUpdateMethod().Args,
 			},
 			Results: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(i.model.ModelName()),
-							},
-						},
-					},
-					{
-						Type: ast.NewIdent("error"),
-					},
-				},
+				List: i.mod.Interceptor.GetUpdateMethod().Return,
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -1330,7 +1219,7 @@ func (i InterceptorCrud) syncUpdateMethod() error {
 		return true
 	})
 	if method == nil {
-		method = i.astUpdateMethod()
+		method = i.updateMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -1345,7 +1234,7 @@ func (i InterceptorCrud) syncUpdateMethod() error {
 	return nil
 }
 
-func (i InterceptorCrud) astDeleteMethod() *ast.FuncDecl {
+func (i InterceptorCrud) deleteMethod() *ast.FuncDecl {
 	args := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent("ctx")},
@@ -1360,7 +1249,7 @@ func (i InterceptorCrud) astDeleteMethod() *ast.FuncDecl {
 		},
 	}
 	var body []ast.Stmt
-	if i.model.Auth {
+	if i.mod.Auth {
 		args = append(args, &ast.Field{
 			Names: []*ast.Ident{ast.NewIdent("requestUser")},
 			Type: &ast.StarExpr{
@@ -1393,7 +1282,7 @@ func (i InterceptorCrud) astDeleteMethod() *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(i.model.PermissionIDDelete()),
+									Sel: ast.NewIdent(i.mod.PermissionIDDelete()),
 								},
 							},
 						},
@@ -1417,7 +1306,7 @@ func (i InterceptorCrud) astDeleteMethod() *ast.FuncDecl {
 			// Try to get model from use case
 			&ast.AssignStmt{
 				Lhs: []ast.Expr{
-					ast.NewIdent(i.model.Variable()),
+					ast.NewIdent(i.mod.GetMainModel().Variable),
 					ast.NewIdent("err"),
 				},
 				Tok: token.DEFINE,
@@ -1426,7 +1315,7 @@ func (i InterceptorCrud) astDeleteMethod() *ast.FuncDecl {
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("i"),
-								Sel: ast.NewIdent(i.model.UseCaseVariableName()),
+								Sel: ast.NewIdent(i.mod.UseCase.Variable),
 							},
 							Sel: ast.NewIdent("Get"),
 						},
@@ -1478,9 +1367,9 @@ func (i InterceptorCrud) astDeleteMethod() *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(i.model.PermissionIDDelete()),
+									Sel: ast.NewIdent(i.mod.PermissionIDDelete()),
 								},
-								ast.NewIdent(i.model.Variable()),
+								ast.NewIdent(i.mod.GetMainModel().Variable),
 							},
 						},
 					},
@@ -1515,7 +1404,7 @@ func (i InterceptorCrud) astDeleteMethod() *ast.FuncDecl {
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("i"),
-								Sel: ast.NewIdent(i.model.UseCaseVariableName()),
+								Sel: ast.NewIdent(i.mod.UseCase.Variable),
 							},
 							Sel: ast.NewIdent("Delete"),
 						},
@@ -1556,7 +1445,7 @@ func (i InterceptorCrud) astDeleteMethod() *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.model.InterceptorTypeName()),
+						X: ast.NewIdent(i.mod.Interceptor.Name),
 					},
 				},
 			},
@@ -1564,14 +1453,10 @@ func (i InterceptorCrud) astDeleteMethod() *ast.FuncDecl {
 		Name: ast.NewIdent("Delete"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
-				List: args,
+				List: i.mod.Interceptor.GetDeleteMethod().Args,
 			},
 			Results: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Type: ast.NewIdent("error"),
-					},
-				},
+				List: i.mod.Interceptor.GetDeleteMethod().Return,
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -1597,7 +1482,7 @@ func (i InterceptorCrud) syncDeleteMethod() error {
 		return true
 	})
 	if method == nil {
-		method = i.astDeleteMethod()
+		method = i.deleteMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -1628,25 +1513,25 @@ func (i InterceptorCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/interceptors"`, i.model.Module),
+							Value: fmt.Sprintf(`"%s/internal/domain/interceptors"`, i.mod.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/models"`, i.model.Module),
+							Value: fmt.Sprintf(`"%s/internal/domain/models"`, i.mod.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/usecases"`, i.model.Module),
+							Value: fmt.Sprintf(`"%s/internal/domain/usecases"`, i.mod.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/log"`, i.model.Module),
+							Value: fmt.Sprintf(`"%s/pkg/log"`, i.mod.Module),
 						},
 					},
 				},

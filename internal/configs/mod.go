@@ -2,8 +2,10 @@ package configs
 
 import (
 	"fmt"
-	"github.com/iancoleman/strcase"
 	"go/ast"
+
+	"github.com/iancoleman/strcase"
+	"github.com/jinzhu/inflection"
 	"golang.org/x/exp/slices"
 )
 
@@ -801,15 +803,32 @@ type Mod struct {
 }
 
 func (m *Mod) GetMainModel() *Model {
-	index := slices.IndexFunc(m.Models, func(model *Model) bool { return model.Type == ModelTypeMain })
+	index := slices.IndexFunc(
+		m.Models,
+		func(model *Model) bool { return model.Type == ModelTypeMain },
+	)
 	if index >= 0 {
 		return m.Models[index]
 	}
 	return nil
 }
 
+func (m *Mod) TableName() string {
+	return strcase.ToSnake(inflection.Plural(m.Name))
+}
+
+func (m *Mod) SearchEnabled() bool {
+	return slices.ContainsFunc(
+		m.GetMainModel().Params,
+		func(param *Param) bool { return param.Search },
+	)
+}
+
 func (m *Mod) GetCrateModel() *Model {
-	index := slices.IndexFunc(m.Models, func(model *Model) bool { return model.Type == ModelTypeCreate })
+	index := slices.IndexFunc(
+		m.Models,
+		func(model *Model) bool { return model.Type == ModelTypeCreate },
+	)
 	if index >= 0 {
 		return m.Models[index]
 	}
@@ -817,7 +836,10 @@ func (m *Mod) GetCrateModel() *Model {
 }
 
 func (m *Mod) GetUpdateModel() *Model {
-	index := slices.IndexFunc(m.Models, func(model *Model) bool { return model.Type == ModelTypeUpdate })
+	index := slices.IndexFunc(
+		m.Models,
+		func(model *Model) bool { return model.Type == ModelTypeUpdate },
+	)
 	if index > 0 {
 		return m.Models[index]
 	}
@@ -825,7 +847,10 @@ func (m *Mod) GetUpdateModel() *Model {
 }
 
 func (m *Mod) GetFilterModel() *Model {
-	index := slices.IndexFunc(m.Models, func(model *Model) bool { return model.Type == ModelTypeFilter })
+	index := slices.IndexFunc(
+		m.Models,
+		func(model *Model) bool { return model.Type == ModelTypeFilter },
+	)
 	if index > 0 {
 		return m.Models[index]
 	}

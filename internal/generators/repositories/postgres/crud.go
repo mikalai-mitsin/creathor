@@ -10,19 +10,29 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/iancoleman/strcase"
+
 	"github.com/018bf/creathor/internal/configs"
 )
 
 type RepositoryCrud struct {
-	model *configs.ModelConfig
+	mod *configs.Mod
 }
 
-func NewRepositoryCrud(config *configs.ModelConfig) *RepositoryCrud {
-	return &RepositoryCrud{model: config}
+func NewRepositoryCrud(mod *configs.Mod) *RepositoryCrud {
+	return &RepositoryCrud{mod: mod}
+}
+
+func (r RepositoryCrud) getDTOName() string {
+	return fmt.Sprintf("%sDTO", strcase.ToCamel(r.mod.GetMainModel().Name))
+}
+
+func (r RepositoryCrud) getDTOListName() string {
+	return fmt.Sprintf("%sListDTO", strcase.ToCamel(r.mod.GetMainModel().Name))
 }
 
 func (r RepositoryCrud) filename() string {
-	return filepath.Join("internal", "repositories", "postgres", r.model.FileName())
+	return filepath.Join("internal", "repositories", "postgres", r.mod.Filename)
 }
 
 func (r RepositoryCrud) Sync() error {
@@ -30,24 +40,6 @@ func (r RepositoryCrud) Sync() error {
 		return err
 	}
 	if err := r.syncConstructor(); err != nil {
-		return err
-	}
-	if err := r.syncCreateMethod(); err != nil {
-		return err
-	}
-	if err := r.syncGetMethod(); err != nil {
-		return err
-	}
-	if err := r.syncListMethod(); err != nil {
-		return err
-	}
-	if err := r.syncCountMethod(); err != nil {
-		return err
-	}
-	if err := r.syncUpdateMethod(); err != nil {
-		return err
-	}
-	if err := r.syncDeleteMethod(); err != nil {
 		return err
 	}
 	if err := r.syncDTOStruct(); err != nil {
@@ -65,14 +57,40 @@ func (r RepositoryCrud) Sync() error {
 	if err := r.syncDTOToModel(); err != nil {
 		return err
 	}
+	for _, method := range r.mod.Repository.Methods {
+		switch method.Type {
+		case configs.MethodTypeCreate:
+			if err := r.syncCreateMethod(); err != nil {
+				return err
+			}
+		case configs.MethodTypeGet:
+			if err := r.syncGetMethod(); err != nil {
+				return err
+			}
+		case configs.MethodTypeList:
+			if err := r.syncListMethod(); err != nil {
+				return err
+			}
+		case configs.MethodTypeCount:
+			if err := r.syncCountMethod(); err != nil {
+				return err
+			}
+		case configs.MethodTypeUpdate:
+			if err := r.syncUpdateMethod(); err != nil {
+				return err
+			}
+		case configs.MethodTypeDelete:
+			if err := r.syncDeleteMethod(); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
-func (r RepositoryCrud) astDTOStruct() *ast.TypeSpec {
+func (r RepositoryCrud) dtoStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
-		Name: &ast.Ident{
-			Name: r.model.PostgresDTOTypeName(),
-		},
+		Name: ast.NewIdent(r.getDTOName()),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: []*ast.Field{
@@ -132,7 +150,7 @@ func (r RepositoryCrud) astDTOStruct() *ast.TypeSpec {
 			},
 		},
 	}
-	for _, param := range r.model.Params {
+	for _, param := range r.mod.GetMainModel().Params {
 		ast.Inspect(structure, func(node ast.Node) bool {
 			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
 				for _, field := range st.Fields.List {
@@ -169,7 +187,7 @@ func (r RepositoryCrud) syncDTOStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.model.PostgresDTOTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.getDTOName() {
 			structure = t
 			structureExists = true
 			return false
@@ -177,9 +195,9 @@ func (r RepositoryCrud) syncDTOStruct() error {
 		return true
 	})
 	if structure == nil {
-		structure = r.astDTOStruct()
+		structure = r.dtoStruct()
 	}
-	for _, param := range r.model.Params {
+	for _, param := range r.mod.GetMainModel().Params {
 		ast.Inspect(structure, func(node ast.Node) bool {
 			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
 				for _, field := range st.Fields.List {
@@ -206,12 +224,8 @@ func (r RepositoryCrud) syncDTOStruct() error {
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
-			Doc:    nil,
-			TokPos: 0,
-			Tok:    token.TYPE,
-			Lparen: 0,
-			Specs:  []ast.Spec{structure},
-			Rparen: 0,
+			Tok:   token.TYPE,
+			Specs: []ast.Spec{structure},
 		}
 		file.Decls = append(file.Decls, gd)
 	}
@@ -225,61 +239,12 @@ func (r RepositoryCrud) syncDTOStruct() error {
 	return nil
 }
 
-func (r RepositoryCrud) astDTOConstructor() *ast.FuncDecl {
+func (r RepositoryCrud) dtoConstructor() *ast.FuncDecl {
 	dto := &ast.CompositeLit{
-		Type: &ast.Ident{
-			Name: r.model.PostgresDTOTypeName(),
-		},
-		Elts: []ast.Expr{
-			&ast.KeyValueExpr{
-				Key: &ast.Ident{
-					Name: "ID",
-				},
-				Value: &ast.CallExpr{
-					Fun: &ast.Ident{
-						Name: "string",
-					},
-					Args: []ast.Expr{
-						&ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: r.model.Variable(),
-							},
-							Sel: &ast.Ident{
-								Name: "ID",
-							},
-						},
-					},
-				},
-			},
-			&ast.KeyValueExpr{
-				Key: &ast.Ident{
-					Name: "UpdatedAt",
-				},
-				Value: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: r.model.Variable(),
-					},
-					Sel: &ast.Ident{
-						Name: "UpdatedAt",
-					},
-				},
-			},
-			&ast.KeyValueExpr{
-				Key: &ast.Ident{
-					Name: "CreatedAt",
-				},
-				Value: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: r.model.Variable(),
-					},
-					Sel: &ast.Ident{
-						Name: "CreatedAt",
-					},
-				},
-			},
-		},
+		Type: ast.NewIdent(r.getDTOName()),
+		Elts: []ast.Expr{},
 	}
-	for _, param := range r.model.Params {
+	for _, param := range r.mod.GetMainModel().Params {
 		elt := &ast.KeyValueExpr{
 			Key: &ast.Ident{
 				Name: param.GetName(),
@@ -294,7 +259,7 @@ func (r RepositoryCrud) astDTOConstructor() *ast.FuncDecl {
 			if param.PostgresDTOType() == param.Type {
 				elt.Value = &ast.SelectorExpr{
 					X: &ast.Ident{
-						Name: r.model.Variable(),
+						Name: "model",
 					},
 					Sel: &ast.Ident{
 						Name: param.GetName(),
@@ -308,7 +273,7 @@ func (r RepositoryCrud) astDTOConstructor() *ast.FuncDecl {
 					Args: []ast.Expr{
 						&ast.SelectorExpr{
 							X: &ast.Ident{
-								Name: r.model.Variable(),
+								Name: "model",
 							},
 							Sel: &ast.Ident{
 								Name: param.GetName(),
@@ -322,7 +287,7 @@ func (r RepositoryCrud) astDTOConstructor() *ast.FuncDecl {
 	}
 	constructor := &ast.FuncDecl{
 		Name: &ast.Ident{
-			Name: fmt.Sprintf("New%sFromModel", r.model.PostgresDTOTypeName()),
+			Name: fmt.Sprintf("New%sFromModel", r.getDTOName()),
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
@@ -330,7 +295,7 @@ func (r RepositoryCrud) astDTOConstructor() *ast.FuncDecl {
 					{
 						Names: []*ast.Ident{
 							{
-								Name: r.model.Variable(),
+								Name: "model",
 							},
 						},
 						Type: &ast.StarExpr{
@@ -339,7 +304,7 @@ func (r RepositoryCrud) astDTOConstructor() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.model.ModelName(),
+									Name: r.mod.GetMainModel().Name,
 								},
 							},
 						},
@@ -351,7 +316,7 @@ func (r RepositoryCrud) astDTOConstructor() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.Ident{
-								Name: r.model.PostgresDTOTypeName(),
+								Name: r.getDTOName(),
 							},
 						},
 					},
@@ -377,7 +342,7 @@ func (r RepositoryCrud) astDTOConstructor() *ast.FuncDecl {
 			},
 		},
 	}
-	for _, param := range r.model.Params {
+	for _, param := range r.mod.GetMainModel().Params {
 		if !param.IsSlice() {
 			continue
 		}
@@ -406,7 +371,7 @@ func (r RepositoryCrud) astDTOConstructor() *ast.FuncDecl {
 			Tok: token.DEFINE,
 			X: &ast.SelectorExpr{
 				X: &ast.Ident{
-					Name: r.model.Variable(),
+					Name: "model",
 				},
 				Sel: &ast.Ident{
 					Name: param.GetName(),
@@ -471,7 +436,7 @@ func (r RepositoryCrud) syncDTOConstructor() error {
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%sFromModel", r.model.PostgresDTOTypeName()) {
+			t.Name.String() == fmt.Sprintf("New%sFromModel", r.getDTOName()) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -479,14 +444,14 @@ func (r RepositoryCrud) syncDTOConstructor() error {
 		return true
 	})
 	if structureConstructor == nil {
-		structureConstructor = r.astDTOConstructor()
+		structureConstructor = r.dtoConstructor()
 	}
-	for _, param := range r.model.Params {
+	for _, param := range r.mod.GetMainModel().Params {
 		param := param
 		ast.Inspect(structureConstructor, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
 				if i, ok := cl.Type.(*ast.Ident); ok &&
-					i.String() == r.model.PostgresDTOTypeName() {
+					i.String() == r.getDTOName() {
 					_ = i
 					for _, elt := range cl.Elts {
 						elt := elt
@@ -511,7 +476,7 @@ func (r RepositoryCrud) syncDTOConstructor() error {
 						if param.PostgresDTOType() == param.Type {
 							elt.Value = &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: r.model.Variable(),
+									Name: "model",
 								},
 								Sel: &ast.Ident{
 									Name: param.GetName(),
@@ -525,7 +490,7 @@ func (r RepositoryCrud) syncDTOConstructor() error {
 								Args: []ast.Expr{
 									&ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: r.model.Variable(),
+											Name: "model",
 										},
 										Sel: &ast.Ident{
 											Name: param.GetName(),
@@ -556,76 +521,21 @@ func (r RepositoryCrud) syncDTOConstructor() error {
 	return nil
 }
 
-func (r RepositoryCrud) astDTOToModel() *ast.FuncDecl {
+func (r RepositoryCrud) dtoToModel() *ast.FuncDecl {
 	model := &ast.CompositeLit{
 		Type: &ast.SelectorExpr{
-			X: &ast.Ident{
-				Name: "models",
-			},
+			X: ast.NewIdent("models"),
 			Sel: &ast.Ident{
-				Name: r.model.ModelName(),
+				Name: r.mod.GetMainModel().Name,
 			},
 		},
-		Elts: []ast.Expr{
-			&ast.KeyValueExpr{
-				Key: &ast.Ident{
-					Name: "ID",
-				},
-				Value: &ast.CallExpr{
-					Fun: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "models",
-						},
-						Sel: &ast.Ident{
-							Name: "UUID",
-						},
-					},
-					Args: []ast.Expr{
-						&ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "dto",
-							},
-							Sel: &ast.Ident{
-								Name: "ID",
-							},
-						},
-					},
-				},
-			},
-			&ast.KeyValueExpr{
-				Key: &ast.Ident{
-					Name: "UpdatedAt",
-				},
-				Value: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "dto",
-					},
-					Sel: &ast.Ident{
-						Name: "UpdatedAt",
-					},
-				},
-			},
-			&ast.KeyValueExpr{
-				Key: &ast.Ident{
-					Name: "CreatedAt",
-				},
-				Value: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "dto",
-					},
-					Sel: &ast.Ident{
-						Name: "CreatedAt",
-					},
-				},
-			},
-		},
+		Elts: []ast.Expr{},
 	}
-	for _, param := range r.model.Params {
+	for _, param := range r.mod.GetMainModel().Params {
 		par := &ast.KeyValueExpr{
 			Key: &ast.Ident{
 				Name: param.GetName(),
 			},
-			Value: nil,
 		}
 		if param.IsSlice() {
 			par.Value = &ast.CompositeLit{
@@ -646,9 +556,13 @@ func (r RepositoryCrud) astDTOToModel() *ast.FuncDecl {
 					},
 				}
 			} else {
+				paramType := param.Type
+				if paramType == "UUID" {
+					paramType = "models.UUID"
+				}
 				par.Value = &ast.CallExpr{
 					Fun: &ast.Ident{
-						Name: param.Type,
+						Name: paramType,
 					},
 					Args: []ast.Expr{
 						&ast.SelectorExpr{
@@ -676,7 +590,7 @@ func (r RepositoryCrud) astDTOToModel() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.model.PostgresDTOTypeName(),
+							Name: r.getDTOName(),
 						},
 					},
 				},
@@ -696,7 +610,7 @@ func (r RepositoryCrud) astDTOToModel() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.model.ModelName(),
+									Name: r.mod.GetMainModel().Name,
 								},
 							},
 						},
@@ -723,7 +637,7 @@ func (r RepositoryCrud) astDTOToModel() *ast.FuncDecl {
 			},
 		},
 	}
-	for _, param := range r.model.Params {
+	for _, param := range r.mod.GetMainModel().Params {
 		if !param.IsSlice() {
 			continue
 		}
@@ -826,7 +740,7 @@ func (r RepositoryCrud) syncDTOToModel() error {
 		return true
 	})
 	if method == nil {
-		method = r.astDTOToModel()
+		method = r.dtoToModel()
 	}
 	// TODO: add range sync
 	if !methodExists {
@@ -845,7 +759,7 @@ func (r RepositoryCrud) syncDTOToModel() error {
 func (r RepositoryCrud) astStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Doc:        nil,
-		Name:       ast.NewIdent(r.model.RepositoryTypeName()),
+		Name:       ast.NewIdent(r.mod.Repository.Name),
 		TypeParams: nil,
 		Assign:     0,
 		Type: &ast.StructType{
@@ -911,37 +825,37 @@ func (r RepositoryCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/errs"`, r.model.Module),
+							Value: fmt.Sprintf(`"%s/internal/domain/errs"`, r.mod.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/models"`, r.model.Module),
+							Value: fmt.Sprintf(`"%s/internal/domain/models"`, r.mod.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/repositories"`, r.model.Module),
+							Value: fmt.Sprintf(`"%s/internal/domain/repositories"`, r.mod.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/log"`, r.model.Module),
+							Value: fmt.Sprintf(`"%s/pkg/log"`, r.mod.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/postgresql"`, r.model.Module),
+							Value: fmt.Sprintf(`"%s/pkg/postgresql"`, r.mod.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/utils"`, r.model.Module),
+							Value: fmt.Sprintf(`"%s/pkg/utils"`, r.mod.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -978,7 +892,7 @@ func (r RepositoryCrud) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.model.RepositoryTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.mod.Repository.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -1013,7 +927,7 @@ func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
 		Doc:  nil,
 		Recv: nil,
-		Name: ast.NewIdent(fmt.Sprintf("New%s", r.model.RepositoryTypeName())),
+		Name: ast.NewIdent(fmt.Sprintf("New%s", r.mod.Repository.Name)),
 		Type: &ast.FuncType{
 			Func:       0,
 			TypeParams: nil,
@@ -1051,7 +965,7 @@ func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 						Names: nil,
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("repositories"),
-							Sel: ast.NewIdent(r.model.RepositoryTypeName()),
+							Sel: ast.NewIdent(r.mod.Repository.Name),
 						},
 						Tag:     nil,
 						Comment: nil,
@@ -1070,7 +984,7 @@ func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 							OpPos: 0,
 							Op:    token.AND,
 							X: &ast.CompositeLit{
-								Type: ast.NewIdent(r.model.RepositoryTypeName()),
+								Type: ast.NewIdent(r.mod.Repository.Name),
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
 										Key: &ast.Ident{
@@ -1110,7 +1024,7 @@ func (r RepositoryCrud) syncConstructor() error {
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", r.model.RepositoryTypeName()) {
+			t.Name.String() == fmt.Sprintf("New%s", r.mod.Repository.Name) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -1134,27 +1048,12 @@ func (r RepositoryCrud) syncConstructor() error {
 }
 
 func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
-	columns := []ast.Expr{
-		&ast.BasicLit{
-			Kind:  token.STRING,
-			Value: `"updated_at"`,
-		},
-		&ast.BasicLit{
-			Kind:  token.STRING,
-			Value: `"created_at"`,
-		},
-	}
-	values := []ast.Expr{
-		&ast.SelectorExpr{
-			X:   ast.NewIdent("dto"),
-			Sel: ast.NewIdent("UpdatedAt"),
-		},
-		&ast.SelectorExpr{
-			X:   ast.NewIdent("dto"),
-			Sel: ast.NewIdent("CreatedAt"),
-		},
-	}
-	for _, param := range r.model.Params {
+	var columns []ast.Expr
+	var values []ast.Expr
+	for _, param := range r.mod.GetMainModel().Params {
+		if param.GetName() == "ID" {
+			continue
+		}
 		columns = append(columns, &ast.BasicLit{
 			Kind:  token.STRING,
 			Value: fmt.Sprintf(`"%s"`, param.Tag()),
@@ -1165,20 +1064,17 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 		})
 	}
 	fun := &ast.FuncDecl{
-		Doc: nil,
 		Recv: &ast.FieldList{
-			Opening: 0,
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
 						ast.NewIdent("r"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(r.model.RepositoryTypeName()),
+						X: ast.NewIdent(r.mod.Repository.Name),
 					},
 				},
 			},
-			Closing: 0,
 		},
 		Name: ast.NewIdent("Create"),
 		Type: &ast.FuncType{
@@ -1191,11 +1087,11 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 						Type:  ast.NewIdent("context.Context"),
 					},
 					{
-						Names: []*ast.Ident{ast.NewIdent(r.model.Variable())},
+						Names: []*ast.Ident{ast.NewIdent("model")},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(r.model.ModelName()),
+								Sel: ast.NewIdent(r.mod.GetMainModel().Name),
 							},
 						},
 					},
@@ -1251,10 +1147,10 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: ast.NewIdent(
-								fmt.Sprintf("New%sDTOFromModel", r.model.ModelName()),
+								fmt.Sprintf("New%sDTOFromModel", r.mod.GetMainModel().Name),
 							),
 							Args: []ast.Expr{
-								ast.NewIdent(r.model.Variable()),
+								ast.NewIdent("model"),
 							},
 						},
 					},
@@ -1282,7 +1178,7 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 															Kind: token.STRING,
 															Value: fmt.Sprintf(
 																`"public.%s"`,
-																r.model.TableName(),
+																r.mod.TableName(),
 															),
 														},
 													},
@@ -1402,7 +1298,7 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.SelectorExpr{
-							X:   ast.NewIdent(r.model.Variable()),
+							X:   ast.NewIdent("model"),
 							Sel: ast.NewIdent("ID"),
 						},
 					},
@@ -1452,8 +1348,11 @@ func (r RepositoryCrud) syncCreateMethod() error {
 	if method == nil {
 		method = r.astCreateMethod()
 	}
-	for _, param := range r.model.Params {
+	for _, param := range r.mod.GetMainModel().Params {
 		param := param
+		if param.GetName() == "ID" {
+			continue
+		}
 		ast.Inspect(method, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Columns" {
@@ -1508,14 +1407,11 @@ func (r RepositoryCrud) syncCreateMethod() error {
 }
 
 func (r RepositoryCrud) search() ast.Stmt {
-	if !r.model.SearchEnabled() {
-		return &ast.EmptyStmt{
-			Semicolon: 0,
-			Implicit:  false,
-		}
+	if !r.mod.SearchEnabled() {
+		return &ast.EmptyStmt{}
 	}
 	var columns []ast.Expr
-	for _, param := range r.model.Params {
+	for _, param := range r.mod.GetMainModel().Params {
 		if param.Search {
 			columns = append(columns, &ast.BasicLit{
 				Kind:  token.STRING,
@@ -1617,23 +1513,10 @@ func (r RepositoryCrud) search() ast.Stmt {
 	return stmt
 }
 
-func (r RepositoryCrud) astListMethod() *ast.FuncDecl {
-	tableName := r.model.TableName()
-	columns := []ast.Expr{
-		&ast.BasicLit{
-			Kind:  token.STRING,
-			Value: fmt.Sprintf(`"%s.id"`, tableName),
-		},
-		&ast.BasicLit{
-			Kind:  token.STRING,
-			Value: fmt.Sprintf(`"%s.updated_at"`, tableName),
-		},
-		&ast.BasicLit{
-			Kind:  token.STRING,
-			Value: fmt.Sprintf(`"%s.created_at"`, tableName),
-		},
-	}
-	for _, param := range r.model.Params {
+func (r RepositoryCrud) listMethod() *ast.FuncDecl {
+	tableName := r.mod.TableName()
+	var columns []ast.Expr
+	for _, param := range r.mod.GetMainModel().Params {
 		columns = append(
 			columns,
 			&ast.BasicLit{
@@ -1653,7 +1536,7 @@ func (r RepositoryCrud) astListMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.model.RepositoryTypeName(),
+							Name: r.mod.Repository.Name,
 						},
 					},
 				},
@@ -1692,7 +1575,7 @@ func (r RepositoryCrud) astListMethod() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.model.FilterTypeName(),
+									Name: r.mod.GetFilterModel().Name,
 								},
 							},
 						},
@@ -1709,7 +1592,7 @@ func (r RepositoryCrud) astListMethod() *ast.FuncDecl {
 										Name: "models",
 									},
 									Sel: &ast.Ident{
-										Name: r.model.ModelName(),
+										Name: r.mod.GetMainModel().Name,
 									},
 								},
 							},
@@ -1779,7 +1662,7 @@ func (r RepositoryCrud) astListMethod() *ast.FuncDecl {
 									},
 								},
 								Type: &ast.Ident{
-									Name: r.model.PostgresDTOListTypeName(),
+									Name: r.getDTOListName(),
 								},
 							},
 						},
@@ -2338,11 +2221,11 @@ func (r RepositoryCrud) syncListMethod() error {
 		return true
 	})
 	if method == nil {
-		method = r.astListMethod()
+		method = r.listMethod()
 	}
-	for _, param := range r.model.Params {
+	for _, param := range r.mod.GetMainModel().Params {
 		param := param
-		column := fmt.Sprintf(`"%s.%s"`, r.model.TableName(), param.Tag())
+		column := fmt.Sprintf(`"%s.%s"`, r.mod.TableName(), param.Tag())
 		ast.Inspect(method, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Select" {
@@ -2376,7 +2259,7 @@ func (r RepositoryCrud) syncListMethod() error {
 }
 
 func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
-	tableName := r.model.TableName()
+	tableName := r.mod.TableName()
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
@@ -2391,7 +2274,7 @@ func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 			Value: fmt.Sprintf(`"%s.created_at"`, tableName),
 		},
 	}
-	for _, param := range r.model.Params {
+	for _, param := range r.mod.GetMainModel().Params {
 		columns = append(
 			columns,
 			&ast.BasicLit{
@@ -2411,7 +2294,7 @@ func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.model.RepositoryTypeName(),
+							Name: r.mod.Repository.Name,
 						},
 					},
 				},
@@ -2450,7 +2333,7 @@ func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.model.FilterTypeName(),
+									Name: r.mod.GetFilterModel().Name,
 								},
 							},
 						},
@@ -2550,7 +2433,7 @@ func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 							Args: []ast.Expr{
 								&ast.BasicLit{
 									Kind:  token.STRING,
-									Value: fmt.Sprintf(`"public.%s"`, r.model.TableName()),
+									Value: fmt.Sprintf(`"public.%s"`, r.mod.TableName()),
 								},
 							},
 						},
@@ -2920,23 +2803,10 @@ func (r RepositoryCrud) syncCountMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) astGetMethod() *ast.FuncDecl {
-	tableName := r.model.TableName()
-	columns := []ast.Expr{
-		&ast.BasicLit{
-			Kind:  token.STRING,
-			Value: fmt.Sprintf(`"%s.id"`, tableName),
-		},
-		&ast.BasicLit{
-			Kind:  token.STRING,
-			Value: fmt.Sprintf(`"%s.updated_at"`, tableName),
-		},
-		&ast.BasicLit{
-			Kind:  token.STRING,
-			Value: fmt.Sprintf(`"%s.created_at"`, tableName),
-		},
-	}
-	for _, param := range r.model.Params {
+func (r RepositoryCrud) getMethod() *ast.FuncDecl {
+	tableName := r.mod.TableName()
+	var columns []ast.Expr
+	for _, param := range r.mod.GetMainModel().Params {
 		columns = append(
 			columns,
 			&ast.BasicLit{
@@ -2956,7 +2826,7 @@ func (r RepositoryCrud) astGetMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.model.RepositoryTypeName(),
+							Name: r.mod.Repository.Name,
 						},
 					},
 				},
@@ -3009,7 +2879,7 @@ func (r RepositoryCrud) astGetMethod() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.model.ModelName(),
+									Name: r.mod.GetMainModel().Name,
 								},
 							},
 						},
@@ -3079,7 +2949,7 @@ func (r RepositoryCrud) astGetMethod() *ast.FuncDecl {
 							Op: token.AND,
 							X: &ast.CompositeLit{
 								Type: &ast.Ident{
-									Name: r.model.PostgresDTOTypeName(),
+									Name: r.getDTOName(),
 								},
 							},
 						},
@@ -3285,8 +3155,11 @@ func (r RepositoryCrud) astGetMethod() *ast.FuncDecl {
 										},
 										Args: []ast.Expr{
 											&ast.BasicLit{
-												Kind:  token.STRING,
-												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
+												Kind: token.STRING,
+												Value: fmt.Sprintf(
+													`"%s_id"`,
+													strcase.ToSnake(r.mod.GetMainModel().Name),
+												),
 											},
 											&ast.CallExpr{
 												Fun: &ast.Ident{
@@ -3354,11 +3227,11 @@ func (r RepositoryCrud) syncGetMethod() error {
 		return true
 	})
 	if method == nil {
-		method = r.astGetMethod()
+		method = r.getMethod()
 	}
-	for _, param := range r.model.Params {
+	for _, param := range r.mod.GetMainModel().Params {
 		param := param
-		column := fmt.Sprintf(`"%s.%s"`, r.model.TableName(), param.Tag())
+		column := fmt.Sprintf(`"%s.%s"`, r.mod.TableName(), param.Tag())
 		ast.Inspect(method, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Select" {
@@ -3391,47 +3264,15 @@ func (r RepositoryCrud) syncGetMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) astUpdateMethod() *ast.FuncDecl {
-	tableName := r.model.TableName()
+func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
+	tableName := r.mod.TableName()
 	updateBlock := &ast.BlockStmt{
-		List: []ast.Stmt{
-			&ast.AssignStmt{
-				Lhs: []ast.Expr{
-					&ast.Ident{
-						Name: "q",
-					},
-				},
-				Tok: token.ASSIGN,
-				Rhs: []ast.Expr{
-					&ast.CallExpr{
-						Fun: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "q",
-							},
-							Sel: &ast.Ident{
-								Name: "Set",
-							},
-						},
-						Args: []ast.Expr{
-							&ast.BasicLit{
-								Kind:  token.STRING,
-								Value: fmt.Sprintf(`"%s.%s"`, tableName, "updated_at"),
-							},
-							&ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "dto",
-								},
-								Sel: &ast.Ident{
-									Name: "UpdatedAt",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
+		List: []ast.Stmt{},
 	}
-	for _, param := range r.model.Params {
+	for _, param := range r.mod.GetMainModel().Params {
+		if param.GetName() == "ID" {
+			continue
+		}
 		updateBlock.List = append(updateBlock.List, &ast.AssignStmt{
 			Lhs: []ast.Expr{
 				&ast.Ident{
@@ -3478,7 +3319,7 @@ func (r RepositoryCrud) astUpdateMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.model.RepositoryTypeName(),
+							Name: r.mod.Repository.Name,
 						},
 					},
 				},
@@ -3508,7 +3349,7 @@ func (r RepositoryCrud) astUpdateMethod() *ast.FuncDecl {
 					{
 						Names: []*ast.Ident{
 							{
-								Name: r.model.Variable(),
+								Name: "model",
 							},
 						},
 						Type: &ast.StarExpr{
@@ -3517,7 +3358,7 @@ func (r RepositoryCrud) astUpdateMethod() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.model.ModelName(),
+									Name: r.mod.GetMainModel().Name,
 								},
 							},
 						},
@@ -3589,11 +3430,11 @@ func (r RepositoryCrud) astUpdateMethod() *ast.FuncDecl {
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.Ident{
-								Name: fmt.Sprintf("New%sFromModel", r.model.PostgresDTOTypeName()),
+								Name: fmt.Sprintf("New%sFromModel", r.getDTOName()),
 							},
 							Args: []ast.Expr{
 								&ast.Ident{
-									Name: r.model.Variable(),
+									Name: "model",
 								},
 							},
 						},
@@ -3647,7 +3488,7 @@ func (r RepositoryCrud) astUpdateMethod() *ast.FuncDecl {
 											},
 											Value: &ast.SelectorExpr{
 												X: &ast.Ident{
-													Name: r.model.Variable(),
+													Name: "model",
 												},
 												Sel: &ast.Ident{
 													Name: "ID",
@@ -3784,8 +3625,11 @@ func (r RepositoryCrud) astUpdateMethod() *ast.FuncDecl {
 										},
 										Args: []ast.Expr{
 											&ast.BasicLit{
-												Kind:  token.STRING,
-												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
+												Kind: token.STRING,
+												Value: fmt.Sprintf(
+													`"%s_id"`,
+													strcase.ToSnake(r.mod.GetMainModel().Name),
+												),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -3799,7 +3643,7 @@ func (r RepositoryCrud) astUpdateMethod() *ast.FuncDecl {
 												Args: []ast.Expr{
 													&ast.SelectorExpr{
 														X: &ast.Ident{
-															Name: r.model.Variable(),
+															Name: "model",
 														},
 														Sel: &ast.Ident{
 															Name: "ID",
@@ -3881,8 +3725,11 @@ func (r RepositoryCrud) astUpdateMethod() *ast.FuncDecl {
 										},
 										Args: []ast.Expr{
 											&ast.BasicLit{
-												Kind:  token.STRING,
-												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
+												Kind: token.STRING,
+												Value: fmt.Sprintf(
+													`"%s_id"`,
+													strcase.ToSnake(r.mod.GetMainModel().Name),
+												),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -3896,7 +3743,7 @@ func (r RepositoryCrud) astUpdateMethod() *ast.FuncDecl {
 												Args: []ast.Expr{
 													&ast.SelectorExpr{
 														X: &ast.Ident{
-															Name: r.model.Variable(),
+															Name: "model",
 														},
 														Sel: &ast.Ident{
 															Name: "ID",
@@ -3950,8 +3797,11 @@ func (r RepositoryCrud) astUpdateMethod() *ast.FuncDecl {
 										},
 										Args: []ast.Expr{
 											&ast.BasicLit{
-												Kind:  token.STRING,
-												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
+												Kind: token.STRING,
+												Value: fmt.Sprintf(
+													`"%s_id"`,
+													strcase.ToSnake(r.mod.GetMainModel().Name),
+												),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -3965,7 +3815,7 @@ func (r RepositoryCrud) astUpdateMethod() *ast.FuncDecl {
 												Args: []ast.Expr{
 													&ast.SelectorExpr{
 														X: &ast.Ident{
-															Name: r.model.Variable(),
+															Name: "model",
 														},
 														Sel: &ast.Ident{
 															Name: "ID",
@@ -4017,13 +3867,15 @@ func (r RepositoryCrud) syncUpdateMethod() error {
 		return true
 	})
 	if method == nil {
-		method = r.astUpdateMethod()
+		method = r.updateMethod()
 	}
-	tableName := r.model.TableName()
-	for _, param := range r.model.Params {
+	tableName := r.mod.TableName()
+	for _, param := range r.mod.GetMainModel().Params {
 		param := param
+		if param.GetName() == "ID" {
+			continue
+		}
 		exists := false
-		_ = param
 		for _, stmt := range method.Body.List {
 			if update, ok := stmt.(*ast.BlockStmt); ok {
 				for _, updateStmt := range update.List {
@@ -4114,7 +3966,7 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.model.RepositoryTypeName(),
+							Name: r.mod.Repository.Name,
 						},
 					},
 				},
@@ -4237,7 +4089,7 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 											Kind: token.STRING,
 											Value: fmt.Sprintf(
 												`"public.%s"`,
-												r.model.TableName(),
+												r.mod.TableName(),
 											),
 										},
 									},
@@ -4395,8 +4247,11 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 										},
 										Args: []ast.Expr{
 											&ast.BasicLit{
-												Kind:  token.STRING,
-												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
+												Kind: token.STRING,
+												Value: fmt.Sprintf(
+													`"%s_id"`,
+													strcase.ToSnake(r.mod.GetMainModel().Name),
+												),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -4493,8 +4348,11 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 										},
 										Args: []ast.Expr{
 											&ast.BasicLit{
-												Kind:  token.STRING,
-												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
+												Kind: token.STRING,
+												Value: fmt.Sprintf(
+													`"%s_id"`,
+													strcase.ToSnake(r.mod.GetMainModel().Name),
+												),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -4564,8 +4422,11 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 										},
 										Args: []ast.Expr{
 											&ast.BasicLit{
-												Kind:  token.STRING,
-												Value: fmt.Sprintf(`"%s_id"`, r.model.KeyName()),
+												Kind: token.STRING,
+												Value: fmt.Sprintf(
+													`"%s_id"`,
+													strcase.ToSnake(r.mod.GetMainModel().Name),
+												),
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
@@ -4643,12 +4504,12 @@ func (r RepositoryCrud) syncDeleteMethod() error {
 func (r RepositoryCrud) astDTOListType() *ast.TypeSpec {
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
-			Name: r.model.PostgresDTOListTypeName(),
+			Name: r.getDTOListName(),
 		},
 		Type: &ast.ArrayType{
 			Elt: &ast.StarExpr{
 				X: &ast.Ident{
-					Name: r.model.PostgresDTOTypeName(),
+					Name: r.getDTOName(),
 				},
 			},
 		},
@@ -4665,7 +4526,7 @@ func (r RepositoryCrud) syncDTOListType() error {
 	var dtoListType *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.TypeSpec); ok &&
-			t.Name.String() == r.model.PostgresDTOListTypeName() {
+			t.Name.String() == r.getDTOListName() {
 			dtoListType = t
 			structureExists = true
 			return false
@@ -4677,12 +4538,8 @@ func (r RepositoryCrud) syncDTOListType() error {
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
-			Doc:    nil,
-			TokPos: 0,
-			Tok:    token.TYPE,
-			Lparen: 0,
-			Specs:  []ast.Spec{dtoListType},
-			Rparen: 0,
+			Tok:   token.TYPE,
+			Specs: []ast.Spec{dtoListType},
 		}
 		file.Decls = append(file.Decls, gd)
 	}
@@ -4707,7 +4564,7 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 						},
 					},
 					Type: &ast.Ident{
-						Name: r.model.PostgresDTOListTypeName(),
+						Name: r.getDTOListName(),
 					},
 				},
 			},
@@ -4723,11 +4580,9 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 						Type: &ast.ArrayType{
 							Elt: &ast.StarExpr{
 								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "models",
-									},
+									X: ast.NewIdent("models"),
 									Sel: &ast.Ident{
-										Name: r.model.ModelName(),
+										Name: r.mod.GetMainModel().Name,
 									},
 								},
 							},
@@ -4741,7 +4596,7 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.Ident{
-							Name: r.model.ListVariable(),
+							Name: "items",
 						},
 					},
 					Tok: token.DEFINE,
@@ -4758,7 +4613,7 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 												Name: "models",
 											},
 											Sel: &ast.Ident{
-												Name: r.model.ModelName(),
+												Name: r.mod.GetMainModel().Name,
 											},
 										},
 									},
@@ -4791,7 +4646,7 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 								Lhs: []ast.Expr{
 									&ast.IndexExpr{
 										X: &ast.Ident{
-											Name: r.model.ListVariable(),
+											Name: "items",
 										},
 										Index: &ast.Ident{
 											Name: "i",
@@ -4823,7 +4678,7 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
 						&ast.Ident{
-							Name: r.model.ListVariable(),
+							Name: "items",
 						},
 					},
 				},

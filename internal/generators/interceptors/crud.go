@@ -482,32 +482,8 @@ func (i InterceptorCrud) syncCreateMethod() error {
 }
 
 func (i InterceptorCrud) astListMethod() *ast.FuncDecl {
-	args := []*ast.Field{
-		{
-			Names: []*ast.Ident{ast.NewIdent("ctx")},
-			Type:  ast.NewIdent("context.Context"),
-		},
-		{
-			Names: []*ast.Ident{ast.NewIdent("filter")},
-			Type: &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X:   ast.NewIdent("models"),
-					Sel: ast.NewIdent(i.mod.GetFilterModel().Name),
-				},
-			},
-		},
-	}
 	var body []ast.Stmt
 	if i.mod.Auth {
-		args = append(args, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent("requestUser")},
-			Type: &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X:   ast.NewIdent("models"),
-					Sel: ast.NewIdent("User"),
-				},
-			},
-		})
 		body = append(body,
 			// Check permission
 			&ast.IfStmt{
@@ -719,30 +695,8 @@ func (i InterceptorCrud) syncListMethod() error {
 }
 
 func (i InterceptorCrud) astGetMethod() *ast.FuncDecl {
-	args := []*ast.Field{
-		{
-			Names: []*ast.Ident{ast.NewIdent("ctx")},
-			Type:  ast.NewIdent("context.Context"),
-		},
-		{
-			Names: []*ast.Ident{ast.NewIdent("id")},
-			Type: &ast.SelectorExpr{
-				X:   ast.NewIdent("models"),
-				Sel: ast.NewIdent("UUID"),
-			},
-		},
-	}
 	var body []ast.Stmt
 	if i.mod.Auth {
-		args = append(args, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent("requestUser")},
-			Type: &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X:   ast.NewIdent("models"),
-					Sel: ast.NewIdent("User"),
-				},
-			},
-		})
 		body = append(
 			body,
 			&ast.IfStmt{
@@ -957,32 +911,8 @@ func (i InterceptorCrud) syncGetMethod() error {
 }
 
 func (i InterceptorCrud) updateMethod() *ast.FuncDecl {
-	args := []*ast.Field{
-		{
-			Names: []*ast.Ident{ast.NewIdent("ctx")},
-			Type:  ast.NewIdent("context.Context"),
-		},
-		{
-			Names: []*ast.Ident{ast.NewIdent("update")},
-			Type: &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X:   ast.NewIdent("models"),
-					Sel: ast.NewIdent(i.mod.GetUpdateModel().Name),
-				},
-			},
-		},
-	}
 	var body []ast.Stmt
 	if i.mod.Auth {
-		args = append(args, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent("requestUser")},
-			Type: &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X:   ast.NewIdent("models"),
-					Sel: ast.NewIdent("User"),
-				},
-			},
-		})
 		body = append(body,
 			// Check permission
 			&ast.IfStmt{
@@ -1235,30 +1165,8 @@ func (i InterceptorCrud) syncUpdateMethod() error {
 }
 
 func (i InterceptorCrud) deleteMethod() *ast.FuncDecl {
-	args := []*ast.Field{
-		{
-			Names: []*ast.Ident{ast.NewIdent("ctx")},
-			Type:  ast.NewIdent("context.Context"),
-		},
-		{
-			Names: []*ast.Ident{ast.NewIdent("id")},
-			Type: &ast.SelectorExpr{
-				X:   ast.NewIdent("models"),
-				Sel: ast.NewIdent("UUID"),
-			},
-		},
-	}
 	var body []ast.Stmt
 	if i.mod.Auth {
-		args = append(args, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent("requestUser")},
-			Type: &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X:   ast.NewIdent("models"),
-					Sel: ast.NewIdent("User"),
-				},
-			},
-		})
 		body = append(body,
 			// Check permission
 			&ast.IfStmt{

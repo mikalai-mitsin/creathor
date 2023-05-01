@@ -3,13 +3,14 @@ package usecases
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path/filepath"
+
+	"github.com/018bf/creathor/internal/configs"
 )
 
 type UseCaseCrud struct {

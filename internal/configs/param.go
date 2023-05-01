@@ -300,6 +300,8 @@ func (p *Param) PostgresDTOType() string {
 		return "time.Duration"
 	case "bool":
 		return "bool"
+	case "UUID":
+		return "string"
 	case "[]bool":
 		return "pq.BoolArray"
 	default:

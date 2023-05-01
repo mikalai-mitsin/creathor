@@ -7,9 +7,10 @@ import (
 	"go/parser"
 	"go/printer"
 	"go/token"
-	"golang.org/x/exp/slices"
 	"os"
 	"path/filepath"
+
+	"golang.org/x/exp/slices"
 
 	"github.com/iancoleman/strcase"
 )

@@ -633,14 +633,26 @@ func CreateLayout(project *configs.Project) error {
 	if project.KafkaEnabled {
 		files = append(
 			files, &Template{
-				SourcePath:      "templates/internal/repositories/kafka/event.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "repositories", "kafka", "event.go"),
-				Name:            "kafka events",
+				SourcePath: "templates/internal/repositories/kafka/event.go.tmpl",
+				DestinationPath: path.Join(
+					destinationPath,
+					"internal",
+					"repositories",
+					"kafka",
+					"event.go",
+				),
+				Name: "kafka events",
 			},
 			&Template{
-				SourcePath:      "templates/internal/repositories/kafka/event_test.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "repositories", "kafka", "event_test.go"),
-				Name:            "kafka events tests",
+				SourcePath: "templates/internal/repositories/kafka/event_test.go.tmpl",
+				DestinationPath: path.Join(
+					destinationPath,
+					"internal",
+					"repositories",
+					"kafka",
+					"event_test.go",
+				),
+				Name: "kafka events tests",
 			},
 		)
 	}

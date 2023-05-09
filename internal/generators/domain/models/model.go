@@ -6,7 +6,7 @@ import (
 	"go/token"
 	"strings"
 
-	"github.com/018bf/creathor/internal/configs"
+	"github.com/018bf/creathor/internal/mods"
 )
 
 func astType(t string) ast.Expr {
@@ -24,11 +24,11 @@ func astType(t string) ast.Expr {
 }
 
 type Model struct {
-	model    *configs.Model
+	model    *mods.Model
 	filename string
 }
 
-func NewModel(model *configs.Model, filename string) *Model {
+func NewModel(model *mods.Model, filename string) *Model {
 	return &Model{model: model, filename: filename}
 }
 

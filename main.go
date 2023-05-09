@@ -11,6 +11,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/018bf/creathor/internal/mods"
+
 	"github.com/018bf/creathor/internal/configs"
 	"github.com/018bf/creathor/internal/generators"
 	generatorsInterfacesGrpc "github.com/018bf/creathor/internal/generators/interfaces/grpc"
@@ -82,13 +84,37 @@ func initProject(ctx *cli.Context) error {
 			return err
 		}
 	}
-	crud := generators.NewCrudGenerator(project)
+	crud := generators.NewLayoutGenerator(project)
 	if err := crud.Sync(); err != nil {
 		return err
 	}
+	// FIXME: WTF?!
 	interfaceGrpcServer := generatorsInterfacesGrpc.NewServer(project)
 	if err := interfaceGrpcServer.Sync(); err != nil {
 		return err
+	}
+	for _, m := range project.Models {
+		mod := &mods.Mod{
+			Name:        m.Model,
+			Module:      project.Module,
+			ProtoModule: project.ProtoPackage(),
+			Filename:    m.FileName(),
+			Models: []*mods.Model{
+				mods.NewMainModel(m),
+				mods.NewFilterModel(m),
+				mods.NewCreateModel(m),
+				mods.NewUpdateModel(m),
+			},
+			UseCase:     mods.NewUseCase(m),
+			Repository:  mods.NewRepository(m),
+			Interceptor: mods.NewInterceptor(m),
+			GRPCHandler: mods.NewGRPCHandler(m),
+			Auth:        project.Auth,
+		}
+		crud := generators.NewModGenerator(mod)
+		if err := crud.Sync(); err != nil {
+			return err
+		}
 	}
 	if err := postInit(project); err != nil {
 		return err

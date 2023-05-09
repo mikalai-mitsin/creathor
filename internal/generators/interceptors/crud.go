@@ -10,14 +10,14 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/018bf/creathor/internal/configs"
+	"github.com/018bf/creathor/internal/mods"
 )
 
 type InterceptorCrud struct {
-	mod *configs.Mod
+	mod *mods.Mod
 }
 
-func NewInterceptorCrud(mod *configs.Mod) *InterceptorCrud {
+func NewInterceptorCrud(mod *mods.Mod) *InterceptorCrud {
 	return &InterceptorCrud{mod: mod}
 }
 
@@ -30,23 +30,23 @@ func (i InterceptorCrud) Sync() error {
 	}
 	for _, method := range i.mod.Interceptor.Methods {
 		switch method.Type {
-		case configs.MethodTypeCreate:
+		case mods.MethodTypeCreate:
 			if err := i.syncCreateMethod(); err != nil {
 				return err
 			}
-		case configs.MethodTypeGet:
+		case mods.MethodTypeGet:
 			if err := i.syncGetMethod(); err != nil {
 				return err
 			}
-		case configs.MethodTypeList:
+		case mods.MethodTypeList:
 			if err := i.syncListMethod(); err != nil {
 				return err
 			}
-		case configs.MethodTypeUpdate:
+		case mods.MethodTypeUpdate:
 			if err := i.syncUpdateMethod(); err != nil {
 				return err
 			}
-		case configs.MethodTypeDelete:
+		case mods.MethodTypeDelete:
 			if err := i.syncDeleteMethod(); err != nil {
 				return err
 			}

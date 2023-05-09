@@ -10,14 +10,14 @@ import (
 	"os"
 	"path"
 
-	"github.com/018bf/creathor/internal/configs"
+	"github.com/018bf/creathor/internal/mods"
 )
 
 type InterceptorInterfaceCrud struct {
-	mod *configs.Mod
+	mod *mods.Mod
 }
 
-func NewInterceptorInterfaceCrud(mod *configs.Mod) *InterceptorInterfaceCrud {
+func NewInterceptorInterfaceCrud(mod *mods.Mod) *InterceptorInterfaceCrud {
 	return &InterceptorInterfaceCrud{mod: mod}
 }
 

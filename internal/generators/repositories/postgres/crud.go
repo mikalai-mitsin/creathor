@@ -10,16 +10,16 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/iancoleman/strcase"
+	"github.com/018bf/creathor/internal/mods"
 
-	"github.com/018bf/creathor/internal/configs"
+	"github.com/iancoleman/strcase"
 )
 
 type RepositoryCrud struct {
-	mod *configs.Mod
+	mod *mods.Mod
 }
 
-func NewRepositoryCrud(mod *configs.Mod) *RepositoryCrud {
+func NewRepositoryCrud(mod *mods.Mod) *RepositoryCrud {
 	return &RepositoryCrud{mod: mod}
 }
 
@@ -59,27 +59,27 @@ func (r RepositoryCrud) Sync() error {
 	}
 	for _, method := range r.mod.Repository.Methods {
 		switch method.Type {
-		case configs.MethodTypeCreate:
+		case mods.MethodTypeCreate:
 			if err := r.syncCreateMethod(); err != nil {
 				return err
 			}
-		case configs.MethodTypeGet:
+		case mods.MethodTypeGet:
 			if err := r.syncGetMethod(); err != nil {
 				return err
 			}
-		case configs.MethodTypeList:
+		case mods.MethodTypeList:
 			if err := r.syncListMethod(); err != nil {
 				return err
 			}
-		case configs.MethodTypeCount:
+		case mods.MethodTypeCount:
 			if err := r.syncCountMethod(); err != nil {
 				return err
 			}
-		case configs.MethodTypeUpdate:
+		case mods.MethodTypeUpdate:
 			if err := r.syncUpdateMethod(); err != nil {
 				return err
 			}
-		case configs.MethodTypeDelete:
+		case mods.MethodTypeDelete:
 			if err := r.syncDeleteMethod(); err != nil {
 				return err
 			}

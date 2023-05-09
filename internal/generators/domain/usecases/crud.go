@@ -10,14 +10,14 @@ import (
 	"os"
 	"path"
 
-	"github.com/018bf/creathor/internal/configs"
+	"github.com/018bf/creathor/internal/mods"
 )
 
 type UseCaseInterfaceCrud struct {
-	mod *configs.Mod
+	mod *mods.Mod
 }
 
-func NewUseCaseInterfaceCrud(mod *configs.Mod) *UseCaseInterfaceCrud {
+func NewUseCaseInterfaceCrud(mod *mods.Mod) *UseCaseInterfaceCrud {
 	return &UseCaseInterfaceCrud{mod: mod}
 }
 

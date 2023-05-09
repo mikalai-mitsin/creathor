@@ -10,14 +10,14 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/018bf/creathor/internal/configs"
+	"github.com/018bf/creathor/internal/mods"
 )
 
 type UseCaseCrud struct {
-	mod *configs.Mod
+	mod *mods.Mod
 }
 
-func NewUseCaseCrud(mod *configs.Mod) *UseCaseCrud {
+func NewUseCaseCrud(mod *mods.Mod) *UseCaseCrud {
 	return &UseCaseCrud{mod: mod}
 }
 

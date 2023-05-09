@@ -11,14 +11,14 @@ import (
 	"path"
 	"strings"
 
-	"github.com/018bf/creathor/internal/configs"
+	"github.com/018bf/creathor/internal/mods"
 )
 
 type Handler struct {
-	mod *configs.Mod
+	mod *mods.Mod
 }
 
-func NewHandler(mod *configs.Mod) *Handler {
+func NewHandler(mod *mods.Mod) *Handler {
 	return &Handler{
 		mod: mod,
 	}

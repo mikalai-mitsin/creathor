@@ -10,14 +10,14 @@ import (
 	"os"
 	"path"
 
-	"github.com/018bf/creathor/internal/configs"
+	"github.com/018bf/creathor/internal/mods"
 )
 
 type RepositoryInterfaceCrud struct {
-	mod *configs.Mod
+	mod *mods.Mod
 }
 
-func NewRepositoryInterfaceCrud(mod *configs.Mod) *RepositoryInterfaceCrud {
+func NewRepositoryInterfaceCrud(mod *mods.Mod) *RepositoryInterfaceCrud {
 	return &RepositoryInterfaceCrud{mod: mod}
 }
 

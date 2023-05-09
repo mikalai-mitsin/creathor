@@ -298,7 +298,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 			Value: ast.NewIdent("now"),
 		},
 	}
-	for _, param := range u.mod.GetCrateModel().Params {
+	for _, param := range u.mod.GetCreateModel().Params {
 		params = append(params, &ast.KeyValueExpr{
 			Key: ast.NewIdent(param.GetName()),
 			Value: &ast.SelectorExpr{
@@ -333,7 +333,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(u.mod.GetCrateModel().Name),
+								Sel: ast.NewIdent(u.mod.GetCreateModel().Name),
 							},
 						},
 					},
@@ -501,7 +501,7 @@ func (u UseCaseCrud) syncCreateMethod() error {
 	if method == nil {
 		method = u.create()
 	}
-	for _, param := range u.mod.GetCrateModel().Params {
+	for _, param := range u.mod.GetCreateModel().Params {
 		param := param
 		ast.Inspect(method, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {

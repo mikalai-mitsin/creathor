@@ -2,10 +2,9 @@ package configs
 
 import (
 	"fmt"
-	"strings"
-
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/iancoleman/strcase"
+	"strings"
 )
 
 type Param struct {
@@ -36,11 +35,11 @@ func (p *Param) Validate() error {
 }
 
 func (p *Param) IsSlice() bool {
-	return strings.HasPrefix(p.Type, "[]")
+	return strings.HasPrefix(strings.TrimPrefix(p.Type, "*"), "[]")
 }
 
 func (p *Param) SliceType() string {
-	return strings.TrimPrefix(p.Type, "[]")
+	return strings.TrimPrefix(strings.TrimPrefix(p.Type, "*"), "[]")
 }
 
 func (p *Param) GrpcGetFromListValueAs() string {
@@ -144,31 +143,33 @@ func (p *Param) SQLType() string {
 
 func (p *Param) GetGRPCWrapper() string {
 	switch p.Type {
-	case "int", "int32", "int8", "int16":
+	case "*int", "*int32", "*int8", "*int16":
 		return "wrapperspb.Int32"
-	case "int64":
+	case "*int64":
 		return "wrapperspb.Int64"
-	case "uint8", "uint16", "uint32":
+	case "*uint8", "*uint16", "*uint32":
 		return "wrapperspb.UInt32"
-	case "uint64":
+	case "*uint64":
 		return "wrapperspb.UInt64"
-	case "string":
+	case "*string":
 		return "wrapperspb.String"
-	case "bool", "booleand":
+	case "*bool", "*booleand":
 		return "wrapperspb.Bool"
-	case "float32":
+	case "*float32":
 		return "wrapperspb.Float"
-	case "float64":
+	case "*float64":
 		return "wrapperspb.Double"
-	case "time.Time":
+	case "*time.Time", "time.Time":
 		return "timestamppb.New"
+	case "UUID", "models.UUID":
+		return "string"
 	default:
 		return "/* FIXME */"
 	}
 }
 
 func (p *Param) GetGRPCWrapperArgumentType() string {
-	switch p.Type {
+	switch strings.TrimPrefix(p.Type, "*") {
 	case "int", "int32", "int8", "int16":
 		return "int32"
 	case "int64":
@@ -179,7 +180,7 @@ func (p *Param) GetGRPCWrapperArgumentType() string {
 		return "uint64"
 	case "string":
 		return "string"
-	case "bool", "booleand":
+	case "bool", "boolean":
 		return "bool"
 	case "float32":
 		return "float32"
@@ -187,6 +188,8 @@ func (p *Param) GetGRPCWrapperArgumentType() string {
 		return "float64"
 	case "time.Time":
 		return "time.Time"
+	case "UUID":
+		return "string"
 	default:
 		return "/* FIXME */"
 	}
@@ -222,6 +225,8 @@ func (p *Param) GRPCType() string {
 		return "timestamppb.New"
 	case "bool":
 		return "bool"
+	case "UUID", "models.UUID":
+		return "string"
 	default:
 		return "/* FIXME */"
 	}
@@ -368,6 +373,36 @@ func (p *Param) ProtoWrapType() string {
 	case "bool":
 		return "google.protobuf.BoolValue"
 	case "[]bool":
+		return "google.protobuf.ListValue"
+	case "*int8", "*int16", "*int32", "*int":
+		return "google.protobuf.Int32Value"
+	case "*int64":
+		return "google.protobuf.Int64Value"
+	case "*float32":
+		return "google.protobuf.FloatValue"
+	case "*float64":
+		return "google.protobuf.DoubleValue"
+	case "*uint", "*uint8", "*uint16", "*uint32":
+		return "google.protobuf.UInt32Value"
+	case "*uint64":
+		return "google.protobuf.UInt64Value"
+	case "*[]int8", "*[]int16", "*[]int32", "*[]int":
+		return "google.protobuf.ListValue"
+	case "*[]int64":
+		return "google.protobuf.ListValue"
+	case "*[]uint", "*[]uint8", "*[]uint16", "*[]uint32":
+		return "google.protobuf.ListValue"
+	case "*[]uint64":
+		return "google.protobuf.ListValue"
+	case "*string", "*uuid", "*models.uuid", "*models.UUID":
+		return "google.protobuf.StringValue"
+	case "*[]string":
+		return "google.protobuf.ListValue"
+	case "*time.Time":
+		return "google.protobuf.Timestamp"
+	case "*bool":
+		return "google.protobuf.BoolValue"
+	case "*[]bool":
 		return "google.protobuf.ListValue"
 	default:
 		return "/* FIXME */"

@@ -32,12 +32,6 @@ func (g CrudGenerator) Sync() error {
 		errs.NewErrors(g.project),
 		models.NewModelTypes(g.project),
 	}
-	for _, m := range g.project.Models {
-		generators = append(
-			generators,
-			grpc.NewHandler(m),
-		)
-	}
 	for _, mod := range g.project.Mods {
 		for _, model := range mod.Models {
 			generators = append(generators, models.NewModel(model, mod.Filename))
@@ -50,6 +44,7 @@ func (g CrudGenerator) Sync() error {
 			interceptorInterfaces.NewInterceptorInterfaceCrud(mod),
 			usecases.NewUseCaseCrud(mod),
 			postgres.NewRepositoryCrud(mod),
+			grpc.NewHandler(mod),
 		)
 	}
 	if g.project.UptraceEnabled {

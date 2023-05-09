@@ -62,9 +62,10 @@ func NewProject(configPath string) (*Project, error) {
 	}
 	for _, m := range project.Models {
 		mod := &Mod{
-			Name:     m.Model,
-			Module:   project.Module,
-			Filename: m.FileName(),
+			Name:        m.Model,
+			Module:      project.Module,
+			ProtoModule: project.ProtoPackage(),
+			Filename:    m.FileName(),
 			Models: []*Model{
 				NewMainModel(m),
 				NewFilterModel(m),
@@ -74,6 +75,7 @@ func NewProject(configPath string) (*Project, error) {
 			UseCase:     NewUseCase(m),
 			Repository:  NewRepository(m),
 			Interceptor: NewInterceptor(m),
+			GRPCHandler: NewGRPCHandler(m),
 			Auth:        project.Auth,
 		}
 		project.Mods = append(project.Mods, mod)

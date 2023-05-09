@@ -9,17 +9,18 @@ import (
 	"go/token"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/018bf/creathor/internal/configs"
 )
 
 type Handler struct {
-	model *configs.ModelConfig
+	mod *configs.Mod
 }
 
-func NewHandler(model *configs.ModelConfig) *Handler {
+func NewHandler(mod *configs.Mod) *Handler {
 	return &Handler{
-		model: model,
+		mod: mod,
 	}
 }
 
@@ -41,38 +42,38 @@ func (h Handler) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/interceptors"`, h.model.Module),
+							Value: fmt.Sprintf(`"%s/internal/domain/interceptors"`, h.mod.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/models"`, h.model.Module),
+							Value: fmt.Sprintf(`"%s/internal/domain/models"`, h.mod.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Name: &ast.Ident{
-							Name: h.model.ProtoPackage,
+							Name: h.mod.ProtoModule,
 						},
 						Path: &ast.BasicLit{
 							Kind: token.STRING,
 							Value: fmt.Sprintf(
 								`"%s/pkg/%s/v1"`,
-								h.model.Module,
-								h.model.ProtoPackage,
+								h.mod.Module,
+								h.mod.ProtoModule,
 							),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/log"`, h.model.Module),
+							Value: fmt.Sprintf(`"%s/pkg/log"`, h.mod.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/utils"`, h.model.Module),
+							Value: fmt.Sprintf(`"%s/pkg/utils"`, h.mod.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -106,12 +107,12 @@ func (h Handler) file() *ast.File {
 }
 
 func (h Handler) filename() string {
-	return path.Join("internal", "interfaces", "grpc", h.model.FileName())
+	return path.Join("internal", "interfaces", "grpc", h.mod.Filename)
 }
 
 func (h Handler) createParams() []ast.Expr {
 	var exprs []ast.Expr
-	for _, param := range h.model.Params {
+	for _, param := range h.mod.GetCreateModel().Params {
 		var value ast.Expr
 		if param.IsSlice() {
 			switch param.Type {
@@ -168,10 +169,10 @@ func (h Handler) createParams() []ast.Expr {
 	return exprs
 }
 
-func (h Handler) astEncodeCreate() *ast.FuncDecl {
+func (h Handler) encodeCreate() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
-			Name: fmt.Sprintf("encode%s", h.model.CreateTypeName()),
+			Name: fmt.Sprintf("encode%s", h.mod.GetCreateModel().Name),
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
@@ -185,10 +186,10 @@ func (h Handler) astEncodeCreate() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: h.model.ProtoPackage,
+									Name: h.mod.ProtoModule,
 								},
 								Sel: &ast.Ident{
-									Name: h.model.CreateTypeName(),
+									Name: h.mod.GetCreateModel().Name,
 								},
 							},
 						},
@@ -203,9 +204,7 @@ func (h Handler) astEncodeCreate() *ast.FuncDecl {
 								X: &ast.Ident{
 									Name: "models",
 								},
-								Sel: &ast.Ident{
-									Name: h.model.CreateTypeName(),
-								},
+								Sel: ast.NewIdent(h.mod.GetCreateModel().Name),
 							},
 						},
 					},
@@ -229,9 +228,7 @@ func (h Handler) astEncodeCreate() *ast.FuncDecl {
 									X: &ast.Ident{
 										Name: "models",
 									},
-									Sel: &ast.Ident{
-										Name: h.model.CreateTypeName(),
-									},
+									Sel: ast.NewIdent(h.mod.GetCreateModel().Name),
 								},
 								Elts: h.createParams(),
 							},
@@ -260,7 +257,7 @@ func (h Handler) syncEncodeCreate() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("encode%s", h.model.CreateTypeName()) {
+			t.Name.String() == fmt.Sprintf("encode%s", h.mod.GetCreateModel().Name) {
 			methodExist = true
 			method = t
 			return false
@@ -268,7 +265,7 @@ func (h Handler) syncEncodeCreate() error {
 		return true
 	})
 	if method == nil {
-		method = h.astEncodeCreate()
+		method = h.encodeCreate()
 	}
 	for _, expr := range h.createParams() {
 		kv, ok := expr.(*ast.KeyValueExpr)
@@ -369,9 +366,12 @@ func (h Handler) syncEncodeCreate() error {
 
 func (h Handler) updateStmts() []*ast.IfStmt {
 	var stmts []*ast.IfStmt
-	for _, param := range h.model.Params {
+	for _, param := range h.mod.GetUpdateModel().Params {
+		if param.GetName() == "ID" {
+			continue
+		}
 		var body []ast.Stmt
-		if param.Type == "time.Time" {
+		if param.Type == "*time.Time" || param.Type == "time.Time" {
 			body = []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
@@ -549,9 +549,9 @@ func (h Handler) updateStmts() []*ast.IfStmt {
 					},
 				},
 			}
-			if param.Type != param.GRPCType() {
+			if strings.TrimPrefix(param.Type, "*") != param.GRPCType() {
 				value = &ast.CallExpr{
-					Fun:  ast.NewIdent(param.Type),
+					Fun:  ast.NewIdent(strings.TrimPrefix(param.Type, "*")),
 					Args: []ast.Expr{value},
 				}
 			}
@@ -611,7 +611,7 @@ func (h Handler) updateStmts() []*ast.IfStmt {
 	return stmts
 }
 
-func (h Handler) astEncodeUpdate() *ast.FuncDecl {
+func (h Handler) encodeUpdate() *ast.FuncDecl {
 	body := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
@@ -628,9 +628,7 @@ func (h Handler) astEncodeUpdate() *ast.FuncDecl {
 							X: &ast.Ident{
 								Name: "models",
 							},
-							Sel: &ast.Ident{
-								Name: h.model.UpdateTypeName(),
-							},
+							Sel: ast.NewIdent(h.mod.GetUpdateModel().Name),
 						},
 						Elts: []ast.Expr{
 							&ast.KeyValueExpr{
@@ -678,7 +676,7 @@ func (h Handler) astEncodeUpdate() *ast.FuncDecl {
 	})
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
-			Name: fmt.Sprintf("encode%s", h.model.UpdateTypeName()),
+			Name: fmt.Sprintf("encode%s", h.mod.GetUpdateModel().Name),
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
@@ -692,11 +690,9 @@ func (h Handler) astEncodeUpdate() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: h.model.ProtoPackage,
+									Name: h.mod.ProtoModule,
 								},
-								Sel: &ast.Ident{
-									Name: h.model.UpdateTypeName(),
-								},
+								Sel: ast.NewIdent(h.mod.GetUpdateModel().Name),
 							},
 						},
 					},
@@ -710,9 +706,7 @@ func (h Handler) astEncodeUpdate() *ast.FuncDecl {
 								X: &ast.Ident{
 									Name: "models",
 								},
-								Sel: &ast.Ident{
-									Name: h.model.UpdateTypeName(),
-								},
+								Sel: ast.NewIdent(h.mod.GetUpdateModel().Name),
 							},
 						},
 					},
@@ -735,7 +729,7 @@ func (h Handler) syncEncodeUpdate() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("encode%s", h.model.UpdateTypeName()) {
+			t.Name.String() == fmt.Sprintf("encode%s", h.mod.GetUpdateModel().Name) {
 			methodExist = true
 			method = t
 			return false
@@ -743,7 +737,7 @@ func (h Handler) syncEncodeUpdate() error {
 		return true
 	})
 	if method == nil {
-		method = h.astEncodeUpdate()
+		method = h.encodeUpdate()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -758,7 +752,7 @@ func (h Handler) syncEncodeUpdate() error {
 	return nil
 }
 
-func (h Handler) astEncodeFilter() *ast.FuncDecl {
+func (h Handler) encodeFilter() *ast.FuncDecl {
 	stmts := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
@@ -776,7 +770,7 @@ func (h Handler) astEncodeFilter() *ast.FuncDecl {
 								Name: "models",
 							},
 							Sel: &ast.Ident{
-								Name: h.model.FilterTypeName(),
+								Name: h.mod.GetFilterModel().Name,
 							},
 						},
 						Elts: []ast.Expr{
@@ -1033,7 +1027,7 @@ func (h Handler) astEncodeFilter() *ast.FuncDecl {
 			},
 		},
 	}
-	if h.model.SearchEnabled() {
+	if h.mod.SearchEnabled() {
 		stmts = append(stmts, &ast.IfStmt{
 			Cond: &ast.BinaryExpr{
 				X: &ast.CallExpr{
@@ -1110,7 +1104,7 @@ func (h Handler) astEncodeFilter() *ast.FuncDecl {
 	})
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
-			Name: fmt.Sprintf("encode%s", h.model.FilterTypeName()),
+			Name: fmt.Sprintf("encode%s", h.mod.GetFilterModel().Name),
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
@@ -1124,10 +1118,10 @@ func (h Handler) astEncodeFilter() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: h.model.ProtoPackage,
+									Name: h.mod.ProtoModule,
 								},
 								Sel: &ast.Ident{
-									Name: h.model.FilterTypeName(),
+									Name: h.mod.GetFilterModel().Name,
 								},
 							},
 						},
@@ -1143,7 +1137,7 @@ func (h Handler) astEncodeFilter() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: h.model.FilterTypeName(),
+									Name: h.mod.GetFilterModel().Name,
 								},
 							},
 						},
@@ -1167,7 +1161,7 @@ func (h Handler) syncEncodeFilter() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("encode%s", h.model.FilterTypeName()) {
+			t.Name.String() == fmt.Sprintf("encode%s", h.mod.GetFilterModel().Name) {
 			methodExist = true
 			method = t
 			return false
@@ -1175,7 +1169,7 @@ func (h Handler) syncEncodeFilter() error {
 		return true
 	})
 	if method == nil {
-		method = h.astEncodeFilter()
+		method = h.encodeFilter()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -1190,10 +1184,10 @@ func (h Handler) syncEncodeFilter() error {
 	return nil
 }
 
-func (h Handler) astDecodeModel() *ast.FuncDecl {
+func (h Handler) decode() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
-			Name: fmt.Sprintf("decode%s", h.model.ModelName()),
+			Name: fmt.Sprintf("decode%s", h.mod.GetMainModel().Name),
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
@@ -1201,7 +1195,7 @@ func (h Handler) astDecodeModel() *ast.FuncDecl {
 					{
 						Names: []*ast.Ident{
 							{
-								Name: h.model.Variable(),
+								Name: "item",
 							},
 						},
 						Type: &ast.StarExpr{
@@ -1210,7 +1204,7 @@ func (h Handler) astDecodeModel() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: h.model.ModelName(),
+									Name: h.mod.GetMainModel().Name,
 								},
 							},
 						},
@@ -1223,10 +1217,10 @@ func (h Handler) astDecodeModel() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: h.model.ProtoPackage,
+									Name: h.mod.ProtoModule,
 								},
 								Sel: &ast.Ident{
-									Name: h.model.ModelName(),
+									Name: h.mod.GetMainModel().Name,
 								},
 							},
 						},
@@ -1249,10 +1243,10 @@ func (h Handler) astDecodeModel() *ast.FuncDecl {
 							X: &ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: h.model.ProtoPackage,
+										Name: h.mod.ProtoModule,
 									},
 									Sel: &ast.Ident{
-										Name: h.model.ModelName(),
+										Name: h.mod.GetMainModel().Name,
 									},
 								},
 								Elts: h.modelParams(),
@@ -1273,83 +1267,12 @@ func (h Handler) astDecodeModel() *ast.FuncDecl {
 }
 
 func (h Handler) modelParams() []ast.Expr {
-	exprs := []ast.Expr{
-		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "Id",
-			},
-			Value: &ast.CallExpr{
-				Fun: &ast.Ident{
-					Name: "string",
-				},
-				Args: []ast.Expr{
-					&ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: h.model.Variable(),
-						},
-						Sel: &ast.Ident{
-							Name: "ID",
-						},
-					},
-				},
-			},
-		},
-		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "UpdatedAt",
-			},
-			Value: &ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "timestamppb",
-					},
-					Sel: &ast.Ident{
-						Name: "New",
-					},
-				},
-				Args: []ast.Expr{
-					&ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: h.model.Variable(),
-						},
-						Sel: &ast.Ident{
-							Name: "UpdatedAt",
-						},
-					},
-				},
-			},
-		},
-		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "CreatedAt",
-			},
-			Value: &ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "timestamppb",
-					},
-					Sel: &ast.Ident{
-						Name: "New",
-					},
-				},
-				Args: []ast.Expr{
-					&ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: h.model.Variable(),
-						},
-						Sel: &ast.Ident{
-							Name: "CreatedAt",
-						},
-					},
-				},
-			},
-		},
-	}
-	for _, param := range h.model.Params {
+	var exprs []ast.Expr
+	for _, param := range h.mod.GetMainModel().Params {
 		var value ast.Expr
 		value = &ast.SelectorExpr{
 			X: &ast.Ident{
-				Name: h.model.Variable(),
+				Name: "item",
 			},
 			Sel: &ast.Ident{
 				Name: param.GetName(),
@@ -1388,7 +1311,7 @@ func (h Handler) modelParams() []ast.Expr {
 				Args: []ast.Expr{
 					&ast.SelectorExpr{
 						X: &ast.Ident{
-							Name: h.model.Variable(),
+							Name: "item",
 						},
 						Sel: &ast.Ident{
 							Name: param.GetName(),
@@ -1417,7 +1340,7 @@ func (h Handler) syncDecodeModel() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("decode%s", h.model.ModelName()) {
+			t.Name.String() == fmt.Sprintf("decode%s", h.mod.GetMainModel().Name) {
 			methodExist = true
 			method = t
 			return false
@@ -1425,7 +1348,7 @@ func (h Handler) syncDecodeModel() error {
 		return true
 	})
 	if method == nil {
-		method = h.astDecodeModel()
+		method = h.decode()
 	}
 	for _, param := range h.modelParams() {
 		pr := param.(*ast.KeyValueExpr)
@@ -1433,7 +1356,7 @@ func (h Handler) syncDecodeModel() error {
 		ast.Inspect(method, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
 				if clType, ok := cl.Type.(*ast.SelectorExpr); ok {
-					if clType.Sel.String() != h.model.ModelName() {
+					if clType.Sel.String() != h.mod.GetMainModel().Name {
 						return true
 					}
 				}
@@ -1464,10 +1387,10 @@ func (h Handler) syncDecodeModel() error {
 	return nil
 }
 
-func (h Handler) astDecodeList() *ast.FuncDecl {
+func (h Handler) decodeList() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
-			Name: fmt.Sprintf("decodeList%s", h.model.ModelName()),
+			Name: fmt.Sprintf("decodeList%s", h.mod.GetMainModel().Name),
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
@@ -1475,7 +1398,7 @@ func (h Handler) astDecodeList() *ast.FuncDecl {
 					{
 						Names: []*ast.Ident{
 							{
-								Name: h.model.ListVariable(),
+								Name: "items",
 							},
 						},
 						Type: &ast.ArrayType{
@@ -1485,7 +1408,7 @@ func (h Handler) astDecodeList() *ast.FuncDecl {
 										Name: "models",
 									},
 									Sel: &ast.Ident{
-										Name: h.model.ModelName(),
+										Name: h.mod.GetMainModel().Name,
 									},
 								},
 							},
@@ -1509,10 +1432,10 @@ func (h Handler) astDecodeList() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: h.model.ProtoPackage,
+									Name: h.mod.ProtoModule,
 								},
 								Sel: &ast.Ident{
-									Name: fmt.Sprintf("List%s", h.model.ModelName()),
+									Name: fmt.Sprintf("List%s", h.mod.GetMainModel().Name),
 								},
 							},
 						},
@@ -1535,10 +1458,10 @@ func (h Handler) astDecodeList() *ast.FuncDecl {
 							X: &ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: h.model.ProtoPackage,
+										Name: h.mod.ProtoModule,
 									},
 									Sel: &ast.Ident{
-										Name: fmt.Sprintf("List%s", h.model.ModelName()),
+										Name: fmt.Sprintf("List%s", h.mod.GetMainModel().Name),
 									},
 								},
 								Elts: []ast.Expr{
@@ -1555,10 +1478,10 @@ func (h Handler) astDecodeList() *ast.FuncDecl {
 													Elt: &ast.StarExpr{
 														X: &ast.SelectorExpr{
 															X: &ast.Ident{
-																Name: h.model.ProtoPackage,
+																Name: h.mod.ProtoModule,
 															},
 															Sel: &ast.Ident{
-																Name: h.model.ModelName(),
+																Name: h.mod.GetMainModel().Name,
 															},
 														},
 													},
@@ -1573,7 +1496,7 @@ func (h Handler) astDecodeList() *ast.FuncDecl {
 													},
 													Args: []ast.Expr{
 														&ast.Ident{
-															Name: h.model.ListVariable(),
+															Name: "items",
 														},
 													},
 												},
@@ -1598,11 +1521,11 @@ func (h Handler) astDecodeList() *ast.FuncDecl {
 						Name: "_",
 					},
 					Value: &ast.Ident{
-						Name: h.model.Variable(),
+						Name: "item",
 					},
 					Tok: token.DEFINE,
 					X: &ast.Ident{
-						Name: h.model.ListVariable(),
+						Name: "items",
 					},
 					Body: &ast.BlockStmt{
 						List: []ast.Stmt{
@@ -1636,12 +1559,12 @@ func (h Handler) astDecodeList() *ast.FuncDecl {
 												Fun: &ast.Ident{
 													Name: fmt.Sprintf(
 														"decode%s",
-														h.model.ModelName(),
+														h.mod.GetMainModel().Name,
 													),
 												},
 												Args: []ast.Expr{
 													&ast.Ident{
-														Name: h.model.Variable(),
+														Name: "item",
 													},
 												},
 											},
@@ -1674,7 +1597,7 @@ func (h Handler) syncDecodeList() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("decodeList%s", h.model.ModelName()) {
+			t.Name.String() == fmt.Sprintf("decodeList%s", h.mod.GetMainModel().Name) {
 			methodExist = true
 			method = t
 			return false
@@ -1682,7 +1605,7 @@ func (h Handler) syncDecodeList() error {
 		return true
 	})
 	if method == nil {
-		method = h.astDecodeList()
+		method = h.decodeList()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -1697,7 +1620,7 @@ func (h Handler) syncDecodeList() error {
 	return nil
 }
 
-func (h Handler) astDecodeUpdate() *ast.FuncDecl {
+func (h Handler) decodeUpdate() *ast.FuncDecl {
 	stmts := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
@@ -1712,19 +1635,19 @@ func (h Handler) astDecodeUpdate() *ast.FuncDecl {
 					X: &ast.CompositeLit{
 						Type: &ast.SelectorExpr{
 							X: &ast.Ident{
-								Name: h.model.ProtoPackage,
+								Name: h.mod.ProtoModule,
 							},
 							Sel: &ast.Ident{
-								Name: h.model.UpdateTypeName(),
+								Name: h.mod.GetUpdateModel().Name,
 							},
 						},
-						Elts: h.updateParams(),
+						Elts: h.decodeUpdateParams(),
 					},
 				},
 			},
 		},
 	}
-	for _, param := range h.model.Params {
+	for _, param := range h.mod.GetUpdateModel().Params {
 		if !param.IsSlice() {
 			continue
 		}
@@ -1845,7 +1768,7 @@ func (h Handler) astDecodeUpdate() *ast.FuncDecl {
 	})
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
-			Name: fmt.Sprintf("decode%s", h.model.UpdateTypeName()),
+			Name: fmt.Sprintf("decode%s", h.mod.GetUpdateModel().Name),
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
@@ -1862,7 +1785,7 @@ func (h Handler) astDecodeUpdate() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: h.model.UpdateTypeName(),
+									Name: h.mod.GetUpdateModel().Name,
 								},
 							},
 						},
@@ -1875,10 +1798,10 @@ func (h Handler) astDecodeUpdate() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: h.model.ProtoPackage,
+									Name: h.mod.ProtoModule,
 								},
 								Sel: &ast.Ident{
-									Name: h.model.UpdateTypeName(),
+									Name: h.mod.GetUpdateModel().Name,
 								},
 							},
 						},
@@ -1892,46 +1815,28 @@ func (h Handler) astDecodeUpdate() *ast.FuncDecl {
 	}
 }
 
-func (h Handler) updateParams() []ast.Expr {
-	exprs := []ast.Expr{
-		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "Id",
-			},
-			Value: &ast.CallExpr{
-				Fun: &ast.Ident{
-					Name: "string",
-				},
-				Args: []ast.Expr{
-					&ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "update",
-						},
-						Sel: &ast.Ident{
-							Name: "ID",
-						},
-					},
-				},
-			},
-		},
-	}
-	for _, param := range h.model.Params {
+func (h Handler) decodeUpdateParams() []ast.Expr {
+	var exprs []ast.Expr
+	for _, param := range h.mod.GetUpdateModel().Params {
 		var value ast.Expr
 		if param.IsSlice() {
 			value = ast.NewIdent("nil")
 		} else {
 			var v ast.Expr
-			v = &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "update",
-					},
-					Sel: &ast.Ident{
-						Name: param.GetName(),
-					},
+			v = &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "update",
+				},
+				Sel: &ast.Ident{
+					Name: param.GetName(),
 				},
 			}
-			if param.GetGRPCWrapperArgumentType() != param.Type {
+			if strings.HasPrefix(param.Type, "*") {
+				v = &ast.StarExpr{
+					X: v,
+				}
+			}
+			if param.GetGRPCWrapperArgumentType() != strings.TrimPrefix(param.Type, "*") {
 				v = &ast.CallExpr{
 					Fun: &ast.Ident{
 						Name: param.GetGRPCWrapperArgumentType(),
@@ -1944,7 +1849,6 @@ func (h Handler) updateParams() []ast.Expr {
 				Args: []ast.Expr{v},
 			}
 		}
-
 		exprs = append(exprs, &ast.KeyValueExpr{
 			Key: &ast.Ident{
 				Name: param.GRPCParam(),
@@ -1965,7 +1869,7 @@ func (h Handler) syncDecodeUpdate() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("decode%s", h.model.UpdateTypeName()) {
+			t.Name.String() == fmt.Sprintf("decode%s", h.mod.GetUpdateModel().Name) {
 			methodExist = true
 			method = t
 			return false
@@ -1973,7 +1877,7 @@ func (h Handler) syncDecodeUpdate() error {
 		return true
 	})
 	if method == nil {
-		method = h.astDecodeUpdate()
+		method = h.decodeUpdate()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -1988,10 +1892,10 @@ func (h Handler) syncDecodeUpdate() error {
 	return nil
 }
 
-func (h Handler) astStruct() *ast.TypeSpec {
+func (h Handler) structure() *ast.TypeSpec {
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
-			Name: h.model.GRPCHandlerTypeName(),
+			Name: h.mod.GRPCHandler.Name,
 		},
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
@@ -1999,12 +1903,12 @@ func (h Handler) astStruct() *ast.TypeSpec {
 					{
 						Type: &ast.SelectorExpr{
 							X: &ast.Ident{
-								Name: h.model.ProtoPackage,
+								Name: h.mod.ProtoModule,
 							},
 							Sel: &ast.Ident{
 								Name: fmt.Sprintf(
 									"Unimplemented%sServiceServer",
-									h.model.ModelName(),
+									h.mod.GetMainModel().Name,
 								),
 							},
 						},
@@ -2012,7 +1916,7 @@ func (h Handler) astStruct() *ast.TypeSpec {
 					{
 						Names: []*ast.Ident{
 							{
-								Name: h.model.InterceptorVariableName(),
+								Name: h.mod.Interceptor.Variable,
 							},
 						},
 						Type: &ast.SelectorExpr{
@@ -2020,7 +1924,7 @@ func (h Handler) astStruct() *ast.TypeSpec {
 								Name: "interceptors",
 							},
 							Sel: &ast.Ident{
-								Name: h.model.InterceptorTypeName(),
+								Name: h.mod.Interceptor.Name,
 							},
 						},
 					},
@@ -2055,7 +1959,7 @@ func (h Handler) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == h.model.GRPCHandlerTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == h.mod.GRPCHandler.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -2063,16 +1967,12 @@ func (h Handler) syncStruct() error {
 		return true
 	})
 	if structure == nil {
-		structure = h.astStruct()
+		structure = h.structure()
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
-			Doc:    nil,
-			TokPos: 0,
-			Tok:    token.TYPE,
-			Lparen: 0,
-			Specs:  []ast.Spec{structure},
-			Rparen: 0,
+			Tok:   token.TYPE,
+			Specs: []ast.Spec{structure},
 		}
 		file.Decls = append(file.Decls, gd)
 	}
@@ -2086,10 +1986,10 @@ func (h Handler) syncStruct() error {
 	return nil
 }
 
-func (h Handler) astConstructor() *ast.FuncDecl {
+func (h Handler) constructor() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
-			Name: fmt.Sprintf("New%s", h.model.GRPCHandlerTypeName()),
+			Name: fmt.Sprintf("New%s", h.mod.GRPCHandler.Name),
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
@@ -2097,7 +1997,7 @@ func (h Handler) astConstructor() *ast.FuncDecl {
 					{
 						Names: []*ast.Ident{
 							{
-								Name: h.model.InterceptorVariableName(),
+								Name: h.mod.Interceptor.Variable,
 							},
 						},
 						Type: &ast.SelectorExpr{
@@ -2105,7 +2005,7 @@ func (h Handler) astConstructor() *ast.FuncDecl {
 								Name: "interceptors",
 							},
 							Sel: &ast.Ident{
-								Name: h.model.InterceptorTypeName(),
+								Name: h.mod.Interceptor.Name,
 							},
 						},
 					},
@@ -2131,10 +2031,10 @@ func (h Handler) astConstructor() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X: &ast.Ident{
-								Name: h.model.ProtoPackage,
+								Name: h.mod.ProtoModule,
 							},
 							Sel: &ast.Ident{
-								Name: fmt.Sprintf("%sServiceServer", h.model.ModelName()),
+								Name: fmt.Sprintf("%sServiceServer", h.mod.GetMainModel().Name),
 							},
 						},
 					},
@@ -2149,15 +2049,15 @@ func (h Handler) astConstructor() *ast.FuncDecl {
 							Op: token.AND,
 							X: &ast.CompositeLit{
 								Type: &ast.Ident{
-									Name: fmt.Sprintf("%sServiceServer", h.model.ModelName()),
+									Name: fmt.Sprintf("%sServiceServer", h.mod.GetMainModel().Name),
 								},
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
 										Key: &ast.Ident{
-											Name: h.model.InterceptorVariableName(),
+											Name: h.mod.Interceptor.Variable,
 										},
 										Value: &ast.Ident{
-											Name: h.model.InterceptorVariableName(),
+											Name: h.mod.Interceptor.Variable,
 										},
 									},
 									&ast.KeyValueExpr{
@@ -2189,7 +2089,7 @@ func (h Handler) syncConstructor() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", h.model.GRPCHandlerTypeName()) {
+			t.Name.String() == fmt.Sprintf("New%s", h.mod.GRPCHandler.Name) {
 			methodExist = true
 			method = t
 			return false
@@ -2197,7 +2097,7 @@ func (h Handler) syncConstructor() error {
 		return true
 	})
 	if method == nil {
-		method = h.astConstructor()
+		method = h.constructor()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -2212,14 +2112,14 @@ func (h Handler) syncConstructor() error {
 	return nil
 }
 
-func (h Handler) astCreateMethod() *ast.FuncDecl {
+func (h Handler) create() *ast.FuncDecl {
 	args := []ast.Expr{
 		&ast.Ident{
 			Name: "ctx",
 		},
 		&ast.CallExpr{
 			Fun: &ast.Ident{
-				Name: fmt.Sprintf("encode%s", h.model.CreateTypeName()),
+				Name: fmt.Sprintf("encode%s", h.mod.GetCreateModel().Name),
 			},
 			Args: []ast.Expr{
 				&ast.Ident{
@@ -2228,7 +2128,7 @@ func (h Handler) astCreateMethod() *ast.FuncDecl {
 			},
 		},
 	}
-	if h.model.Auth {
+	if h.mod.Auth {
 		args = append(args, &ast.TypeAssertExpr{
 			X: &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
@@ -2268,7 +2168,7 @@ func (h Handler) astCreateMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: h.model.GRPCHandlerTypeName(),
+							Name: h.mod.GRPCHandler.Name,
 						},
 					},
 				},
@@ -2304,10 +2204,10 @@ func (h Handler) astCreateMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: h.model.ProtoPackage,
+									Name: h.mod.ProtoModule,
 								},
 								Sel: &ast.Ident{
-									Name: h.model.CreateTypeName(),
+									Name: h.mod.GetCreateModel().Name,
 								},
 							},
 						},
@@ -2320,10 +2220,10 @@ func (h Handler) astCreateMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: h.model.ProtoPackage,
+									Name: h.mod.ProtoModule,
 								},
 								Sel: &ast.Ident{
-									Name: h.model.ModelName(),
+									Name: h.mod.GetMainModel().Name,
 								},
 							},
 						},
@@ -2341,7 +2241,7 @@ func (h Handler) astCreateMethod() *ast.FuncDecl {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.Ident{
-							Name: h.model.Variable(),
+							Name: "item",
 						},
 						&ast.Ident{
 							Name: "err",
@@ -2356,7 +2256,7 @@ func (h Handler) astCreateMethod() *ast.FuncDecl {
 										Name: "s",
 									},
 									Sel: &ast.Ident{
-										Name: h.model.InterceptorVariableName(),
+										Name: h.mod.Interceptor.Variable,
 									},
 								},
 								Sel: &ast.Ident{
@@ -2403,11 +2303,11 @@ func (h Handler) astCreateMethod() *ast.FuncDecl {
 					Results: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.Ident{
-								Name: fmt.Sprintf("decode%s", h.model.ModelName()),
+								Name: fmt.Sprintf("decode%s", h.mod.GetMainModel().Name),
 							},
 							Args: []ast.Expr{
 								&ast.Ident{
-									Name: h.model.Variable(),
+									Name: "item",
 								},
 							},
 						},
@@ -2438,7 +2338,7 @@ func (h Handler) syncCreateMethod() error {
 		return true
 	})
 	if method == nil {
-		method = h.astCreateMethod()
+		method = h.create()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -2453,7 +2353,7 @@ func (h Handler) syncCreateMethod() error {
 	return nil
 }
 
-func (h Handler) astGetMethod() *ast.FuncDecl {
+func (h Handler) get() *ast.FuncDecl {
 	args := []ast.Expr{
 		&ast.Ident{
 			Name: "ctx",
@@ -2481,7 +2381,7 @@ func (h Handler) astGetMethod() *ast.FuncDecl {
 			},
 		},
 	}
-	if h.model.Auth {
+	if h.mod.Auth {
 		args = append(args, &ast.TypeAssertExpr{
 			X: &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
@@ -2521,7 +2421,7 @@ func (h Handler) astGetMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: h.model.GRPCHandlerTypeName(),
+							Name: h.mod.GRPCHandler.Name,
 						},
 					},
 				},
@@ -2557,10 +2457,10 @@ func (h Handler) astGetMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: h.model.ProtoPackage,
+									Name: h.mod.ProtoModule,
 								},
 								Sel: &ast.Ident{
-									Name: fmt.Sprintf("%sGet", h.model.ModelName()),
+									Name: fmt.Sprintf("%sGet", h.mod.GetMainModel().Name),
 								},
 							},
 						},
@@ -2573,10 +2473,10 @@ func (h Handler) astGetMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: h.model.ProtoPackage,
+									Name: h.mod.ProtoModule,
 								},
 								Sel: &ast.Ident{
-									Name: h.model.ModelName(),
+									Name: h.mod.GetMainModel().Name,
 								},
 							},
 						},
@@ -2594,7 +2494,7 @@ func (h Handler) astGetMethod() *ast.FuncDecl {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.Ident{
-							Name: h.model.Variable(),
+							Name: "item",
 						},
 						&ast.Ident{
 							Name: "err",
@@ -2609,7 +2509,7 @@ func (h Handler) astGetMethod() *ast.FuncDecl {
 										Name: "s",
 									},
 									Sel: &ast.Ident{
-										Name: h.model.InterceptorVariableName(),
+										Name: h.mod.Interceptor.Variable,
 									},
 								},
 								Sel: &ast.Ident{
@@ -2656,11 +2556,11 @@ func (h Handler) astGetMethod() *ast.FuncDecl {
 					Results: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.Ident{
-								Name: fmt.Sprintf("decode%s", h.model.ModelName()),
+								Name: fmt.Sprintf("decode%s", h.mod.GetMainModel().Name),
 							},
 							Args: []ast.Expr{
 								&ast.Ident{
-									Name: h.model.Variable(),
+									Name: "item",
 								},
 							},
 						},
@@ -2691,7 +2591,7 @@ func (h Handler) syncGetMethod() error {
 		return true
 	})
 	if method == nil {
-		method = h.astGetMethod()
+		method = h.get()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -2707,14 +2607,14 @@ func (h Handler) syncGetMethod() error {
 	return nil
 }
 
-func (h Handler) astListMethod() *ast.FuncDecl {
+func (h Handler) list() *ast.FuncDecl {
 	args := []ast.Expr{
 		&ast.Ident{
 			Name: "ctx",
 		},
 		&ast.CallExpr{
 			Fun: &ast.Ident{
-				Name: fmt.Sprintf("encode%s", h.model.FilterTypeName()),
+				Name: fmt.Sprintf("encode%s", h.mod.GetFilterModel().Name),
 			},
 			Args: []ast.Expr{
 				&ast.Ident{
@@ -2723,7 +2623,7 @@ func (h Handler) astListMethod() *ast.FuncDecl {
 			},
 		},
 	}
-	if h.model.Auth {
+	if h.mod.Auth {
 		args = append(args, &ast.TypeAssertExpr{
 			X: &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
@@ -2763,7 +2663,7 @@ func (h Handler) astListMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: h.model.GRPCHandlerTypeName(),
+							Name: h.mod.GRPCHandler.Name,
 						},
 					},
 				},
@@ -2799,10 +2699,10 @@ func (h Handler) astListMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: h.model.ProtoPackage,
+									Name: h.mod.ProtoModule,
 								},
 								Sel: &ast.Ident{
-									Name: h.model.FilterTypeName(),
+									Name: h.mod.GetFilterModel().Name,
 								},
 							},
 						},
@@ -2815,10 +2715,10 @@ func (h Handler) astListMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: h.model.ProtoPackage,
+									Name: h.mod.ProtoModule,
 								},
 								Sel: &ast.Ident{
-									Name: fmt.Sprintf("List%s", h.model.ModelName()),
+									Name: fmt.Sprintf("List%s", h.mod.GetMainModel().Name),
 								},
 							},
 						},
@@ -2836,7 +2736,7 @@ func (h Handler) astListMethod() *ast.FuncDecl {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.Ident{
-							Name: h.model.ListVariable(),
+							Name: "items",
 						},
 						&ast.Ident{
 							Name: "count",
@@ -2854,7 +2754,7 @@ func (h Handler) astListMethod() *ast.FuncDecl {
 										Name: "s",
 									},
 									Sel: &ast.Ident{
-										Name: h.model.InterceptorVariableName(),
+										Name: h.mod.Interceptor.Variable,
 									},
 								},
 								Sel: &ast.Ident{
@@ -2901,11 +2801,11 @@ func (h Handler) astListMethod() *ast.FuncDecl {
 					Results: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.Ident{
-								Name: fmt.Sprintf("decodeList%s", h.model.ModelName()),
+								Name: fmt.Sprintf("decodeList%s", h.mod.GetMainModel().Name),
 							},
 							Args: []ast.Expr{
 								&ast.Ident{
-									Name: h.model.ListVariable(),
+									Name: "items",
 								},
 								&ast.Ident{
 									Name: "count",
@@ -2939,7 +2839,7 @@ func (h Handler) syncListMethod() error {
 		return true
 	})
 	if method == nil {
-		method = h.astListMethod()
+		method = h.list()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -2955,14 +2855,14 @@ func (h Handler) syncListMethod() error {
 	return nil
 }
 
-func (h Handler) astUpdateMethod() *ast.FuncDecl {
+func (h Handler) update() *ast.FuncDecl {
 	args := []ast.Expr{
 		&ast.Ident{
 			Name: "ctx",
 		},
 		&ast.CallExpr{
 			Fun: &ast.Ident{
-				Name: fmt.Sprintf("encode%s", h.model.UpdateTypeName()),
+				Name: fmt.Sprintf("encode%s", h.mod.GetUpdateModel().Name),
 			},
 			Args: []ast.Expr{
 				&ast.Ident{
@@ -2971,7 +2871,7 @@ func (h Handler) astUpdateMethod() *ast.FuncDecl {
 			},
 		},
 	}
-	if h.model.Auth {
+	if h.mod.Auth {
 		args = append(args, &ast.TypeAssertExpr{
 			X: &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
@@ -3011,7 +2911,7 @@ func (h Handler) astUpdateMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: h.model.GRPCHandlerTypeName(),
+							Name: h.mod.GRPCHandler.Name,
 						},
 					},
 				},
@@ -3047,10 +2947,10 @@ func (h Handler) astUpdateMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: h.model.ProtoPackage,
+									Name: h.mod.ProtoModule,
 								},
 								Sel: &ast.Ident{
-									Name: h.model.UpdateTypeName(),
+									Name: h.mod.GetUpdateModel().Name,
 								},
 							},
 						},
@@ -3063,10 +2963,10 @@ func (h Handler) astUpdateMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: h.model.ProtoPackage,
+									Name: h.mod.ProtoModule,
 								},
 								Sel: &ast.Ident{
-									Name: h.model.ModelName(),
+									Name: h.mod.GetMainModel().Name,
 								},
 							},
 						},
@@ -3084,7 +2984,7 @@ func (h Handler) astUpdateMethod() *ast.FuncDecl {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.Ident{
-							Name: h.model.Variable(),
+							Name: "item",
 						},
 						&ast.Ident{
 							Name: "err",
@@ -3099,7 +2999,7 @@ func (h Handler) astUpdateMethod() *ast.FuncDecl {
 										Name: "s",
 									},
 									Sel: &ast.Ident{
-										Name: h.model.InterceptorVariableName(),
+										Name: h.mod.Interceptor.Variable,
 									},
 								},
 								Sel: &ast.Ident{
@@ -3146,11 +3046,11 @@ func (h Handler) astUpdateMethod() *ast.FuncDecl {
 					Results: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.Ident{
-								Name: fmt.Sprintf("decode%s", h.model.ModelName()),
+								Name: fmt.Sprintf("decode%s", h.mod.GetMainModel().Name),
 							},
 							Args: []ast.Expr{
 								&ast.Ident{
-									Name: h.model.Variable(),
+									Name: "item",
 								},
 							},
 						},
@@ -3181,7 +3081,7 @@ func (h Handler) syncUpdateMethod() error {
 		return true
 	})
 	if method == nil {
-		method = h.astUpdateMethod()
+		method = h.update()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -3197,7 +3097,7 @@ func (h Handler) syncUpdateMethod() error {
 	return nil
 }
 
-func (h Handler) astDeleteMethod() *ast.FuncDecl {
+func (h Handler) delete() *ast.FuncDecl {
 	args := []ast.Expr{
 		&ast.Ident{
 			Name: "ctx",
@@ -3225,7 +3125,7 @@ func (h Handler) astDeleteMethod() *ast.FuncDecl {
 			},
 		},
 	}
-	if h.model.Auth {
+	if h.mod.Auth {
 		args = append(args, &ast.TypeAssertExpr{
 			X: &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
@@ -3265,7 +3165,7 @@ func (h Handler) astDeleteMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: h.model.GRPCHandlerTypeName(),
+							Name: h.mod.GRPCHandler.Name,
 						},
 					},
 				},
@@ -3301,10 +3201,10 @@ func (h Handler) astDeleteMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: h.model.ProtoPackage,
+									Name: h.mod.ProtoModule,
 								},
 								Sel: &ast.Ident{
-									Name: fmt.Sprintf("%sDelete", h.model.ModelName()),
+									Name: fmt.Sprintf("%sDelete", h.mod.GetMainModel().Name),
 								},
 							},
 						},
@@ -3351,7 +3251,7 @@ func (h Handler) astDeleteMethod() *ast.FuncDecl {
 											Name: "s",
 										},
 										Sel: &ast.Ident{
-											Name: h.model.InterceptorVariableName(),
+											Name: h.mod.Interceptor.Variable,
 										},
 									},
 									Sel: &ast.Ident{
@@ -3435,7 +3335,7 @@ func (h Handler) syncDeleteMethod() error {
 		return true
 	})
 	if method == nil {
-		method = h.astDeleteMethod()
+		method = h.delete()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)

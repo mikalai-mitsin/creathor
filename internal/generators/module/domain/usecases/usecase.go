@@ -1,4 +1,4 @@
-package repositories
+package usecases
 
 import (
 	"bytes"
@@ -10,20 +10,20 @@ import (
 	"os"
 	"path"
 
-	"github.com/018bf/creathor/internal/mods"
+	mods "github.com/018bf/creathor/internal/module"
 )
 
-type RepositoryInterfaceCrud struct {
+type UseCaseInterfaceCrud struct {
 	mod *mods.Mod
 }
 
-func NewRepositoryInterfaceCrud(mod *mods.Mod) *RepositoryInterfaceCrud {
-	return &RepositoryInterfaceCrud{mod: mod}
+func NewUseCaseInterfaceCrud(mod *mods.Mod) *UseCaseInterfaceCrud {
+	return &UseCaseInterfaceCrud{mod: mod}
 }
 
-func (i RepositoryInterfaceCrud) file() *ast.File {
+func (i UseCaseInterfaceCrud) file() *ast.File {
 	return &ast.File{
-		Name: ast.NewIdent("repositories"),
+		Name: ast.NewIdent("usecases"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -46,9 +46,9 @@ func (i RepositoryInterfaceCrud) file() *ast.File {
 	}
 }
 
-func (i RepositoryInterfaceCrud) Sync() error {
+func (i UseCaseInterfaceCrud) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "domain", "repositories", i.mod.Filename)
+	filename := path.Join("internal", "domain", "usecases", i.mod.Filename)
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		file = i.file()
@@ -56,7 +56,7 @@ func (i RepositoryInterfaceCrud) Sync() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.mod.Repository.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.mod.UseCase.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -72,15 +72,15 @@ func (i RepositoryInterfaceCrud) Sync() error {
 				List: []*ast.Comment{
 					{
 						Text: fmt.Sprintf(
-							"//%s - domain layer repository interface",
-							i.mod.Repository.Name,
+							"//%s - domain layer use case interface",
+							i.mod.UseCase.Name,
 						),
 					},
 					{
 						Text: fmt.Sprintf(
 							"//go:generate mockgen -build_flags=-mod=mod -destination mock/%s . %s",
 							i.mod.Filename,
-							i.mod.Repository.Name,
+							i.mod.UseCase.Name,
 						),
 					},
 				},
@@ -100,9 +100,9 @@ func (i RepositoryInterfaceCrud) Sync() error {
 	return nil
 }
 
-func (i RepositoryInterfaceCrud) astInterface() *ast.TypeSpec {
-	methods := make([]*ast.Field, len(i.mod.Repository.Methods))
-	for i, method := range i.mod.Repository.Methods {
+func (i UseCaseInterfaceCrud) astInterface() *ast.TypeSpec {
+	methods := make([]*ast.Field, len(i.mod.UseCase.Methods))
+	for i, method := range i.mod.UseCase.Methods {
 		methods[i] = &ast.Field{
 			Names: []*ast.Ident{
 				{
@@ -120,7 +120,9 @@ func (i RepositoryInterfaceCrud) astInterface() *ast.TypeSpec {
 		}
 	}
 	return &ast.TypeSpec{
-		Name: ast.NewIdent(i.mod.Repository.Name),
+		Name: &ast.Ident{
+			Name: i.mod.UseCase.Name,
+		},
 		Type: &ast.InterfaceType{
 			Methods: &ast.FieldList{
 				List: methods,

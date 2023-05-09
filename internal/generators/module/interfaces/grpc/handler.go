@@ -11,7 +11,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/018bf/creathor/internal/mods"
+	mods "github.com/018bf/creathor/internal/module"
 )
 
 type Handler struct {

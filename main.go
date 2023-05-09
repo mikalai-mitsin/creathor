@@ -11,11 +11,13 @@ import (
 	"path"
 	"strings"
 
-	"github.com/018bf/creathor/internal/mods"
+	"github.com/018bf/creathor/internal/generators/layout"
+	generatorsInterfacesGrpc "github.com/018bf/creathor/internal/generators/layout/interfaces/grpc"
+	"github.com/018bf/creathor/internal/generators/module"
+
+	mods "github.com/018bf/creathor/internal/module"
 
 	"github.com/018bf/creathor/internal/configs"
-	"github.com/018bf/creathor/internal/generators"
-	generatorsInterfacesGrpc "github.com/018bf/creathor/internal/generators/interfaces/grpc"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 )
@@ -84,7 +86,7 @@ func initProject(ctx *cli.Context) error {
 			return err
 		}
 	}
-	crud := generators.NewLayoutGenerator(project)
+	crud := layout.NewGenerator(project)
 	if err := crud.Sync(); err != nil {
 		return err
 	}
@@ -111,7 +113,7 @@ func initProject(ctx *cli.Context) error {
 			GRPCHandler: mods.NewGRPCHandler(m),
 			Auth:        project.Auth,
 		}
-		crud := generators.NewModGenerator(mod)
+		crud := module.NewGenerator(mod)
 		if err := crud.Sync(); err != nil {
 			return err
 		}
@@ -125,7 +127,7 @@ func initProject(ctx *cli.Context) error {
 func postInit(project *configs.Project) error {
 	fmt.Println("post init...")
 	var errb bytes.Buffer
-	generate := exec.Command("go", "generate", "./...")
+	generate := exec.Command("go", "generate", "./internal/domain/...")
 	generate.Dir = destinationPath
 	generate.Stderr = &errb
 	fmt.Println(strings.Join(generate.Args, " "))

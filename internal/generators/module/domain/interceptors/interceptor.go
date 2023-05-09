@@ -1,4 +1,4 @@
-package usecases
+package interceptors
 
 import (
 	"bytes"
@@ -10,20 +10,20 @@ import (
 	"os"
 	"path"
 
-	"github.com/018bf/creathor/internal/mods"
+	mods "github.com/018bf/creathor/internal/module"
 )
 
-type UseCaseInterfaceCrud struct {
+type InterceptorInterfaceCrud struct {
 	mod *mods.Mod
 }
 
-func NewUseCaseInterfaceCrud(mod *mods.Mod) *UseCaseInterfaceCrud {
-	return &UseCaseInterfaceCrud{mod: mod}
+func NewInterceptorInterfaceCrud(mod *mods.Mod) *InterceptorInterfaceCrud {
+	return &InterceptorInterfaceCrud{mod: mod}
 }
 
-func (i UseCaseInterfaceCrud) file() *ast.File {
+func (i InterceptorInterfaceCrud) file() *ast.File {
 	return &ast.File{
-		Name: ast.NewIdent("usecases"),
+		Name: ast.NewIdent("interceptors"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -46,9 +46,9 @@ func (i UseCaseInterfaceCrud) file() *ast.File {
 	}
 }
 
-func (i UseCaseInterfaceCrud) Sync() error {
+func (i InterceptorInterfaceCrud) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "domain", "usecases", i.mod.Filename)
+	filename := path.Join("internal", "domain", "interceptors", i.mod.Filename)
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		file = i.file()
@@ -56,7 +56,7 @@ func (i UseCaseInterfaceCrud) Sync() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.mod.UseCase.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.mod.Interceptor.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -72,15 +72,15 @@ func (i UseCaseInterfaceCrud) Sync() error {
 				List: []*ast.Comment{
 					{
 						Text: fmt.Sprintf(
-							"//%s - domain layer use case interface",
-							i.mod.UseCase.Name,
+							"//%s - domain layer interceptor interface",
+							i.mod.Interceptor.Name,
 						),
 					},
 					{
 						Text: fmt.Sprintf(
 							"//go:generate mockgen -build_flags=-mod=mod -destination mock/%s . %s",
 							i.mod.Filename,
-							i.mod.UseCase.Name,
+							i.mod.Interceptor.Name,
 						),
 					},
 				},
@@ -100,9 +100,9 @@ func (i UseCaseInterfaceCrud) Sync() error {
 	return nil
 }
 
-func (i UseCaseInterfaceCrud) astInterface() *ast.TypeSpec {
-	methods := make([]*ast.Field, len(i.mod.UseCase.Methods))
-	for i, method := range i.mod.UseCase.Methods {
+func (i InterceptorInterfaceCrud) astInterface() *ast.TypeSpec {
+	methods := make([]*ast.Field, len(i.mod.Interceptor.Methods))
+	for i, method := range i.mod.Interceptor.Methods {
 		methods[i] = &ast.Field{
 			Names: []*ast.Ident{
 				{
@@ -121,7 +121,7 @@ func (i UseCaseInterfaceCrud) astInterface() *ast.TypeSpec {
 	}
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
-			Name: i.mod.UseCase.Name,
+			Name: i.mod.Interceptor.Name,
 		},
 		Type: &ast.InterfaceType{
 			Methods: &ast.FieldList{

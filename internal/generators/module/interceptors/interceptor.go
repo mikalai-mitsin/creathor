@@ -10,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/018bf/creathor/internal/mods"
+	mods "github.com/018bf/creathor/internal/module"
 )
 
 type InterceptorCrud struct {

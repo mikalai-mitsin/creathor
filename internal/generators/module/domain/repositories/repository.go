@@ -1,4 +1,4 @@
-package interceptors
+package repositories
 
 import (
 	"bytes"
@@ -10,20 +10,20 @@ import (
 	"os"
 	"path"
 
-	"github.com/018bf/creathor/internal/mods"
+	mods "github.com/018bf/creathor/internal/module"
 )
 
-type InterceptorInterfaceCrud struct {
+type RepositoryInterfaceCrud struct {
 	mod *mods.Mod
 }
 
-func NewInterceptorInterfaceCrud(mod *mods.Mod) *InterceptorInterfaceCrud {
-	return &InterceptorInterfaceCrud{mod: mod}
+func NewRepositoryInterfaceCrud(mod *mods.Mod) *RepositoryInterfaceCrud {
+	return &RepositoryInterfaceCrud{mod: mod}
 }
 
-func (i InterceptorInterfaceCrud) file() *ast.File {
+func (i RepositoryInterfaceCrud) file() *ast.File {
 	return &ast.File{
-		Name: ast.NewIdent("interceptors"),
+		Name: ast.NewIdent("repositories"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -46,9 +46,9 @@ func (i InterceptorInterfaceCrud) file() *ast.File {
 	}
 }
 
-func (i InterceptorInterfaceCrud) Sync() error {
+func (i RepositoryInterfaceCrud) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "domain", "interceptors", i.mod.Filename)
+	filename := path.Join("internal", "domain", "repositories", i.mod.Filename)
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		file = i.file()
@@ -56,7 +56,7 @@ func (i InterceptorInterfaceCrud) Sync() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.mod.Interceptor.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.mod.Repository.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -72,15 +72,15 @@ func (i InterceptorInterfaceCrud) Sync() error {
 				List: []*ast.Comment{
 					{
 						Text: fmt.Sprintf(
-							"//%s - domain layer interceptor interface",
-							i.mod.Interceptor.Name,
+							"//%s - domain layer repository interface",
+							i.mod.Repository.Name,
 						),
 					},
 					{
 						Text: fmt.Sprintf(
 							"//go:generate mockgen -build_flags=-mod=mod -destination mock/%s . %s",
 							i.mod.Filename,
-							i.mod.Interceptor.Name,
+							i.mod.Repository.Name,
 						),
 					},
 				},
@@ -100,9 +100,9 @@ func (i InterceptorInterfaceCrud) Sync() error {
 	return nil
 }
 
-func (i InterceptorInterfaceCrud) astInterface() *ast.TypeSpec {
-	methods := make([]*ast.Field, len(i.mod.Interceptor.Methods))
-	for i, method := range i.mod.Interceptor.Methods {
+func (i RepositoryInterfaceCrud) astInterface() *ast.TypeSpec {
+	methods := make([]*ast.Field, len(i.mod.Repository.Methods))
+	for i, method := range i.mod.Repository.Methods {
 		methods[i] = &ast.Field{
 			Names: []*ast.Ident{
 				{
@@ -120,9 +120,7 @@ func (i InterceptorInterfaceCrud) astInterface() *ast.TypeSpec {
 		}
 	}
 	return &ast.TypeSpec{
-		Name: &ast.Ident{
-			Name: i.mod.Interceptor.Name,
-		},
+		Name: ast.NewIdent(i.mod.Repository.Name),
 		Type: &ast.InterfaceType{
 			Methods: &ast.FieldList{
 				List: methods,

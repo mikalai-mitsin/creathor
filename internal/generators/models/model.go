@@ -6,7 +6,9 @@ import (
 	"go/token"
 	"strings"
 
-	"github.com/018bf/creathor/internal/mods"
+	"github.com/018bf/creathor/internal/generators/layout/domain/models"
+
+	mods "github.com/018bf/creathor/internal/module"
 )
 
 func astType(t string) ast.Expr {
@@ -48,7 +50,7 @@ func (m *Model) params() []*ast.Field {
 }
 
 func (m *Model) Sync() error {
-	permissions := NewPerm(m.model.Name, m.filename)
+	permissions := models.NewPerm(m.model.Name, m.filename)
 	if err := permissions.Sync(); err != nil {
 		return err
 	}
@@ -57,7 +59,7 @@ func (m *Model) Sync() error {
 		return err
 	}
 	if m.model.Validation {
-		validate := NewValidate(structure.spec(), m.filename)
+		validate := models.NewValidate(structure.spec(), m.filename)
 		if err := validate.Sync(); err != nil {
 			return err
 		}

@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/018bf/creathor/internal/generators/layout"
-	generatorsInterfacesGrpc "github.com/018bf/creathor/internal/generators/layout/interfaces/grpc"
 	"github.com/018bf/creathor/internal/generators/module"
 
 	mods "github.com/018bf/creathor/internal/module"
@@ -88,11 +87,6 @@ func initProject(ctx *cli.Context) error {
 	}
 	crud := layout.NewGenerator(project)
 	if err := crud.Sync(); err != nil {
-		return err
-	}
-	// FIXME: WTF?!
-	interfaceGrpcServer := generatorsInterfacesGrpc.NewServer(project)
-	if err := interfaceGrpcServer.Sync(); err != nil {
 		return err
 	}
 	for _, m := range project.Models {

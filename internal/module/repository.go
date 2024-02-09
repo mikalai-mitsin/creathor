@@ -8,7 +8,7 @@ import (
 )
 
 func NewRepository(m *configs.ModelConfig) *Layer {
-	return &Layer{
+	layer := &Layer{
 		Auth:     m.Auth,
 		Events:   m.KafkaEnabled,
 		Name:     m.RepositoryTypeName(),
@@ -212,4 +212,40 @@ func NewRepository(m *configs.ModelConfig) *Layer {
 			},
 		},
 	}
+	if m.Model == "User" {
+		layer.Methods = append(layer.Methods, &Method{
+			Name: "GetByEmail",
+			Args: []*ast.Field{
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent("ctx"),
+					},
+					Type: &ast.SelectorExpr{
+						X:   ast.NewIdent("context"),
+						Sel: ast.NewIdent("Context"),
+					},
+				},
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent("email"),
+					},
+					Type: ast.NewIdent("string"),
+				},
+			},
+			Return: []*ast.Field{
+				{
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent("models"),
+							Sel: ast.NewIdent(m.ModelName()),
+						},
+					},
+				},
+				{
+					Type: ast.NewIdent("error"),
+				},
+			},
+		})
+	}
+	return layer
 }

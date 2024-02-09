@@ -17,6 +17,8 @@ type RepositoryInterfaceUser struct {
 	project *configs.Project
 }
 
+// NewRepositoryInterfaceUser
+// deprecated
 func NewRepositoryInterfaceUser(project *configs.Project) *RepositoryInterfaceUser {
 	return &RepositoryInterfaceUser{project: project}
 }

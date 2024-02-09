@@ -17,6 +17,8 @@ type ModelUser struct {
 	project *configs.Project
 }
 
+// NewModelUser
+// deprecated
 func NewModelUser(project *configs.Project) *ModelUser {
 	return &ModelUser{project: project}
 }

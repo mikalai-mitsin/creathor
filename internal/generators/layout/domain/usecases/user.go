@@ -17,6 +17,8 @@ type UseCaseInterfaceUser struct {
 	project *configs.Project
 }
 
+// NewUseCaseInterfaceUser
+// deprecated
 func NewUseCaseInterfaceUser(project *configs.Project) *UseCaseInterfaceUser {
 	return &UseCaseInterfaceUser{project: project}
 }

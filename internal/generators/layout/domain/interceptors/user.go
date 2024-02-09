@@ -17,7 +17,9 @@ type InterceptorInterfaceUser struct {
 	project *configs.Project
 }
 
-func NewInterceptorInterfaceUser(project *configs.Project) *InterceptorInterfaceUser {
+// OldNewInterceptorInterfaceUser
+// deprecated
+func OldNewInterceptorInterfaceUser(project *configs.Project) *InterceptorInterfaceUser {
 	return &InterceptorInterfaceUser{project: project}
 }
 

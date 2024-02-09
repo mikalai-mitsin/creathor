@@ -46,7 +46,6 @@ func NewServer(
 {{- if .Auth }}
     authMiddleware *AuthMiddleware,
     authHandler *AuthHandler,
-    userHandler *UserHandler,
 {{- end }}
 {{- range $value := .Models }}
     {{ $value.RESTHandlerVariableName }} *{{ $value.RESTHandlerTypeName }},
@@ -69,7 +68,6 @@ func NewServer(
     apiV1 := router.Group("api").Group("v1")
 {{- if .Auth }}
     authHandler.Register(apiV1)
-    userHandler.Register(apiV1)
 {{- end }}
 {{- range $value := .Models }}
     {{ $value.RESTHandlerVariableName }}.Register(apiV1)

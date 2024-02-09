@@ -44,7 +44,6 @@ func(s *Server) Start(ctx context.Context) error {
     opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 {{- if .Auth }}
     _ = {{ .ProtoPackage }}.RegisterAuthServiceHandlerFromEndpoint(ctx, mux, s.config.BindAddr, opts)
-    _ = {{ .ProtoPackage }}.RegisterUserServiceHandlerFromEndpoint(ctx, mux, s.config.BindAddr, opts)
 {{- else }}
     _ = opts
 {{- end }}

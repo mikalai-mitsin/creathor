@@ -22,6 +22,9 @@ func astType(t string) ast.Expr {
 			Elt: astType(strings.TrimPrefix(t, "[]")),
 		}
 	}
+	if strings.HasPrefix(t, "models.") {
+		return ast.NewIdent(strings.TrimPrefix(t, "models."))
+	}
 	return ast.NewIdent(t)
 }
 

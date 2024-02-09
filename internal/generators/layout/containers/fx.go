@@ -256,14 +256,6 @@ func (f FxContainer) toProvide() []ast.Expr {
 						Name: "NewAuthServiceServer",
 					},
 				},
-				&ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "grpcInterface",
-					},
-					Sel: &ast.Ident{
-						Name: "NewUserServiceServer",
-					},
-				},
 			)
 		}
 	}
@@ -306,14 +298,6 @@ func (f FxContainer) toProvide() []ast.Expr {
 					},
 					Sel: &ast.Ident{
 						Name: "NewAuthHandler",
-					},
-				},
-				&ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "restInterface",
-					},
-					Sel: &ast.Ident{
-						Name: "NewUserHandler",
 					},
 				},
 			)
@@ -362,30 +346,6 @@ func (f FxContainer) toProvide() []ast.Expr {
 				},
 				Sel: &ast.Ident{
 					Name: "NewPermissionRepository",
-				},
-			},
-			&ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "interceptors",
-				},
-				Sel: &ast.Ident{
-					Name: "NewUserInterceptor",
-				},
-			},
-			&ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "usecases",
-				},
-				Sel: &ast.Ident{
-					Name: "NewUserUseCase",
-				},
-			},
-			&ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "postgresRepositories",
-				},
-				Sel: &ast.Ident{
-					Name: "NewPostgresUserRepository",
 				},
 			},
 		)

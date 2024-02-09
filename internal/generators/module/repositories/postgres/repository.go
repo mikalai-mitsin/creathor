@@ -58,28 +58,32 @@ func (r RepositoryCrud) Sync() error {
 		return err
 	}
 	for _, method := range r.mod.Repository.Methods {
-		switch method.Type {
-		case mods.MethodTypeCreate:
+		switch method.Name {
+		case "Create":
 			if err := r.syncCreateMethod(); err != nil {
 				return err
 			}
-		case mods.MethodTypeGet:
+		case "Get":
 			if err := r.syncGetMethod(); err != nil {
 				return err
 			}
-		case mods.MethodTypeList:
+		case "GetByEmail":
+			if err := r.syncGetByEmailMethod(); err != nil {
+				return err
+			}
+		case "List":
 			if err := r.syncListMethod(); err != nil {
 				return err
 			}
-		case mods.MethodTypeCount:
+		case "Count":
 			if err := r.syncCountMethod(); err != nil {
 				return err
 			}
-		case mods.MethodTypeUpdate:
+		case "Update":
 			if err := r.syncUpdateMethod(); err != nil {
 				return err
 			}
-		case mods.MethodTypeDelete:
+		case "Delete":
 			if err := r.syncDeleteMethod(); err != nil {
 				return err
 			}
@@ -3210,6 +3214,395 @@ func (r RepositoryCrud) getMethod() *ast.FuncDecl {
 	}
 }
 
+func (r RepositoryCrud) getByEmailMethod() *ast.FuncDecl {
+	tableName := r.mod.TableName()
+	var columns []ast.Expr
+	for _, param := range r.mod.GetMainModel().Params {
+		columns = append(
+			columns,
+			&ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s.%s"`, tableName, param.Tag()),
+			},
+		)
+	}
+	return &ast.FuncDecl{
+		Recv: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Names: []*ast.Ident{
+						{
+							Name: "r",
+						},
+					},
+					Type: &ast.StarExpr{
+						X: &ast.Ident{
+							Name: r.mod.Repository.Name,
+						},
+					},
+				},
+			},
+		},
+		Name: &ast.Ident{
+			Name: "GetByEmail",
+		},
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{
+							{
+								Name: "ctx",
+							},
+						},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "context",
+							},
+							Sel: &ast.Ident{
+								Name: "Context",
+							},
+						},
+					},
+					{
+						Names: []*ast.Ident{
+							ast.NewIdent("email"),
+						},
+						Type: ast.NewIdent("string"),
+					},
+				},
+			},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "models",
+								},
+								Sel: &ast.Ident{
+									Name: r.mod.GetMainModel().Name,
+								},
+							},
+						},
+					},
+					{
+						Type: &ast.Ident{
+							Name: "error",
+						},
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						&ast.Ident{
+							Name: "ctx",
+						},
+						&ast.Ident{
+							Name: "cancel",
+						},
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "context",
+								},
+								Sel: &ast.Ident{
+									Name: "WithTimeout",
+								},
+							},
+							Args: []ast.Expr{
+								&ast.Ident{
+									Name: "ctx",
+								},
+								&ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "time",
+									},
+									Sel: &ast.Ident{
+										Name: "Second",
+									},
+								},
+							},
+						},
+					},
+				},
+				&ast.DeferStmt{
+					Call: &ast.CallExpr{
+						Fun: &ast.Ident{
+							Name: "cancel",
+						},
+					},
+				},
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						&ast.Ident{
+							Name: "dto",
+						},
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.UnaryExpr{
+							Op: token.AND,
+							X: &ast.CompositeLit{
+								Type: &ast.Ident{
+									Name: r.getDTOName(),
+								},
+							},
+						},
+					},
+				},
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						&ast.Ident{
+							Name: "q",
+						},
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X: &ast.CallExpr{
+													Fun: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "sq",
+														},
+														Sel: &ast.Ident{
+															Name: "Select",
+														},
+													},
+													Args: columns,
+												},
+												Sel: &ast.Ident{
+													Name: "From",
+												},
+											},
+											Args: []ast.Expr{
+												&ast.BasicLit{
+													Kind:  token.STRING,
+													Value: fmt.Sprintf(`"public.%s"`, tableName),
+												},
+											},
+										},
+										Sel: &ast.Ident{
+											Name: "Where",
+										},
+									},
+									Args: []ast.Expr{
+										&ast.CompositeLit{
+											Type: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "sq",
+												},
+												Sel: &ast.Ident{
+													Name: "Eq",
+												},
+											},
+											Elts: []ast.Expr{
+												&ast.KeyValueExpr{
+													Key: &ast.BasicLit{
+														Kind:  token.STRING,
+														Value: `"email"`,
+													},
+													Value: &ast.Ident{
+														Name: "email",
+													},
+												},
+											},
+										},
+									},
+								},
+								Sel: &ast.Ident{
+									Name: "Limit",
+								},
+							},
+							Args: []ast.Expr{
+								&ast.BasicLit{
+									Kind:  token.INT,
+									Value: "1",
+								},
+							},
+						},
+					},
+				},
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						&ast.Ident{
+							Name: "query",
+						},
+						&ast.Ident{
+							Name: "args",
+						},
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "q",
+										},
+										Sel: &ast.Ident{
+											Name: "PlaceholderFormat",
+										},
+									},
+									Args: []ast.Expr{
+										&ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "sq",
+											},
+											Sel: &ast.Ident{
+												Name: "Dollar",
+											},
+										},
+									},
+								},
+								Sel: &ast.Ident{
+									Name: "MustSql",
+								},
+							},
+						},
+					},
+				},
+				&ast.IfStmt{
+					Init: &ast.AssignStmt{
+						Lhs: []ast.Expr{
+							&ast.Ident{
+								Name: "err",
+							},
+						},
+						Tok: token.DEFINE,
+						Rhs: []ast.Expr{
+							&ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "r",
+										},
+										Sel: &ast.Ident{
+											Name: "database",
+										},
+									},
+									Sel: &ast.Ident{
+										Name: "GetContext",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.Ident{
+										Name: "ctx",
+									},
+									&ast.Ident{
+										Name: "dto",
+									},
+									&ast.Ident{
+										Name: "query",
+									},
+									&ast.Ident{
+										Name: "args",
+									},
+								},
+								Ellipsis: 4211,
+							},
+						},
+					},
+					Cond: &ast.BinaryExpr{
+						X: &ast.Ident{
+							Name: "err",
+						},
+						Op: token.NEQ,
+						Y: &ast.Ident{
+							Name: "nil",
+						},
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.AssignStmt{
+								Lhs: []ast.Expr{
+									&ast.Ident{
+										Name: "e",
+									},
+								},
+								Tok: token.DEFINE,
+								Rhs: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "errs",
+													},
+													Sel: &ast.Ident{
+														Name: "FromPostgresError",
+													},
+												},
+												Args: []ast.Expr{
+													&ast.Ident{
+														Name: "err",
+													},
+												},
+											},
+											Sel: &ast.Ident{
+												Name: "WithParam",
+											},
+										},
+										Args: []ast.Expr{
+											&ast.BasicLit{
+												Kind: token.STRING,
+												Value: fmt.Sprintf(
+													`"%s_email"`,
+													strcase.ToSnake(r.mod.GetMainModel().Name),
+												),
+											},
+											ast.NewIdent("email"),
+										},
+									},
+								},
+							},
+							&ast.ReturnStmt{
+								Results: []ast.Expr{
+									&ast.Ident{
+										Name: "nil",
+									},
+									&ast.Ident{
+										Name: "e",
+									},
+								},
+							},
+						},
+					},
+				},
+				&ast.ReturnStmt{
+					Results: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "dto",
+								},
+								Sel: &ast.Ident{
+									Name: "ToModel",
+								},
+							},
+						},
+						&ast.Ident{
+							Name: "nil",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func (r RepositoryCrud) syncGetMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
@@ -3228,6 +3621,60 @@ func (r RepositoryCrud) syncGetMethod() error {
 	})
 	if method == nil {
 		method = r.getMethod()
+	}
+	for _, param := range r.mod.GetMainModel().Params {
+		param := param
+		column := fmt.Sprintf(`"%s.%s"`, r.mod.TableName(), param.Tag())
+		ast.Inspect(method, func(node ast.Node) bool {
+			if call, ok := node.(*ast.CallExpr); ok {
+				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Select" {
+					for _, arg := range call.Args {
+						arg := arg
+						if bl, ok := arg.(*ast.BasicLit); ok && bl.Value == column {
+							return false
+						}
+					}
+					call.Args = append(call.Args, &ast.BasicLit{
+						Kind:  token.STRING,
+						Value: column,
+					})
+					return false
+				}
+			}
+			return true
+		})
+	}
+	if !methodExist {
+		file.Decls = append(file.Decls, method)
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r RepositoryCrud) syncGetByEmailMethod() error {
+	fileset := token.NewFileSet()
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	var methodExist bool
+	var method *ast.FuncDecl
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "GetByEmail" {
+			methodExist = true
+			method = t
+			return false
+		}
+		return true
+	})
+	if method == nil {
+		method = r.getByEmailMethod()
 	}
 	for _, param := range r.mod.GetMainModel().Params {
 		param := param

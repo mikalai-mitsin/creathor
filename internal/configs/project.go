@@ -49,6 +49,26 @@ func NewProject(configPath string) (*Project, error) {
 	if err := yaml.Unmarshal(file, project); err != nil {
 		log.Fatalf("error: %v", err)
 	}
+	if project.Auth {
+		project.Models = append(project.Models, &ModelConfig{
+			Model:        "User",
+			Module:       project.Module,
+			ProjectName:  project.Name,
+			ProtoPackage: project.ProtoPackage(),
+			Auth:         project.Auth,
+			Params: []*Param{
+				{Name: "FirstName", Type: "string", Search: true},
+				{Name: "LastName", Type: "string", Search: true},
+				{Name: "Password", Type: "string", Search: false},
+				{Name: "Email", Type: "string", Search: true},
+				{Name: "GroupID", Type: "models.GroupID", Search: false},
+			},
+			GRPCEnabled:    project.GRPCEnabled,
+			GatewayEnabled: project.GatewayEnabled,
+			RESTEnabled:    project.RESTEnabled,
+			KafkaEnabled:   project.KafkaEnabled,
+		})
+	}
 	for _, model := range project.Models {
 		model.Module = project.Module
 		model.Auth = project.Auth

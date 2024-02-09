@@ -35,20 +35,20 @@ func (g *Generator) Sync() error {
 		generators = append(
 			generators,
 			models2.NewModelAuth(g.project),
-			models2.NewModelUser(g.project),
+			//models2.NewModelUser(g.project),
 			models2.NewModelPermission(g.project),
 
-			repositories.NewRepositoryInterfaceUser(g.project),
+			//repositories.NewRepositoryInterfaceUser(g.project),
 			repositories.NewRepositoryInterfacePermission(g.project),
 			repositories.NewRepositoryInterfaceAuth(g.project),
 			usecases3.NewUseCaseInterfaceAuth(g.project),
-			usecases3.NewUseCaseInterfaceUser(g.project),
+			//usecases3.NewUseCaseInterfaceUser(g.project),
 			interceptors3.NewInterceptorInterfaceAuth(g.project),
-			interceptors3.NewInterceptorInterfaceUser(g.project),
+			//interceptors3.NewInterceptorInterfaceUser(g.project),
 
-			usecases2.NewUseCaseUser(g.project),
+			//usecases2.NewUseCaseUser(g.project),
 			usecases2.NewUseCaseAuth(g.project),
-			interceptors2.NewInterceptorUser(g.project),
+			//interceptors2.NewInterceptorUser(g.project),
 			interceptors2.NewInterceptorAuth(g.project),
 		)
 	}

@@ -38,6 +38,10 @@ func (u UseCaseCrud) Sync() error {
 			if err := u.syncGetMethod(); err != nil {
 				return err
 			}
+		case "GetByEmail":
+			if err := u.syncGetByEmailMethod(); err != nil {
+				return err
+			}
 		case "List":
 			if err := u.syncListMethod(); err != nil {
 				return err
@@ -1307,6 +1311,137 @@ func (u UseCaseCrud) syncDeleteMethod() error {
 	})
 	if method == nil {
 		method = u.delete()
+	}
+	if !methodExist {
+		file.Decls = append(file.Decls, method)
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u UseCaseCrud) getByEmail() *ast.FuncDecl {
+	return &ast.FuncDecl{
+		Recv: &ast.FieldList{
+			Opening: 0,
+			List: []*ast.Field{
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent("u"),
+					},
+					Type: &ast.StarExpr{
+						X: ast.NewIdent(u.mod.UseCase.Name),
+					},
+				},
+			},
+		},
+		Name: ast.NewIdent("GetByEmail"),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{ast.NewIdent("ctx")},
+						Type:  ast.NewIdent("context.Context"),
+					},
+					{
+						Names: []*ast.Ident{ast.NewIdent("email")},
+						Type:  ast.NewIdent("string"),
+					},
+				},
+			},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("models"),
+								Sel: ast.NewIdent(u.mod.GetMainModel().Name),
+							},
+						},
+					},
+					{
+						Type: ast.NewIdent("error"),
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent(u.mod.GetMainModel().Variable),
+						ast.NewIdent("err"),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("u"),
+									Sel: ast.NewIdent(u.mod.Repository.Variable),
+								},
+								Sel: ast.NewIdent("GetByEmail"),
+							},
+							Args: []ast.Expr{
+								ast.NewIdent("ctx"),
+								ast.NewIdent("email"),
+							},
+						},
+					},
+				},
+				&ast.IfStmt{
+					Init: nil,
+					Cond: &ast.BinaryExpr{
+						X:  ast.NewIdent("err"),
+						Op: token.NEQ,
+						Y:  ast.NewIdent("nil"),
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.ReturnStmt{
+								Results: []ast.Expr{
+									ast.NewIdent("nil"),
+									ast.NewIdent("err"),
+								},
+							},
+						},
+					},
+					Else: nil,
+				},
+				&ast.ReturnStmt{
+					Results: []ast.Expr{
+						ast.NewIdent(u.mod.GetMainModel().Variable),
+						ast.NewIdent("nil"),
+					},
+				},
+			},
+		},
+	}
+}
+
+func (u UseCaseCrud) syncGetByEmailMethod() error {
+	fileset := token.NewFileSet()
+	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	var methodExist bool
+	var method *ast.FuncDecl
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "GetByEmail" {
+			methodExist = true
+			method = t
+			return false
+		}
+		return true
+	})
+	if method == nil {
+		method = u.getByEmail()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)

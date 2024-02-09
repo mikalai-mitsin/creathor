@@ -125,12 +125,8 @@ func (s Server) syncServerStruct() error {
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
-			Doc:    nil,
-			TokPos: 0,
-			Tok:    token.TYPE,
-			Lparen: 0,
-			Specs:  []ast.Spec{structure},
-			Rparen: 0,
+			Tok:   token.TYPE,
+			Specs: []ast.Spec{structure},
 		}
 		file.Decls = append(file.Decls, gd)
 	}
@@ -220,21 +216,6 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 					},
 				},
 			},
-			&ast.Field{
-				Names: []*ast.Ident{
-					{
-						Name: "userHandler",
-					},
-				},
-				Type: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: s.project.ProtoPackage(),
-					},
-					Sel: &ast.Ident{
-						Name: "UserServiceServer",
-					},
-				},
-			},
 		)
 		registerStmts = append(
 			registerStmts,
@@ -254,26 +235,6 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 						},
 						&ast.Ident{
 							Name: "authHandler",
-						},
-					},
-				},
-			},
-			&ast.ExprStmt{
-				X: &ast.CallExpr{
-					Fun: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: s.project.ProtoPackage(),
-						},
-						Sel: &ast.Ident{
-							Name: "RegisterUserServiceServer",
-						},
-					},
-					Args: []ast.Expr{
-						&ast.Ident{
-							Name: "server",
-						},
-						&ast.Ident{
-							Name: "userHandler",
 						},
 					},
 				},

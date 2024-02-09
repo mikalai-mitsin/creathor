@@ -2,8 +2,10 @@ package mods
 
 import "go/ast"
 
+// deprecated
 type MethodType uint8
 
+// deprecated
 const (
 	MethodTypeGet = iota
 	MethodTypeList
@@ -15,7 +17,7 @@ const (
 
 type Method struct {
 	Name   string
-	Type   MethodType
+	Type   MethodType // deprecated
 	Args   []*ast.Field
 	Return []*ast.Field
 }

@@ -29,25 +29,25 @@ func (i InterceptorCrud) Sync() error {
 		return err
 	}
 	for _, method := range i.mod.Interceptor.Methods {
-		switch method.Type {
-		case mods.MethodTypeCreate:
-			if err := i.syncCreateMethod(); err != nil {
+		switch method.Name {
+		case "Create":
+			if err := i.syncCreateMethod(method); err != nil {
 				return err
 			}
-		case mods.MethodTypeGet:
-			if err := i.syncGetMethod(); err != nil {
+		case "Get":
+			if err := i.syncGetMethod(method); err != nil {
 				return err
 			}
-		case mods.MethodTypeList:
-			if err := i.syncListMethod(); err != nil {
+		case "List":
+			if err := i.syncListMethod(method); err != nil {
 				return err
 			}
-		case mods.MethodTypeUpdate:
-			if err := i.syncUpdateMethod(); err != nil {
+		case "Update":
+			if err := i.syncUpdateMethod(method); err != nil {
 				return err
 			}
-		case mods.MethodTypeDelete:
-			if err := i.syncDeleteMethod(); err != nil {
+		case "Delete":
+			if err := i.syncDeleteMethod(method); err != nil {
 				return err
 			}
 		}
@@ -249,8 +249,7 @@ func (i InterceptorCrud) syncConstructor() error {
 	return nil
 }
 
-func (i InterceptorCrud) createMethod() *ast.FuncDecl {
-
+func (i InterceptorCrud) createMethod(method *mods.Method) *ast.FuncDecl {
 	var body []ast.Stmt
 	if i.mod.Auth {
 		body = append(body,
@@ -408,10 +407,10 @@ func (i InterceptorCrud) createMethod() *ast.FuncDecl {
 		Name: ast.NewIdent("Create"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
-				List: i.mod.Interceptor.GetCreateMethod().Args,
+				List: method.Args,
 			},
 			Results: &ast.FieldList{
-				List: i.mod.Interceptor.GetCreateMethod().Return,
+				List: method.Return,
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -420,7 +419,7 @@ func (i InterceptorCrud) createMethod() *ast.FuncDecl {
 	}
 }
 
-func (i InterceptorCrud) syncCreateMethod() error {
+func (i InterceptorCrud) syncCreateMethod(m *mods.Method) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -437,7 +436,7 @@ func (i InterceptorCrud) syncCreateMethod() error {
 		return true
 	})
 	if method == nil {
-		method = i.createMethod()
+		method = i.createMethod(m)
 	}
 	//for _, param := range i.model.Params {
 	//	param := param
@@ -481,7 +480,7 @@ func (i InterceptorCrud) syncCreateMethod() error {
 	return nil
 }
 
-func (i InterceptorCrud) astListMethod() *ast.FuncDecl {
+func (i InterceptorCrud) astListMethod(m *mods.Method) *ast.FuncDecl {
 	var body []ast.Stmt
 	if i.mod.Auth {
 		body = append(body,
@@ -650,10 +649,10 @@ func (i InterceptorCrud) astListMethod() *ast.FuncDecl {
 		Name: ast.NewIdent("List"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
-				List: i.mod.Interceptor.GetListMethod().Args,
+				List: m.Args,
 			},
 			Results: &ast.FieldList{
-				List: i.mod.Interceptor.GetListMethod().Return,
+				List: m.Return,
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -662,7 +661,7 @@ func (i InterceptorCrud) astListMethod() *ast.FuncDecl {
 	}
 }
 
-func (i InterceptorCrud) syncListMethod() error {
+func (i InterceptorCrud) syncListMethod(m *mods.Method) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -679,7 +678,7 @@ func (i InterceptorCrud) syncListMethod() error {
 		return true
 	})
 	if method == nil {
-		method = i.astListMethod()
+		method = i.astListMethod(m)
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -694,7 +693,7 @@ func (i InterceptorCrud) syncListMethod() error {
 	return nil
 }
 
-func (i InterceptorCrud) astGetMethod() *ast.FuncDecl {
+func (i InterceptorCrud) astGetMethod(m *mods.Method) *ast.FuncDecl {
 	var body []ast.Stmt
 	if i.mod.Auth {
 		body = append(
@@ -866,10 +865,10 @@ func (i InterceptorCrud) astGetMethod() *ast.FuncDecl {
 		Name: ast.NewIdent("Get"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
-				List: i.mod.Interceptor.GetGetMethod().Args,
+				List: m.Args,
 			},
 			Results: &ast.FieldList{
-				List: i.mod.Interceptor.GetGetMethod().Return,
+				List: m.Return,
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -878,7 +877,7 @@ func (i InterceptorCrud) astGetMethod() *ast.FuncDecl {
 	}
 }
 
-func (i InterceptorCrud) syncGetMethod() error {
+func (i InterceptorCrud) syncGetMethod(m *mods.Method) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -895,7 +894,7 @@ func (i InterceptorCrud) syncGetMethod() error {
 		return true
 	})
 	if method == nil {
-		method = i.astGetMethod()
+		method = i.astGetMethod(m)
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -910,7 +909,7 @@ func (i InterceptorCrud) syncGetMethod() error {
 	return nil
 }
 
-func (i InterceptorCrud) updateMethod() *ast.FuncDecl {
+func (i InterceptorCrud) updateMethod(m *mods.Method) *ast.FuncDecl {
 	var body []ast.Stmt
 	if i.mod.Auth {
 		body = append(body,
@@ -1120,10 +1119,10 @@ func (i InterceptorCrud) updateMethod() *ast.FuncDecl {
 		Name: ast.NewIdent("Update"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
-				List: i.mod.Interceptor.GetUpdateMethod().Args,
+				List: m.Args,
 			},
 			Results: &ast.FieldList{
-				List: i.mod.Interceptor.GetUpdateMethod().Return,
+				List: m.Return,
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -1132,7 +1131,7 @@ func (i InterceptorCrud) updateMethod() *ast.FuncDecl {
 	}
 }
 
-func (i InterceptorCrud) syncUpdateMethod() error {
+func (i InterceptorCrud) syncUpdateMethod(m *mods.Method) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1149,7 +1148,7 @@ func (i InterceptorCrud) syncUpdateMethod() error {
 		return true
 	})
 	if method == nil {
-		method = i.updateMethod()
+		method = i.updateMethod(m)
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -1164,7 +1163,7 @@ func (i InterceptorCrud) syncUpdateMethod() error {
 	return nil
 }
 
-func (i InterceptorCrud) deleteMethod() *ast.FuncDecl {
+func (i InterceptorCrud) deleteMethod(m *mods.Method) *ast.FuncDecl {
 	var body []ast.Stmt
 	if i.mod.Auth {
 		body = append(body,
@@ -1361,10 +1360,10 @@ func (i InterceptorCrud) deleteMethod() *ast.FuncDecl {
 		Name: ast.NewIdent("Delete"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
-				List: i.mod.Interceptor.GetDeleteMethod().Args,
+				List: m.Args,
 			},
 			Results: &ast.FieldList{
-				List: i.mod.Interceptor.GetDeleteMethod().Return,
+				List: m.Return,
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -1373,7 +1372,7 @@ func (i InterceptorCrud) deleteMethod() *ast.FuncDecl {
 	}
 }
 
-func (i InterceptorCrud) syncDeleteMethod() error {
+func (i InterceptorCrud) syncDeleteMethod(m *mods.Method) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1390,7 +1389,7 @@ func (i InterceptorCrud) syncDeleteMethod() error {
 		return true
 	})
 	if method == nil {
-		method = i.deleteMethod()
+		method = i.deleteMethod(m)
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)

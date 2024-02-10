@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"fmt"
+	mods "github.com/018bf/creathor/internal/domain"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -18,10 +19,11 @@ import (
 type Perm struct {
 	modelName string
 	fileName  string
+	domain    *mods.Domain
 }
 
-func NewPerm(modelName string, fileName string) *Perm {
-	return &Perm{modelName: modelName, fileName: fileName}
+func NewPerm(modelName string, fileName string, domain *mods.Domain) *Perm {
+	return &Perm{modelName: modelName, fileName: fileName, domain: domain}
 }
 
 func (m *Perm) file() *ast.File {
@@ -154,7 +156,7 @@ func (m *Perm) perms() *ast.GenDecl {
 }
 
 func (m *Perm) filename() string {
-	return filepath.Join("internal", "domain", "models", m.fileName)
+	return filepath.Join("internal", m.domain.Name, "models", m.fileName)
 }
 
 func (m *Perm) Sync() error {

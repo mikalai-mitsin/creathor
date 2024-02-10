@@ -98,7 +98,7 @@ func (i InterceptorInterfaceUser) file() *ast.File {
 														},
 														Type: &ast.SelectorExpr{
 															X: &ast.Ident{
-																Name: "models",
+																Name: "uuid",
 															},
 															Sel: &ast.Ident{
 																Name: "UUID",
@@ -435,7 +435,7 @@ func (i InterceptorInterfaceUser) file() *ast.File {
 														},
 														Type: &ast.SelectorExpr{
 															X: &ast.Ident{
-																Name: "models",
+																Name: "uuid",
 															},
 															Sel: &ast.Ident{
 																Name: "UUID",

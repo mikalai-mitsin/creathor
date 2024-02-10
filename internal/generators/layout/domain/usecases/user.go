@@ -53,7 +53,7 @@ func (i UseCaseInterfaceUser) file() *ast.File {
 							Text: "//UserUseCase - domain layer interceptor interface",
 						},
 						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/user.go . UserUseCase",
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . UserUseCase",
 						},
 					},
 				},
@@ -98,7 +98,7 @@ func (i UseCaseInterfaceUser) file() *ast.File {
 														},
 														Type: &ast.SelectorExpr{
 															X: &ast.Ident{
-																Name: "models",
+																Name: "uuid",
 															},
 															Sel: &ast.Ident{
 																Name: "UUID",
@@ -426,7 +426,7 @@ func (i UseCaseInterfaceUser) file() *ast.File {
 														},
 														Type: &ast.SelectorExpr{
 															X: &ast.Ident{
-																Name: "models",
+																Name: "uuid",
 															},
 															Sel: &ast.Ident{
 																Name: "UUID",

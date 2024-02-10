@@ -18,24 +18,15 @@ func createDirectories(project *configs.Project) error {
 		path.Join(destinationPath, "docs", ".chglog"),
 		path.Join(destinationPath, "internal"),
 		path.Join(destinationPath, "internal", "configs"),
-		path.Join(destinationPath, "internal", "domain", "errs"),
-		path.Join(destinationPath, "internal", "domain", "interceptors"),
-		path.Join(destinationPath, "internal", "domain", "models"),
-		path.Join(destinationPath, "internal", "domain", "models", "mock"),
-		path.Join(destinationPath, "internal", "domain", "repositories"),
-		path.Join(destinationPath, "internal", "domain", "usecases"),
-		path.Join(destinationPath, "internal", "interceptors"),
+		path.Join(destinationPath, "internal", "errs"),
 		path.Join(destinationPath, "internal", "interfaces"),
 		path.Join(destinationPath, "internal", "interfaces", "postgres"),
 		path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations"),
-		path.Join(destinationPath, "internal", "usecases"),
-		path.Join(destinationPath, "internal", "repositories"),
-		path.Join(destinationPath, "internal", "repositories", "postgres"),
-		path.Join(destinationPath, "internal", "repositories", "jwt"),
 		path.Join(destinationPath, "pkg"),
 		path.Join(destinationPath, "pkg", "clock"),
 		path.Join(destinationPath, "pkg", "log"),
 		path.Join(destinationPath, "pkg", "utils"),
+		path.Join(destinationPath, "pkg", "uuid"),
 		path.Join(destinationPath, "pkg", "postgresql"),
 	}
 	if project.RESTEnabled {
@@ -119,11 +110,10 @@ func CreateLayout(project *configs.Project) error {
 			Name:            "config tests",
 		},
 		{
-			SourcePath: "templates/internal/domain/errs/errors_test.go.tmpl",
+			SourcePath: "templates/internal/errs/errors_test.go.tmpl",
 			DestinationPath: path.Join(
 				destinationPath,
 				"internal",
-				"domain",
 				"errs",
 				"errors_test.go",
 			),
@@ -147,6 +137,11 @@ func CreateLayout(project *configs.Project) error {
 		{
 			SourcePath:      "templates/pkg/utils/pointer.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "pkg", "utils", "pointer.go"),
+			Name:            "utils pointer",
+		},
+		{
+			SourcePath:      "templates/pkg/uuid/uuid.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "pkg", "uuid", "uuid.go"),
 			Name:            "utils pointer",
 		},
 		{

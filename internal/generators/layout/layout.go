@@ -3,11 +3,11 @@ package layout
 import (
 	"github.com/018bf/creathor/internal/configs"
 	generators2 "github.com/018bf/creathor/internal/generators"
-	"github.com/018bf/creathor/internal/generators/layout/domain/errs"
 	interceptors3 "github.com/018bf/creathor/internal/generators/layout/domain/interceptors"
 	models2 "github.com/018bf/creathor/internal/generators/layout/domain/models"
 	"github.com/018bf/creathor/internal/generators/layout/domain/repositories"
 	usecases3 "github.com/018bf/creathor/internal/generators/layout/domain/usecases"
+	"github.com/018bf/creathor/internal/generators/layout/errs"
 	interceptors2 "github.com/018bf/creathor/internal/generators/layout/interceptors"
 	"github.com/018bf/creathor/internal/generators/layout/interfaces/grpc"
 	"github.com/018bf/creathor/internal/generators/layout/interfaces/uptrace"
@@ -26,7 +26,6 @@ func (g *Generator) Sync() error {
 	generators := []generators2.Generator{
 		grpc.NewServer(g.project),
 		errs.NewErrors(g.project),
-		models2.NewModelTypes(g.project),
 	}
 	if g.project.UptraceEnabled {
 		generators = append(generators, uptrace.NewProvider(g.project))

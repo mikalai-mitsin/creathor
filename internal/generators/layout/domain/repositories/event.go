@@ -29,7 +29,7 @@ func (i RepositoryInterfaceEvent) astInterface() *ast.GenDecl {
 					Text: "//EventRepository - domain layer repository interface",
 				},
 				{
-					Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/event.go . EventRepository",
+					Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . EventRepository",
 				},
 			},
 		},

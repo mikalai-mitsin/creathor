@@ -52,7 +52,7 @@ func (i RepositoryInterfacePermission) file() *ast.File {
 							Text: "//PermissionRepository - domain layer repository interface",
 						},
 						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/permission.go . PermissionRepository",
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . PermissionRepository",
 						},
 					},
 				},

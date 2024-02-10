@@ -1492,7 +1492,7 @@ func (s Server) syncMessageProducer() error {
 func (s Server) astDecodeError() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
-			Name: "decodeError",
+			Name: "DecodeError",
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
@@ -2060,7 +2060,7 @@ func (s Server) syncDecodeError() error {
 	var methodExist bool
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "decodeError" {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "DecodeError" {
 			methodExist = true
 			method = t
 			return false
@@ -2119,7 +2119,7 @@ func (s Server) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/errs"`, s.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/errs"`, s.project.Module),
 						},
 					},
 					&ast.ImportSpec{

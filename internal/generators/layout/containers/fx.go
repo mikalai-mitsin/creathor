@@ -159,6 +159,39 @@ func (f FxContainer) file() *ast.File {
 			},
 		})
 	}
+	for _, modelConfig := range f.project.Models {
+		imports = append(
+			imports,
+			&ast.ImportSpec{
+				Name: ast.NewIdent(fmt.Sprintf("%sPostgresRepositories", modelConfig.DomainAlias())),
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/%s/repositories/postgres"`, f.project.Module, modelConfig.DomainName()),
+				},
+			},
+			&ast.ImportSpec{
+				Name: ast.NewIdent(fmt.Sprintf("%sUseCases", modelConfig.DomainAlias())),
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/%s/usecases"`, f.project.Module, modelConfig.DomainName()),
+				},
+			},
+			&ast.ImportSpec{
+				Name: ast.NewIdent(fmt.Sprintf("%sInterceptors", modelConfig.DomainAlias())),
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/%s/interceptors"`, f.project.Module, modelConfig.DomainName()),
+				},
+			},
+			&ast.ImportSpec{
+				Name: ast.NewIdent(fmt.Sprintf("%sGrpcHandlers", modelConfig.DomainAlias())),
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/%s/handlers/grpc"`, f.project.Module, modelConfig.DomainName()),
+				},
+			},
+		)
+	}
 	return &ast.File{
 		Name: &ast.Ident{
 			Name: "containers",
@@ -353,47 +386,64 @@ func (f FxContainer) toProvide() []ast.Expr {
 	for _, model := range f.project.Models {
 		toProvide = append(
 			toProvide,
+			//&ast.SelectorExpr{
+			//	X: ast.NewIdent(fmt.Sprintf("%sInterceptors", model.DomainAlias())),
+			//	Sel: &ast.Ident{
+			//		Name: fmt.Sprintf("New%s", model.InterceptorTypeName()),
+			//	},
+			//},
+			//&ast.SelectorExpr{
+			//	X: ast.NewIdent(fmt.Sprintf("%sUseCases", model.DomainAlias())),
+			//	Sel: &ast.Ident{
+			//		Name: fmt.Sprintf("New%s", model.UseCaseTypeName()),
+			//	},
+			//},
+			//&ast.SelectorExpr{
+			//	X: ast.NewIdent(fmt.Sprintf("%sPostgresRepositories", model.DomainAlias())),
+			//	Sel: &ast.Ident{
+			//		Name: fmt.Sprintf("New%s", model.RepositoryTypeName()),
+			//	},
+			//},
+			ast.NewIdent(
+				fmt.Sprintf(
+					"fx.Annotate(%sPostgresRepositories.New%s, fx.As(new(%sUseCases.%s)))",
+					model.DomainAlias(),
+					model.RepositoryTypeName(),
+					model.DomainAlias(),
+					model.RepositoryTypeName(),
+				),
+			),
+			ast.NewIdent(
+				fmt.Sprintf(
+					"fx.Annotate(%sUseCases.New%s, fx.As(new(%sInterceptors.%s)))",
+					model.DomainAlias(),
+					model.UseCaseTypeName(),
+					model.DomainAlias(),
+					model.UseCaseTypeName(),
+				),
+			),
+			ast.NewIdent(
+				fmt.Sprintf(
+					"fx.Annotate(%sInterceptors.New%s, fx.As(new(%sGrpcHandlers.%s)))",
+					model.DomainAlias(),
+					model.InterceptorTypeName(),
+					model.DomainAlias(),
+					model.InterceptorTypeName(),
+				),
+			),
 			&ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "grpcInterface",
-				},
+				X: ast.NewIdent(fmt.Sprintf("%sGrpcHandlers", model.DomainAlias())),
 				Sel: &ast.Ident{
 					Name: fmt.Sprintf("New%s", model.GRPCHandlerTypeName()),
 				},
 			},
-			&ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "restInterface",
-				},
-				Sel: &ast.Ident{
-					Name: fmt.Sprintf("New%s", model.RESTHandlerTypeName()),
-				},
-			},
-			&ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "interceptors",
-				},
-				Sel: &ast.Ident{
-					Name: fmt.Sprintf("New%s", model.InterceptorTypeName()),
-				},
-			},
-			&ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "usecases",
-				},
-				Sel: &ast.Ident{
-					Name: fmt.Sprintf("New%s", model.UseCaseTypeName()),
-				},
-			},
-			&ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "postgresRepositories",
-				},
-				Sel: &ast.Ident{
-					Name: fmt.Sprintf("New%s", model.RepositoryTypeName()),
-				},
-			},
 		)
+		if model.RESTEnabled {
+			toProvide = append(toProvide, &ast.SelectorExpr{
+				X:   ast.NewIdent(fmt.Sprintf("%sRestHandlers", model.DomainAlias())),
+				Sel: ast.NewIdent(fmt.Sprintf("New%s", model.RESTHandlerTypeName())),
+			})
+		}
 	}
 	return toProvide
 }

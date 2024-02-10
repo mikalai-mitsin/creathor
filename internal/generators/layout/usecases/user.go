@@ -319,7 +319,7 @@ func (u UseCaseUser) file() *ast.File {
 								},
 								Type: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "models",
+										Name: "uuid",
 									},
 									Sel: &ast.Ident{
 										Name: "UUID",
@@ -1668,7 +1668,7 @@ func (u UseCaseUser) file() *ast.File {
 								},
 								Type: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "models",
+										Name: "uuid",
 									},
 									Sel: &ast.Ident{
 										Name: "UUID",

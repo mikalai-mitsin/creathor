@@ -62,16 +62,11 @@ func baseValue(t ast.Expr) ast.Expr {
 			},
 			Args: []ast.Expr{&ast.BasicLit{Kind: token.INT, Value: "15"}},
 		}
-	case "uuid", "UUID", "models.UUID":
+	case "uuid", "UUID", "uuid.UUID":
 		fake = &ast.CallExpr{
-			Fun: ast.NewIdent("models.UUID"),
-			Args: []ast.Expr{
-				&ast.CallExpr{
-					Fun: &ast.SelectorExpr{
-						X:   ast.NewIdent("uuid"),
-						Sel: ast.NewIdent("NewString"),
-					},
-				},
+			Fun: &ast.SelectorExpr{
+				X:   ast.NewIdent("uuid"),
+				Sel: ast.NewIdent("NewUUID"),
 			},
 		}
 	case "time.Time":
@@ -101,14 +96,9 @@ func baseValue(t ast.Expr) ast.Expr {
 		}
 	case "models.GroupID", "GroupID":
 		fake = &ast.CallExpr{
-			Fun: ast.NewIdent("models.GroupID"),
-			Args: []ast.Expr{
-				&ast.CallExpr{
-					Fun: &ast.SelectorExpr{
-						X:   ast.NewIdent("uuid"),
-						Sel: ast.NewIdent("NewString"),
-					},
-				},
+			Fun: &ast.SelectorExpr{
+				X:   ast.NewIdent("uuid"),
+				Sel: ast.NewIdent("NewUUID"),
 			},
 		}
 	default:
@@ -127,7 +117,7 @@ func Value(t ast.Expr) ast.Expr {
 	switch value := t.(type) {
 	case *ast.ArrayType:
 		if fmt.Sprint(value.Elt) == "UUID" {
-			value.Elt = ast.NewIdent("models.UUID")
+			value.Elt = ast.NewIdent("uuid.UUID")
 		}
 		fake = &ast.CompositeLit{
 			Type: &ast.ArrayType{

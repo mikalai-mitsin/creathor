@@ -1171,7 +1171,7 @@ func (u UseCaseAuth) file() *ast.File {
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
 												X: &ast.Ident{
-													Name: "models",
+													Name: "uuid",
 												},
 												Sel: &ast.Ident{
 													Name: "UUID",

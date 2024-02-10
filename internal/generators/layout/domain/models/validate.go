@@ -2,6 +2,7 @@ package models
 
 import (
 	"bytes"
+	mods "github.com/018bf/creathor/internal/domain"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -14,14 +15,15 @@ import (
 type Validate struct {
 	typeSpec *ast.TypeSpec
 	fileName string
+	domain   *mods.Domain
 }
 
-func NewValidate(typeSpec *ast.TypeSpec, fileName string) *Validate {
-	return &Validate{typeSpec: typeSpec, fileName: fileName}
+func NewValidate(typeSpec *ast.TypeSpec, fileName string, domain *mods.Domain) *Validate {
+	return &Validate{typeSpec: typeSpec, fileName: fileName, domain: domain}
 }
 func (m *Validate) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "domain", "models", m.fileName)
+	filename := path.Join("internal", m.domain.Name, "models", m.fileName)
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err
@@ -110,7 +112,7 @@ func (m *Validate) checker(name *ast.Ident, typeName ast.Expr) *ast.CallExpr {
 			Sel: ast.NewIdent("Required"),
 		})
 	}
-	if ident, ok := typeName.(*ast.Ident); ok && ident.String() == "UUID" {
+	if ident, ok := typeName.(*ast.Ident); ok && ident.String() == "uuid.UUID" {
 		call.Args = append(call.Args, &ast.SelectorExpr{
 			X:   ast.NewIdent("is"),
 			Sel: ast.NewIdent("UUID"),

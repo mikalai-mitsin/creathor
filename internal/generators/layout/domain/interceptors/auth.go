@@ -51,7 +51,7 @@ func (i InterceptorInterfaceAuth) file() *ast.File {
 							Text: "//AuthInterceptor - domain layer interceptor interface",
 						},
 						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth.go . AuthInterceptor",
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . AuthInterceptor",
 						},
 					},
 				},

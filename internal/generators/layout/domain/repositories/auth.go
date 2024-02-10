@@ -52,7 +52,7 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 							Text: "//AuthRepository - domain layer repository interface",
 						},
 						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth.go . AuthRepository",
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . AuthRepository",
 						},
 					},
 				},

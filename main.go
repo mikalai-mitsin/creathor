@@ -11,10 +11,10 @@ import (
 	"path"
 	"strings"
 
+	ddd "github.com/018bf/creathor/internal/generators/domain"
 	"github.com/018bf/creathor/internal/generators/layout"
-	"github.com/018bf/creathor/internal/generators/module"
 
-	mods "github.com/018bf/creathor/internal/module"
+	mods "github.com/018bf/creathor/internal/domain"
 
 	"github.com/018bf/creathor/internal/configs"
 	"github.com/iancoleman/strcase"
@@ -80,17 +80,12 @@ func initProject(ctx *cli.Context) error {
 	if err := CreateDeployment(project); err != nil {
 		return err
 	}
-	for _, model := range project.Models {
-		if err := CreateCRUD(model); err != nil {
-			return err
-		}
-	}
 	crud := layout.NewGenerator(project)
 	if err := crud.Sync(); err != nil {
 		return err
 	}
 	for _, m := range project.Models {
-		mod := &mods.Mod{
+		domain := &mods.Domain{
 			Name:        m.Model,
 			Module:      project.Module,
 			ProtoModule: project.ProtoPackage(),
@@ -107,8 +102,13 @@ func initProject(ctx *cli.Context) error {
 			GRPCHandler: mods.NewGRPCHandler(m),
 			Auth:        project.Auth,
 		}
-		crud := module.NewGenerator(mod)
+		crud := ddd.NewGenerator(domain)
 		if err := crud.Sync(); err != nil {
+			return err
+		}
+	}
+	for _, model := range project.Models {
+		if err := CreateCRUD(model); err != nil {
 			return err
 		}
 	}
@@ -121,7 +121,7 @@ func initProject(ctx *cli.Context) error {
 func postInit(project *configs.Project) error {
 	fmt.Println("post init...")
 	var errb bytes.Buffer
-	generate := exec.Command("go", "generate", "./internal/domain/...")
+	generate := exec.Command("go", "generate", "./...")
 	generate.Dir = destinationPath
 	generate.Stderr = &errb
 	fmt.Println(strings.Join(generate.Args, " "))

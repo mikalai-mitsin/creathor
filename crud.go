@@ -23,10 +23,11 @@ func CreateCRUD(model *configs.ModelConfig) error {
 	files := []*Template{
 
 		{
-			SourcePath: "templates/internal/usecases/crud_test.go.tmpl",
+			SourcePath: "templates/internal/domain/usecases/crud_test.go.tmpl",
 			DestinationPath: filepath.Join(
 				destinationPath,
 				"internal",
+				model.Model,
 				"usecases",
 				model.TestFileName(),
 			),
@@ -34,10 +35,11 @@ func CreateCRUD(model *configs.ModelConfig) error {
 		},
 
 		{
-			SourcePath: "templates/internal/interceptors/crud_test.go.tmpl",
+			SourcePath: "templates/internal/domain/interceptors/crud_test.go.tmpl",
 			DestinationPath: filepath.Join(
 				destinationPath,
 				"internal",
+				model.Model,
 				"interceptors",
 				model.TestFileName(),
 			),
@@ -45,10 +47,11 @@ func CreateCRUD(model *configs.ModelConfig) error {
 		},
 
 		{
-			SourcePath: "templates/internal/repositories/postgres/crud_test.go.tmpl",
+			SourcePath: "templates/internal/domain/repositories/postgres/crud_test.go.tmpl",
 			DestinationPath: filepath.Join(
 				destinationPath,
 				"internal",
+				model.Model,
 				"repositories",
 				"postgres",
 				model.TestFileName(),
@@ -88,18 +91,20 @@ func CreateCRUD(model *configs.ModelConfig) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
-					"interfaces",
+					model.Model,
+					"handlers",
 					"rest",
 					model.FileName(),
 				),
 				Name: "rest crud",
 			},
 			&Template{
-				SourcePath: "templates/internal/interfaces/rest/crud_test.go.tmpl",
+				SourcePath: "templates/internal/domain/handlers/rest/crud_test.go.tmpl",
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
-					"interfaces",
+					model.Model,
+					"handlers",
 					"rest",
 					model.TestFileName(),
 				),
@@ -111,11 +116,12 @@ func CreateCRUD(model *configs.ModelConfig) error {
 		files = append(
 			files,
 			&Template{
-				SourcePath: "templates/internal/interfaces/grpc/crud_test.go.tmpl",
+				SourcePath: "templates/internal/domain/handlers/grpc/crud_test.go.tmpl",
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
-					"interfaces",
+					model.Model,
+					"handlers",
 					"grpc",
 					model.TestFileName(),
 				),

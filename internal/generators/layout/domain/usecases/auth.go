@@ -51,7 +51,7 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 							Text: "//AuthUseCase - domain layer interceptor interface",
 						},
 						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth.go . AuthUseCase",
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . AuthUseCase",
 						},
 					},
 				},

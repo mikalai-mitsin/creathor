@@ -54,7 +54,7 @@ func (i RepositoryInterfaceUser) file() *ast.File {
 							Text: "//UserRepository - domain layer repository interface",
 						},
 						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/user.go . UserRepository",
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . UserRepository",
 						},
 					},
 				},
@@ -98,7 +98,7 @@ func (i RepositoryInterfaceUser) file() *ast.File {
 														},
 														Type: &ast.SelectorExpr{
 															X: &ast.Ident{
-																Name: "models",
+																Name: "uuid",
 															},
 															Sel: &ast.Ident{
 																Name: "UUID",
@@ -456,7 +456,7 @@ func (i RepositoryInterfaceUser) file() *ast.File {
 														},
 														Type: &ast.SelectorExpr{
 															X: &ast.Ident{
-																Name: "models",
+																Name: "uuid",
 															},
 															Sel: &ast.Ident{
 																Name: "UUID",

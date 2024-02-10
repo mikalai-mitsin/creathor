@@ -39,7 +39,7 @@ func (m ModelAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/errs"`, m.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/errs"`, m.project.Module),
 						},
 					},
 					&ast.ImportSpec{

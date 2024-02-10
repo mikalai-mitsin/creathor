@@ -9,7 +9,7 @@ import (
 
 func NewMockPostgreSQL(t *testing.T) (*sqlx.DB, sqlmock.Sqlmock, error) {
     t.Helper()
-    mockDB, mock, err := sqlmock.New()
+    mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
     if err != nil {
         return nil, nil, err
     }

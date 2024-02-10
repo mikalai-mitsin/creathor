@@ -104,6 +104,14 @@ func (m *ModelConfig) ModelName() string {
 	return strcase.ToCamel(m.Model)
 }
 
+func (m *ModelConfig) DomainName() string {
+	return strcase.ToSnake(m.Model)
+}
+
+func (m *ModelConfig) DomainAlias() string {
+	return strcase.ToLowerCamel(m.Model)
+}
+
 func (m *ModelConfig) UseCaseTypeName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Model))
 }

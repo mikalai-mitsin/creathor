@@ -84,19 +84,23 @@ func CreateCRUD(model *configs.ModelConfig) error {
 		},
 	}
 	if model.RESTEnabled {
+		fileName := path.Join(
+			destinationPath,
+			"internal",
+			model.Model,
+			"handlers",
+			"rest",
+			model.FileName(),
+		)
+		if err := os.MkdirAll(path.Dir(fileName), 0777); err != nil {
+			return err
+		}
 		files = append(
 			files,
 			&Template{
-				SourcePath: "templates/internal/interfaces/rest/crud.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					model.Model,
-					"handlers",
-					"rest",
-					model.FileName(),
-				),
-				Name: "rest crud",
+				SourcePath:      "templates/internal/domain/handlers/rest/crud.go.tmpl",
+				DestinationPath: fileName,
+				Name:            "rest crud",
 			},
 			&Template{
 				SourcePath: "templates/internal/domain/handlers/rest/crud_test.go.tmpl",

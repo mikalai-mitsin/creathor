@@ -61,6 +61,12 @@ func (m *Structure) file() *ast.File {
 							Value: fmt.Sprintf(`"%s/pkg/uuid"`, m.domain.Module),
 						},
 					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/errs"`, m.domain.Module),
+						},
+					},
 				},
 			},
 		},

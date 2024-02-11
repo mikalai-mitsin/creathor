@@ -3,15 +3,16 @@ package layout
 import (
 	"github.com/018bf/creathor/internal/configs"
 	generators2 "github.com/018bf/creathor/internal/generators"
-	interceptors3 "github.com/018bf/creathor/internal/generators/layout/domain/interceptors"
-	models2 "github.com/018bf/creathor/internal/generators/layout/domain/models"
+	authGrpcHandlers "github.com/018bf/creathor/internal/generators/auth/handlers/grpc"
+	authInterceptors "github.com/018bf/creathor/internal/generators/auth/interceptors"
+	authModel "github.com/018bf/creathor/internal/generators/auth/models"
+	authUseCases "github.com/018bf/creathor/internal/generators/auth/usecases"
 	"github.com/018bf/creathor/internal/generators/layout/domain/repositories"
-	usecases3 "github.com/018bf/creathor/internal/generators/layout/domain/usecases"
 	"github.com/018bf/creathor/internal/generators/layout/errs"
-	interceptors2 "github.com/018bf/creathor/internal/generators/layout/interceptors"
 	"github.com/018bf/creathor/internal/generators/layout/interfaces/grpc"
 	"github.com/018bf/creathor/internal/generators/layout/interfaces/uptrace"
-	usecases2 "github.com/018bf/creathor/internal/generators/layout/usecases"
+	userModel "github.com/018bf/creathor/internal/generators/user/models"
+	userUseCases "github.com/018bf/creathor/internal/generators/user/usecases"
 )
 
 type Generator struct {
@@ -33,28 +34,36 @@ func (g *Generator) Sync() error {
 	if g.project.Auth {
 		generators = append(
 			generators,
-			models2.NewModelAuth(g.project),
-			//models2.NewModelUser(g.project),
-			models2.NewModelPermission(g.project),
-
-			//repositories.NewRepositoryInterfaceUser(g.project),
-			repositories.NewRepositoryInterfacePermission(g.project),
-			repositories.NewRepositoryInterfaceAuth(g.project),
-			usecases3.NewUseCaseInterfaceAuth(g.project),
-			//usecases3.NewUseCaseInterfaceUser(g.project),
-			interceptors3.NewInterceptorInterfaceAuth(g.project),
-			//interceptors3.NewInterceptorInterfaceUser(g.project),
-
-			//usecases2.NewUseCaseUser(g.project),
-			usecases2.NewUseCaseAuth(g.project),
-			//interceptors2.NewInterceptorUser(g.project),
-			interceptors2.NewInterceptorAuth(g.project),
+			authModel.NewModelAuth(g.project),
+			//TODO: auth repository
+			//Use case and interfaces
+			authUseCases.NewUseCaseAuth(g.project),
+			authUseCases.NewRepositoryInterfaceAuth(g.project),
+			//Interceptor and interfaces
+			authInterceptors.NewInterceptorAuth(g.project),
+			authInterceptors.NewUseCaseInterfaceAuth(g.project),
+			//Handlers and interfaces
+			authGrpcHandlers.NewAuthMiddleware(g.project),
+			authGrpcHandlers.NewInterceptorInterfaceAuth(g.project),
+			//
+			//userModel.NewModelUser(g.project),
+			userModel.NewModelPermission(g.project),
+			//
+			//Use case and interfaces
+			//userUseCases.NewUseCaseUser(g.project),
+			userUseCases.NewRepositoryInterfacePermission(g.project),
+			//userUseCases.NewRepositoryInterfaceUser(g.project),
+			//Interceptor and interfaces
+			//userInterceptors.NewInterceptorUser(g.project),
+			//userInterceptors.NewUseCaseInterfaceUser(g.project),
+			//Handlers and interfaces
+			//userGrpcHandlers.OldNewInterceptorInterfaceUser(g.project),
 		)
 	}
 	if g.project.KafkaEnabled {
 		generators = append(
 			generators,
-			models2.NewModelEvent(g.project),
+			//models2.NewModelEvent(g.project),
 			repositories.NewRepositoryInterfaceEvent(g.project),
 		)
 	}

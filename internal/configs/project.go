@@ -51,7 +51,7 @@ func NewProject(configPath string) (*Project, error) {
 	}
 	if project.Auth {
 		project.Models = append(project.Models, &ModelConfig{
-			Model:        "User",
+			Model:        "user",
 			Module:       project.Module,
 			ProjectName:  project.Name,
 			ProtoPackage: project.ProtoPackage(),

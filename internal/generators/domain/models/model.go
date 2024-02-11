@@ -65,7 +65,7 @@ func (m *Model) Sync() error {
 		return err
 	}
 	if m.domain.Auth {
-		permissions := models.NewPerm(m.model.Name, m.filename, m.domain)
+		permissions := NewPerm(m.model.Name, m.filename, m.domain)
 		if err := permissions.Sync(); err != nil {
 			return err
 		}

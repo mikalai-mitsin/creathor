@@ -2122,33 +2122,33 @@ func (h Handler) create() *ast.FuncDecl {
 		},
 	}
 	if h.mod.Auth {
-		args = append(args, &ast.TypeAssertExpr{
-			X: &ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "ctx",
-					},
-					Sel: &ast.Ident{
-						Name: "Value",
-					},
-				},
-				Args: []ast.Expr{
-					&ast.Ident{
-						Name: "UserKey",
-					},
-				},
-			},
-			Type: &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "models",
-					},
-					Sel: &ast.Ident{
-						Name: "User",
-					},
-				},
-			},
-		})
+		//args = append(args, &ast.TypeAssertExpr{
+		//	X: &ast.CallExpr{
+		//		Fun: &ast.SelectorExpr{
+		//			X: &ast.Ident{
+		//				Name: "ctx",
+		//			},
+		//			Sel: &ast.Ident{
+		//				Name: "Value",
+		//			},
+		//		},
+		//		Args: []ast.Expr{
+		//			&ast.Ident{
+		//				Name: "UserKey",
+		//			},
+		//		},
+		//	},
+		//	Type: &ast.StarExpr{
+		//		X: &ast.SelectorExpr{
+		//			X: &ast.Ident{
+		//				Name: "models",
+		//			},
+		//			Sel: &ast.Ident{
+		//				Name: "User",
+		//			},
+		//		},
+		//	},
+		//})
 	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
@@ -2375,33 +2375,33 @@ func (h Handler) get() *ast.FuncDecl {
 		},
 	}
 	if h.mod.Auth {
-		args = append(args, &ast.TypeAssertExpr{
-			X: &ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "ctx",
-					},
-					Sel: &ast.Ident{
-						Name: "Value",
-					},
-				},
-				Args: []ast.Expr{
-					&ast.Ident{
-						Name: "UserKey",
-					},
-				},
-			},
-			Type: &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "models",
-					},
-					Sel: &ast.Ident{
-						Name: "User",
-					},
-				},
-			},
-		})
+		//args = append(args, &ast.TypeAssertExpr{
+		//	X: &ast.CallExpr{
+		//		Fun: &ast.SelectorExpr{
+		//			X: &ast.Ident{
+		//				Name: "ctx",
+		//			},
+		//			Sel: &ast.Ident{
+		//				Name: "Value",
+		//			},
+		//		},
+		//		Args: []ast.Expr{
+		//			&ast.Ident{
+		//				Name: "UserKey",
+		//			},
+		//		},
+		//	},
+		//	Type: &ast.StarExpr{
+		//		X: &ast.SelectorExpr{
+		//			X: &ast.Ident{
+		//				Name: "models",
+		//			},
+		//			Sel: &ast.Ident{
+		//				Name: "User",
+		//			},
+		//		},
+		//	},
+		//})
 	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
@@ -2617,33 +2617,33 @@ func (h Handler) list() *ast.FuncDecl {
 		},
 	}
 	if h.mod.Auth {
-		args = append(args, &ast.TypeAssertExpr{
-			X: &ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "ctx",
-					},
-					Sel: &ast.Ident{
-						Name: "Value",
-					},
-				},
-				Args: []ast.Expr{
-					&ast.Ident{
-						Name: "UserKey",
-					},
-				},
-			},
-			Type: &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "models",
-					},
-					Sel: &ast.Ident{
-						Name: "User",
-					},
-				},
-			},
-		})
+		//args = append(args, &ast.TypeAssertExpr{
+		//	X: &ast.CallExpr{
+		//		Fun: &ast.SelectorExpr{
+		//			X: &ast.Ident{
+		//				Name: "ctx",
+		//			},
+		//			Sel: &ast.Ident{
+		//				Name: "Value",
+		//			},
+		//		},
+		//		Args: []ast.Expr{
+		//			&ast.Ident{
+		//				Name: "UserKey",
+		//			},
+		//		},
+		//	},
+		//	Type: &ast.StarExpr{
+		//		X: &ast.SelectorExpr{
+		//			X: &ast.Ident{
+		//				Name: "models",
+		//			},
+		//			Sel: &ast.Ident{
+		//				Name: "User",
+		//			},
+		//		},
+		//	},
+		//})
 	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
@@ -2865,33 +2865,33 @@ func (h Handler) update() *ast.FuncDecl {
 		},
 	}
 	if h.mod.Auth {
-		args = append(args, &ast.TypeAssertExpr{
-			X: &ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "ctx",
-					},
-					Sel: &ast.Ident{
-						Name: "Value",
-					},
-				},
-				Args: []ast.Expr{
-					&ast.Ident{
-						Name: "UserKey",
-					},
-				},
-			},
-			Type: &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "models",
-					},
-					Sel: &ast.Ident{
-						Name: "User",
-					},
-				},
-			},
-		})
+		//args = append(args, &ast.TypeAssertExpr{
+		//	X: &ast.CallExpr{
+		//		Fun: &ast.SelectorExpr{
+		//			X: &ast.Ident{
+		//				Name: "ctx",
+		//			},
+		//			Sel: &ast.Ident{
+		//				Name: "Value",
+		//			},
+		//		},
+		//		Args: []ast.Expr{
+		//			&ast.Ident{
+		//				Name: "UserKey",
+		//			},
+		//		},
+		//	},
+		//	Type: &ast.StarExpr{
+		//		X: &ast.SelectorExpr{
+		//			X: &ast.Ident{
+		//				Name: "models",
+		//			},
+		//			Sel: &ast.Ident{
+		//				Name: "User",
+		//			},
+		//		},
+		//	},
+		//})
 	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
@@ -3119,33 +3119,33 @@ func (h Handler) delete() *ast.FuncDecl {
 		},
 	}
 	if h.mod.Auth {
-		args = append(args, &ast.TypeAssertExpr{
-			X: &ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "ctx",
-					},
-					Sel: &ast.Ident{
-						Name: "Value",
-					},
-				},
-				Args: []ast.Expr{
-					&ast.Ident{
-						Name: "UserKey",
-					},
-				},
-			},
-			Type: &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "models",
-					},
-					Sel: &ast.Ident{
-						Name: "User",
-					},
-				},
-			},
-		})
+		//args = append(args, &ast.TypeAssertExpr{
+		//	X: &ast.CallExpr{
+		//		Fun: &ast.SelectorExpr{
+		//			X: &ast.Ident{
+		//				Name: "ctx",
+		//			},
+		//			Sel: &ast.Ident{
+		//				Name: "Value",
+		//			},
+		//		},
+		//		Args: []ast.Expr{
+		//			&ast.Ident{
+		//				Name: "UserKey",
+		//			},
+		//		},
+		//	},
+		//	Type: &ast.StarExpr{
+		//		X: &ast.SelectorExpr{
+		//			X: &ast.Ident{
+		//				Name: "models",
+		//			},
+		//			Sel: &ast.Ident{
+		//				Name: "User",
+		//			},
+		//		},
+		//	},
+		//})
 	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{

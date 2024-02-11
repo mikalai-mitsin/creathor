@@ -73,13 +73,14 @@ func (f FxContainer) file() *ast.File {
 				Value: fmt.Sprintf(`"%s/internal/repositories/jwt"`, f.project.Module),
 			},
 		},
-		&ast.ImportSpec{
-			Name: ast.NewIdent("postgresRepositories"),
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/repositories/postgres"`, f.project.Module),
-			},
-		},
+		// FIXME
+		//&ast.ImportSpec{
+		//	Name: ast.NewIdent("postgresRepositories"),
+		//	Path: &ast.BasicLit{
+		//		Kind:  token.STRING,
+		//		Value: fmt.Sprintf(`"%s/internal/repositories/postgres"`, f.project.Module),
+		//	},
+		//},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,

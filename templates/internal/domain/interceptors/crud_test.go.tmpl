@@ -9,6 +9,8 @@ import (
     "{{ .Module }}/internal/errs"
     "{{ .Module }}/internal/{{ .Model }}/models"
     mock_models "{{ .Module }}/internal/{{ .Model }}/models/mock"
+    userMockModels "{{ .Module }}/internal/user/models/mock"
+    userModels "{{ .Module }}/internal/user/models"
     mock_interceptors "{{ .Module }}/internal/{{ .Model }}/interceptors/mock"
 
     mock_log "{{ .Module }}/pkg/log/mock"
@@ -74,7 +76,7 @@ func Test{{ .InterceptorTypeName }}_Get(t *testing.T) {
     defer ctrl.Finish()
 {{- if .Auth }}
     authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
-    requestUser := mock_models.NewUser(t)
+    requestUser := userMockModels.NewUser(t)
 {{- end }}
     {{ .UseCaseVariableName }} := mock_interceptors.NewMock{{ .UseCaseTypeName }}(ctrl)
     logger := mock_log.NewMockLogger(ctrl)
@@ -91,7 +93,7 @@ func Test{{ .InterceptorTypeName }}_Get(t *testing.T) {
         ctx context.Context
         id  uuid.UUID
 {{- if .Auth }}
-        requestUser *models.User
+        requestUser *userModels.User
 {{- end }}
     }
     tests := []struct {
@@ -107,7 +109,7 @@ func Test{{ .InterceptorTypeName }}_Get(t *testing.T) {
             setup: func() {
 {{- if .Auth }}
                 authUseCase.EXPECT().
-                    HasPermission(ctx, requestUser, models.{{ .PermissionIDDetail }}).
+                    HasPermission(ctx, requestUser, userModels.{{ .PermissionIDDetail }}).
                     Return(nil)
 {{- end }}
                 {{ .UseCaseVariableName }}.EXPECT().
@@ -115,7 +117,7 @@ func Test{{ .InterceptorTypeName }}_Get(t *testing.T) {
                     Return({{ .Variable }}, nil)
 {{- if .Auth }}
                 authUseCase.EXPECT().
-                    HasObjectPermission(ctx, requestUser, models.{{ .PermissionIDDetail }}, {{ .Variable }}).
+                    HasObjectPermission(ctx, requestUser, userModels.{{ .PermissionIDDetail }}, {{ .Variable }}).
                     Return(nil)
 {{- end }}
             },
@@ -141,13 +143,13 @@ func Test{{ .InterceptorTypeName }}_Get(t *testing.T) {
             name: "object permission error",
             setup: func() {
                 authUseCase.EXPECT().
-                    HasPermission(ctx, requestUser, models.{{ .PermissionIDDetail }}).
+                    HasPermission(ctx, requestUser, userModels.{{ .PermissionIDDetail }}).
                     Return(nil)
                 {{ .UseCaseVariableName }}.EXPECT().
                     Get(ctx, {{ .Variable }}.ID).
                     Return({{ .Variable }}, nil)
                 authUseCase.EXPECT().
-                    HasObjectPermission(ctx, requestUser, models.{{ .PermissionIDDetail }}, {{ .Variable }}).
+                    HasObjectPermission(ctx, requestUser, userModels.{{ .PermissionIDDetail }}, {{ .Variable }}).
                     Return(errs.NewPermissionDeniedError())
             },
             fields: fields{
@@ -167,7 +169,7 @@ func Test{{ .InterceptorTypeName }}_Get(t *testing.T) {
             name: "permission denied",
             setup: func() {
                 authUseCase.EXPECT().
-                    HasPermission(ctx, requestUser, models.{{ .PermissionIDDetail }}).
+                    HasPermission(ctx, requestUser, userModels.{{ .PermissionIDDetail }}).
                     Return(errs.NewPermissionDeniedError())
             },
             fields: fields{
@@ -189,7 +191,7 @@ func Test{{ .InterceptorTypeName }}_Get(t *testing.T) {
             setup: func() {
 {{- if .Auth }}
                 authUseCase.EXPECT().
-                    HasPermission(ctx, requestUser, models.{{ .PermissionIDDetail }}).
+                    HasPermission(ctx, requestUser, userModels.{{ .PermissionIDDetail }}).
                     Return(nil)
 {{- end }}
                 {{ .UseCaseVariableName }}.EXPECT().
@@ -241,7 +243,7 @@ func Test{{ .InterceptorTypeName }}_Create(t *testing.T) {
     defer ctrl.Finish()
 {{- if .Auth }}
     authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
-    requestUser := mock_models.NewUser(t)
+    requestUser := userMockModels.NewUser(t)
 {{- end }}
     {{ .UseCaseVariableName }} := mock_interceptors.NewMock{{ .UseCaseTypeName }}(ctrl)
     logger := mock_log.NewMockLogger(ctrl)
@@ -259,7 +261,7 @@ func Test{{ .InterceptorTypeName }}_Create(t *testing.T) {
         ctx    context.Context
         create *models.{{ .CreateTypeName }}
 {{- if .Auth }}
-        requestUser    *models.User
+        requestUser    *userModels.User
 {{- end }}
     }
     tests := []struct {
@@ -275,10 +277,10 @@ func Test{{ .InterceptorTypeName }}_Create(t *testing.T) {
             setup: func() {
 {{- if .Auth }}
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDCreate }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDCreate }}).
                     Return(nil)
                 authUseCase.EXPECT().
-                    HasObjectPermission(ctx,requestUser, models.{{ .PermissionIDCreate }}, create).
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDCreate }}, create).
                     Return(nil)
 {{- end }}
                 {{ .UseCaseVariableName }}.EXPECT().Create(ctx, create).Return({{ .Variable }}, nil)
@@ -305,10 +307,10 @@ func Test{{ .InterceptorTypeName }}_Create(t *testing.T) {
             name: "object permission denied",
             setup: func() {
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDCreate }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDCreate }}).
                     Return(nil)
                 authUseCase.EXPECT().
-                    HasObjectPermission(ctx,requestUser, models.{{ .PermissionIDCreate }}, create).
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDCreate }}, create).
                     Return(errs.NewPermissionDeniedError())
             },
             fields: fields{
@@ -328,7 +330,7 @@ func Test{{ .InterceptorTypeName }}_Create(t *testing.T) {
             name: "permission denied",
             setup: func() {
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDCreate }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDCreate }}).
                     Return(errs.NewPermissionDeniedError())
             },
             fields: fields{
@@ -350,10 +352,10 @@ func Test{{ .InterceptorTypeName }}_Create(t *testing.T) {
             setup: func() {
 {{- if .Auth }}
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDCreate }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDCreate }}).
                     Return(nil)
                 authUseCase.EXPECT().
-                    HasObjectPermission(ctx,requestUser, models.{{ .PermissionIDCreate }}, create).
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDCreate }}, create).
                     Return(nil)
 {{- end }}
                 {{ .UseCaseVariableName }}.EXPECT().
@@ -405,7 +407,7 @@ func Test{{ .InterceptorTypeName }}_Update(t *testing.T) {
     defer ctrl.Finish()
 {{- if .Auth }}
     authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
-    requestUser := mock_models.NewUser(t)
+    requestUser := userMockModels.NewUser(t)
 {{- end }}
     {{ .UseCaseVariableName }} := mock_interceptors.NewMock{{ .UseCaseTypeName }}(ctrl)
     logger := mock_log.NewMockLogger(ctrl)
@@ -423,7 +425,7 @@ func Test{{ .InterceptorTypeName }}_Update(t *testing.T) {
         ctx    context.Context
         update *models.{{ .UpdateTypeName }}
 {{- if .Auth }}
-        requestUser    *models.User
+        requestUser    *userModels.User
 {{- end }}
     }
     tests := []struct {
@@ -439,13 +441,13 @@ func Test{{ .InterceptorTypeName }}_Update(t *testing.T) {
             setup: func() {
 {{- if .Auth }}
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDUpdate }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}).
                     Return(nil)
                 {{ .UseCaseVariableName }}.EXPECT().
                     Get(ctx, update.ID).
                     Return({{ .Variable }}, nil)
                 authUseCase.EXPECT().
-                    HasObjectPermission(ctx,requestUser, models.{{ .PermissionIDUpdate }}, {{ .Variable }}).
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}, {{ .Variable }}).
                     Return(nil)
 {{- end }}
                 {{ .UseCaseVariableName }}.EXPECT().Update(ctx, update).Return({{ .Variable }}, nil)
@@ -472,13 +474,13 @@ func Test{{ .InterceptorTypeName }}_Update(t *testing.T) {
             name: "object permission denied",
             setup: func() {
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDUpdate }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}).
                     Return(nil)
                 {{ .UseCaseVariableName }}.EXPECT().
                     Get(ctx, update.ID).
                     Return({{ .Variable }}, nil)
                 authUseCase.EXPECT().
-                    HasObjectPermission(ctx,requestUser, models.{{ .PermissionIDUpdate }}, {{ .Variable }}).
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}, {{ .Variable }}).
                     Return(errs.NewPermissionDeniedError())
             },
             fields: fields{
@@ -498,7 +500,7 @@ func Test{{ .InterceptorTypeName }}_Update(t *testing.T) {
             name: "not found",
             setup: func() {
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDUpdate }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}).
                     Return(nil)
                 {{ .UseCaseVariableName }}.EXPECT().
                     Get(ctx, update.ID).
@@ -523,13 +525,13 @@ func Test{{ .InterceptorTypeName }}_Update(t *testing.T) {
             setup: func() {
 {{- if .Auth }}
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDUpdate }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}).
                     Return(nil)
                 {{ .UseCaseVariableName }}.EXPECT().
                     Get(ctx, update.ID).
                     Return({{ .Variable }}, nil)
                 authUseCase.EXPECT().
-                    HasObjectPermission(ctx,requestUser, models.{{ .PermissionIDUpdate }}, {{ .Variable }}).
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}, {{ .Variable }}).
                     Return(nil)
 {{- end }}
                 {{ .UseCaseVariableName }}.EXPECT().
@@ -558,7 +560,7 @@ func Test{{ .InterceptorTypeName }}_Update(t *testing.T) {
             name: "permission denied",
             setup: func() {
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDUpdate }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}).
                     Return(errs.NewPermissionDeniedError())
             },
             fields: fields{
@@ -602,7 +604,7 @@ func Test{{ .InterceptorTypeName }}_Delete(t *testing.T) {
     defer ctrl.Finish()
 {{- if .Auth }}
     authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
-    requestUser := mock_models.NewUser(t)
+    requestUser := userMockModels.NewUser(t)
 {{- end }}
     {{ .UseCaseVariableName }} := mock_interceptors.NewMock{{ .UseCaseTypeName }}(ctrl)
     logger := mock_log.NewMockLogger(ctrl)
@@ -619,7 +621,7 @@ func Test{{ .InterceptorTypeName }}_Delete(t *testing.T) {
         ctx context.Context
         id  uuid.UUID
 {{- if .Auth }}
-        requestUser *models.User
+        requestUser *userModels.User
 {{- end }}
     }
     tests := []struct {
@@ -634,13 +636,13 @@ func Test{{ .InterceptorTypeName }}_Delete(t *testing.T) {
             setup: func() {
 {{- if .Auth }}
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDDelete }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}).
                     Return(nil)
                 {{ .UseCaseVariableName }}.EXPECT().
                     Get(ctx, {{ .Variable }}.ID).
                     Return({{ .Variable }}, nil)
                 authUseCase.EXPECT().
-                    HasObjectPermission(ctx,requestUser, models.{{ .PermissionIDDelete }}, {{ .Variable }}).
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}, {{ .Variable }}).
                     Return(nil)
 {{- end }}
                 {{ .UseCaseVariableName }}.EXPECT().
@@ -668,7 +670,7 @@ func Test{{ .InterceptorTypeName }}_Delete(t *testing.T) {
             name: "{{ .ModelName }} not found",
             setup: func() {
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDDelete }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}).
                     Return(nil)
                 {{ .UseCaseVariableName }}.EXPECT().
                     Get(ctx, {{ .Variable }}.ID).
@@ -690,13 +692,13 @@ func Test{{ .InterceptorTypeName }}_Delete(t *testing.T) {
             name: "object permission denied",
             setup: func() {
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDDelete }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}).
                     Return(nil)
                 {{ .UseCaseVariableName }}.EXPECT().
                     Get(ctx, {{ .Variable }}.ID).
                     Return({{ .Variable }}, nil)
                 authUseCase.EXPECT().
-                    HasObjectPermission(ctx,requestUser, models.{{ .PermissionIDDelete }}, {{ .Variable }}).
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}, {{ .Variable }}).
                     Return(errs.NewPermissionDeniedError())
             },
             fields: fields{
@@ -717,13 +719,13 @@ func Test{{ .InterceptorTypeName }}_Delete(t *testing.T) {
             setup: func() {
 {{- if .Auth }}
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDDelete }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}).
                     Return(nil)
                 {{ .UseCaseVariableName }}.EXPECT().
                     Get(ctx, {{ .Variable }}.ID).
                     Return({{ .Variable }}, nil)
                 authUseCase.EXPECT().
-                    HasObjectPermission(ctx,requestUser, models.{{ .PermissionIDDelete }}, {{ .Variable }}).
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}, {{ .Variable }}).
                     Return(nil)
 {{- end }}
                 {{ .UseCaseVariableName }}.EXPECT().
@@ -751,7 +753,7 @@ func Test{{ .InterceptorTypeName }}_Delete(t *testing.T) {
             name: "permission denied",
             setup: func() {
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDDelete }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}).
                     Return(errs.NewPermissionDeniedError())
             },
             fields: fields{
@@ -790,7 +792,7 @@ func Test{{ .InterceptorTypeName }}_List(t *testing.T) {
     defer ctrl.Finish()
 {{- if .Auth }}
     authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
-    requestUser := mock_models.NewUser(t)
+    requestUser := userMockModels.NewUser(t)
 {{- end }}
     {{ .UseCaseVariableName }} := mock_interceptors.NewMock{{ .UseCaseTypeName }}(ctrl)
     logger := mock_log.NewMockLogger(ctrl)
@@ -812,7 +814,7 @@ func Test{{ .InterceptorTypeName }}_List(t *testing.T) {
         ctx         context.Context
         filter      *models.{{ .FilterTypeName }}
 {{- if .Auth }}
-        requestUser *models.User
+        requestUser *userModels.User
 {{- end }}
     }
     tests := []struct {
@@ -829,10 +831,10 @@ func Test{{ .InterceptorTypeName }}_List(t *testing.T) {
             setup: func() {
 {{- if .Auth }}
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDList }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDList }}).
                     Return(nil)
                 authUseCase.EXPECT().
-                    HasObjectPermission(ctx,requestUser, models.{{ .PermissionIDList }}, filter).
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDList }}, filter).
                     Return(nil)
 {{- end }}
                 {{ .UseCaseVariableName }}.EXPECT().
@@ -862,10 +864,10 @@ func Test{{ .InterceptorTypeName }}_List(t *testing.T) {
             name: "object permission denied",
             setup: func() {
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDList }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDList }}).
                     Return(nil)
                 authUseCase.EXPECT().
-                    HasObjectPermission(ctx,requestUser, models.{{ .PermissionIDList }}, filter).
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDList }}, filter).
                     Return(errs.NewPermissionDeniedError())
             },
             fields: fields{
@@ -886,7 +888,7 @@ func Test{{ .InterceptorTypeName }}_List(t *testing.T) {
             name: "permission error",
             setup: func() {
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDList }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDList }}).
                     Return(errs.NewPermissionDeniedError())
             },
             fields: fields{
@@ -909,10 +911,10 @@ func Test{{ .InterceptorTypeName }}_List(t *testing.T) {
             setup: func() {
 {{- if .Auth }}
                 authUseCase.EXPECT().
-                    HasPermission(ctx,requestUser, models.{{ .PermissionIDList }}).
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDList }}).
                     Return(nil)
                 authUseCase.EXPECT().
-                    HasObjectPermission(ctx,requestUser, models.{{ .PermissionIDList }}, filter).
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDList }}, filter).
                     Return(nil)
 {{- end }}
                 {{ .UseCaseVariableName }}.EXPECT().

@@ -197,18 +197,5 @@ func NewInterceptor(m *configs.ModelConfig) *Layer {
 			},
 		},
 	}
-	if interceptor.Auth {
-		for _, method := range interceptor.Methods {
-			method.Args = append(method.Args, &ast.Field{
-				Names: []*ast.Ident{ast.NewIdent("requestUser")},
-				Type: &ast.StarExpr{
-					X: &ast.SelectorExpr{
-						X:   ast.NewIdent("models"),
-						Sel: ast.NewIdent("User"),
-					},
-				},
-			})
-		}
-	}
 	return interceptor
 }

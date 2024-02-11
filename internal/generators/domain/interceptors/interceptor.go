@@ -246,6 +246,64 @@ func (i InterceptorCrud) createMethod(method *mods.Method) *ast.FuncDecl {
 	var body []ast.Stmt
 	if i.mod.Auth {
 		body = append(body,
+			&ast.AssignStmt{
+				Lhs: []ast.Expr{
+					&ast.Ident{
+						Name: "requestUser",
+					},
+					&ast.Ident{
+						Name: "err",
+					},
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "i",
+								},
+								Sel: &ast.Ident{
+									Name: "authUseCase",
+								},
+							},
+							Sel: &ast.Ident{
+								Name: "GetUser",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.Ident{
+								Name: "ctx",
+							},
+						},
+					},
+				},
+			},
+			&ast.IfStmt{
+				Cond: &ast.BinaryExpr{
+					X: &ast.Ident{
+						Name: "err",
+					},
+					Op: token.NEQ,
+					Y: &ast.Ident{
+						Name: "nil",
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								&ast.Ident{
+									Name: "nil",
+								},
+								&ast.Ident{
+									Name: "err",
+								},
+							},
+						},
+					},
+				},
+			},
 			&ast.IfStmt{
 				Init: &ast.AssignStmt{
 					Lhs: []ast.Expr{
@@ -265,7 +323,7 @@ func (i InterceptorCrud) createMethod(method *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("ctx"),
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
-									X:   ast.NewIdent("models"),
+									X:   ast.NewIdent("userModels"),
 									Sel: ast.NewIdent(i.mod.PermissionIDCreate()),
 								},
 							},
@@ -307,7 +365,7 @@ func (i InterceptorCrud) createMethod(method *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("ctx"),
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
-									X:   ast.NewIdent("models"),
+									X:   ast.NewIdent("userModels"),
 									Sel: ast.NewIdent(i.mod.PermissionIDCreate()),
 								},
 								ast.NewIdent("create"),
@@ -431,34 +489,6 @@ func (i InterceptorCrud) syncCreateMethod(m *mods.Method) error {
 	if method == nil {
 		method = i.createMethod(m)
 	}
-	//for _, param := range i.model.Params {
-	//	param := param
-	//	ast.Inspect(method, func(node ast.Node) bool {
-	//		if cl, ok := node.(*ast.CompositeLit); ok {
-	//			if t, ok := cl.Type.(*ast.SelectorExpr); ok &&
-	//				t.Sel.String() == i.mod.GetMainModel().Name {
-	//				for _, elt := range cl.Elts {
-	//					if kv, ok := elt.(*ast.KeyValueExpr); ok {
-	//						if key, ok := kv.Key.(*ast.Ident); ok &&
-	//							key.String() == param.GetName() {
-	//							return false
-	//						}
-	//					}
-	//				}
-	//				cl.Elts = append(cl.Elts, &ast.KeyValueExpr{
-	//					Key:   ast.NewIdent(param.GetName()),
-	//					Colon: 0,
-	//					Value: &ast.SelectorExpr{
-	//						X:   ast.NewIdent("create"),
-	//						Sel: ast.NewIdent(param.GetName()),
-	//					},
-	//				})
-	//				return false
-	//			}
-	//		}
-	//		return true
-	//	})
-	//}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
 	}
@@ -477,6 +507,62 @@ func (i InterceptorCrud) astListMethod(m *mods.Method) *ast.FuncDecl {
 	var body []ast.Stmt
 	if i.mod.Auth {
 		body = append(body,
+			// Get request user
+			&ast.AssignStmt{
+				Lhs: []ast.Expr{
+					&ast.Ident{
+						Name: "requestUser",
+					},
+					&ast.Ident{
+						Name: "err",
+					},
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "i",
+								},
+								Sel: &ast.Ident{
+									Name: "authUseCase",
+								},
+							},
+							Sel: &ast.Ident{
+								Name: "GetUser",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.Ident{
+								Name: "ctx",
+							},
+						},
+					},
+				},
+			},
+			&ast.IfStmt{
+				Cond: &ast.BinaryExpr{
+					X: &ast.Ident{
+						Name: "err",
+					},
+					Op: token.NEQ,
+					Y: &ast.Ident{
+						Name: "nil",
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								ast.NewIdent("nil"),
+								ast.NewIdent("0"),
+								ast.NewIdent("err"),
+							},
+						},
+					},
+				},
+			},
 			// Check permission
 			&ast.IfStmt{
 				Init: &ast.AssignStmt{
@@ -498,7 +584,7 @@ func (i InterceptorCrud) astListMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("ctx"),
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
-									X:   ast.NewIdent("models"),
+									X:   ast.NewIdent("userModels"),
 									Sel: ast.NewIdent(i.mod.PermissionIDList()),
 								},
 							},
@@ -543,7 +629,7 @@ func (i InterceptorCrud) astListMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("ctx"),
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
-									X:   ast.NewIdent("models"),
+									X:   ast.NewIdent("userModels"),
 									Sel: ast.NewIdent(i.mod.PermissionIDList()),
 								},
 								ast.NewIdent("filter"),
@@ -691,6 +777,64 @@ func (i InterceptorCrud) astGetMethod(m *mods.Method) *ast.FuncDecl {
 	if i.mod.Auth {
 		body = append(
 			body,
+			&ast.AssignStmt{
+				Lhs: []ast.Expr{
+					&ast.Ident{
+						Name: "requestUser",
+					},
+					&ast.Ident{
+						Name: "err",
+					},
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "i",
+								},
+								Sel: &ast.Ident{
+									Name: "authUseCase",
+								},
+							},
+							Sel: &ast.Ident{
+								Name: "GetUser",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.Ident{
+								Name: "ctx",
+							},
+						},
+					},
+				},
+			},
+			&ast.IfStmt{
+				Cond: &ast.BinaryExpr{
+					X: &ast.Ident{
+						Name: "err",
+					},
+					Op: token.NEQ,
+					Y: &ast.Ident{
+						Name: "nil",
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								&ast.Ident{
+									Name: "nil",
+								},
+								&ast.Ident{
+									Name: "err",
+								},
+							},
+						},
+					},
+				},
+			},
 			&ast.IfStmt{
 				Init: &ast.AssignStmt{
 					Lhs: []ast.Expr{
@@ -711,7 +855,7 @@ func (i InterceptorCrud) astGetMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("ctx"),
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
-									X:   ast.NewIdent("models"),
+									X:   ast.NewIdent("userModels"),
 									Sel: ast.NewIdent(i.mod.PermissionIDDetail()),
 								},
 							},
@@ -806,7 +950,7 @@ func (i InterceptorCrud) astGetMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("ctx"),
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
-									X:   ast.NewIdent("models"),
+									X:   ast.NewIdent("userModels"),
 									Sel: ast.NewIdent(i.mod.PermissionIDDetail()),
 								},
 								ast.NewIdent(i.mod.GetMainModel().Variable),
@@ -906,6 +1050,64 @@ func (i InterceptorCrud) updateMethod(m *mods.Method) *ast.FuncDecl {
 	var body []ast.Stmt
 	if i.mod.Auth {
 		body = append(body,
+			&ast.AssignStmt{
+				Lhs: []ast.Expr{
+					&ast.Ident{
+						Name: "requestUser",
+					},
+					&ast.Ident{
+						Name: "err",
+					},
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "i",
+								},
+								Sel: &ast.Ident{
+									Name: "authUseCase",
+								},
+							},
+							Sel: &ast.Ident{
+								Name: "GetUser",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.Ident{
+								Name: "ctx",
+							},
+						},
+					},
+				},
+			},
+			&ast.IfStmt{
+				Cond: &ast.BinaryExpr{
+					X: &ast.Ident{
+						Name: "err",
+					},
+					Op: token.NEQ,
+					Y: &ast.Ident{
+						Name: "nil",
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								&ast.Ident{
+									Name: "nil",
+								},
+								&ast.Ident{
+									Name: "err",
+								},
+							},
+						},
+					},
+				},
+			},
 			// Check permission
 			&ast.IfStmt{
 				Init: &ast.AssignStmt{
@@ -927,7 +1129,7 @@ func (i InterceptorCrud) updateMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("ctx"),
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
-									X:   ast.NewIdent("models"),
+									X:   ast.NewIdent("userModels"),
 									Sel: ast.NewIdent(i.mod.PermissionIDUpdate()),
 								},
 							},
@@ -1017,7 +1219,7 @@ func (i InterceptorCrud) updateMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("ctx"),
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
-									X:   ast.NewIdent("models"),
+									X:   ast.NewIdent("userModels"),
 									Sel: ast.NewIdent(i.mod.PermissionIDUpdate()),
 								},
 								ast.NewIdent(i.mod.GetMainModel().Variable),
@@ -1160,6 +1362,59 @@ func (i InterceptorCrud) deleteMethod(m *mods.Method) *ast.FuncDecl {
 	var body []ast.Stmt
 	if i.mod.Auth {
 		body = append(body,
+			&ast.AssignStmt{
+				Lhs: []ast.Expr{
+					&ast.Ident{
+						Name: "requestUser",
+					},
+					&ast.Ident{
+						Name: "err",
+					},
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "i",
+								},
+								Sel: &ast.Ident{
+									Name: "authUseCase",
+								},
+							},
+							Sel: &ast.Ident{
+								Name: "GetUser",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.Ident{
+								Name: "ctx",
+							},
+						},
+					},
+				},
+			},
+			&ast.IfStmt{
+				Cond: &ast.BinaryExpr{
+					X: &ast.Ident{
+						Name: "err",
+					},
+					Op: token.NEQ,
+					Y: &ast.Ident{
+						Name: "nil",
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								ast.NewIdent("err"),
+							},
+						},
+					},
+				},
+			},
 			// Check permission
 			&ast.IfStmt{
 				Init: &ast.AssignStmt{
@@ -1181,7 +1436,7 @@ func (i InterceptorCrud) deleteMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("ctx"),
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
-									X:   ast.NewIdent("models"),
+									X:   ast.NewIdent("userModels"),
 									Sel: ast.NewIdent(i.mod.PermissionIDDelete()),
 								},
 							},
@@ -1266,7 +1521,7 @@ func (i InterceptorCrud) deleteMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("ctx"),
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
-									X:   ast.NewIdent("models"),
+									X:   ast.NewIdent("userModels"),
 									Sel: ast.NewIdent(i.mod.PermissionIDDelete()),
 								},
 								ast.NewIdent(i.mod.GetMainModel().Variable),
@@ -1427,6 +1682,13 @@ func (i InterceptorCrud) file() *ast.File {
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
 							Value: fmt.Sprintf(`"%s/pkg/uuid"`, i.mod.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Name: ast.NewIdent("userModels"),
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/user/models"`, i.mod.Module),
 						},
 					},
 				},

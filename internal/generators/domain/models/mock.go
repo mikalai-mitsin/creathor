@@ -135,7 +135,19 @@ func (m *Mock) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/pkg/utils"`, m.domain.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
 							Value: fmt.Sprintf(`"%s/pkg/uuid"`, m.domain.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/%s/models"`, m.domain.Module, m.domain.Name),
 						},
 					},
 					&ast.ImportSpec{

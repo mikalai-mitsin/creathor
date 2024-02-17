@@ -39,6 +39,9 @@ func (t *Template) hasRewrite() bool {
 }
 
 func (t *Template) renderToFile(data interface{}) error {
+	if err := os.MkdirAll(path.Dir(t.DestinationPath), 0777); err != nil {
+		return err
+	}
 	if !t.hasRewrite() {
 		fmt.Printf("%s already exists.\n", t.Name)
 		return nil

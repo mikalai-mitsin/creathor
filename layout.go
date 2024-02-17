@@ -73,6 +73,7 @@ func CreateLayout(project *configs.Project) error {
 	if err := createDirectories(project); err != nil {
 		return err
 	}
+
 	files := []*Template{
 		{
 			SourcePath:      "templates/cmd/service/main.go.tmpl",
@@ -104,21 +105,7 @@ func CreateLayout(project *configs.Project) error {
 			DestinationPath: path.Join(destinationPath, "internal", "configs", "testing.go"),
 			Name:            "config testing",
 		},
-		{
-			SourcePath:      "templates/internal/configs/config_test.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "configs", "config_test.go"),
-			Name:            "config tests",
-		},
-		{
-			SourcePath: "templates/internal/errs/errors_test.go.tmpl",
-			DestinationPath: path.Join(
-				destinationPath,
-				"internal",
-				"errs",
-				"errors_test.go",
-			),
-			Name: "domain errors tests",
-		},
+
 		{
 			SourcePath:      "templates/pkg/clock/clock.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "pkg", "clock", "clock.go"),
@@ -210,6 +197,7 @@ func CreateLayout(project *configs.Project) error {
 		},
 	}
 	if project.Auth {
+
 		files = append(
 			files,
 			&Template{
@@ -236,25 +224,6 @@ func CreateLayout(project *configs.Project) error {
 				),
 				Name: "user mock models",
 			},
-
-			&Template{
-				SourcePath:      "templates/internal/auth/usecases/auth_test.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "auth", "usecases", "auth_test.go"),
-				Name:            "test auth usecase implementation",
-			},
-
-			&Template{
-				SourcePath: "templates/internal/auth/interceptors/auth_test.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"auth",
-					"interceptors",
-					"auth_test.go",
-				),
-				Name: "test auth interceptor implementation",
-			},
-
 			&Template{
 				SourcePath: "templates/internal/user/repositories/postgres/permission.go.tmpl",
 				DestinationPath: path.Join(
@@ -268,18 +237,6 @@ func CreateLayout(project *configs.Project) error {
 				Name: "permission repository implementation",
 			},
 			&Template{
-				SourcePath: "templates/internal/user/repositories/postgres/permission_test.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"user",
-					"repositories",
-					"postgres",
-					"permission_test.go",
-				),
-				Name: "test permission repository implementation",
-			},
-			&Template{
 				SourcePath: "templates/internal/auth/repositories/jwt/auth.go.tmpl",
 				DestinationPath: path.Join(
 					destinationPath,
@@ -291,18 +248,7 @@ func CreateLayout(project *configs.Project) error {
 				),
 				Name: "jwt auth repository implementation",
 			},
-			&Template{
-				SourcePath: "templates/internal/auth/repositories/jwt/auth_test.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"auth",
-					"repositories",
-					"jwt",
-					"auth_test.go",
-				),
-				Name: "test auth repository implementation",
-			},
+
 			&Template{
 				SourcePath: "templates/internal/interfaces/postgres/migrations/permissions.up.sql.tmpl",
 				DestinationPath: path.Join(
@@ -417,18 +363,6 @@ func CreateLayout(project *configs.Project) error {
 					),
 					Name: "rest auth handler",
 				},
-				&Template{
-					SourcePath: "templates/internal/auth/handlers/rest/auth_test.go.tmpl",
-					DestinationPath: path.Join(
-						destinationPath,
-						"internal",
-						"auth",
-						"handlers",
-						"rest",
-						"auth_test.go",
-					),
-					Name: "rest auth handler tests",
-				},
 			)
 		}
 	}
@@ -477,31 +411,6 @@ func CreateLayout(project *configs.Project) error {
 					),
 					Name: "grpc auth",
 				},
-				&Template{
-					SourcePath: "templates/internal/auth/handlers/grpc/auth_test.go.tmpl",
-					DestinationPath: path.Join(
-						destinationPath,
-						"internal",
-						"auth",
-						"handlers",
-						"grpc",
-						"auth_test.go",
-					),
-					Name: "grpc auth test",
-				},
-
-				&Template{
-					SourcePath: "templates/internal/auth/handlers/grpc/auth_middleware_test.go.tmpl",
-					DestinationPath: path.Join(
-						destinationPath,
-						"internal",
-						"auth",
-						"handlers",
-						"grpc",
-						"auth_middleware_test.go",
-					),
-					Name: "grpc middleware test",
-				},
 			)
 		}
 	}
@@ -534,6 +443,118 @@ func CreateLayout(project *configs.Project) error {
 				),
 				Name: "kafka events",
 			},
+		)
+	}
+	for _, file := range files {
+		if err := file.renderToFile(project); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func RenderTests(project *configs.Project) error {
+	tests := []*Template{
+		{
+			SourcePath:      "templates/internal/configs/config_test.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "configs", "config_test.go"),
+			Name:            "config tests",
+		},
+		{
+			SourcePath: "templates/internal/errs/errors_test.go.tmpl",
+			DestinationPath: path.Join(
+				destinationPath,
+				"internal",
+				"errs",
+				"errors_test.go",
+			),
+			Name: "domain errors tests",
+		},
+	}
+	if project.Auth {
+		tests = append(
+			tests,
+			&Template{
+				SourcePath:      "templates/internal/auth/usecases/auth_test.go.tmpl",
+				DestinationPath: path.Join(destinationPath, "internal", "auth", "usecases", "auth_test.go"),
+				Name:            "test auth usecase implementation",
+			},
+			&Template{
+				SourcePath: "templates/internal/auth/interceptors/auth_test.go.tmpl",
+				DestinationPath: path.Join(
+					destinationPath,
+					"internal",
+					"auth",
+					"interceptors",
+					"auth_test.go",
+				),
+				Name: "test auth interceptor implementation",
+			},
+			&Template{
+				SourcePath: "templates/internal/user/repositories/postgres/permission_test.go.tmpl",
+				DestinationPath: path.Join(
+					destinationPath,
+					"internal",
+					"user",
+					"repositories",
+					"postgres",
+					"permission_test.go",
+				),
+				Name: "test permission repository implementation",
+			},
+			&Template{
+				SourcePath: "templates/internal/auth/repositories/jwt/auth_test.go.tmpl",
+				DestinationPath: path.Join(
+					destinationPath,
+					"internal",
+					"auth",
+					"repositories",
+					"jwt",
+					"auth_test.go",
+				),
+				Name: "test auth repository implementation",
+			},
+			&Template{
+				SourcePath: "templates/internal/auth/handlers/rest/auth_test.go.tmpl",
+				DestinationPath: path.Join(
+					destinationPath,
+					"internal",
+					"auth",
+					"handlers",
+					"rest",
+					"auth_test.go",
+				),
+				Name: "rest auth handler tests",
+			},
+			&Template{
+				SourcePath: "templates/internal/auth/handlers/grpc/auth_test.go.tmpl",
+				DestinationPath: path.Join(
+					destinationPath,
+					"internal",
+					"auth",
+					"handlers",
+					"grpc",
+					"auth_test.go",
+				),
+				Name: "grpc auth test",
+			},
+			&Template{
+				SourcePath: "templates/internal/auth/handlers/grpc/auth_middleware_test.go.tmpl",
+				DestinationPath: path.Join(
+					destinationPath,
+					"internal",
+					"auth",
+					"handlers",
+					"grpc",
+					"auth_middleware_test.go",
+				),
+				Name: "grpc middleware test",
+			},
+		)
+	}
+	if project.KafkaEnabled {
+		tests = append(
+			tests,
 			&Template{
 				SourcePath: "templates/internal/repositories/kafka/event_test.go.tmpl",
 				DestinationPath: path.Join(
@@ -547,7 +568,7 @@ func CreateLayout(project *configs.Project) error {
 			},
 		)
 	}
-	for _, file := range files {
+	for _, file := range tests {
 		if err := file.renderToFile(project); err != nil {
 			return err
 		}

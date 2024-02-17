@@ -171,7 +171,7 @@ func CreateCRUD(model *configs.ModelConfig) error {
 }
 
 func addPermission(permission, check string) error {
-	packagePath := filepath.Join(destinationPath, "internal", "repositories", "postgres")
+	packagePath := filepath.Join(destinationPath, "internal", "user", "repositories", "postgres")
 	fileset := token.NewFileSet()
 	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
 		return true

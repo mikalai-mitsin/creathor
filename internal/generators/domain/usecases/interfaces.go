@@ -89,7 +89,7 @@ func (i RepositoryInterfaceCrud) Sync() error {
 					},
 					{
 						Text: fmt.Sprintf(
-							"//go:generate mockgen -build_flags=-domain=domain -destination mock/interfaces.go . %s",
+							"//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . %s",
 							i.domain.Repository.Name,
 						),
 					},

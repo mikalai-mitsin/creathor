@@ -66,7 +66,7 @@ func (i UseCaseInterfaceCrud) file() *ast.File {
 						Text: "//AuthUseCase - domain layer interceptor interface",
 					},
 					{
-						Text: "//go:generate mockgen -build_flags=-domain=domain -destination mock/auth.go . AuthUseCase",
+						Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth.go . AuthUseCase",
 					},
 				},
 			},
@@ -296,7 +296,7 @@ func (i UseCaseInterfaceCrud) Sync() error {
 					},
 					{
 						Text: fmt.Sprintf(
-							"//go:generate mockgen -build_flags=-domain=domain -destination mock/usecase.go . %s",
+							"//go:generate mockgen -build_flags=-mod=mod -destination mock/usecase.go . %s",
 							i.domain.UseCase.Name,
 						),
 					},

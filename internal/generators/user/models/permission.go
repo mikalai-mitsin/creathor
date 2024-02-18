@@ -249,6 +249,9 @@ func (i ModelPermission) file() *ast.File {
 func (i ModelPermission) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "user", "models", "permission.go")
+	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
+		return err
+	}
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		file = i.file()

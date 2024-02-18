@@ -43,6 +43,13 @@ func (m ModelAuth) file() *ast.File {
 						},
 					},
 					&ast.ImportSpec{
+						Name: ast.NewIdent("userModels"),
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/user/models"`, m.project.Module),
+						},
+					},
+					&ast.ImportSpec{
 						Name: &ast.Ident{
 							Name: "validation",
 						},
@@ -528,9 +535,7 @@ func (m ModelAuth) file() *ast.File {
 							&ast.UnaryExpr{
 								Op: token.AND,
 								X: &ast.CompositeLit{
-									Type: &ast.Ident{
-										Name: "User",
-									},
+									Type: ast.NewIdent("userModels.User"),
 									Elts: []ast.Expr{
 										&ast.KeyValueExpr{
 											Key: &ast.Ident{
@@ -611,9 +616,7 @@ func (m ModelAuth) file() *ast.File {
 											Key: &ast.Ident{
 												Name: "GroupID",
 											},
-											Value: &ast.Ident{
-												Name: "GroupIDGuest",
-											},
+											Value: ast.NewIdent("userModels.GroupIDGuest"),
 										},
 									},
 								},

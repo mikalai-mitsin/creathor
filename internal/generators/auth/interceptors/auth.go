@@ -59,23 +59,15 @@ func (i InterceptorAuth) file() *ast.File {
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
-							Kind: token.STRING,
-							Value: fmt.Sprintf(
-								`"%s/internal/domain/interceptors"`,
-								i.project.Module,
-							),
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/auth/models"`, i.project.Module),
 						},
 					},
 					&ast.ImportSpec{
+						Name: ast.NewIdent("userModels"),
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/models"`, i.project.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/usecases"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/user/models"`, i.project.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -108,29 +100,7 @@ func (i InterceptorAuth) file() *ast.File {
 												Name: "authUseCase",
 											},
 										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "usecases",
-											},
-											Sel: &ast.Ident{
-												Name: "AuthUseCase",
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "userUseCase",
-											},
-										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "usecases",
-											},
-											Sel: &ast.Ident{
-												Name: "UserUseCase",
-											},
-										},
+										Type: ast.NewIdent("AuthUseCase"),
 									},
 									{
 										Names: []*ast.Ident{
@@ -181,29 +151,7 @@ func (i InterceptorAuth) file() *ast.File {
 										Name: "authUseCase",
 									},
 								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "usecases",
-									},
-									Sel: &ast.Ident{
-										Name: "AuthUseCase",
-									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "userUseCase",
-									},
-								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "usecases",
-									},
-									Sel: &ast.Ident{
-										Name: "UserUseCase",
-									},
-								},
+								Type: ast.NewIdent("AuthUseCase"),
 							},
 							{
 								Names: []*ast.Ident{
@@ -240,14 +188,7 @@ func (i InterceptorAuth) file() *ast.File {
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "interceptors",
-									},
-									Sel: &ast.Ident{
-										Name: "AuthInterceptor",
-									},
-								},
+								Type: ast.NewIdent("*AuthInterceptor"),
 							},
 						},
 					},
@@ -269,14 +210,6 @@ func (i InterceptorAuth) file() *ast.File {
 												},
 												Value: &ast.Ident{
 													Name: "authUseCase",
-												},
-											},
-											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "userUseCase",
-												},
-												Value: &ast.Ident{
-													Name: "userUseCase",
 												},
 											},
 											&ast.KeyValueExpr{
@@ -803,9 +736,7 @@ func (i InterceptorAuth) file() *ast.File {
 							{
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "models",
-										},
+										X: ast.NewIdent("userModels"),
 										Sel: &ast.Ident{
 											Name: "User",
 										},

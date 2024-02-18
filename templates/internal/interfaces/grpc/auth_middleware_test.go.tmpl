@@ -9,10 +9,11 @@ import (
 
     "{{ .Module }}/internal/configs"
     "{{ .Module }}/internal/errs"
-    "{{ .Module }}/internal/domain/interceptors"
-    mock_interceptors "{{ .Module }}/internal/domain/interceptors/mock"
-    "{{ .Module }}/internal/domain/models"
-    mock_models "{{ .Module }}/internal/domain/models/mock"
+    "{{ .Module }}/internal/auth/models"
+    mock_user_models "{{ .Module }}/internal/user/models/mock"
+    mock_models "{{ .Module }}/internal/auth/models/mock"
+    mock_grpc "{{ .Module }}/internal/interfaces/grpc/mock"
+
     "{{ .Module }}/pkg/log"
 
     "github.com/golang/mock/gomock"
@@ -43,10 +44,10 @@ func (t Transport) SetTrailer(_ metadata.MD) error {
 func TestAuthMiddleware_Auth(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authInterceptor := mock_interceptors.NewMockAuthInterceptor(ctrl)
+    authInterceptor := mock_grpc.NewMockAuthInterceptor(ctrl)
     ctx := context.Background()
     token := mock_models.NewToken(t)
-    user := mock_models.NewUser(t)
+    user := mock_user_models.NewUser(t)
     ctxWithToken := metadata.NewIncomingContext(ctx, metadata.New(map[string]string{
         "authorization": fmt.Sprintf("Bearer %s", token.String()),
     }))
@@ -54,7 +55,7 @@ func TestAuthMiddleware_Auth(t *testing.T) {
         "authorization": fmt.Sprintf("Bearer %s", "token.String()"),
     }))
     type fields struct {
-        authInterceptor interceptors.AuthInterceptor
+        authInterceptor AuthInterceptor
     }
     type args struct {
         ctx context.Context
@@ -96,7 +97,7 @@ func TestAuthMiddleware_Auth(t *testing.T) {
                 ctx: ctxWithBadToken,
             },
             want:    nil,
-            wantErr: decodeError(errs.NewBadToken()),
+            wantErr: DecodeError(errs.NewBadToken()),
         },
         {
             name:  "without token",
@@ -132,9 +133,9 @@ func TestAuthMiddleware_Auth(t *testing.T) {
 func TestNewAuthMiddleware(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authInterceptor := mock_interceptors.NewMockAuthInterceptor(ctrl)
+    authInterceptor := mock_grpc.NewMockAuthInterceptor(ctrl)
     type args struct {
-        authInterceptor interceptors.AuthInterceptor
+        authInterceptor AuthInterceptor
         logger          log.Logger
         config          *configs.Config
     }

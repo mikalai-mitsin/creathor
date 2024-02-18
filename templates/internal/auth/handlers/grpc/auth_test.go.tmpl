@@ -3,11 +3,12 @@ package grpc
 import (
     "context"
     "errors"
+    "github.com/018bf/example/internal/interfaces/grpc"
     "{{ .Module }}/internal/errs"
-    "{{ .Module }}/internal/domain/interceptors"
-    mock_interceptors "{{ .Module }}/internal/domain/interceptors/mock"
-    "{{ .Module }}/internal/domain/models"
-    mock_models "{{ .Module }}/internal/domain/models/mock"
+    "{{ .Module }}/internal/auth/models"
+    mock_models "{{ .Module }}/internal/auth/models/mock"
+    mock_grpc "{{ .Module }}/internal/auth/handlers/grpc/mock"
+
     {{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
     "github.com/golang/mock/gomock"
     "reflect"
@@ -17,13 +18,13 @@ import (
 func TestAuthServiceServer_CreateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authInterceptor := mock_interceptors.NewMockAuthInterceptor(ctrl)
+    authInterceptor := mock_grpc.NewMockAuthInterceptor(ctrl)
     ctx := context.Background()
     login := mock_models.NewLogin(t)
     pair := mock_models.NewTokenPair(t)
     type fields struct {
         UnimplementedAuthServiceServer {{ .ProtoPackage }}.UnimplementedAuthServiceServer
-        authInterceptor                interceptors.AuthInterceptor
+        authInterceptor                AuthInterceptor
     }
     type args struct {
         ctx   context.Context
@@ -77,7 +78,7 @@ func TestAuthServiceServer_CreateToken(t *testing.T) {
                 },
             },
             want:    nil,
-            wantErr: decodeError(errs.NewBadToken()),
+            wantErr: grpc.DecodeError(errs.NewBadToken()),
         },
     }
     for _, tt := range tests {
@@ -102,13 +103,13 @@ func TestAuthServiceServer_CreateToken(t *testing.T) {
 func TestAuthServiceServer_RefreshToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authInterceptor := mock_interceptors.NewMockAuthInterceptor(ctrl)
+    authInterceptor := mock_grpc.NewMockAuthInterceptor(ctrl)
     ctx := context.Background()
     token := mock_models.NewToken(t)
     pair := mock_models.NewTokenPair(t)
     type fields struct {
         UnimplementedAuthServiceServer {{ .ProtoPackage }}.UnimplementedAuthServiceServer
-        authInterceptor                interceptors.AuthInterceptor
+        authInterceptor                AuthInterceptor
     }
     type args struct {
         ctx   context.Context
@@ -160,7 +161,7 @@ func TestAuthServiceServer_RefreshToken(t *testing.T) {
                 },
             },
             want:    nil,
-            wantErr: decodeError(errs.NewBadToken()),
+            wantErr: grpc.DecodeError(errs.NewBadToken()),
         },
     }
     for _, tt := range tests {
@@ -185,9 +186,9 @@ func TestAuthServiceServer_RefreshToken(t *testing.T) {
 func TestNewAuthServiceServer(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authInterceptor := mock_interceptors.NewMockAuthInterceptor(ctrl)
+    authInterceptor := mock_grpc.NewMockAuthInterceptor(ctrl)
     type args struct {
-        authInterceptor interceptors.AuthInterceptor
+        authInterceptor AuthInterceptor
     }
     tests := []struct {
         name string

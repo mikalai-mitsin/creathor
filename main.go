@@ -112,10 +112,10 @@ func initProject(ctx *cli.Context) error {
 			return err
 		}
 	}
-	if err := postInit(project); err != nil {
+	if err := RenderTests(project); err != nil {
 		return err
 	}
-	if err := RenderTests(project); err != nil {
+	if err := postInit(project); err != nil {
 		return err
 	}
 	return nil

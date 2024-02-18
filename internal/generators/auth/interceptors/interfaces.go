@@ -24,7 +24,7 @@ func NewUseCaseInterfaceAuth(project *configs.Project) *UseCaseInterfaceAuth {
 func (i UseCaseInterfaceAuth) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
-			Name: "interfaces",
+			Name: "interceptors",
 		},
 		Decls: []ast.Decl{
 			&ast.GenDecl{
@@ -39,7 +39,14 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/models"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/auth/models"`, i.project.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Name: ast.NewIdent("userModels"),
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/user/models"`, i.project.Module),
 						},
 					},
 				},
@@ -51,7 +58,7 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 							Text: "//AuthUseCase - domain layer interceptor interface",
 						},
 						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . AuthUseCase",
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth_usecase.go . AuthUseCase",
 						},
 					},
 				},
@@ -162,9 +169,7 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 														},
 														Type: &ast.StarExpr{
 															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "models",
-																},
+																X: ast.NewIdent("userModels"),
 																Sel: &ast.Ident{
 																	Name: "User",
 																},
@@ -178,9 +183,7 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 													{
 														Type: &ast.StarExpr{
 															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "models",
-																},
+																X: ast.NewIdent("models"),
 																Sel: &ast.Ident{
 																	Name: "TokenPair",
 																},
@@ -228,9 +231,7 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 														},
 														Type: &ast.StarExpr{
 															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "models",
-																},
+																X: ast.NewIdent("userModels"),
 																Sel: &ast.Ident{
 																	Name: "User",
 																},
@@ -243,7 +244,7 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 																Name: "permission",
 															},
 														},
-														Type: ast.NewIdent("uuid.UUID"),
+														Type: ast.NewIdent("userModels.PermissionID"),
 													},
 												},
 											},
@@ -290,9 +291,7 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 														},
 														Type: &ast.StarExpr{
 															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "models",
-																},
+																X: ast.NewIdent("userModels"),
 																Sel: &ast.Ident{
 																	Name: "User",
 																},
@@ -305,7 +304,7 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 																Name: "permission",
 															},
 														},
-														Type: ast.NewIdent("uuid.UUID"),
+														Type: ast.NewIdent("userModels.PermissionID"),
 													},
 													{
 														Names: []*ast.Ident{
@@ -492,9 +491,7 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 													{
 														Type: &ast.StarExpr{
 															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "models",
-																},
+																X: ast.NewIdent("userModels"),
 																Sel: &ast.Ident{
 																	Name: "User",
 																},
@@ -522,7 +519,7 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 
 func (i UseCaseInterfaceAuth) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "auth", "usecases", "auth.go")
+	filename := path.Join("internal", "auth", "interceptors", "interfaces.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}

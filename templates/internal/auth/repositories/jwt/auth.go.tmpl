@@ -6,10 +6,10 @@ import (
     "fmt"
     "time"
 
+    "{{ .Module }}/internal/auth/models"
     "{{ .Module }}/internal/configs"
     "{{ .Module }}/internal/errs"
-    "{{ .Module }}/internal/domain/models"
-    "{{ .Module }}/internal/domain/repositories"
+    userModels "{{ .Module }}/internal/user/models"
     "{{ .Module }}/pkg/clock"
     "{{ .Module }}/pkg/log"
     "github.com/golang-jwt/jwt/v4"
@@ -33,7 +33,7 @@ func NewAuthRepository(
     config *configs.Config,
     clock clock.Clock,
     logger log.Logger,
-) repositories.AuthRepository {
+) *AuthRepository {
     private, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(config.Auth.PrivateKey))
     if err != nil {
         panic(err)
@@ -52,7 +52,7 @@ func NewAuthRepository(
     }
 }
 
-func (r *AuthRepository) Create(_ context.Context, user *models.User) (*models.TokenPair, error) {
+func (r *AuthRepository) Create(_ context.Context, user *userModels.User) (*models.TokenPair, error) {
     pair := r.createPair(string(user.ID))
     return pair, nil
 }

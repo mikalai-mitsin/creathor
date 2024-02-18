@@ -24,7 +24,7 @@ func NewRepositoryInterfaceAuth(project *configs.Project) *RepositoryInterfaceAu
 func (i RepositoryInterfaceAuth) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
-			Name: "repositories",
+			Name: "usecases",
 		},
 		Decls: []ast.Decl{
 			&ast.GenDecl{
@@ -39,7 +39,20 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/models"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/auth/models"`, i.project.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Name: ast.NewIdent("userModels"),
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/user/models"`, i.project.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/pkg/uuid"`, i.project.Module),
 						},
 					},
 				},
@@ -52,7 +65,7 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 							Text: "//AuthRepository - domain layer repository interface",
 						},
 						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . AuthRepository",
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth_repository.go . AuthRepository",
 						},
 					},
 				},
@@ -97,7 +110,7 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 														Type: &ast.StarExpr{
 															X: &ast.SelectorExpr{
 																X: &ast.Ident{
-																	Name: "models",
+																	Name: "userModels",
 																},
 																Sel: &ast.Ident{
 																	Name: "User",
@@ -309,13 +322,313 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 					},
 				},
 			},
+			&ast.GenDecl{
+				Tok: token.TYPE,
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "//UserRepository - domain layer repository interface",
+						},
+						{
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/user_repository.go . UserRepository",
+						},
+					},
+				},
+				Specs: []ast.Spec{
+					&ast.TypeSpec{
+						Name: &ast.Ident{
+							Name: "UserRepository",
+						},
+						Type: &ast.InterfaceType{
+							Methods: &ast.FieldList{
+								List: []*ast.Field{
+									{
+										Names: []*ast.Ident{
+											{
+												Name: "GetByEmail",
+											},
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															{
+																Name: "ctx",
+															},
+														},
+														Type: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "context",
+															},
+															Sel: &ast.Ident{
+																Name: "Context",
+															},
+														},
+													},
+													{
+														Names: []*ast.Ident{
+															{
+																Name: "email",
+															},
+														},
+														Type: ast.NewIdent("string"),
+													},
+												},
+											},
+											Results: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Type: &ast.StarExpr{
+															X: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "userModels",
+																},
+																Sel: &ast.Ident{
+																	Name: "User",
+																},
+															},
+														},
+													},
+													{
+														Type: &ast.Ident{
+															Name: "error",
+														},
+													},
+												},
+											},
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											{
+												Name: "Get",
+											},
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															{
+																Name: "ctx",
+															},
+														},
+														Type: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "context",
+															},
+															Sel: &ast.Ident{
+																Name: "Context",
+															},
+														},
+													},
+													{
+														Names: []*ast.Ident{
+															{
+																Name: "id",
+															},
+														},
+														Type: ast.NewIdent("uuid.UUID"),
+													},
+												},
+											},
+											Results: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Type: &ast.StarExpr{
+															X: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "userModels",
+																},
+																Sel: &ast.Ident{
+																	Name: "User",
+																},
+															},
+														},
+													},
+													{
+														Type: &ast.Ident{
+															Name: "error",
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			&ast.GenDecl{
+				Tok: token.TYPE,
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "//PermissionRepository - domain layer repository interface",
+						},
+						{
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/permission_repository.go . PermissionRepository",
+						},
+					},
+				},
+				Specs: []ast.Spec{
+					&ast.TypeSpec{
+						Name: &ast.Ident{
+							Name: "PermissionRepository",
+						},
+						Type: &ast.InterfaceType{
+							Methods: &ast.FieldList{
+								List: []*ast.Field{
+									{
+										Names: []*ast.Ident{
+											{
+												Name: "HasPermission",
+											},
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															{
+																Name: "ctx",
+															},
+														},
+														Type: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "context",
+															},
+															Sel: &ast.Ident{
+																Name: "Context",
+															},
+														},
+													},
+													{
+														Names: []*ast.Ident{
+															{
+																Name: "permission",
+															},
+														},
+														Type: ast.NewIdent("userModels.PermissionID"),
+													},
+													{
+														Names: []*ast.Ident{
+															{
+																Name: "requestUser",
+															},
+														},
+														Type: &ast.StarExpr{
+															X: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "userModels",
+																},
+																Sel: &ast.Ident{
+																	Name: "User",
+																},
+															},
+														},
+													},
+												},
+											},
+											Results: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Type: &ast.Ident{
+															Name: "error",
+														},
+													},
+												},
+											},
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											{
+												Name: "HasObjectPermission",
+											},
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															{
+																Name: "ctx",
+															},
+														},
+														Type: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "context",
+															},
+															Sel: &ast.Ident{
+																Name: "Context",
+															},
+														},
+													},
+													{
+														Names: []*ast.Ident{
+															{
+																Name: "permission",
+															},
+														},
+														Type: ast.NewIdent("userModels.PermissionID"),
+													},
+													{
+														Names: []*ast.Ident{
+															{
+																Name: "user",
+															},
+														},
+														Type: &ast.StarExpr{
+															X: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "userModels",
+																},
+																Sel: &ast.Ident{
+																	Name: "User",
+																},
+															},
+														},
+													},
+													{
+														Names: []*ast.Ident{
+															{
+																Name: "obj",
+															},
+														},
+														Type: &ast.Ident{
+															Name: "any",
+														},
+													},
+												},
+											},
+											Results: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Type: &ast.Ident{
+															Name: "error",
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
 
 func (i RepositoryInterfaceAuth) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "auth", "repositories", "auth.go")
+	filename := path.Join("internal", "auth", "usecases", "interfaces.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}

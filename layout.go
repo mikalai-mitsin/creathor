@@ -213,18 +213,6 @@ func CreateLayout(project *configs.Project) error {
 				Name: "auth mock models",
 			},
 			&Template{
-				SourcePath: "templates/internal/user/models/user_mock.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"user",
-					"models",
-					"mock",
-					"user.go",
-				),
-				Name: "user mock models",
-			},
-			&Template{
 				SourcePath: "templates/internal/user/repositories/postgres/permission.go.tmpl",
 				DestinationPath: path.Join(
 					destinationPath,
@@ -515,18 +503,6 @@ func RenderTests(project *configs.Project) error {
 				Name: "test auth repository implementation",
 			},
 			&Template{
-				SourcePath: "templates/internal/auth/handlers/rest/auth_test.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"auth",
-					"handlers",
-					"rest",
-					"auth_test.go",
-				),
-				Name: "rest auth handler tests",
-			},
-			&Template{
 				SourcePath: "templates/internal/auth/handlers/grpc/auth_test.go.tmpl",
 				DestinationPath: path.Join(
 					destinationPath,
@@ -539,18 +515,31 @@ func RenderTests(project *configs.Project) error {
 				Name: "grpc auth test",
 			},
 			&Template{
-				SourcePath: "templates/internal/auth/handlers/grpc/auth_middleware_test.go.tmpl",
+				SourcePath: "templates/internal/interfaces/grpc/auth_middleware_test.go.tmpl",
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
-					"auth",
-					"handlers",
+					"interfaces",
 					"grpc",
 					"auth_middleware_test.go",
 				),
 				Name: "grpc middleware test",
 			},
 		)
+	}
+	if project.RESTEnabled {
+		tests = append(tests, &Template{
+			SourcePath: "templates/internal/auth/handlers/rest/auth_test.go.tmpl",
+			DestinationPath: path.Join(
+				destinationPath,
+				"internal",
+				"auth",
+				"handlers",
+				"rest",
+				"auth_test.go",
+			),
+			Name: "rest auth handler tests",
+		})
 	}
 	if project.KafkaEnabled {
 		tests = append(

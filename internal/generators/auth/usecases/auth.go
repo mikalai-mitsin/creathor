@@ -60,28 +60,26 @@ func (u UseCaseAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/models"`, u.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/auth/models"`, u.project.Module),
 						},
 					},
 					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind: token.STRING,
-							Value: fmt.Sprintf(
-								`"%s/internal/domain/repositories"`,
-								u.project.Module,
-							),
-						},
-					},
-					&ast.ImportSpec{
+						Name: ast.NewIdent("userModels"),
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/usecases"`, u.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/user/models"`, u.project.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
 							Value: fmt.Sprintf(`"%s/pkg/log"`, u.project.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/pkg/uuid"`, u.project.Module),
 						},
 					},
 				},
@@ -102,14 +100,7 @@ func (u UseCaseAuth) file() *ast.File {
 												Name: "authRepository",
 											},
 										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "repositories",
-											},
-											Sel: &ast.Ident{
-												Name: "AuthRepository",
-											},
-										},
+										Type: ast.NewIdent("AuthRepository"),
 									},
 									{
 										Names: []*ast.Ident{
@@ -117,14 +108,7 @@ func (u UseCaseAuth) file() *ast.File {
 												Name: "userRepository",
 											},
 										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "repositories",
-											},
-											Sel: &ast.Ident{
-												Name: "UserRepository",
-											},
-										},
+										Type: ast.NewIdent("UserRepository"),
 									},
 									{
 										Names: []*ast.Ident{
@@ -132,14 +116,7 @@ func (u UseCaseAuth) file() *ast.File {
 												Name: "permissionRepository",
 											},
 										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "repositories",
-											},
-											Sel: &ast.Ident{
-												Name: "PermissionRepository",
-											},
-										},
+										Type: ast.NewIdent("PermissionRepository"),
 									},
 									{
 										Names: []*ast.Ident{
@@ -175,14 +152,7 @@ func (u UseCaseAuth) file() *ast.File {
 										Name: "authRepository",
 									},
 								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "repositories",
-									},
-									Sel: &ast.Ident{
-										Name: "AuthRepository",
-									},
-								},
+								Type: ast.NewIdent("AuthRepository"),
 							},
 							{
 								Names: []*ast.Ident{
@@ -190,14 +160,7 @@ func (u UseCaseAuth) file() *ast.File {
 										Name: "userRepository",
 									},
 								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "repositories",
-									},
-									Sel: &ast.Ident{
-										Name: "UserRepository",
-									},
-								},
+								Type: ast.NewIdent("UserRepository"),
 							},
 							{
 								Names: []*ast.Ident{
@@ -205,14 +168,7 @@ func (u UseCaseAuth) file() *ast.File {
 										Name: "permissionRepository",
 									},
 								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "repositories",
-									},
-									Sel: &ast.Ident{
-										Name: "PermissionRepository",
-									},
-								},
+								Type: ast.NewIdent("PermissionRepository"),
 							},
 							{
 								Names: []*ast.Ident{
@@ -234,14 +190,7 @@ func (u UseCaseAuth) file() *ast.File {
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "usecases",
-									},
-									Sel: &ast.Ident{
-										Name: "AuthUseCase",
-									},
-								},
+								Type: ast.NewIdent("*AuthUseCase"),
 							},
 						},
 					},
@@ -616,7 +565,7 @@ func (u UseCaseAuth) file() *ast.File {
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: "models",
+											Name: "userModels",
 										},
 										Sel: &ast.Ident{
 											Name: "User",
@@ -1064,7 +1013,7 @@ func (u UseCaseAuth) file() *ast.File {
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: "models",
+											Name: "userModels",
 										},
 										Sel: &ast.Ident{
 											Name: "User",
@@ -1274,7 +1223,7 @@ func (u UseCaseAuth) file() *ast.File {
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: "models",
+											Name: "userModels",
 										},
 										Sel: &ast.Ident{
 											Name: "User",
@@ -1288,7 +1237,7 @@ func (u UseCaseAuth) file() *ast.File {
 										Name: "permission",
 									},
 								},
-								Type: ast.NewIdent("uuid.UUID"),
+								Type: ast.NewIdent("userModels.PermissionID"),
 							},
 						},
 					},
@@ -1417,7 +1366,7 @@ func (u UseCaseAuth) file() *ast.File {
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: "models",
+											Name: "userModels",
 										},
 										Sel: &ast.Ident{
 											Name: "User",
@@ -1431,7 +1380,7 @@ func (u UseCaseAuth) file() *ast.File {
 										Name: "permission",
 									},
 								},
-								Type: ast.NewIdent("uuid.UUID"),
+								Type: ast.NewIdent("userModels.PermissionID"),
 							},
 							{
 								Names: []*ast.Ident{

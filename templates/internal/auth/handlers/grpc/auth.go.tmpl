@@ -2,19 +2,27 @@ package grpc
 
 import (
 	"context"
-	"{{ .Module }}/internal/domain/interceptors"
-	"{{ .Module }}/internal/domain/models"
+	"github.com/018bf/example/internal/interfaces/grpc"
+	"{{ .Module }}/internal/auth/models"
 	{{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
 	"strings"
 )
 
+// AuthInterceptor - domain layer repository interface
+//
+//go:generate mockgen -build_flags=-mod=mod -destination mock/auth_interceptor.go . AuthInterceptor
+type AuthInterceptor interface {
+	CreateToken(ctx context.Context, login *models.Login) (*models.TokenPair, error)
+	RefreshToken(ctx context.Context, login models.Token) (*models.TokenPair, error)
+}
+
 type AuthServiceServer struct {
 	{{ .ProtoPackage }}.UnimplementedAuthServiceServer
-	authInterceptor interceptors.AuthInterceptor
+	authInterceptor AuthInterceptor
 }
 
 func NewAuthServiceServer(
-	authInterceptor interceptors.AuthInterceptor,
+	authInterceptor AuthInterceptor,
 ) {{ .ProtoPackage }}.AuthServiceServer {
 	return &AuthServiceServer{authInterceptor: authInterceptor}
 }
@@ -29,7 +37,7 @@ func (s AuthServiceServer) CreateToken(
 	}
 	tokenPair, err := s.authInterceptor.CreateToken(ctx, login)
 	if err != nil {
-		return nil, decodeError(err)
+		return nil, grpc.DecodeError(err)
 	}
 	return decodeTokenPair(tokenPair), nil
 }
@@ -40,7 +48,7 @@ func (s AuthServiceServer) RefreshToken(
 ) (*{{ .ProtoPackage }}.TokenPair, error) {
 	tokenPair, err := s.authInterceptor.RefreshToken(ctx, models.Token(input.GetToken()))
 	if err != nil {
-		return nil, decodeError(err)
+		return nil, grpc.DecodeError(err)
 	}
 	return decodeTokenPair(tokenPair), nil
 }

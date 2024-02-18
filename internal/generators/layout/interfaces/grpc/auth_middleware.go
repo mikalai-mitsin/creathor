@@ -53,17 +53,8 @@ func (m AuthMiddleware) file() *ast.File {
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
-							Kind: token.STRING,
-							Value: fmt.Sprintf(
-								`"%s/internal/domain/interceptors"`,
-								m.project.Module,
-							),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/models"`, m.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/auth/models"`, m.project.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -529,14 +520,7 @@ func (m AuthMiddleware) astStruct() *ast.TypeSpec {
 								Name: "authInterceptor",
 							},
 						},
-						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "interceptors",
-							},
-							Sel: &ast.Ident{
-								Name: "AuthInterceptor",
-							},
-						},
+						Type: ast.NewIdent("AuthInterceptor"),
 					},
 				},
 			},
@@ -599,14 +583,7 @@ func (m AuthMiddleware) astConstructor() *ast.FuncDecl {
 								Name: "authInterceptor",
 							},
 						},
-						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "interceptors",
-							},
-							Sel: &ast.Ident{
-								Name: "AuthInterceptor",
-							},
-						},
+						Type: ast.NewIdent("AuthInterceptor"),
 					},
 					{
 						Names: []*ast.Ident{
@@ -1017,7 +994,7 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 									},
 									&ast.CallExpr{
 										Fun: &ast.Ident{
-											Name: "decodeError",
+											Name: "DecodeError",
 										},
 										Args: []ast.Expr{
 											&ast.Ident{

@@ -65,10 +65,6 @@ func Test{{ .GRPCHandlerTypeName }}_Create(t *testing.T) {
     {{ .InterceptorVariableName }} := mock_grpc.NewMock{{ .InterceptorTypeName }}(ctrl)
     logger := mock_log.NewMockLogger(ctrl)
     ctx := context.Background()
-{{- if .Auth }}
-    user := mock_models.NewUser(t)
-    ctx = context.WithValue(ctx, UserKey, user)
-{{- end }}
     // create := mock_models.New{{ .CreateTypeName }}(t)
     {{ .Variable }} := mock_models.New{{ .ModelName }}(t)
     type fields struct {
@@ -93,7 +89,7 @@ func Test{{ .GRPCHandlerTypeName }}_Create(t *testing.T) {
             setup: func() {
                 {{ .InterceptorVariableName }}.
                     EXPECT().
-                    Create(ctx, gomock.Any(){{- if .Auth -}}, user{{- end -}}).
+                    Create(ctx, gomock.Any()).
                     Return({{ .Variable }}, nil)
             },
             fields: fields{
@@ -113,7 +109,7 @@ func Test{{ .GRPCHandlerTypeName }}_Create(t *testing.T) {
             setup: func() {
                 {{ .InterceptorVariableName }}.
                     EXPECT().
-                    Create(ctx, gomock.Any(){{- if .Auth -}}, user{{- end -}}).
+                    Create(ctx, gomock.Any()).
                     Return(nil, errs.NewUnexpectedBehaviorError("interceptor error")).
                     Times(1)
             },
@@ -156,10 +152,6 @@ func Test{{ .GRPCHandlerTypeName }}_Delete(t *testing.T) {
     {{ .InterceptorVariableName }} := mock_grpc.NewMock{{ .InterceptorTypeName }}(ctrl)
     logger := mock_log.NewMockLogger(ctrl)
     ctx := context.Background()
-{{- if .Auth }}
-    user := mock_models.NewUser(t)
-    ctx = context.WithValue(ctx, UserKey, user)
-{{- end }}
     id := uuid.NewUUID()
     type fields struct {
         Unimplemented{{ .GRPCHandlerTypeName }} {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}
@@ -181,7 +173,7 @@ func Test{{ .GRPCHandlerTypeName }}_Delete(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                {{ .InterceptorVariableName }}.EXPECT().Delete(ctx, id{{- if .Auth -}}, user{{- end -}}).Return(nil).Times(1)
+                {{ .InterceptorVariableName }}.EXPECT().Delete(ctx, id).Return(nil).Times(1)
             },
             fields: fields{
                 Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
@@ -200,7 +192,7 @@ func Test{{ .GRPCHandlerTypeName }}_Delete(t *testing.T) {
         {
             name: "interceptor error",
             setup: func() {
-                {{ .InterceptorVariableName }}.EXPECT().Delete(ctx, id{{- if .Auth -}}, user{{- end -}}).
+                {{ .InterceptorVariableName }}.EXPECT().Delete(ctx, id).
                     Return(errs.NewUnexpectedBehaviorError("i error")).
                     Times(1)
             },
@@ -251,10 +243,6 @@ func Test{{ .GRPCHandlerTypeName }}_Get(t *testing.T) {
     {{ .InterceptorVariableName }} := mock_grpc.NewMock{{ .InterceptorTypeName }}(ctrl)
     logger := mock_log.NewMockLogger(ctrl)
     ctx := context.Background()
-{{- if .Auth }}
-    user := mock_models.NewUser(t)
-    ctx = context.WithValue(ctx, UserKey, user)
-{{- end }}
     {{ .Variable }} := mock_models.New{{ .ModelName }}(t)
     type fields struct {
         Unimplemented{{ .GRPCHandlerTypeName }} {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}
@@ -276,7 +264,7 @@ func Test{{ .GRPCHandlerTypeName }}_Get(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                {{ .InterceptorVariableName }}.EXPECT().Get(ctx, {{ .Variable }}.ID{{- if .Auth -}}, user{{- end -}}).Return({{ .Variable }}, nil).Times(1)
+                {{ .InterceptorVariableName }}.EXPECT().Get(ctx, {{ .Variable }}.ID).Return({{ .Variable }}, nil).Times(1)
             },
             fields: fields{
                 Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
@@ -295,7 +283,7 @@ func Test{{ .GRPCHandlerTypeName }}_Get(t *testing.T) {
         {
             name: "interceptor error",
             setup: func() {
-                {{ .InterceptorVariableName }}.EXPECT().Get(ctx, {{ .Variable }}.ID{{- if .Auth -}}, user{{- end -}}).
+                {{ .InterceptorVariableName }}.EXPECT().Get(ctx, {{ .Variable }}.ID).
                     Return(nil, errs.NewUnexpectedBehaviorError("i error")).
                     Times(1)
             },
@@ -340,10 +328,6 @@ func Test{{ .GRPCHandlerTypeName }}_List(t *testing.T) {
     {{ .InterceptorVariableName }} := mock_grpc.NewMock{{ .InterceptorTypeName }}(ctrl)
     logger := mock_log.NewMockLogger(ctrl)
     ctx := context.Background()
-{{- if .Auth }}
-    user := mock_models.NewUser(t)
-    ctx = context.WithValue(ctx, UserKey, user)
-{{- end }}
     filter := mock_models.New{{ .FilterTypeName }}(t)
     var ids []uuid.UUID
     var stringIDs []string
@@ -381,7 +365,7 @@ func Test{{ .GRPCHandlerTypeName }}_List(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                {{ .InterceptorVariableName }}.EXPECT().List(ctx, filter{{- if .Auth -}}, user{{- end -}}).Return({{ .ListVariable }}, count, nil).Times(1)
+                {{ .InterceptorVariableName }}.EXPECT().List(ctx, filter).Return({{ .ListVariable }}, count, nil).Times(1)
             },
             fields: fields{
                 Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
@@ -406,7 +390,7 @@ func Test{{ .GRPCHandlerTypeName }}_List(t *testing.T) {
             setup: func() {
                 {{ .InterceptorVariableName }}.
                     EXPECT().
-                    List(ctx, filter{{- if .Auth -}}, user{{- end -}}).
+                    List(ctx, filter).
                     Return(nil, uint64(0), errs.NewUnexpectedBehaviorError("i error")).
                     Times(1)
             },
@@ -455,10 +439,6 @@ func Test{{ .GRPCHandlerTypeName }}_Update(t *testing.T) {
     {{ .InterceptorVariableName }} := mock_grpc.NewMock{{ .InterceptorTypeName }}(ctrl)
     logger := mock_log.NewMockLogger(ctrl)
     ctx := context.Background()
-{{- if .Auth }}
-    user := mock_models.NewUser(t)
-    ctx = context.WithValue(ctx, UserKey, user)
-{{- end }}
     {{ .Variable }} := mock_models.New{{ .ModelName }}(t)
     update := mock_models.New{{ .UpdateTypeName }}(t)
     type fields struct {
@@ -481,7 +461,7 @@ func Test{{ .GRPCHandlerTypeName }}_Update(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                {{ .InterceptorVariableName }}.EXPECT().Update(ctx, gomock.Any(){{- if .Auth -}}, user{{- end -}}).Return({{ .Variable }}, nil).Times(1)
+                {{ .InterceptorVariableName }}.EXPECT().Update(ctx, gomock.Any()).Return({{ .Variable }}, nil).Times(1)
             },
             fields: fields{
                 Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
@@ -498,7 +478,7 @@ func Test{{ .GRPCHandlerTypeName }}_Update(t *testing.T) {
         {
             name: "interceptor error",
             setup: func() {
-                {{ .InterceptorVariableName }}.EXPECT().Update(ctx, gomock.Any(){{- if .Auth -}}, user{{- end -}}).
+                {{ .InterceptorVariableName }}.EXPECT().Update(ctx, gomock.Any()).
                     Return(nil, errs.NewUnexpectedBehaviorError("i error"))
             },
             fields: fields{

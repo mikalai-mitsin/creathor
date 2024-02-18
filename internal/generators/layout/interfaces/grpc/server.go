@@ -43,10 +43,14 @@ func (s Server) Sync() error {
 		return err
 	}
 	if s.project.Auth {
-		//auth := NewAuthMiddleware(s.project)
-		//if err := auth.Sync(); err != nil {
-		//	return err
-		//}
+		auth := NewAuthMiddleware(s.project)
+		if err := auth.Sync(); err != nil {
+			return err
+		}
+		interfaces := NewInterceptorInterfaceAuth(s.project)
+		if err := interfaces.Sync(); err != nil {
+			return err
+		}
 	}
 	requestID := NewRequestIDMiddleware(s.project)
 	if err := requestID.Sync(); err != nil {

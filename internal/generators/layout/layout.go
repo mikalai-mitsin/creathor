@@ -12,7 +12,6 @@ import (
 	"github.com/018bf/creathor/internal/generators/layout/interfaces/grpc"
 	"github.com/018bf/creathor/internal/generators/layout/interfaces/uptrace"
 	userModel "github.com/018bf/creathor/internal/generators/user/models"
-	userUseCases "github.com/018bf/creathor/internal/generators/user/usecases"
 )
 
 type Generator struct {
@@ -43,7 +42,6 @@ func (g *Generator) Sync() error {
 			authInterceptors.NewInterceptorAuth(g.project),
 			authInterceptors.NewUseCaseInterfaceAuth(g.project),
 			//Handlers and interfaces
-			authGrpcHandlers.NewAuthMiddleware(g.project),
 			authGrpcHandlers.NewInterceptorInterfaceAuth(g.project),
 			//
 			//userModel.NewModelUser(g.project),
@@ -51,7 +49,6 @@ func (g *Generator) Sync() error {
 			//
 			//Use case and interfaces
 			//userUseCases.NewUseCaseUser(g.project),
-			userUseCases.NewRepositoryInterfacePermission(g.project),
 			//userUseCases.NewRepositoryInterfaceUser(g.project),
 			//Interceptor and interfaces
 			//userInterceptors.NewInterceptorUser(g.project),

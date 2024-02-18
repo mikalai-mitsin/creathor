@@ -7,13 +7,13 @@ import (
     "testing"
 
     "{{ .Module }}/internal/errs"
-    "{{ .Module }}/internal/domain/models"
-    mock_models "{{ .Module }}/internal/domain/models/mock"
-    "{{ .Module }}/internal/domain/repositories"
-    mock_repositories "{{ .Module }}/internal/domain/repositories/mock"
-    "{{ .Module }}/internal/domain/usecases"
+    "{{ .Module }}/internal/auth/models"
+    mockUseCases "github.com/018bf/example/internal/auth/usecases/mock"
+    userModels "github.com/018bf/example/internal/user/models"
+    mockModels "{{ .Module }}/internal/auth/models/mock"
+    mockUserModels "{{ .Module }}/internal/user/models/mock"
     "{{ .Module }}/pkg/log"
-    mock_log "{{ .Module }}/pkg/log/mock"
+    mockLog "{{ .Module }}/pkg/log/mock"
 
     "github.com/golang/mock/gomock"
 )
@@ -21,14 +21,14 @@ import (
 func TestAuthUseCase_Auth(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository := mock_repositories.NewMockUserRepository(ctrl)
-    authRepository := mock_repositories.NewMockAuthRepository(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    userRepository :=  mockUseCases.NewMockUserRepository(ctrl)
+    authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
+    logger := mockLog.NewMockLogger(ctrl)
     ctx := context.Background()
-    user := mock_models.NewUser(t)
+    user := mockUserModels.NewUser(t)
     type fields struct {
-        authRepository repositories.AuthRepository
-        userRepository repositories.UserRepository
+        authRepository AuthRepository
+        userRepository UserRepository
         logger         log.Logger
     }
     type args struct {
@@ -40,7 +40,7 @@ func TestAuthUseCase_Auth(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    *models.User
+        want    *userModels.User
         wantErr error
     }{
         {
@@ -123,18 +123,18 @@ func TestAuthUseCase_Auth(t *testing.T) {
 func TestAuthUseCase_CreateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository := mock_repositories.NewMockUserRepository(ctrl)
-    authRepository := mock_repositories.NewMockAuthRepository(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    userRepository :=  mockUseCases.NewMockUserRepository(ctrl)
+    authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
+    logger := mockLog.NewMockLogger(ctrl)
     ctx := context.Background()
-    user := mock_models.NewUser(t)
-    login := mock_models.NewLogin(t)
+    user := mockUserModels.NewUser(t)
+    login := mockModels.NewLogin(t)
     user.Email = login.Email
-    pair := mock_models.NewTokenPair(t)
+    pair := mockModels.NewTokenPair(t)
     user.SetPassword(login.Password)
     type fields struct {
-        authRepository repositories.AuthRepository
-        userRepository repositories.UserRepository
+        authRepository AuthRepository
+        userRepository UserRepository
         logger         log.Logger
     }
     type args struct {
@@ -254,14 +254,14 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
 func TestAuthUseCase_RefreshToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository := mock_repositories.NewMockUserRepository(ctrl)
-    authRepository := mock_repositories.NewMockAuthRepository(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    userRepository :=  mockUseCases.NewMockUserRepository(ctrl)
+    authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
+    logger := mockLog.NewMockLogger(ctrl)
     ctx := context.Background()
-    pair := mock_models.NewTokenPair(t)
+    pair := mockModels.NewTokenPair(t)
     type fields struct {
-        authRepository repositories.AuthRepository
-        userRepository repositories.UserRepository
+        authRepository AuthRepository
+        userRepository UserRepository
         logger         log.Logger
     }
     type args struct {
@@ -337,13 +337,13 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
 func TestAuthUseCase_ValidateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository := mock_repositories.NewMockUserRepository(ctrl)
-    authRepository := mock_repositories.NewMockAuthRepository(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    userRepository :=  mockUseCases.NewMockUserRepository(ctrl)
+    authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
+    logger := mockLog.NewMockLogger(ctrl)
     ctx := context.Background()
     type fields struct {
-        authRepository repositories.AuthRepository
-        userRepository repositories.UserRepository
+        authRepository AuthRepository
+        userRepository UserRepository
         logger         log.Logger
     }
     type args struct {
@@ -415,19 +415,19 @@ func TestAuthUseCase_ValidateToken(t *testing.T) {
 func TestNewAuthUseCase(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository := mock_repositories.NewMockUserRepository(ctrl)
-    authRepository := mock_repositories.NewMockAuthRepository(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    userRepository :=  mockUseCases.NewMockUserRepository(ctrl)
+    authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
+    logger := mockLog.NewMockLogger(ctrl)
     type args struct {
-        authRepository       repositories.AuthRepository
-        userRepository       repositories.UserRepository
-        permissionRepository repositories.PermissionRepository
+        authRepository       AuthRepository
+        userRepository       UserRepository
+        permissionRepository PermissionRepository
         logger               log.Logger
     }
     tests := []struct {
         name string
         args args
-        want usecases.AuthUseCase
+        want *AuthUseCase
     }{
         {
             name: "ok",
@@ -456,20 +456,20 @@ func TestAuthUseCase_HasPermission(t *testing.T) {
     ctx := context.Background()
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authRepository := mock_repositories.NewMockAuthRepository(ctrl)
-    permissionRepository := mock_repositories.NewMockPermissionRepository(ctrl)
-    userRepository := mock_repositories.NewMockUserRepository(ctrl)
-    user := mock_models.NewUser(t)
+    authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
+    permissionRepository :=  mockUseCases.NewMockPermissionRepository(ctrl)
+    userRepository :=  mockUseCases.NewMockUserRepository(ctrl)
+    user := mockUserModels.NewUser(t)
     type fields struct {
-        authRepository       repositories.AuthRepository
-        userRepository       repositories.UserRepository
+        authRepository       AuthRepository
+        userRepository       UserRepository
         logger               log.Logger
-        permissionRepository repositories.PermissionRepository
+        permissionRepository PermissionRepository
     }
     type args struct {
         in0        context.Context
-        in1        *models.User
-        permission models.PermissionID
+        in1        *userModels.User
+        permission userModels.PermissionID
     }
     tests := []struct {
         name    string
@@ -482,7 +482,7 @@ func TestAuthUseCase_HasPermission(t *testing.T) {
             name: "ok",
             setup: func() {
                 permissionRepository.EXPECT().
-                    HasPermission(ctx, models.PermissionIDUserList, user).
+                    HasPermission(ctx, userModels.PermissionIDUserList, user).
                     Return(nil)
             },
             fields: fields{
@@ -494,7 +494,7 @@ func TestAuthUseCase_HasPermission(t *testing.T) {
             args: args{
                 in0:        ctx,
                 in1:        user,
-                permission: models.PermissionIDUserList,
+                permission: userModels.PermissionIDUserList,
             },
             wantErr: nil,
         },
@@ -502,7 +502,7 @@ func TestAuthUseCase_HasPermission(t *testing.T) {
             name: "error",
             setup: func() {
                 permissionRepository.EXPECT().
-                    HasPermission(ctx, models.PermissionIDUserList, user).
+                    HasPermission(ctx, userModels.PermissionIDUserList, user).
                     Return(errs.NewPermissionDenied())
             },
             fields: fields{
@@ -514,7 +514,7 @@ func TestAuthUseCase_HasPermission(t *testing.T) {
             args: args{
                 in0:        ctx,
                 in1:        user,
-                permission: models.PermissionIDUserList,
+                permission: userModels.PermissionIDUserList,
             },
             wantErr: errs.NewPermissionDenied(),
         },
@@ -537,22 +537,22 @@ func TestAuthUseCase_HasPermission(t *testing.T) {
 
 func TestAuthUseCase_HasObjectPermission(t *testing.T) {
     ctx := context.Background()
-    user := mock_models.NewUser(t)
+    user := mockUserModels.NewUser(t)
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authRepository := mock_repositories.NewMockAuthRepository(ctrl)
-    userRepository := mock_repositories.NewMockUserRepository(ctrl)
-    permissionRepository := mock_repositories.NewMockPermissionRepository(ctrl)
+    authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
+    userRepository :=  mockUseCases.NewMockUserRepository(ctrl)
+    permissionRepository :=  mockUseCases.NewMockPermissionRepository(ctrl)
     type fields struct {
-        authRepository       repositories.AuthRepository
-        userRepository       repositories.UserRepository
-        permissionRepository repositories.PermissionRepository
+        authRepository       AuthRepository
+        userRepository       UserRepository
+        permissionRepository PermissionRepository
         logger               log.Logger
     }
     type args struct {
         in0        context.Context
-        user       *models.User
-        permission models.PermissionID
+        user       *userModels.User
+        permission userModels.PermissionID
         object     interface{}
     }
     tests := []struct {
@@ -566,7 +566,7 @@ func TestAuthUseCase_HasObjectPermission(t *testing.T) {
             name: "error",
             setup: func() {
                 permissionRepository.EXPECT().
-                    HasObjectPermission(ctx, models.PermissionIDUserDetail, user, "user").
+                    HasObjectPermission(ctx, userModels.PermissionIDUserDetail, user, "user").
                     Return(errs.NewPermissionDenied())
             },
             fields: fields{
@@ -578,7 +578,7 @@ func TestAuthUseCase_HasObjectPermission(t *testing.T) {
             args: args{
                 in0:        ctx,
                 user:       user,
-                permission: models.PermissionIDUserDetail,
+                permission: userModels.PermissionIDUserDetail,
                 object:     "user",
             },
             wantErr: errs.NewPermissionDenied(),
@@ -587,7 +587,7 @@ func TestAuthUseCase_HasObjectPermission(t *testing.T) {
             name: "ok",
             setup: func() {
                 permissionRepository.EXPECT().
-                    HasObjectPermission(ctx, models.PermissionIDUserDetail, user, user).
+                    HasObjectPermission(ctx, userModels.PermissionIDUserDetail, user, user).
                     Return(nil)
             },
             fields: fields{
@@ -599,7 +599,7 @@ func TestAuthUseCase_HasObjectPermission(t *testing.T) {
             args: args{
                 in0:        ctx,
                 user:       user,
-                permission: models.PermissionIDUserDetail,
+                permission: userModels.PermissionIDUserDetail,
                 object:     user,
             },
             wantErr: nil,
@@ -608,7 +608,7 @@ func TestAuthUseCase_HasObjectPermission(t *testing.T) {
             name: "ok with user",
             setup: func() {
                 permissionRepository.EXPECT().
-                    HasObjectPermission(ctx, models.PermissionIDUserDelete, user, user).
+                    HasObjectPermission(ctx, userModels.PermissionIDUserDelete, user, user).
                     Return(nil)
             },
             fields: fields{
@@ -620,7 +620,7 @@ func TestAuthUseCase_HasObjectPermission(t *testing.T) {
             args: args{
                 in0:        ctx,
                 user:       user,
-                permission: models.PermissionIDUserDelete,
+                permission: userModels.PermissionIDUserDelete,
                 object:     user,
             },
             wantErr: nil,
@@ -645,20 +645,20 @@ func TestAuthUseCase_HasObjectPermission(t *testing.T) {
 func TestAuthUseCase_CreateTokenByUser(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository := mock_repositories.NewMockUserRepository(ctrl)
-    authRepository := mock_repositories.NewMockAuthRepository(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    userRepository :=  mockUseCases.NewMockUserRepository(ctrl)
+    authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
+    logger := mockLog.NewMockLogger(ctrl)
     ctx := context.Background()
-    user := mock_models.NewUser(t)
-    tokenPair := mock_models.NewTokenPair(t)
+    user := mockUserModels.NewUser(t)
+    tokenPair := mockModels.NewTokenPair(t)
     type fields struct {
-        authRepository repositories.AuthRepository
-        userRepository repositories.UserRepository
+        authRepository AuthRepository
+        userRepository UserRepository
         logger         log.Logger
     }
     type args struct {
         ctx  context.Context
-        user *models.User
+        user *userModels.User
     }
     tests := []struct {
         name    string

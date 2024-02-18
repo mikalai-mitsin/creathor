@@ -7,11 +7,11 @@ import (
     "testing"
 
     "{{ .Module }}/internal/errs"
-    "{{ .Module }}/internal/domain/interceptors"
-    "{{ .Module }}/internal/domain/models"
-    mock_models "{{ .Module }}/internal/domain/models/mock"
-    "{{ .Module }}/internal/domain/usecases"
-    mock_usecases "{{ .Module }}/internal/domain/usecases/mock"
+    "{{ .Module }}/internal/auth/models"
+    mock_interceptors "{{ .Module }}/internal/auth/interceptors/mock"
+    mock_models "{{ .Module }}/internal/auth/models/mock"
+    mock_user_models "{{ .Module }}/internal/user/models/mock"
+    user_models "{{ .Module }}/internal/user/models"
     "{{ .Module }}/pkg/clock"
     mock_clock "{{ .Module }}/pkg/clock/mock"
     "{{ .Module }}/pkg/log"
@@ -22,13 +22,13 @@ import (
 func TestAuthInterceptor_Auth(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authUseCase := mock_usecases.NewMockAuthUseCase(ctrl)
+    authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
     logger := mock_log.NewMockLogger(ctrl)
     ctx := context.Background()
     token := mock_models.NewToken(t)
-    user := mock_models.NewUser(t)
+    user := mock_user_models.NewUser(t)
     type fields struct {
-        authUseCase usecases.AuthUseCase
+        authUseCase AuthUseCase
         logger      log.Logger
     }
     type args struct {
@@ -40,7 +40,7 @@ func TestAuthInterceptor_Auth(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    *models.User
+        want    *user_models.User
         wantErr error
     }{
         {
@@ -101,17 +101,15 @@ func TestAuthInterceptor_Auth(t *testing.T) {
 func TestAuthInterceptor_CreateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authUseCase := mock_usecases.NewMockAuthUseCase(ctrl)
-    userUseCase := mock_usecases.NewMockUserUseCase(ctrl)
+    authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
     logger := mock_log.NewMockLogger(ctrl)
     ctx := context.Background()
     login := mock_models.NewLogin(t)
     pair := mock_models.NewTokenPair(t)
     clockmock := mock_clock.NewMockClock(ctrl)
     type fields struct {
-        authUseCase usecases.AuthUseCase
+        authUseCase AuthUseCase
         logger      log.Logger
-        userUseCase usecases.UserUseCase
         clock       clock.Clock
     }
     type args struct {
@@ -134,7 +132,6 @@ func TestAuthInterceptor_CreateToken(t *testing.T) {
             fields: fields{
                 authUseCase: authUseCase,
                 logger:      logger,
-                userUseCase: userUseCase,
                 clock:       clockmock,
             },
             args: args{
@@ -154,7 +151,6 @@ func TestAuthInterceptor_CreateToken(t *testing.T) {
             },
             fields: fields{
                 authUseCase: authUseCase,
-                userUseCase: userUseCase,
                 logger:      logger,
                 clock:       clockmock,
             },
@@ -171,7 +167,6 @@ func TestAuthInterceptor_CreateToken(t *testing.T) {
             tt.setup()
             i := AuthInterceptor{
                 authUseCase: tt.fields.authUseCase,
-                userUseCase: tt.fields.userUseCase,
                 clock:       tt.fields.clock,
                 logger:      tt.fields.logger,
             }
@@ -190,17 +185,15 @@ func TestAuthInterceptor_CreateToken(t *testing.T) {
 func TestAuthInterceptor_RefreshToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authUseCase := mock_usecases.NewMockAuthUseCase(ctrl)
-    userUseCase := mock_usecases.NewMockUserUseCase(ctrl)
+    authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
     logger := mock_log.NewMockLogger(ctrl)
     ctx := context.Background()
     pair := mock_models.NewTokenPair(t)
     refresh := mock_models.NewToken(t)
     clockmock := mock_clock.NewMockClock(ctrl)
     type fields struct {
-        authUseCase usecases.AuthUseCase
+        authUseCase AuthUseCase
         logger      log.Logger
-        userUseCase usecases.UserUseCase
         clock       clock.Clock
     }
     type args struct {
@@ -223,7 +216,6 @@ func TestAuthInterceptor_RefreshToken(t *testing.T) {
             fields: fields{
                 authUseCase: authUseCase,
                 logger:      logger,
-                userUseCase: userUseCase,
                 clock:       clockmock,
             },
             args: args{
@@ -243,7 +235,6 @@ func TestAuthInterceptor_RefreshToken(t *testing.T) {
             fields: fields{
                 authUseCase: authUseCase,
                 logger:      logger,
-                userUseCase: userUseCase,
                 clock:       clockmock,
             },
             args: args{
@@ -259,7 +250,6 @@ func TestAuthInterceptor_RefreshToken(t *testing.T) {
             tt.setup()
             i := AuthInterceptor{
                 authUseCase: tt.fields.authUseCase,
-                userUseCase: tt.fields.userUseCase,
                 clock:       tt.fields.clock,
                 logger:      tt.fields.logger,
             }
@@ -278,32 +268,28 @@ func TestAuthInterceptor_RefreshToken(t *testing.T) {
 func TestNewAuthInterceptor(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authUseCase := mock_usecases.NewMockAuthUseCase(ctrl)
-    userUseCase := mock_usecases.NewMockUserUseCase(ctrl)
+    authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
     clockmock := mock_clock.NewMockClock(ctrl)
     logger := mock_log.NewMockLogger(ctrl)
     type args struct {
-        authUseCase usecases.AuthUseCase
+        authUseCase AuthUseCase
         logger      log.Logger
-        userUseCase usecases.UserUseCase
         clock       clock.Clock
     }
     tests := []struct {
         name string
         args args
-        want interceptors.AuthInterceptor
+        want *AuthInterceptor
     }{
         {
             name: "ok",
             args: args{
                 authUseCase: authUseCase,
                 logger:      logger,
-                userUseCase: userUseCase,
                 clock:       clockmock,
             },
             want: &AuthInterceptor{
                 authUseCase: authUseCase,
-                userUseCase: userUseCase,
                 clock:       clockmock,
                 logger:      logger,
             },
@@ -311,7 +297,7 @@ func TestNewAuthInterceptor(t *testing.T) {
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            got := NewAuthInterceptor(tt.args.authUseCase, tt.args.userUseCase, tt.args.clock, tt.args.logger)
+            got := NewAuthInterceptor(tt.args.authUseCase, tt.args.clock, tt.args.logger)
             if !reflect.DeepEqual(got, tt.want) {
                 t.Errorf("NewAuthInterceptor() = %v, want %v", got, tt.want)
             }
@@ -322,14 +308,12 @@ func TestNewAuthInterceptor(t *testing.T) {
 func TestAuthInterceptor_ValidateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authUseCase := mock_usecases.NewMockAuthUseCase(ctrl)
-    userUseCase := mock_usecases.NewMockUserUseCase(ctrl)
+    authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
     logger := mock_log.NewMockLogger(ctrl)
     ctx := context.Background()
     token := models.Token("this_is_valid_token")
     type fields struct {
-        authUseCase usecases.AuthUseCase
-        userUseCase usecases.UserUseCase
+        authUseCase AuthUseCase
         logger      log.Logger
     }
     type args struct {
@@ -350,7 +334,6 @@ func TestAuthInterceptor_ValidateToken(t *testing.T) {
             },
             fields: fields{
                 authUseCase: authUseCase,
-                userUseCase: userUseCase,
                 logger:      logger,
             },
             args: args{
@@ -369,7 +352,6 @@ func TestAuthInterceptor_ValidateToken(t *testing.T) {
             },
             fields: fields{
                 authUseCase: authUseCase,
-                userUseCase: userUseCase,
                 logger:      logger,
             },
             args: args{

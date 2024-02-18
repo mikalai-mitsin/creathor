@@ -31,16 +31,14 @@ func astType(t string) ast.Expr {
 }
 
 type Model struct {
-	model    *mods.Model
-	filename string
-	domain   *mods.Domain
+	model  *mods.Model
+	domain *mods.Domain
 }
 
-func NewModel(model *mods.Model, filename string, domain *mods.Domain) *Model {
+func NewModel(model *mods.Model, domain *mods.Domain) *Model {
 	return &Model{
-		model:    model,
-		filename: filename,
-		domain:   domain,
+		model:  model,
+		domain: domain,
 	}
 }
 
@@ -60,28 +58,28 @@ func (m *Model) params() []*ast.Field {
 }
 
 func (m *Model) Sync() error {
-	err := os.MkdirAll(path.Dir(m.filename), 0777)
+	err := os.MkdirAll(path.Dir(m.domain.FileName()), 0777)
 	if err != nil {
 		return err
 	}
 	if m.domain.Auth {
-		permissions := NewPerm(m.model.Name, m.filename, m.domain)
+		permissions := NewPerm(m.model.Name, m.domain.FileName(), m.domain)
 		if err := permissions.Sync(); err != nil {
 			return err
 		}
 	}
-	structure := NewStructure(m.filename, m.model.Name, m.params(), m.domain)
+	structure := NewStructure(m.domain.FileName(), m.model.Name, m.params(), m.domain)
 	if err := structure.Sync(); err != nil {
 		return err
 	}
 	if m.model.Validation {
-		validate := models.NewValidate(structure.spec(), m.filename, m.domain)
+		validate := models.NewValidate(structure.spec(), m.domain.FileName(), m.domain)
 		if err := validate.Sync(); err != nil {
 			return err
 		}
 	}
 	if m.model.Mock {
-		mock := NewMock(structure.spec(), m.filename, m.domain)
+		mock := NewMock(structure.spec(), m.domain.FileName(), m.domain)
 		if err := mock.Sync(); err != nil {
 			return err
 		}

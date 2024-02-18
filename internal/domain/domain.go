@@ -14,13 +14,35 @@ type Domain struct {
 	Name        string
 	Module      string
 	ProtoModule string
-	Filename    string
 	Models      []*Model
 	UseCase     *Layer
 	Repository  *Layer
 	Interceptor *Layer
 	GRPCHandler *Layer
 	Auth        bool
+}
+
+func (m *Domain) SnakeName() string {
+	return strcase.ToSnake(m.Name)
+}
+func (m *Domain) FileName() string {
+	return fmt.Sprintf("%s.go", m.SnakeName())
+}
+
+func (m *Domain) CamelName() string {
+	return strcase.ToCamel(m.Name)
+}
+
+func (m *Domain) LowerCamelName() string {
+	return strcase.ToLowerCamel(m.Name)
+}
+
+func (m *Domain) DirName() string {
+	return m.SnakeName()
+}
+
+func (m *Domain) ModelsImportPath() string {
+	return fmt.Sprintf(`"%s/internal/%s/models"`, m.Module, m.DirName())
 }
 
 func (m *Domain) GetMainModel() *Model {
@@ -79,21 +101,21 @@ func (m *Domain) GetFilterModel() *Model {
 }
 
 func (m *Domain) PermissionIDCreate() string {
-	return fmt.Sprintf("PermissionID%sCreate", strcase.ToCamel(m.Name))
+	return fmt.Sprintf("PermissionID%sCreate", strcase.ToCamel(m.CamelName()))
 }
 
 func (m *Domain) PermissionIDUpdate() string {
-	return fmt.Sprintf("PermissionID%sUpdate", strcase.ToCamel(m.Name))
+	return fmt.Sprintf("PermissionID%sUpdate", m.CamelName())
 }
 
 func (m *Domain) PermissionIDDelete() string {
-	return fmt.Sprintf("PermissionID%sDelete", strcase.ToCamel(m.Name))
+	return fmt.Sprintf("PermissionID%sDelete", m.CamelName())
 }
 
 func (m *Domain) PermissionIDDetail() string {
-	return fmt.Sprintf("PermissionID%sDetail", strcase.ToCamel(m.Name))
+	return fmt.Sprintf("PermissionID%sDetail", m.CamelName())
 }
 
 func (m *Domain) PermissionIDList() string {
-	return fmt.Sprintf("PermissionID%sList", strcase.ToCamel(m.Name))
+	return fmt.Sprintf("PermissionID%sList", m.CamelName())
 }

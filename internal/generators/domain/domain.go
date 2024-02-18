@@ -32,7 +32,7 @@ func (g *Generator) Sync() error {
 		grpc.NewInterceptorInterfaceCrud(g.domain),
 	}
 	for _, model := range g.domain.Models {
-		domainGenerators = append(domainGenerators, models.NewModel(model, g.domain.Filename, g.domain))
+		domainGenerators = append(domainGenerators, models.NewModel(model, g.domain))
 	}
 	for _, generator := range domainGenerators {
 		if err := generator.Sync(); err != nil {

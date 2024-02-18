@@ -11,15 +11,15 @@ import (
 	"path"
 	"path/filepath"
 
-	mods "github.com/018bf/creathor/internal/domain"
+	"github.com/018bf/creathor/internal/domain"
 )
 
 type InterceptorCrud struct {
-	mod *mods.Domain
+	domain *domain.Domain
 }
 
-func NewInterceptorCrud(mod *mods.Domain) *InterceptorCrud {
-	return &InterceptorCrud{mod: mod}
+func NewInterceptorCrud(domain *domain.Domain) *InterceptorCrud {
+	return &InterceptorCrud{domain: domain}
 }
 
 func (i InterceptorCrud) Sync() error {
@@ -33,7 +33,7 @@ func (i InterceptorCrud) Sync() error {
 	if err := i.syncConstructor(); err != nil {
 		return err
 	}
-	for _, method := range i.mod.Interceptor.Methods {
+	for _, method := range i.domain.Interceptor.Methods {
 		switch method.Name {
 		case "Create":
 			if err := i.syncCreateMethod(method); err != nil {
@@ -61,14 +61,14 @@ func (i InterceptorCrud) Sync() error {
 }
 
 func (i InterceptorCrud) filename() string {
-	return filepath.Join("internal", i.mod.Name, "interceptors", i.mod.Filename)
+	return filepath.Join("internal", i.domain.DirName(), "interceptors", i.domain.FileName())
 }
 
 func (i InterceptorCrud) structure() *ast.TypeSpec {
 	fields := []*ast.Field{
 		{
-			Names: []*ast.Ident{ast.NewIdent(i.mod.UseCase.Variable)},
-			Type:  ast.NewIdent(i.mod.UseCase.Name),
+			Names: []*ast.Ident{ast.NewIdent(i.domain.UseCase.Variable)},
+			Type:  ast.NewIdent(i.domain.UseCase.Name),
 		},
 		{
 			Names: []*ast.Ident{ast.NewIdent("logger")},
@@ -78,7 +78,7 @@ func (i InterceptorCrud) structure() *ast.TypeSpec {
 			},
 		},
 	}
-	if i.mod.Auth {
+	if i.domain.Auth {
 		fields = append(
 			fields,
 			&ast.Field{
@@ -88,7 +88,7 @@ func (i InterceptorCrud) structure() *ast.TypeSpec {
 		)
 	}
 	structure := &ast.TypeSpec{
-		Name: ast.NewIdent(i.mod.Interceptor.Name),
+		Name: ast.NewIdent(i.domain.Interceptor.Name),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: fields,
@@ -107,7 +107,7 @@ func (i InterceptorCrud) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.mod.Interceptor.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.domain.Interceptor.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -137,8 +137,8 @@ func (i InterceptorCrud) syncStruct() error {
 func (i InterceptorCrud) constructor() *ast.FuncDecl {
 	fields := []*ast.Field{
 		{
-			Names: []*ast.Ident{ast.NewIdent(i.mod.UseCase.Variable)},
-			Type:  ast.NewIdent(i.mod.UseCase.Name),
+			Names: []*ast.Ident{ast.NewIdent(i.domain.UseCase.Variable)},
+			Type:  ast.NewIdent(i.domain.UseCase.Name),
 		},
 		{
 			Names: []*ast.Ident{ast.NewIdent("logger")},
@@ -150,15 +150,15 @@ func (i InterceptorCrud) constructor() *ast.FuncDecl {
 	}
 	exprs := []ast.Expr{
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(i.mod.UseCase.Variable),
-			Value: ast.NewIdent(i.mod.UseCase.Variable),
+			Key:   ast.NewIdent(i.domain.UseCase.Variable),
+			Value: ast.NewIdent(i.domain.UseCase.Variable),
 		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("logger"),
 			Value: ast.NewIdent("logger"),
 		},
 	}
-	if i.mod.Auth {
+	if i.domain.Auth {
 		fields = append(
 			fields,
 			&ast.Field{
@@ -175,7 +175,7 @@ func (i InterceptorCrud) constructor() *ast.FuncDecl {
 		)
 	}
 	constructor := &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("New%s", i.mod.Interceptor.Name)),
+		Name: ast.NewIdent(fmt.Sprintf("New%s", i.domain.Interceptor.Name)),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: fields,
@@ -184,7 +184,7 @@ func (i InterceptorCrud) constructor() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Type: ast.NewIdent(
-							fmt.Sprintf("*%s", i.mod.Interceptor.Name),
+							fmt.Sprintf("*%s", i.domain.Interceptor.Name),
 						),
 					},
 				},
@@ -197,7 +197,7 @@ func (i InterceptorCrud) constructor() *ast.FuncDecl {
 						&ast.UnaryExpr{
 							Op: token.AND,
 							X: &ast.CompositeLit{
-								Type: ast.NewIdent(i.mod.Interceptor.Name),
+								Type: ast.NewIdent(i.domain.Interceptor.Name),
 								Elts: exprs,
 							},
 						},
@@ -219,7 +219,7 @@ func (i InterceptorCrud) syncConstructor() error {
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", i.mod.Interceptor.Name) {
+			t.Name.String() == fmt.Sprintf("New%s", i.domain.Interceptor.Name) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -242,9 +242,9 @@ func (i InterceptorCrud) syncConstructor() error {
 	return nil
 }
 
-func (i InterceptorCrud) createMethod(method *mods.Method) *ast.FuncDecl {
+func (i InterceptorCrud) createMethod(method *domain.Method) *ast.FuncDecl {
 	var body []ast.Stmt
-	if i.mod.Auth {
+	if i.domain.Auth {
 		body = append(body,
 			&ast.AssignStmt{
 				Lhs: []ast.Expr{
@@ -324,7 +324,7 @@ func (i InterceptorCrud) createMethod(method *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("userModels"),
-									Sel: ast.NewIdent(i.mod.PermissionIDCreate()),
+									Sel: ast.NewIdent(i.domain.PermissionIDCreate()),
 								},
 							},
 						},
@@ -366,7 +366,7 @@ func (i InterceptorCrud) createMethod(method *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("userModels"),
-									Sel: ast.NewIdent(i.mod.PermissionIDCreate()),
+									Sel: ast.NewIdent(i.domain.PermissionIDCreate()),
 								},
 								ast.NewIdent("create"),
 							},
@@ -394,7 +394,7 @@ func (i InterceptorCrud) createMethod(method *mods.Method) *ast.FuncDecl {
 	body = append(body,
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(i.mod.GetMainModel().Variable),
+				ast.NewIdent(i.domain.GetMainModel().Variable),
 				ast.NewIdent("err"),
 			},
 			Tok: token.DEFINE,
@@ -403,7 +403,7 @@ func (i InterceptorCrud) createMethod(method *mods.Method) *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.mod.UseCase.Variable),
+							Sel: ast.NewIdent(i.domain.UseCase.Variable),
 						},
 						Sel: ast.NewIdent("Create"),
 					},
@@ -437,7 +437,7 @@ func (i InterceptorCrud) createMethod(method *mods.Method) *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(i.mod.GetMainModel().Variable),
+				ast.NewIdent(i.domain.GetMainModel().Variable),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -450,7 +450,7 @@ func (i InterceptorCrud) createMethod(method *mods.Method) *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.mod.Interceptor.Name),
+						X: ast.NewIdent(i.domain.Interceptor.Name),
 					},
 				},
 			},
@@ -470,7 +470,7 @@ func (i InterceptorCrud) createMethod(method *mods.Method) *ast.FuncDecl {
 	}
 }
 
-func (i InterceptorCrud) syncCreateMethod(m *mods.Method) error {
+func (i InterceptorCrud) syncCreateMethod(m *domain.Method) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -503,9 +503,9 @@ func (i InterceptorCrud) syncCreateMethod(m *mods.Method) error {
 	return nil
 }
 
-func (i InterceptorCrud) astListMethod(m *mods.Method) *ast.FuncDecl {
+func (i InterceptorCrud) astListMethod(m *domain.Method) *ast.FuncDecl {
 	var body []ast.Stmt
-	if i.mod.Auth {
+	if i.domain.Auth {
 		body = append(body,
 			// Get request user
 			&ast.AssignStmt{
@@ -585,7 +585,7 @@ func (i InterceptorCrud) astListMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("userModels"),
-									Sel: ast.NewIdent(i.mod.PermissionIDList()),
+									Sel: ast.NewIdent(i.domain.PermissionIDList()),
 								},
 							},
 						},
@@ -630,7 +630,7 @@ func (i InterceptorCrud) astListMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("userModels"),
-									Sel: ast.NewIdent(i.mod.PermissionIDList()),
+									Sel: ast.NewIdent(i.domain.PermissionIDList()),
 								},
 								ast.NewIdent("filter"),
 							},
@@ -670,7 +670,7 @@ func (i InterceptorCrud) astListMethod(m *mods.Method) *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.mod.UseCase.Variable),
+							Sel: ast.NewIdent(i.domain.UseCase.Variable),
 						},
 						Sel: ast.NewIdent("List"),
 					},
@@ -719,7 +719,7 @@ func (i InterceptorCrud) astListMethod(m *mods.Method) *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.mod.Interceptor.Name),
+						X: ast.NewIdent(i.domain.Interceptor.Name),
 					},
 				},
 			},
@@ -740,7 +740,7 @@ func (i InterceptorCrud) astListMethod(m *mods.Method) *ast.FuncDecl {
 	}
 }
 
-func (i InterceptorCrud) syncListMethod(m *mods.Method) error {
+func (i InterceptorCrud) syncListMethod(m *domain.Method) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -772,9 +772,9 @@ func (i InterceptorCrud) syncListMethod(m *mods.Method) error {
 	return nil
 }
 
-func (i InterceptorCrud) astGetMethod(m *mods.Method) *ast.FuncDecl {
+func (i InterceptorCrud) astGetMethod(m *domain.Method) *ast.FuncDecl {
 	var body []ast.Stmt
-	if i.mod.Auth {
+	if i.domain.Auth {
 		body = append(
 			body,
 			&ast.AssignStmt{
@@ -856,7 +856,7 @@ func (i InterceptorCrud) astGetMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("userModels"),
-									Sel: ast.NewIdent(i.mod.PermissionIDDetail()),
+									Sel: ast.NewIdent(i.domain.PermissionIDDetail()),
 								},
 							},
 						},
@@ -885,7 +885,7 @@ func (i InterceptorCrud) astGetMethod(m *mods.Method) *ast.FuncDecl {
 		// Try to get model from use case
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(i.mod.GetMainModel().Variable),
+				ast.NewIdent(i.domain.GetMainModel().Variable),
 				ast.NewIdent("err"),
 			},
 			Tok: token.DEFINE,
@@ -894,7 +894,7 @@ func (i InterceptorCrud) astGetMethod(m *mods.Method) *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.mod.UseCase.Variable),
+							Sel: ast.NewIdent(i.domain.UseCase.Variable),
 						},
 						Sel: ast.NewIdent("Get"),
 					},
@@ -926,7 +926,7 @@ func (i InterceptorCrud) astGetMethod(m *mods.Method) *ast.FuncDecl {
 			Else: nil,
 		},
 	)
-	if i.mod.Auth {
+	if i.domain.Auth {
 		body = append(
 			body,
 			// Check object permission
@@ -951,9 +951,9 @@ func (i InterceptorCrud) astGetMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("userModels"),
-									Sel: ast.NewIdent(i.mod.PermissionIDDetail()),
+									Sel: ast.NewIdent(i.domain.PermissionIDDetail()),
 								},
-								ast.NewIdent(i.mod.GetMainModel().Variable),
+								ast.NewIdent(i.domain.GetMainModel().Variable),
 							},
 						},
 					},
@@ -981,7 +981,7 @@ func (i InterceptorCrud) astGetMethod(m *mods.Method) *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(i.mod.GetMainModel().Variable),
+				ast.NewIdent(i.domain.GetMainModel().Variable),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -994,7 +994,7 @@ func (i InterceptorCrud) astGetMethod(m *mods.Method) *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.mod.Interceptor.Name),
+						X: ast.NewIdent(i.domain.Interceptor.Name),
 					},
 				},
 			},
@@ -1014,7 +1014,7 @@ func (i InterceptorCrud) astGetMethod(m *mods.Method) *ast.FuncDecl {
 	}
 }
 
-func (i InterceptorCrud) syncGetMethod(m *mods.Method) error {
+func (i InterceptorCrud) syncGetMethod(m *domain.Method) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1046,9 +1046,9 @@ func (i InterceptorCrud) syncGetMethod(m *mods.Method) error {
 	return nil
 }
 
-func (i InterceptorCrud) updateMethod(m *mods.Method) *ast.FuncDecl {
+func (i InterceptorCrud) updateMethod(m *domain.Method) *ast.FuncDecl {
 	var body []ast.Stmt
-	if i.mod.Auth {
+	if i.domain.Auth {
 		body = append(body,
 			&ast.AssignStmt{
 				Lhs: []ast.Expr{
@@ -1130,7 +1130,7 @@ func (i InterceptorCrud) updateMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("userModels"),
-									Sel: ast.NewIdent(i.mod.PermissionIDUpdate()),
+									Sel: ast.NewIdent(i.domain.PermissionIDUpdate()),
 								},
 							},
 						},
@@ -1155,7 +1155,7 @@ func (i InterceptorCrud) updateMethod(m *mods.Method) *ast.FuncDecl {
 			// Try to get model from use case
 			&ast.AssignStmt{
 				Lhs: []ast.Expr{
-					ast.NewIdent(i.mod.GetMainModel().Variable),
+					ast.NewIdent(i.domain.GetMainModel().Variable),
 					ast.NewIdent("err"),
 				},
 				Tok: token.DEFINE,
@@ -1164,7 +1164,7 @@ func (i InterceptorCrud) updateMethod(m *mods.Method) *ast.FuncDecl {
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("i"),
-								Sel: ast.NewIdent(i.mod.UseCase.Variable),
+								Sel: ast.NewIdent(i.domain.UseCase.Variable),
 							},
 							Sel: ast.NewIdent("Get"),
 						},
@@ -1220,9 +1220,9 @@ func (i InterceptorCrud) updateMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("userModels"),
-									Sel: ast.NewIdent(i.mod.PermissionIDUpdate()),
+									Sel: ast.NewIdent(i.domain.PermissionIDUpdate()),
 								},
-								ast.NewIdent(i.mod.GetMainModel().Variable),
+								ast.NewIdent(i.domain.GetMainModel().Variable),
 							},
 						},
 					},
@@ -1259,7 +1259,7 @@ func (i InterceptorCrud) updateMethod(m *mods.Method) *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.mod.UseCase.Variable),
+							Sel: ast.NewIdent(i.domain.UseCase.Variable),
 						},
 						Sel: ast.NewIdent("Update"),
 					},
@@ -1306,7 +1306,7 @@ func (i InterceptorCrud) updateMethod(m *mods.Method) *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.mod.Interceptor.Name),
+						X: ast.NewIdent(i.domain.Interceptor.Name),
 					},
 				},
 			},
@@ -1326,7 +1326,7 @@ func (i InterceptorCrud) updateMethod(m *mods.Method) *ast.FuncDecl {
 	}
 }
 
-func (i InterceptorCrud) syncUpdateMethod(m *mods.Method) error {
+func (i InterceptorCrud) syncUpdateMethod(m *domain.Method) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1358,9 +1358,9 @@ func (i InterceptorCrud) syncUpdateMethod(m *mods.Method) error {
 	return nil
 }
 
-func (i InterceptorCrud) deleteMethod(m *mods.Method) *ast.FuncDecl {
+func (i InterceptorCrud) deleteMethod(m *domain.Method) *ast.FuncDecl {
 	var body []ast.Stmt
-	if i.mod.Auth {
+	if i.domain.Auth {
 		body = append(body,
 			&ast.AssignStmt{
 				Lhs: []ast.Expr{
@@ -1437,7 +1437,7 @@ func (i InterceptorCrud) deleteMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("userModels"),
-									Sel: ast.NewIdent(i.mod.PermissionIDDelete()),
+									Sel: ast.NewIdent(i.domain.PermissionIDDelete()),
 								},
 							},
 						},
@@ -1461,7 +1461,7 @@ func (i InterceptorCrud) deleteMethod(m *mods.Method) *ast.FuncDecl {
 			// Try to get model from use case
 			&ast.AssignStmt{
 				Lhs: []ast.Expr{
-					ast.NewIdent(i.mod.GetMainModel().Variable),
+					ast.NewIdent(i.domain.GetMainModel().Variable),
 					ast.NewIdent("err"),
 				},
 				Tok: token.DEFINE,
@@ -1470,7 +1470,7 @@ func (i InterceptorCrud) deleteMethod(m *mods.Method) *ast.FuncDecl {
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("i"),
-								Sel: ast.NewIdent(i.mod.UseCase.Variable),
+								Sel: ast.NewIdent(i.domain.UseCase.Variable),
 							},
 							Sel: ast.NewIdent("Get"),
 						},
@@ -1522,9 +1522,9 @@ func (i InterceptorCrud) deleteMethod(m *mods.Method) *ast.FuncDecl {
 								ast.NewIdent("requestUser"),
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("userModels"),
-									Sel: ast.NewIdent(i.mod.PermissionIDDelete()),
+									Sel: ast.NewIdent(i.domain.PermissionIDDelete()),
 								},
-								ast.NewIdent(i.mod.GetMainModel().Variable),
+								ast.NewIdent(i.domain.GetMainModel().Variable),
 							},
 						},
 					},
@@ -1559,7 +1559,7 @@ func (i InterceptorCrud) deleteMethod(m *mods.Method) *ast.FuncDecl {
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("i"),
-								Sel: ast.NewIdent(i.mod.UseCase.Variable),
+								Sel: ast.NewIdent(i.domain.UseCase.Variable),
 							},
 							Sel: ast.NewIdent("Delete"),
 						},
@@ -1600,7 +1600,7 @@ func (i InterceptorCrud) deleteMethod(m *mods.Method) *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.mod.Interceptor.Name),
+						X: ast.NewIdent(i.domain.Interceptor.Name),
 					},
 				},
 			},
@@ -1620,7 +1620,7 @@ func (i InterceptorCrud) deleteMethod(m *mods.Method) *ast.FuncDecl {
 	}
 }
 
-func (i InterceptorCrud) syncDeleteMethod(m *mods.Method) error {
+func (i InterceptorCrud) syncDeleteMethod(m *domain.Method) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1669,26 +1669,26 @@ func (i InterceptorCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/%s/models"`, i.mod.Module, i.mod.Name),
+							Value: i.domain.ModelsImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/log"`, i.mod.Module),
+							Value: fmt.Sprintf(`"%s/pkg/log"`, i.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/uuid"`, i.mod.Module),
+							Value: fmt.Sprintf(`"%s/pkg/uuid"`, i.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Name: ast.NewIdent("userModels"),
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/user/models"`, i.mod.Module),
+							Value: fmt.Sprintf(`"%s/internal/user/models"`, i.domain.Module),
 						},
 					},
 				},

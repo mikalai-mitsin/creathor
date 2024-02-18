@@ -10,15 +10,15 @@ import (
 	"os"
 	"path"
 
-	mods "github.com/018bf/creathor/internal/domain"
+	"github.com/018bf/creathor/internal/domain"
 )
 
 type UseCaseInterfaceCrud struct {
-	mod *mods.Domain
+	domain *domain.Domain
 }
 
-func NewUseCaseInterfaceCrud(mod *mods.Domain) *UseCaseInterfaceCrud {
-	return &UseCaseInterfaceCrud{mod: mod}
+func NewUseCaseInterfaceCrud(domain *domain.Domain) *UseCaseInterfaceCrud {
+	return &UseCaseInterfaceCrud{domain: domain}
 }
 
 func (i UseCaseInterfaceCrud) file() *ast.File {
@@ -37,27 +37,27 @@ func (i UseCaseInterfaceCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/%s/models"`, i.mod.Module, i.mod.Name),
+							Value: i.domain.ModelsImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/uuid"`, i.mod.Module),
+							Value: fmt.Sprintf(`"%s/pkg/uuid"`, i.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Name: ast.NewIdent("userModels"),
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/user/models"`, i.mod.Module),
+							Value: fmt.Sprintf(`"%s/internal/user/models"`, i.domain.Module),
 						},
 					},
 				},
 			},
 		},
 	}
-	if i.mod.Auth {
+	if i.domain.Auth {
 		file.Decls = append(file.Decls, &ast.GenDecl{
 
 			Doc: &ast.CommentGroup{
@@ -66,7 +66,7 @@ func (i UseCaseInterfaceCrud) file() *ast.File {
 						Text: "//AuthUseCase - domain layer interceptor interface",
 					},
 					{
-						Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth.go . AuthUseCase",
+						Text: "//go:generate mockgen -build_flags=-domain=domain -destination mock/auth.go . AuthUseCase",
 					},
 				},
 			},
@@ -262,7 +262,7 @@ func (i UseCaseInterfaceCrud) file() *ast.File {
 
 func (i UseCaseInterfaceCrud) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", i.mod.Name, "interceptors", "interfaces.go")
+	filename := path.Join("internal", i.domain.DirName(), "interceptors", "interfaces.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err
@@ -274,7 +274,7 @@ func (i UseCaseInterfaceCrud) Sync() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.mod.UseCase.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.domain.UseCase.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -291,13 +291,13 @@ func (i UseCaseInterfaceCrud) Sync() error {
 					{
 						Text: fmt.Sprintf(
 							"//%s - domain layer use case interface",
-							i.mod.UseCase.Name,
+							i.domain.UseCase.Name,
 						),
 					},
 					{
 						Text: fmt.Sprintf(
-							"//go:generate mockgen -build_flags=-mod=mod -destination mock/usecase.go . %s",
-							i.mod.UseCase.Name,
+							"//go:generate mockgen -build_flags=-domain=domain -destination mock/usecase.go . %s",
+							i.domain.UseCase.Name,
 						),
 					},
 				},
@@ -318,8 +318,8 @@ func (i UseCaseInterfaceCrud) Sync() error {
 }
 
 func (i UseCaseInterfaceCrud) astInterface() *ast.TypeSpec {
-	methods := make([]*ast.Field, len(i.mod.UseCase.Methods))
-	for i, method := range i.mod.UseCase.Methods {
+	methods := make([]*ast.Field, len(i.domain.UseCase.Methods))
+	for i, method := range i.domain.UseCase.Methods {
 		methods[i] = &ast.Field{
 			Names: []*ast.Ident{
 				{
@@ -338,7 +338,7 @@ func (i UseCaseInterfaceCrud) astInterface() *ast.TypeSpec {
 	}
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
-			Name: i.mod.UseCase.Name,
+			Name: i.domain.UseCase.Name,
 		},
 		Type: &ast.InterfaceType{
 			Methods: &ast.FieldList{

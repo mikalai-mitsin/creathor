@@ -11,15 +11,15 @@ import (
 	"path"
 	"path/filepath"
 
-	mods "github.com/018bf/creathor/internal/domain"
+	"github.com/018bf/creathor/internal/domain"
 )
 
 type UseCaseCrud struct {
-	mod *mods.Domain
+	domain *domain.Domain
 }
 
-func NewUseCaseCrud(mod *mods.Domain) *UseCaseCrud {
-	return &UseCaseCrud{mod: mod}
+func NewUseCaseCrud(domain *domain.Domain) *UseCaseCrud {
+	return &UseCaseCrud{domain: domain}
 }
 
 func (u UseCaseCrud) Sync() error {
@@ -33,7 +33,7 @@ func (u UseCaseCrud) Sync() error {
 	if err := u.syncConstructor(); err != nil {
 		return err
 	}
-	for _, method := range u.mod.UseCase.Methods {
+	for _, method := range u.domain.UseCase.Methods {
 		switch method.Name {
 		case "Create":
 			if err := u.syncCreateMethod(); err != nil {
@@ -65,7 +65,7 @@ func (u UseCaseCrud) Sync() error {
 }
 
 func (u UseCaseCrud) filename() string {
-	return filepath.Join("internal", u.mod.Name, "usecases", "usecase.go")
+	return filepath.Join("internal", u.domain.DirName(), "usecases", "usecase.go")
 }
 
 func (u UseCaseCrud) file() *ast.File {
@@ -84,25 +84,25 @@ func (u UseCaseCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/%s/models"`, u.mod.Module, u.mod.Name),
+							Value: u.domain.ModelsImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/clock"`, u.mod.Module),
+							Value: fmt.Sprintf(`"%s/pkg/clock"`, u.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/log"`, u.mod.Module),
+							Value: fmt.Sprintf(`"%s/pkg/log"`, u.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/uuid"`, u.mod.Module),
+							Value: fmt.Sprintf(`"%s/pkg/uuid"`, u.domain.Module),
 						},
 					},
 				},
@@ -113,13 +113,13 @@ func (u UseCaseCrud) file() *ast.File {
 
 func (u UseCaseCrud) structure() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
-		Name: ast.NewIdent(u.mod.UseCase.Name),
+		Name: ast.NewIdent(u.domain.UseCase.Name),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Names: []*ast.Ident{ast.NewIdent(u.mod.Repository.Variable)},
-						Type:  ast.NewIdent(u.mod.Repository.Name),
+						Names: []*ast.Ident{ast.NewIdent(u.domain.Repository.Variable)},
+						Type:  ast.NewIdent(u.domain.Repository.Name),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("clock")},
@@ -151,7 +151,7 @@ func (u UseCaseCrud) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == u.mod.UseCase.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == u.domain.UseCase.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -180,13 +180,13 @@ func (u UseCaseCrud) syncStruct() error {
 
 func (u UseCaseCrud) constructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("New%s", u.mod.UseCase.Name)),
+		Name: ast.NewIdent(fmt.Sprintf("New%s", u.domain.UseCase.Name)),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Names: []*ast.Ident{ast.NewIdent(u.mod.Repository.Variable)},
-						Type:  ast.NewIdent(u.mod.Repository.Name),
+						Names: []*ast.Ident{ast.NewIdent(u.domain.Repository.Variable)},
+						Type:  ast.NewIdent(u.domain.Repository.Name),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("clock")},
@@ -207,7 +207,7 @@ func (u UseCaseCrud) constructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: ast.NewIdent(fmt.Sprintf("*%s", u.mod.UseCase.Name)),
+						Type: ast.NewIdent(fmt.Sprintf("*%s", u.domain.UseCase.Name)),
 					},
 				},
 			},
@@ -219,11 +219,11 @@ func (u UseCaseCrud) constructor() *ast.FuncDecl {
 						&ast.UnaryExpr{
 							Op: token.AND,
 							X: &ast.CompositeLit{
-								Type: ast.NewIdent(u.mod.UseCase.Name),
+								Type: ast.NewIdent(u.domain.UseCase.Name),
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
-										Key:   ast.NewIdent(u.mod.Repository.Variable),
-										Value: ast.NewIdent(u.mod.Repository.Variable),
+										Key:   ast.NewIdent(u.domain.Repository.Variable),
+										Value: ast.NewIdent(u.domain.Repository.Variable),
 									},
 									&ast.KeyValueExpr{
 										Key:   ast.NewIdent("clock"),
@@ -254,7 +254,7 @@ func (u UseCaseCrud) syncConstructor() error {
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", u.mod.UseCase.Name) {
+			t.Name.String() == fmt.Sprintf("New%s", u.domain.UseCase.Name) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -292,7 +292,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 			Value: ast.NewIdent("now"),
 		},
 	}
-	for _, param := range u.mod.GetCreateModel().Params {
+	for _, param := range u.domain.GetCreateModel().Params {
 		params = append(params, &ast.KeyValueExpr{
 			Key: ast.NewIdent(param.GetName()),
 			Value: &ast.SelectorExpr{
@@ -309,7 +309,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.mod.UseCase.Name),
+						X: ast.NewIdent(u.domain.UseCase.Name),
 					},
 				},
 			},
@@ -327,7 +327,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(u.mod.GetCreateModel().Name),
+								Sel: ast.NewIdent(u.domain.GetCreateModel().Name),
 							},
 						},
 					},
@@ -339,7 +339,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(u.mod.GetMainModel().Name),
+								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 							},
 						},
 					},
@@ -408,7 +408,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 				},
 				// Fill model struct from create form
 				&ast.AssignStmt{
-					Lhs: []ast.Expr{ast.NewIdent(u.mod.GetMainModel().Variable)},
+					Lhs: []ast.Expr{ast.NewIdent(u.domain.GetMainModel().Variable)},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.UnaryExpr{
@@ -416,7 +416,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 							X: &ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(u.mod.GetMainModel().Name),
+									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 								},
 								Elts: params,
 							},
@@ -435,13 +435,13 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("u"),
-										Sel: ast.NewIdent(u.mod.Repository.Variable),
+										Sel: ast.NewIdent(u.domain.Repository.Variable),
 									},
 									Sel: ast.NewIdent("Create"),
 								},
 								Args: []ast.Expr{
 									ast.NewIdent("ctx"),
-									ast.NewIdent(u.mod.GetMainModel().Variable),
+									ast.NewIdent(u.domain.GetMainModel().Variable),
 								},
 							},
 						},
@@ -466,7 +466,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 				// Return created model and nil error
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(u.mod.GetMainModel().Variable),
+						ast.NewIdent(u.domain.GetMainModel().Variable),
 						ast.NewIdent("nil"),
 					},
 				},
@@ -495,12 +495,12 @@ func (u UseCaseCrud) syncCreateMethod() error {
 	if method == nil {
 		method = u.create()
 	}
-	for _, param := range u.mod.GetCreateModel().Params {
+	for _, param := range u.domain.GetCreateModel().Params {
 		param := param
 		ast.Inspect(method, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
 				if t, ok := cl.Type.(*ast.SelectorExpr); ok &&
-					t.Sel.String() == u.mod.GetMainModel().Name {
+					t.Sel.String() == u.domain.GetMainModel().Name {
 					for _, elt := range cl.Elts {
 						if kv, ok := elt.(*ast.KeyValueExpr); ok {
 							if key, ok := kv.Key.(*ast.Ident); ok &&
@@ -547,7 +547,7 @@ func (u UseCaseCrud) list() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.mod.UseCase.Name),
+						X: ast.NewIdent(u.domain.UseCase.Name),
 					},
 				},
 			},
@@ -564,11 +564,11 @@ func (u UseCaseCrud) list() *ast.FuncDecl {
 						Type:  ast.NewIdent("context.Context"),
 					},
 					{
-						Names: []*ast.Ident{ast.NewIdent(u.mod.GetFilterModel().Variable)},
+						Names: []*ast.Ident{ast.NewIdent(u.domain.GetFilterModel().Variable)},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(u.mod.GetFilterModel().Name),
+								Sel: ast.NewIdent(u.domain.GetFilterModel().Name),
 							},
 						},
 					},
@@ -581,7 +581,7 @@ func (u UseCaseCrud) list() *ast.FuncDecl {
 							Elt: &ast.StarExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("models"),
-									Sel: ast.NewIdent(u.mod.GetMainModel().Name),
+									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 								},
 							},
 						},
@@ -599,7 +599,7 @@ func (u UseCaseCrud) list() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(u.mod.GetMainModel().Variable),
+						ast.NewIdent(u.domain.GetMainModel().Variable),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -608,13 +608,13 @@ func (u UseCaseCrud) list() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("u"),
-									Sel: ast.NewIdent(u.mod.Repository.Variable),
+									Sel: ast.NewIdent(u.domain.Repository.Variable),
 								},
 								Sel: ast.NewIdent("List"),
 							},
 							Args: []ast.Expr{
 								ast.NewIdent("ctx"),
-								ast.NewIdent(u.mod.GetFilterModel().Variable),
+								ast.NewIdent(u.domain.GetFilterModel().Variable),
 							},
 						},
 					},
@@ -650,13 +650,13 @@ func (u UseCaseCrud) list() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("u"),
-									Sel: ast.NewIdent(u.mod.Repository.Variable),
+									Sel: ast.NewIdent(u.domain.Repository.Variable),
 								},
 								Sel: ast.NewIdent("Count"),
 							},
 							Args: []ast.Expr{
 								ast.NewIdent("ctx"),
-								ast.NewIdent(u.mod.GetFilterModel().Variable),
+								ast.NewIdent(u.domain.GetFilterModel().Variable),
 							},
 						},
 					},
@@ -683,7 +683,7 @@ func (u UseCaseCrud) list() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(u.mod.GetMainModel().Variable),
+						ast.NewIdent(u.domain.GetMainModel().Variable),
 						ast.NewIdent("count"),
 						ast.NewIdent("nil"),
 					},
@@ -735,7 +735,7 @@ func (u UseCaseCrud) get() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.mod.UseCase.Name),
+						X: ast.NewIdent(u.domain.UseCase.Name),
 					},
 				},
 			},
@@ -760,7 +760,7 @@ func (u UseCaseCrud) get() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(u.mod.GetMainModel().Name),
+								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 							},
 						},
 					},
@@ -774,7 +774,7 @@ func (u UseCaseCrud) get() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(u.mod.GetMainModel().Variable),
+						ast.NewIdent(u.domain.GetMainModel().Variable),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -783,7 +783,7 @@ func (u UseCaseCrud) get() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("u"),
-									Sel: ast.NewIdent(u.mod.Repository.Variable),
+									Sel: ast.NewIdent(u.domain.Repository.Variable),
 								},
 								Sel: ast.NewIdent("Get"),
 							},
@@ -815,7 +815,7 @@ func (u UseCaseCrud) get() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(u.mod.GetMainModel().Variable),
+						ast.NewIdent(u.domain.GetMainModel().Variable),
 						ast.NewIdent("nil"),
 					},
 				},
@@ -860,7 +860,7 @@ func (u UseCaseCrud) update() *ast.FuncDecl {
 	block := &ast.BlockStmt{
 		List: []ast.Stmt{},
 	}
-	for _, param := range u.mod.GetUpdateModel().Params {
+	for _, param := range u.domain.GetUpdateModel().Params {
 		if param.Name == "ID" {
 			continue
 		}
@@ -878,7 +878,7 @@ func (u UseCaseCrud) update() *ast.FuncDecl {
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
 							&ast.SelectorExpr{
-								X:   ast.NewIdent(u.mod.GetMainModel().Variable),
+								X:   ast.NewIdent(u.domain.GetMainModel().Variable),
 								Sel: ast.NewIdent(param.GetName()),
 							},
 						},
@@ -904,7 +904,7 @@ func (u UseCaseCrud) update() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.mod.UseCase.Name),
+						X: ast.NewIdent(u.domain.UseCase.Name),
 					},
 				},
 			},
@@ -922,7 +922,7 @@ func (u UseCaseCrud) update() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(u.mod.GetUpdateModel().Name),
+								Sel: ast.NewIdent(u.domain.GetUpdateModel().Name),
 							},
 						},
 					},
@@ -934,7 +934,7 @@ func (u UseCaseCrud) update() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(u.mod.GetMainModel().Name),
+								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 							},
 						},
 					},
@@ -982,7 +982,7 @@ func (u UseCaseCrud) update() *ast.FuncDecl {
 				// Get model to update
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(u.mod.GetMainModel().Variable),
+						ast.NewIdent(u.domain.GetMainModel().Variable),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -991,7 +991,7 @@ func (u UseCaseCrud) update() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("u"),
-									Sel: ast.NewIdent(u.mod.Repository.Variable),
+									Sel: ast.NewIdent(u.domain.Repository.Variable),
 								},
 								Sel: ast.NewIdent("Get"),
 							},
@@ -1025,7 +1025,7 @@ func (u UseCaseCrud) update() *ast.FuncDecl {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.SelectorExpr{
-							X:   ast.NewIdent(u.mod.GetMainModel().Variable),
+							X:   ast.NewIdent(u.domain.GetMainModel().Variable),
 							Sel: ast.NewIdent("UpdatedAt"),
 						},
 					},
@@ -1060,13 +1060,13 @@ func (u UseCaseCrud) update() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("u"),
-										Sel: ast.NewIdent(u.mod.Repository.Variable),
+										Sel: ast.NewIdent(u.domain.Repository.Variable),
 									},
 									Sel: ast.NewIdent("Update"),
 								},
 								Args: []ast.Expr{
 									ast.NewIdent("ctx"),
-									ast.NewIdent(u.mod.GetMainModel().Variable),
+									ast.NewIdent(u.domain.GetMainModel().Variable),
 								},
 							},
 						},
@@ -1091,7 +1091,7 @@ func (u UseCaseCrud) update() *ast.FuncDecl {
 				// Return updated model and nil error
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(u.mod.GetMainModel().Variable),
+						ast.NewIdent(u.domain.GetMainModel().Variable),
 						ast.NewIdent("nil"),
 					},
 				},
@@ -1120,7 +1120,7 @@ func (u UseCaseCrud) syncUpdateMethod() error {
 	if method == nil {
 		method = u.update()
 	}
-	for _, param := range u.mod.GetUpdateModel().Params {
+	for _, param := range u.domain.GetUpdateModel().Params {
 		param := param
 		if param.Name == "ID" {
 			continue
@@ -1158,7 +1158,7 @@ func (u UseCaseCrud) syncUpdateMethod() error {
 								&ast.AssignStmt{
 									Lhs: []ast.Expr{
 										&ast.SelectorExpr{
-											X:   ast.NewIdent(u.mod.GetMainModel().Variable),
+											X:   ast.NewIdent(u.domain.GetMainModel().Variable),
 											Sel: ast.NewIdent(param.GetName()),
 										},
 									},
@@ -1203,7 +1203,7 @@ func (u UseCaseCrud) delete() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.mod.UseCase.Name),
+						X: ast.NewIdent(u.domain.UseCase.Name),
 					},
 				},
 			},
@@ -1246,7 +1246,7 @@ func (u UseCaseCrud) delete() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("u"),
-										Sel: ast.NewIdent(u.mod.Repository.Variable),
+										Sel: ast.NewIdent(u.domain.Repository.Variable),
 									},
 									Sel: ast.NewIdent("Delete"),
 								},
@@ -1325,7 +1325,7 @@ func (u UseCaseCrud) getByEmail() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.mod.UseCase.Name),
+						X: ast.NewIdent(u.domain.UseCase.Name),
 					},
 				},
 			},
@@ -1350,7 +1350,7 @@ func (u UseCaseCrud) getByEmail() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(u.mod.GetMainModel().Name),
+								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 							},
 						},
 					},
@@ -1364,7 +1364,7 @@ func (u UseCaseCrud) getByEmail() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(u.mod.GetMainModel().Variable),
+						ast.NewIdent(u.domain.GetMainModel().Variable),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -1373,7 +1373,7 @@ func (u UseCaseCrud) getByEmail() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("u"),
-									Sel: ast.NewIdent(u.mod.Repository.Variable),
+									Sel: ast.NewIdent(u.domain.Repository.Variable),
 								},
 								Sel: ast.NewIdent("GetByEmail"),
 							},
@@ -1405,7 +1405,7 @@ func (u UseCaseCrud) getByEmail() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(u.mod.GetMainModel().Variable),
+						ast.NewIdent(u.domain.GetMainModel().Variable),
 						ast.NewIdent("nil"),
 					},
 				},

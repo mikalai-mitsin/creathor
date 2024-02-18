@@ -147,7 +147,7 @@ func (m *Mock) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/%s/models"`, m.domain.Module, m.domain.Name),
+							Value: m.domain.ModelsImportPath(),
 						},
 					},
 					&ast.ImportSpec{
@@ -176,7 +176,7 @@ func (m *Mock) file() *ast.File {
 
 func (m *Mock) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", m.domain.Name, "models", "mock", m.fileName)
+	filename := path.Join("internal", m.domain.DirName(), "models", "mock", m.fileName)
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err

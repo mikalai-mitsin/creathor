@@ -11,29 +11,29 @@ import (
 	"path"
 	"path/filepath"
 
-	mods "github.com/018bf/creathor/internal/domain"
+	"github.com/018bf/creathor/internal/domain"
 
 	"github.com/iancoleman/strcase"
 )
 
 type RepositoryCrud struct {
-	mod *mods.Domain
+	domain *domain.Domain
 }
 
-func NewRepositoryCrud(mod *mods.Domain) *RepositoryCrud {
-	return &RepositoryCrud{mod: mod}
+func NewRepositoryCrud(domain *domain.Domain) *RepositoryCrud {
+	return &RepositoryCrud{domain: domain}
 }
 
 func (r RepositoryCrud) getDTOName() string {
-	return fmt.Sprintf("%sDTO", strcase.ToCamel(r.mod.GetMainModel().Name))
+	return fmt.Sprintf("%sDTO", strcase.ToCamel(r.domain.GetMainModel().Name))
 }
 
 func (r RepositoryCrud) getDTOListName() string {
-	return fmt.Sprintf("%sListDTO", strcase.ToCamel(r.mod.GetMainModel().Name))
+	return fmt.Sprintf("%sListDTO", strcase.ToCamel(r.domain.GetMainModel().Name))
 }
 
 func (r RepositoryCrud) filename() string {
-	return filepath.Join("internal", r.mod.Name, "repositories", "postgres", r.mod.Filename)
+	return filepath.Join("internal", r.domain.DirName(), "repositories", "postgres", r.domain.FileName())
 }
 
 func (r RepositoryCrud) Sync() error {
@@ -62,7 +62,7 @@ func (r RepositoryCrud) Sync() error {
 	if err := r.syncDTOToModel(); err != nil {
 		return err
 	}
-	for _, method := range r.mod.Repository.Methods {
+	for _, method := range r.domain.Repository.Methods {
 		switch method.Name {
 		case "Create":
 			if err := r.syncCreateMethod(); err != nil {
@@ -159,7 +159,7 @@ func (r RepositoryCrud) dtoStruct() *ast.TypeSpec {
 			},
 		},
 	}
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		ast.Inspect(structure, func(node ast.Node) bool {
 			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
 				for _, field := range st.Fields.List {
@@ -206,7 +206,7 @@ func (r RepositoryCrud) syncDTOStruct() error {
 	if structure == nil {
 		structure = r.dtoStruct()
 	}
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		ast.Inspect(structure, func(node ast.Node) bool {
 			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
 				for _, field := range st.Fields.List {
@@ -253,7 +253,7 @@ func (r RepositoryCrud) dtoConstructor() *ast.FuncDecl {
 		Type: ast.NewIdent(r.getDTOName()),
 		Elts: []ast.Expr{},
 	}
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		elt := &ast.KeyValueExpr{
 			Key: &ast.Ident{
 				Name: param.GetName(),
@@ -313,7 +313,7 @@ func (r RepositoryCrud) dtoConstructor() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.mod.GetMainModel().Name,
+									Name: r.domain.GetMainModel().Name,
 								},
 							},
 						},
@@ -351,7 +351,7 @@ func (r RepositoryCrud) dtoConstructor() *ast.FuncDecl {
 			},
 		},
 	}
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		if !param.IsSlice() {
 			continue
 		}
@@ -455,7 +455,7 @@ func (r RepositoryCrud) syncDTOConstructor() error {
 	if structureConstructor == nil {
 		structureConstructor = r.dtoConstructor()
 	}
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		param := param
 		ast.Inspect(structureConstructor, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
@@ -535,12 +535,12 @@ func (r RepositoryCrud) dtoToModel() *ast.FuncDecl {
 		Type: &ast.SelectorExpr{
 			X: ast.NewIdent("models"),
 			Sel: &ast.Ident{
-				Name: r.mod.GetMainModel().Name,
+				Name: r.domain.GetMainModel().Name,
 			},
 		},
 		Elts: []ast.Expr{},
 	}
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		par := &ast.KeyValueExpr{
 			Key: &ast.Ident{
 				Name: param.GetName(),
@@ -619,7 +619,7 @@ func (r RepositoryCrud) dtoToModel() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.mod.GetMainModel().Name,
+									Name: r.domain.GetMainModel().Name,
 								},
 							},
 						},
@@ -646,7 +646,7 @@ func (r RepositoryCrud) dtoToModel() *ast.FuncDecl {
 			},
 		},
 	}
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		if !param.IsSlice() {
 			continue
 		}
@@ -768,7 +768,7 @@ func (r RepositoryCrud) syncDTOToModel() error {
 func (r RepositoryCrud) astStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Doc:        nil,
-		Name:       ast.NewIdent(r.mod.Repository.Name),
+		Name:       ast.NewIdent(r.domain.Repository.Name),
 		TypeParams: nil,
 		Assign:     0,
 		Type: &ast.StructType{
@@ -834,37 +834,37 @@ func (r RepositoryCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/errs"`, r.mod.Module),
+							Value: fmt.Sprintf(`"%s/internal/errs"`, r.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/%s/models"`, r.mod.Module, r.mod.Name),
+							Value: r.domain.ModelsImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/log"`, r.mod.Module),
+							Value: fmt.Sprintf(`"%s/pkg/log"`, r.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/postgresql"`, r.mod.Module),
+							Value: fmt.Sprintf(`"%s/pkg/postgresql"`, r.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/utils"`, r.mod.Module),
+							Value: fmt.Sprintf(`"%s/pkg/utils"`, r.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/uuid"`, r.mod.Module),
+							Value: fmt.Sprintf(`"%s/pkg/uuid"`, r.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -902,7 +902,7 @@ func (r RepositoryCrud) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.mod.Repository.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.domain.Repository.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -937,7 +937,7 @@ func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
 		Doc:  nil,
 		Recv: nil,
-		Name: ast.NewIdent(fmt.Sprintf("New%s", r.mod.Repository.Name)),
+		Name: ast.NewIdent(fmt.Sprintf("New%s", r.domain.Repository.Name)),
 		Type: &ast.FuncType{
 			Func:       0,
 			TypeParams: nil,
@@ -973,7 +973,7 @@ func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 					{
 						Doc:     nil,
 						Names:   nil,
-						Type:    ast.NewIdent(fmt.Sprintf("*%s", r.mod.Repository.Name)),
+						Type:    ast.NewIdent(fmt.Sprintf("*%s", r.domain.Repository.Name)),
 						Tag:     nil,
 						Comment: nil,
 					},
@@ -991,7 +991,7 @@ func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 							OpPos: 0,
 							Op:    token.AND,
 							X: &ast.CompositeLit{
-								Type: ast.NewIdent(r.mod.Repository.Name),
+								Type: ast.NewIdent(r.domain.Repository.Name),
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
 										Key: &ast.Ident{
@@ -1031,7 +1031,7 @@ func (r RepositoryCrud) syncConstructor() error {
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", r.mod.Repository.Name) {
+			t.Name.String() == fmt.Sprintf("New%s", r.domain.Repository.Name) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -1057,7 +1057,7 @@ func (r RepositoryCrud) syncConstructor() error {
 func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 	var columns []ast.Expr
 	var values []ast.Expr
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		if param.GetName() == "ID" {
 			continue
 		}
@@ -1078,7 +1078,7 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 						ast.NewIdent("r"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(r.mod.Repository.Name),
+						X: ast.NewIdent(r.domain.Repository.Name),
 					},
 				},
 			},
@@ -1098,7 +1098,7 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("models"),
-								Sel: ast.NewIdent(r.mod.GetMainModel().Name),
+								Sel: ast.NewIdent(r.domain.GetMainModel().Name),
 							},
 						},
 					},
@@ -1154,7 +1154,7 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: ast.NewIdent(
-								fmt.Sprintf("New%sDTOFromModel", r.mod.GetMainModel().Name),
+								fmt.Sprintf("New%sDTOFromModel", r.domain.GetMainModel().Name),
 							),
 							Args: []ast.Expr{
 								ast.NewIdent("model"),
@@ -1185,7 +1185,7 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 															Kind: token.STRING,
 															Value: fmt.Sprintf(
 																`"public.%s"`,
-																r.mod.TableName(),
+																r.domain.TableName(),
 															),
 														},
 													},
@@ -1355,7 +1355,7 @@ func (r RepositoryCrud) syncCreateMethod() error {
 	if method == nil {
 		method = r.astCreateMethod()
 	}
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		param := param
 		if param.GetName() == "ID" {
 			continue
@@ -1414,11 +1414,11 @@ func (r RepositoryCrud) syncCreateMethod() error {
 }
 
 func (r RepositoryCrud) search() ast.Stmt {
-	if !r.mod.SearchEnabled() {
+	if !r.domain.SearchEnabled() {
 		return &ast.EmptyStmt{}
 	}
 	var columns []ast.Expr
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		if param.Search {
 			columns = append(columns, &ast.BasicLit{
 				Kind:  token.STRING,
@@ -1521,9 +1521,9 @@ func (r RepositoryCrud) search() ast.Stmt {
 }
 
 func (r RepositoryCrud) listMethod() *ast.FuncDecl {
-	tableName := r.mod.TableName()
+	tableName := r.domain.TableName()
 	var columns []ast.Expr
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		columns = append(
 			columns,
 			&ast.BasicLit{
@@ -1543,7 +1543,7 @@ func (r RepositoryCrud) listMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.mod.Repository.Name,
+							Name: r.domain.Repository.Name,
 						},
 					},
 				},
@@ -1582,7 +1582,7 @@ func (r RepositoryCrud) listMethod() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.mod.GetFilterModel().Name,
+									Name: r.domain.GetFilterModel().Name,
 								},
 							},
 						},
@@ -1599,7 +1599,7 @@ func (r RepositoryCrud) listMethod() *ast.FuncDecl {
 										Name: "models",
 									},
 									Sel: &ast.Ident{
-										Name: r.mod.GetMainModel().Name,
+										Name: r.domain.GetMainModel().Name,
 									},
 								},
 							},
@@ -2230,9 +2230,9 @@ func (r RepositoryCrud) syncListMethod() error {
 	if method == nil {
 		method = r.listMethod()
 	}
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		param := param
-		column := fmt.Sprintf(`"%s.%s"`, r.mod.TableName(), param.Tag())
+		column := fmt.Sprintf(`"%s.%s"`, r.domain.TableName(), param.Tag())
 		ast.Inspect(method, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Select" {
@@ -2266,7 +2266,7 @@ func (r RepositoryCrud) syncListMethod() error {
 }
 
 func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
-	tableName := r.mod.TableName()
+	tableName := r.domain.TableName()
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
@@ -2281,7 +2281,7 @@ func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 			Value: fmt.Sprintf(`"%s.created_at"`, tableName),
 		},
 	}
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		columns = append(
 			columns,
 			&ast.BasicLit{
@@ -2301,7 +2301,7 @@ func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.mod.Repository.Name,
+							Name: r.domain.Repository.Name,
 						},
 					},
 				},
@@ -2340,7 +2340,7 @@ func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.mod.GetFilterModel().Name,
+									Name: r.domain.GetFilterModel().Name,
 								},
 							},
 						},
@@ -2440,7 +2440,7 @@ func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 							Args: []ast.Expr{
 								&ast.BasicLit{
 									Kind:  token.STRING,
-									Value: fmt.Sprintf(`"public.%s"`, r.mod.TableName()),
+									Value: fmt.Sprintf(`"public.%s"`, r.domain.TableName()),
 								},
 							},
 						},
@@ -2811,9 +2811,9 @@ func (r RepositoryCrud) syncCountMethod() error {
 }
 
 func (r RepositoryCrud) getMethod() *ast.FuncDecl {
-	tableName := r.mod.TableName()
+	tableName := r.domain.TableName()
 	var columns []ast.Expr
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		columns = append(
 			columns,
 			&ast.BasicLit{
@@ -2833,7 +2833,7 @@ func (r RepositoryCrud) getMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.mod.Repository.Name,
+							Name: r.domain.Repository.Name,
 						},
 					},
 				},
@@ -2886,7 +2886,7 @@ func (r RepositoryCrud) getMethod() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.mod.GetMainModel().Name,
+									Name: r.domain.GetMainModel().Name,
 								},
 							},
 						},
@@ -3165,7 +3165,7 @@ func (r RepositoryCrud) getMethod() *ast.FuncDecl {
 												Kind: token.STRING,
 												Value: fmt.Sprintf(
 													`"%s_id"`,
-													strcase.ToSnake(r.mod.GetMainModel().Name),
+													strcase.ToSnake(r.domain.GetMainModel().Name),
 												),
 											},
 											&ast.CallExpr{
@@ -3218,9 +3218,9 @@ func (r RepositoryCrud) getMethod() *ast.FuncDecl {
 }
 
 func (r RepositoryCrud) getByEmailMethod() *ast.FuncDecl {
-	tableName := r.mod.TableName()
+	tableName := r.domain.TableName()
 	var columns []ast.Expr
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		columns = append(
 			columns,
 			&ast.BasicLit{
@@ -3240,7 +3240,7 @@ func (r RepositoryCrud) getByEmailMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.mod.Repository.Name,
+							Name: r.domain.Repository.Name,
 						},
 					},
 				},
@@ -3284,7 +3284,7 @@ func (r RepositoryCrud) getByEmailMethod() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.mod.GetMainModel().Name,
+									Name: r.domain.GetMainModel().Name,
 								},
 							},
 						},
@@ -3563,7 +3563,7 @@ func (r RepositoryCrud) getByEmailMethod() *ast.FuncDecl {
 												Kind: token.STRING,
 												Value: fmt.Sprintf(
 													`"%s_email"`,
-													strcase.ToSnake(r.mod.GetMainModel().Name),
+													strcase.ToSnake(r.domain.GetMainModel().Name),
 												),
 											},
 											ast.NewIdent("email"),
@@ -3625,9 +3625,9 @@ func (r RepositoryCrud) syncGetMethod() error {
 	if method == nil {
 		method = r.getMethod()
 	}
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		param := param
-		column := fmt.Sprintf(`"%s.%s"`, r.mod.TableName(), param.Tag())
+		column := fmt.Sprintf(`"%s.%s"`, r.domain.TableName(), param.Tag())
 		ast.Inspect(method, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Select" {
@@ -3679,9 +3679,9 @@ func (r RepositoryCrud) syncGetByEmailMethod() error {
 	if method == nil {
 		method = r.getByEmailMethod()
 	}
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		param := param
-		column := fmt.Sprintf(`"%s.%s"`, r.mod.TableName(), param.Tag())
+		column := fmt.Sprintf(`"%s.%s"`, r.domain.TableName(), param.Tag())
 		ast.Inspect(method, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Select" {
@@ -3715,11 +3715,11 @@ func (r RepositoryCrud) syncGetByEmailMethod() error {
 }
 
 func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
-	tableName := r.mod.TableName()
+	tableName := r.domain.TableName()
 	updateBlock := &ast.BlockStmt{
 		List: []ast.Stmt{},
 	}
-	for _, param := range r.mod.GetMainModel().Params {
+	for _, param := range r.domain.GetMainModel().Params {
 		if param.GetName() == "ID" {
 			continue
 		}
@@ -3769,7 +3769,7 @@ func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.mod.Repository.Name,
+							Name: r.domain.Repository.Name,
 						},
 					},
 				},
@@ -3808,7 +3808,7 @@ func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
 									Name: "models",
 								},
 								Sel: &ast.Ident{
-									Name: r.mod.GetMainModel().Name,
+									Name: r.domain.GetMainModel().Name,
 								},
 							},
 						},
@@ -4078,7 +4078,7 @@ func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
 												Kind: token.STRING,
 												Value: fmt.Sprintf(
 													`"%s_id"`,
-													strcase.ToSnake(r.mod.GetMainModel().Name),
+													strcase.ToSnake(r.domain.GetMainModel().Name),
 												),
 											},
 											&ast.CallExpr{
@@ -4178,7 +4178,7 @@ func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
 												Kind: token.STRING,
 												Value: fmt.Sprintf(
 													`"%s_id"`,
-													strcase.ToSnake(r.mod.GetMainModel().Name),
+													strcase.ToSnake(r.domain.GetMainModel().Name),
 												),
 											},
 											&ast.CallExpr{
@@ -4250,7 +4250,7 @@ func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
 												Kind: token.STRING,
 												Value: fmt.Sprintf(
 													`"%s_id"`,
-													strcase.ToSnake(r.mod.GetMainModel().Name),
+													strcase.ToSnake(r.domain.GetMainModel().Name),
 												),
 											},
 											&ast.CallExpr{
@@ -4319,8 +4319,8 @@ func (r RepositoryCrud) syncUpdateMethod() error {
 	if method == nil {
 		method = r.updateMethod()
 	}
-	tableName := r.mod.TableName()
-	for _, param := range r.mod.GetMainModel().Params {
+	tableName := r.domain.TableName()
+	for _, param := range r.domain.GetMainModel().Params {
 		param := param
 		if param.GetName() == "ID" {
 			continue
@@ -4416,7 +4416,7 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.mod.Repository.Name,
+							Name: r.domain.Repository.Name,
 						},
 					},
 				},
@@ -4539,7 +4539,7 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 											Kind: token.STRING,
 											Value: fmt.Sprintf(
 												`"public.%s"`,
-												r.mod.TableName(),
+												r.domain.TableName(),
 											),
 										},
 									},
@@ -4700,7 +4700,7 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 												Kind: token.STRING,
 												Value: fmt.Sprintf(
 													`"%s_id"`,
-													strcase.ToSnake(r.mod.GetMainModel().Name),
+													strcase.ToSnake(r.domain.GetMainModel().Name),
 												),
 											},
 											&ast.CallExpr{
@@ -4801,7 +4801,7 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 												Kind: token.STRING,
 												Value: fmt.Sprintf(
 													`"%s_id"`,
-													strcase.ToSnake(r.mod.GetMainModel().Name),
+													strcase.ToSnake(r.domain.GetMainModel().Name),
 												),
 											},
 											&ast.CallExpr{
@@ -4875,7 +4875,7 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 												Kind: token.STRING,
 												Value: fmt.Sprintf(
 													`"%s_id"`,
-													strcase.ToSnake(r.mod.GetMainModel().Name),
+													strcase.ToSnake(r.domain.GetMainModel().Name),
 												),
 											},
 											&ast.CallExpr{
@@ -5032,7 +5032,7 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 								X: &ast.SelectorExpr{
 									X: ast.NewIdent("models"),
 									Sel: &ast.Ident{
-										Name: r.mod.GetMainModel().Name,
+										Name: r.domain.GetMainModel().Name,
 									},
 								},
 							},
@@ -5063,7 +5063,7 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 												Name: "models",
 											},
 											Sel: &ast.Ident{
-												Name: r.mod.GetMainModel().Name,
+												Name: r.domain.GetMainModel().Name,
 											},
 										},
 									},

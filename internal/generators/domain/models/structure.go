@@ -74,7 +74,7 @@ func (m *Structure) file() *ast.File {
 }
 
 func (m *Structure) filename() string {
-	return filepath.Join("internal", m.domain.Name, "models", m.fileName)
+	return filepath.Join("internal", m.domain.DirName(), "models", m.fileName)
 }
 
 func (m *Structure) fill(structure *ast.TypeSpec) {

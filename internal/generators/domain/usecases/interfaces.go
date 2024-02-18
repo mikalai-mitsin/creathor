@@ -11,15 +11,15 @@ import (
 	"path"
 	"path/filepath"
 
-	mods "github.com/018bf/creathor/internal/domain"
+	"github.com/018bf/creathor/internal/domain"
 )
 
 type RepositoryInterfaceCrud struct {
-	mod *mods.Domain
+	domain *domain.Domain
 }
 
-func NewRepositoryInterfaceCrud(mod *mods.Domain) *RepositoryInterfaceCrud {
-	return &RepositoryInterfaceCrud{mod: mod}
+func NewRepositoryInterfaceCrud(domain *domain.Domain) *RepositoryInterfaceCrud {
+	return &RepositoryInterfaceCrud{domain: domain}
 }
 
 func (i RepositoryInterfaceCrud) file() *ast.File {
@@ -38,13 +38,13 @@ func (i RepositoryInterfaceCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/%s/models"`, i.mod.Module, i.mod.Name),
+							Value: i.domain.ModelsImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/uuid"`, i.mod.Module),
+							Value: fmt.Sprintf(`"%s/pkg/uuid"`, i.domain.Module),
 						},
 					},
 				},
@@ -55,7 +55,7 @@ func (i RepositoryInterfaceCrud) file() *ast.File {
 
 func (i RepositoryInterfaceCrud) Sync() error {
 	fileset := token.NewFileSet()
-	filename := filepath.Join("internal", i.mod.Name, "usecases", "interfaces.go")
+	filename := filepath.Join("internal", i.domain.DirName(), "usecases", "interfaces.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func (i RepositoryInterfaceCrud) Sync() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.mod.Repository.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.domain.Repository.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -84,13 +84,13 @@ func (i RepositoryInterfaceCrud) Sync() error {
 					{
 						Text: fmt.Sprintf(
 							"//%s - domain layer repository interface",
-							i.mod.Repository.Name,
+							i.domain.Repository.Name,
 						),
 					},
 					{
 						Text: fmt.Sprintf(
-							"//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . %s",
-							i.mod.Repository.Name,
+							"//go:generate mockgen -build_flags=-domain=domain -destination mock/interfaces.go . %s",
+							i.domain.Repository.Name,
 						),
 					},
 				},
@@ -111,8 +111,8 @@ func (i RepositoryInterfaceCrud) Sync() error {
 }
 
 func (i RepositoryInterfaceCrud) astInterface() *ast.TypeSpec {
-	methods := make([]*ast.Field, len(i.mod.Repository.Methods))
-	for i, method := range i.mod.Repository.Methods {
+	methods := make([]*ast.Field, len(i.domain.Repository.Methods))
+	for i, method := range i.domain.Repository.Methods {
 		methods[i] = &ast.Field{
 			Names: []*ast.Ident{
 				{
@@ -130,7 +130,7 @@ func (i RepositoryInterfaceCrud) astInterface() *ast.TypeSpec {
 		}
 	}
 	return &ast.TypeSpec{
-		Name: ast.NewIdent(i.mod.Repository.Name),
+		Name: ast.NewIdent(i.domain.Repository.Name),
 		Type: &ast.InterfaceType{
 			Methods: &ast.FieldList{
 				List: methods,

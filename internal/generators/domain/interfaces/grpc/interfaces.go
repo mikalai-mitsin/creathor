@@ -10,15 +10,15 @@ import (
 	"os"
 	"path"
 
-	mods "github.com/018bf/creathor/internal/domain"
+	"github.com/018bf/creathor/internal/domain"
 )
 
 type InterceptorInterfaceCrud struct {
-	mod *mods.Domain
+	domain *domain.Domain
 }
 
-func NewInterceptorInterfaceCrud(mod *mods.Domain) *InterceptorInterfaceCrud {
-	return &InterceptorInterfaceCrud{mod: mod}
+func NewInterceptorInterfaceCrud(domain *domain.Domain) *InterceptorInterfaceCrud {
+	return &InterceptorInterfaceCrud{domain: domain}
 }
 
 func (i InterceptorInterfaceCrud) file() *ast.File {
@@ -37,13 +37,13 @@ func (i InterceptorInterfaceCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/%s/models"`, i.mod.Module, i.mod.Name),
+							Value: i.domain.ModelsImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/uuid"`, i.mod.Module),
+							Value: fmt.Sprintf(`"%s/pkg/uuid"`, i.domain.Module),
 						},
 					},
 				},
@@ -54,7 +54,7 @@ func (i InterceptorInterfaceCrud) file() *ast.File {
 
 func (i InterceptorInterfaceCrud) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", i.mod.Name, "handlers", "grpc", "interfaces.go")
+	filename := path.Join("internal", i.domain.DirName(), "handlers", "grpc", "interfaces.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err
@@ -66,7 +66,7 @@ func (i InterceptorInterfaceCrud) Sync() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.mod.Interceptor.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.domain.Interceptor.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -83,13 +83,13 @@ func (i InterceptorInterfaceCrud) Sync() error {
 					{
 						Text: fmt.Sprintf(
 							"//%s - domain layer interceptor interface",
-							i.mod.Interceptor.Name,
+							i.domain.Interceptor.Name,
 						),
 					},
 					{
 						Text: fmt.Sprintf(
-							"//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . %s",
-							i.mod.Interceptor.Name,
+							"//go:generate mockgen -build_flags=-domain=domain -destination mock/interfaces.go . %s",
+							i.domain.Interceptor.Name,
 						),
 					},
 				},
@@ -110,8 +110,8 @@ func (i InterceptorInterfaceCrud) Sync() error {
 }
 
 func (i InterceptorInterfaceCrud) astInterface() *ast.TypeSpec {
-	methods := make([]*ast.Field, len(i.mod.Interceptor.Methods))
-	for i, method := range i.mod.Interceptor.Methods {
+	methods := make([]*ast.Field, len(i.domain.Interceptor.Methods))
+	for i, method := range i.domain.Interceptor.Methods {
 		methods[i] = &ast.Field{
 			Names: []*ast.Ident{
 				{
@@ -130,7 +130,7 @@ func (i InterceptorInterfaceCrud) astInterface() *ast.TypeSpec {
 	}
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
-			Name: i.mod.Interceptor.Name,
+			Name: i.domain.Interceptor.Name,
 		},
 		Type: &ast.InterfaceType{
 			Methods: &ast.FieldList{

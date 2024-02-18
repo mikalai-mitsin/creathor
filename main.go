@@ -89,7 +89,6 @@ func initProject(ctx *cli.Context) error {
 			Name:        m.Model,
 			Module:      project.Module,
 			ProtoModule: project.ProtoPackage(),
-			Filename:    m.FileName(),
 			Models: []*mods.Model{
 				mods.NewMainModel(m),
 				mods.NewFilterModel(m),

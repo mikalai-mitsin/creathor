@@ -52,14 +52,6 @@ func main() {
                 ArgsUsage: "",
             },
 {{- end  }}
-{{- if .RESTEnabled }}
-            {
-                Name:      "rest",
-                Usage:     "Run rest server",
-                Action:    runREST,
-                ArgsUsage: "",
-            },
-{{- end  }}
         },
     }
     if err := app.Run(os.Args); err != nil {
@@ -72,10 +64,6 @@ func runApp(context *cli.Context) error {
 {{- if .GRPCEnabled }}
     app := containers.NewGRPCContainer(configPath)
     app.Run()
-{{- else if .RESTEnabled }}
-    app := containers.NewRESTContainer(configPath)
-    app.Run()
-{{- else }}
 {{- end }}
     return nil
 }
@@ -98,15 +86,6 @@ func runGateway(context *cli.Context) error {
 }
 {{- end }}
 
-
-{{- if .RESTEnabled }}
-// runREST - run REST api
-func runREST(context *cli.Context) error {
-    app := containers.NewRESTContainer(configPath)
-    app.Run()
-    return nil
-}
-{{- end }}
 
 // runMigrations - migrate database
 func runMigrations(context *cli.Context) error {

@@ -112,10 +112,10 @@ func initProject(ctx *cli.Context) error {
 			return err
 		}
 	}
-	if err := RenderTests(project); err != nil {
+	if err := postInit(project); err != nil {
 		return err
 	}
-	if err := postInit(project); err != nil {
+	if err := RenderTests(project); err != nil {
 		return err
 	}
 	return nil
@@ -124,34 +124,6 @@ func initProject(ctx *cli.Context) error {
 func postInit(project *configs.Project) error {
 	fmt.Println("post init...")
 	var errb bytes.Buffer
-	generate := exec.Command("go", "generate", "./...")
-	generate.Dir = destinationPath
-	generate.Stderr = &errb
-	fmt.Println(strings.Join(generate.Args, " "))
-	if err := generate.Run(); err != nil {
-		fmt.Println(errb.String())
-	}
-	if project.RESTEnabled {
-		swag := exec.Command(
-			"swag",
-			"init",
-			"-d",
-			"./internal/interfaces/rest",
-			"-g",
-			"server.go",
-			"--parseDependency",
-			"-o",
-			"./api/rest",
-			"-ot",
-			"json",
-		)
-		swag.Dir = destinationPath
-		swag.Stderr = &errb
-		fmt.Println(strings.Join(swag.Args, " "))
-		if err := swag.Run(); err != nil {
-			fmt.Println(errb.String())
-		}
-	}
 	if project.GRPCEnabled {
 		bufUpdate := exec.Command("buf", "mod", "update")
 		bufUpdate.Dir = path.Join(destinationPath, "api", "proto")
@@ -167,6 +139,13 @@ func postInit(project *configs.Project) error {
 		if err := bufGenerate.Run(); err != nil {
 			fmt.Println(errb.String())
 		}
+	}
+	generate := exec.Command("go", "generate", "./...")
+	generate.Dir = destinationPath
+	generate.Stderr = &errb
+	fmt.Println(strings.Join(generate.Args, " "))
+	if err := generate.Run(); err != nil {
+		fmt.Println(errb.String())
 	}
 	tidy := exec.Command("go", "mod", "tidy")
 	tidy.Dir = destinationPath

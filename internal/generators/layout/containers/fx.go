@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/018bf/creathor/internal/configs"
 )
@@ -39,11 +40,6 @@ func (f FxContainer) Sync() error {
 			return err
 		}
 	}
-	if f.project.RESTEnabled {
-		if err := f.syncRestContainer(); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
@@ -67,20 +63,19 @@ func (f FxContainer) file() *ast.File {
 			},
 		},
 		&ast.ImportSpec{
-			Name: ast.NewIdent("jwtRepositories"),
+			Name: ast.NewIdent("authRepositories"),
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/repositories/jwt"`, f.project.Module),
+				Value: fmt.Sprintf(`"%s/internal/auth/repositories/jwt"`, f.project.Module),
 			},
 		},
-		// FIXME
-		//&ast.ImportSpec{
-		//	Name: ast.NewIdent("postgresRepositories"),
-		//	Path: &ast.BasicLit{
-		//		Kind:  token.STRING,
-		//		Value: fmt.Sprintf(`"%s/internal/repositories/postgres"`, f.project.Module),
-		//	},
-		//},
+		&ast.ImportSpec{
+			Name: ast.NewIdent("authGrpcHandlers"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/auth/handlers/grpc"`, f.project.Module),
+			},
+		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
@@ -100,15 +95,17 @@ func (f FxContainer) file() *ast.File {
 			},
 		},
 		&ast.ImportSpec{
+			Name: ast.NewIdent("authInterceptors"),
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/interceptors"`, f.project.Module),
+				Value: fmt.Sprintf(`"%s/internal/auth/interceptors"`, f.project.Module),
 			},
 		},
 		&ast.ImportSpec{
+			Name: ast.NewIdent("authUseCases"),
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/usecases"`, f.project.Module),
+				Value: fmt.Sprintf(`"%s/internal/auth/usecases"`, f.project.Module),
 			},
 		},
 		&ast.ImportSpec{
@@ -148,15 +145,6 @@ func (f FxContainer) file() *ast.File {
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
 				Value: fmt.Sprintf(`"%s/internal/interfaces/gateway"`, f.project.Module),
-			},
-		})
-	}
-	if f.project.RESTEnabled {
-		imports = append(imports, &ast.ImportSpec{
-			Name: ast.NewIdent("restInterface"),
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/interfaces/rest"`, f.project.Module),
 			},
 		})
 	}
@@ -284,7 +272,7 @@ func (f FxContainer) toProvide() []ast.Expr {
 				},
 				&ast.SelectorExpr{
 					X: &ast.Ident{
-						Name: "grpcInterface",
+						Name: "authGrpcHandlers",
 					},
 					Sel: &ast.Ident{
 						Name: "NewAuthServiceServer",
@@ -306,37 +294,6 @@ func (f FxContainer) toProvide() []ast.Expr {
 			},
 		)
 	}
-	if f.project.RESTEnabled {
-		toProvide = append(toProvide, &ast.SelectorExpr{
-			X: &ast.Ident{
-				Name: "restInterface",
-			},
-			Sel: &ast.Ident{
-				Name: "NewServer",
-			},
-		})
-		if f.project.Auth {
-			toProvide = append(
-				toProvide,
-				&ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "restInterface",
-					},
-					Sel: &ast.Ident{
-						Name: "NewAuthMiddleware",
-					},
-				},
-				&ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "restInterface",
-					},
-					Sel: &ast.Ident{
-						Name: "NewAuthHandler",
-					},
-				},
-			)
-		}
-	}
 	if f.project.GatewayEnabled {
 		toProvide = append(toProvide, &ast.SelectorExpr{
 			X: &ast.Ident{
@@ -348,72 +305,21 @@ func (f FxContainer) toProvide() []ast.Expr {
 		})
 	}
 	if f.project.Auth {
+		var ddd []string
+		for _, model := range f.project.Models {
+			ddd = append(ddd, fmt.Sprintf("fx.As(new(%sInterceptors.AuthUseCase))", model.DomainAlias()))
+		}
 		toProvide = append(
 			toProvide,
-			&ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "interceptors",
-				},
-				Sel: &ast.Ident{
-					Name: "NewAuthInterceptor",
-				},
-			},
-			&ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "usecases",
-				},
-				Sel: &ast.Ident{
-					Name: "NewAuthUseCase",
-				},
-			},
-			&ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "jwtRepositories",
-				},
-				Sel: &ast.Ident{
-					Name: "NewAuthRepository",
-				},
-			},
-			&ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "postgresRepositories",
-				},
-				Sel: &ast.Ident{
-					Name: "NewPermissionRepository",
-				},
-			},
+			ast.NewIdent("fx.Annotate(authInterceptors.NewAuthInterceptor, fx.As(new(authGrpcHandlers.AuthInterceptor)), fx.As(new(grpcInterface.AuthInterceptor)))"),
+			ast.NewIdent(fmt.Sprintf("fx.Annotate(authUseCases.NewAuthUseCase, fx.As(new(authInterceptors.AuthUseCase)), %s)", strings.Join(ddd, ", "))),
+			ast.NewIdent("fx.Annotate(authRepositories.NewAuthRepository, fx.As(new(authUseCases.AuthRepository)))"),
+			ast.NewIdent("fx.Annotate(userPostgresRepositories.NewPermissionRepository, fx.As(new(authUseCases.PermissionRepository)))"),
 		)
 	}
 	for _, model := range f.project.Models {
 		toProvide = append(
 			toProvide,
-			//&ast.SelectorExpr{
-			//	X: ast.NewIdent(fmt.Sprintf("%sInterceptors", model.DomainAlias())),
-			//	Sel: &ast.Ident{
-			//		Name: fmt.Sprintf("New%s", model.InterceptorTypeName()),
-			//	},
-			//},
-			//&ast.SelectorExpr{
-			//	X: ast.NewIdent(fmt.Sprintf("%sUseCases", model.DomainAlias())),
-			//	Sel: &ast.Ident{
-			//		Name: fmt.Sprintf("New%s", model.UseCaseTypeName()),
-			//	},
-			//},
-			//&ast.SelectorExpr{
-			//	X: ast.NewIdent(fmt.Sprintf("%sPostgresRepositories", model.DomainAlias())),
-			//	Sel: &ast.Ident{
-			//		Name: fmt.Sprintf("New%s", model.RepositoryTypeName()),
-			//	},
-			//},
-			ast.NewIdent(
-				fmt.Sprintf(
-					"fx.Annotate(%sPostgresRepositories.New%s, fx.As(new(%sUseCases.%s)))",
-					model.DomainAlias(),
-					model.RepositoryTypeName(),
-					model.DomainAlias(),
-					model.RepositoryTypeName(),
-				),
-			),
 			ast.NewIdent(
 				fmt.Sprintf(
 					"fx.Annotate(%sUseCases.New%s, fx.As(new(%sInterceptors.%s)))",
@@ -439,11 +345,32 @@ func (f FxContainer) toProvide() []ast.Expr {
 				},
 			},
 		)
-		if model.RESTEnabled {
-			toProvide = append(toProvide, &ast.SelectorExpr{
-				X:   ast.NewIdent(fmt.Sprintf("%sRestHandlers", model.DomainAlias())),
-				Sel: ast.NewIdent(fmt.Sprintf("New%s", model.RESTHandlerTypeName())),
-			})
+		if f.project.Auth && strings.ToLower(model.Model) == "user" {
+			toProvide = append(
+				toProvide,
+				ast.NewIdent(
+					fmt.Sprintf(
+						"fx.Annotate(%sPostgresRepositories.New%s, fx.As(new(%sUseCases.%s)), fx.As(new(authUseCases.UserRepository)))",
+						model.DomainAlias(),
+						model.RepositoryTypeName(),
+						model.DomainAlias(),
+						model.RepositoryTypeName(),
+					),
+				),
+			)
+		} else {
+			toProvide = append(
+				toProvide,
+				ast.NewIdent(
+					fmt.Sprintf(
+						"fx.Annotate(%sPostgresRepositories.New%s, fx.As(new(%sUseCases.%s)))",
+						model.DomainAlias(),
+						model.RepositoryTypeName(),
+						model.DomainAlias(),
+						model.RepositoryTypeName(),
+					),
+				),
+			)
 		}
 	}
 	return toProvide
@@ -750,6 +677,9 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 func (f FxContainer) syncFxModule() error {
 	fileset := token.NewFileSet()
 	filename := f.filename()
+	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
+		return err
+	}
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		file = f.file()
@@ -1646,435 +1576,6 @@ func (f FxContainer) syncGatewayContainer() error {
 	})
 	if function == nil {
 		function = f.astGatewayContainer()
-	}
-	if !functionExists {
-		file.Decls = append(file.Decls, function)
-	}
-	buff := &bytes.Buffer{}
-	if err := printer.Fprint(buff, fileset, file); err != nil {
-		return err
-	}
-	if err := os.WriteFile(filename, buff.Bytes(), 0777); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (f FxContainer) astRestContainer() *ast.FuncDecl {
-	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: "NewRESTContainer",
-		},
-		Type: &ast.FuncType{
-			Params: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "config",
-							},
-						},
-						Type: &ast.Ident{
-							Name: "string",
-						},
-					},
-				},
-			},
-			Results: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "fx",
-								},
-								Sel: &ast.Ident{
-									Name: "App",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		Body: &ast.BlockStmt{
-			List: []ast.Stmt{
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "app",
-						},
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "fx",
-								},
-								Sel: &ast.Ident{
-									Name: "New",
-								},
-							},
-							Args: []ast.Expr{
-								&ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "fx",
-										},
-										Sel: &ast.Ident{
-											Name: "Provide",
-										},
-									},
-									Args: []ast.Expr{
-										&ast.FuncLit{
-											Type: &ast.FuncType{
-												Params: &ast.FieldList{},
-												Results: &ast.FieldList{
-													List: []*ast.Field{
-														{
-															Type: &ast.Ident{
-																Name: "string",
-															},
-														},
-													},
-												},
-											},
-											Body: &ast.BlockStmt{
-												List: []ast.Stmt{
-													&ast.ReturnStmt{
-														Results: []ast.Expr{
-															&ast.Ident{
-																Name: "config",
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-								&ast.Ident{
-									Name: "FXModule",
-								},
-								&ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "fx",
-										},
-										Sel: &ast.Ident{
-											Name: "Invoke",
-										},
-									},
-									Args: []ast.Expr{
-										&ast.FuncLit{
-											Type: &ast.FuncType{
-												Params: &ast.FieldList{
-													List: []*ast.Field{
-														{
-															Names: []*ast.Ident{
-																{
-																	Name: "lifecycle",
-																},
-															},
-															Type: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "fx",
-																},
-																Sel: &ast.Ident{
-																	Name: "Lifecycle",
-																},
-															},
-														},
-														{
-															Names: []*ast.Ident{
-																{
-																	Name: "logger",
-																},
-															},
-															Type: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "log",
-																},
-																Sel: &ast.Ident{
-																	Name: "Logger",
-																},
-															},
-														},
-														{
-															Names: []*ast.Ident{
-																{
-																	Name: "server",
-																},
-															},
-															Type: &ast.StarExpr{
-																X: &ast.SelectorExpr{
-																	X: &ast.Ident{
-																		Name: "restInterface",
-																	},
-																	Sel: &ast.Ident{
-																		Name: "Server",
-																	},
-																},
-															},
-														},
-														{
-															Names: []*ast.Ident{
-																{
-																	Name: "shutdowner",
-																},
-															},
-															Type: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "fx",
-																},
-																Sel: &ast.Ident{
-																	Name: "Shutdowner",
-																},
-															},
-														},
-													},
-												},
-											},
-											Body: &ast.BlockStmt{
-												List: []ast.Stmt{
-													&ast.ExprStmt{
-														X: &ast.CallExpr{
-															Fun: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "lifecycle",
-																},
-																Sel: &ast.Ident{
-																	Name: "Append",
-																},
-															},
-															Args: []ast.Expr{
-																&ast.CompositeLit{
-																	Type: &ast.SelectorExpr{
-																		X: &ast.Ident{
-																			Name: "fx",
-																		},
-																		Sel: &ast.Ident{
-																			Name: "Hook",
-																		},
-																	},
-																	Elts: []ast.Expr{
-																		&ast.KeyValueExpr{
-																			Key: &ast.Ident{
-																				Name: "OnStart",
-																			},
-																			Value: &ast.FuncLit{
-																				Type: &ast.FuncType{
-																					Params: &ast.FieldList{
-																						List: []*ast.Field{
-																							{
-																								Names: []*ast.Ident{
-																									{
-																										Name: "ctx",
-																									},
-																								},
-																								Type: &ast.SelectorExpr{
-																									X: &ast.Ident{
-																										Name: "context",
-																									},
-																									Sel: &ast.Ident{
-																										Name: "Context",
-																									},
-																								},
-																							},
-																						},
-																					},
-																					Results: &ast.FieldList{
-																						List: []*ast.Field{
-																							{
-																								Type: &ast.Ident{
-																									Name: "error",
-																								},
-																							},
-																						},
-																					},
-																				},
-																				Body: &ast.BlockStmt{
-																					List: []ast.Stmt{
-																						&ast.GoStmt{
-																							Call: &ast.CallExpr{
-																								Fun: &ast.FuncLit{
-																									Type: &ast.FuncType{
-																										Params: &ast.FieldList{},
-																									},
-																									Body: &ast.BlockStmt{
-																										List: []ast.Stmt{
-																											&ast.AssignStmt{
-																												Lhs: []ast.Expr{
-																													&ast.Ident{
-																														Name: "err",
-																													},
-																												},
-																												Tok: token.DEFINE,
-																												Rhs: []ast.Expr{
-																													&ast.CallExpr{
-																														Fun: &ast.SelectorExpr{
-																															X: &ast.Ident{
-																																Name: "server",
-																															},
-																															Sel: &ast.Ident{
-																																Name: "Start",
-																															},
-																														},
-																														Args: []ast.Expr{
-																															&ast.Ident{
-																																Name: "ctx",
-																															},
-																														},
-																													},
-																												},
-																											},
-																											&ast.IfStmt{
-																												Cond: &ast.BinaryExpr{
-																													X: &ast.Ident{
-																														Name: "err",
-																													},
-																													Op: token.NEQ,
-																													Y: &ast.Ident{
-																														Name: "nil",
-																													},
-																												},
-																												Body: &ast.BlockStmt{
-																													List: []ast.Stmt{
-																														&ast.ExprStmt{
-																															X: &ast.CallExpr{
-																																Fun: &ast.SelectorExpr{
-																																	X: &ast.Ident{
-																																		Name: "logger",
-																																	},
-																																	Sel: &ast.Ident{
-																																		Name: "Error",
-																																	},
-																																},
-																																Args: []ast.Expr{
-																																	&ast.BasicLit{
-																																		Kind:  token.STRING,
-																																		Value: `"shutdown"`,
-																																	},
-																																	&ast.CallExpr{
-																																		Fun: &ast.SelectorExpr{
-																																			X: &ast.Ident{
-																																				Name: "log",
-																																			},
-																																			Sel: &ast.Ident{
-																																				Name: "Any",
-																																			},
-																																		},
-																																		Args: []ast.Expr{
-																																			&ast.BasicLit{
-																																				Kind:  token.STRING,
-																																				Value: `"error"`,
-																																			},
-																																			&ast.Ident{
-																																				Name: "err",
-																																			},
-																																		},
-																																	},
-																																},
-																															},
-																														},
-																														&ast.AssignStmt{
-																															Lhs: []ast.Expr{
-																																&ast.Ident{
-																																	Name: "_",
-																																},
-																															},
-																															Tok: token.ASSIGN,
-																															Rhs: []ast.Expr{
-																																&ast.CallExpr{
-																																	Fun: &ast.SelectorExpr{
-																																		X: &ast.Ident{
-																																			Name: "shutdowner",
-																																		},
-																																		Sel: &ast.Ident{
-																																			Name: "Shutdown",
-																																		},
-																																	},
-																																},
-																															},
-																														},
-																													},
-																												},
-																											},
-																										},
-																									},
-																								},
-																							},
-																						},
-																						&ast.ReturnStmt{
-																							Results: []ast.Expr{
-																								&ast.Ident{
-																									Name: "nil",
-																								},
-																							},
-																						},
-																					},
-																				},
-																			},
-																		},
-																		&ast.KeyValueExpr{
-																			Key: &ast.Ident{
-																				Name: "OnStop",
-																			},
-																			Value: &ast.SelectorExpr{
-																				X: &ast.Ident{
-																					Name: "server",
-																				},
-																				Sel: &ast.Ident{
-																					Name: "Stop",
-																				},
-																			},
-																		},
-																	},
-																},
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-				&ast.ReturnStmt{
-					Results: []ast.Expr{
-						&ast.Ident{
-							Name: "app",
-						},
-					},
-				},
-			},
-		},
-	}
-}
-
-func (f FxContainer) syncRestContainer() error {
-	fileset := token.NewFileSet()
-	filename := path.Join("internal", "containers", "fx.go")
-	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
-	if err != nil {
-		return err
-	}
-	var functionExists bool
-	var function *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "NewRESTContainer" {
-			functionExists = true
-			function = t
-			return false
-		}
-		return true
-	})
-	if function == nil {
-		function = f.astRestContainer()
 	}
 	if !functionExists {
 		file.Decls = append(file.Decls, function)

@@ -29,12 +29,6 @@ func createDirectories(project *configs.Project) error {
 		path.Join(destinationPath, "pkg", "uuid"),
 		path.Join(destinationPath, "pkg", "postgresql"),
 	}
-	if project.RESTEnabled {
-		directories = append(
-			directories,
-			path.Join(destinationPath, "internal", "interfaces", "rest"),
-		)
-	}
 	if project.GRPCEnabled {
 		directories = append(
 			directories,
@@ -311,49 +305,6 @@ func CreateLayout(project *configs.Project) error {
 			},
 		)
 	}
-	if project.RESTEnabled {
-		files = append(
-			files,
-			&Template{
-				SourcePath: "templates/internal/interfaces/rest/middleware.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"interfaces",
-					"rest",
-					"middleware.go",
-				),
-				Name: "rest middlewares",
-			},
-			&Template{
-				SourcePath: "templates/internal/interfaces/rest/server.go.tmpl",
-				DestinationPath: path.Join(
-					destinationPath,
-					"internal",
-					"interfaces",
-					"rest",
-					"server.go",
-				),
-				Name: "rest server",
-			},
-		)
-		if project.Auth {
-			files = append(
-				files,
-				&Template{
-					SourcePath: "templates/internal/auth/handlers/rest/auth.go.tmpl",
-					DestinationPath: path.Join(
-						destinationPath,
-						"internal",
-						"interfaces",
-						"rest",
-						"auth.go",
-					),
-					Name: "rest auth handler",
-				},
-			)
-		}
-	}
 	if project.GRPCEnabled {
 		files = append(
 			files,
@@ -526,20 +477,6 @@ func RenderTests(project *configs.Project) error {
 				Name: "grpc middleware test",
 			},
 		)
-	}
-	if project.RESTEnabled {
-		tests = append(tests, &Template{
-			SourcePath: "templates/internal/auth/handlers/rest/auth_test.go.tmpl",
-			DestinationPath: path.Join(
-				destinationPath,
-				"internal",
-				"auth",
-				"handlers",
-				"rest",
-				"auth_test.go",
-			),
-			Name: "rest auth handler tests",
-		})
 	}
 	if project.KafkaEnabled {
 		tests = append(

@@ -110,6 +110,9 @@ func (s Server) astServerStruct() *ast.TypeSpec {
 func (s Server) syncServerStruct() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "interfaces", "grpc", "server.go")
+	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
+		return err
+	}
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		file = s.file()

@@ -212,7 +212,7 @@ func NewRepository(m *configs.ModelConfig) *Layer {
 			},
 		},
 	}
-	if m.Model == "User" {
+	if m.Model == "user" {
 		layer.Methods = append(layer.Methods, &Method{
 			Name: "GetByEmail",
 			Args: []*ast.Field{

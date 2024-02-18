@@ -19,7 +19,6 @@ type Project struct {
 	Models         []*ModelConfig `yaml:"models"`
 	GRPCEnabled    bool           `yaml:"gRPC"`
 	GatewayEnabled bool           `yaml:"gateway"`
-	RESTEnabled    bool           `yaml:"REST"`
 	MakeEnabled    bool           `yaml:"make"`
 	TaskEnabled    bool           `yaml:"task"`
 	UptraceEnabled bool           `yaml:"uptrace"`
@@ -36,7 +35,6 @@ func NewProject(configPath string) (*Project, error) {
 		Models:         nil,
 		GRPCEnabled:    true,
 		GatewayEnabled: false,
-		RESTEnabled:    true,
 		MakeEnabled:    false,
 		TaskEnabled:    true,
 		UptraceEnabled: false,
@@ -65,7 +63,6 @@ func NewProject(configPath string) (*Project, error) {
 			},
 			GRPCEnabled:    project.GRPCEnabled,
 			GatewayEnabled: project.GatewayEnabled,
-			RESTEnabled:    project.RESTEnabled,
 			KafkaEnabled:   project.KafkaEnabled,
 		})
 	}
@@ -76,7 +73,6 @@ func NewProject(configPath string) (*Project, error) {
 		model.ProtoPackage = project.ProtoPackage()
 		model.GRPCEnabled = project.GRPCEnabled
 		model.GatewayEnabled = project.GatewayEnabled
-		model.RESTEnabled = project.RESTEnabled
 	}
 	return project, nil
 }
@@ -90,7 +86,6 @@ func (p *Project) Validate() error {
 		validation.Field(&p.Auth, validation.Required),
 		validation.Field(&p.CI),
 		validation.Field(&p.Models),
-		validation.Field(&p.RESTEnabled),
 		validation.Field(&p.GRPCEnabled),
 	)
 	if err != nil {

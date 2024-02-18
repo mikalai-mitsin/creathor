@@ -26,7 +26,6 @@ type ModelConfig struct {
 	Params         []*Param `json:"params"        yaml:"params"`
 	GRPCEnabled    bool     `                     yaml:"gRPC"`
 	GatewayEnabled bool     `                     yaml:"gateway"`
-	RESTEnabled    bool     `                     yaml:"REST"`
 	KafkaEnabled   bool     `                     yaml:"kafka"`
 }
 

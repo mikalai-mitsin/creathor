@@ -1,4 +1,4 @@
-package mods
+package domain
 
 type Layer struct {
 	Auth     bool

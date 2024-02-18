@@ -1,4 +1,4 @@
-package mods
+package domain
 
 import "go/ast"
 

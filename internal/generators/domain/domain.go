@@ -11,11 +11,11 @@ import (
 )
 
 type Generator struct {
-	domain *mods.Domain
+	domain *domain.Domain
 }
 
-func NewGenerator(mod *mods.Domain) *Generator {
-	return &Generator{domain: mod}
+func NewGenerator(d *domain.Domain) *Generator {
+	return &Generator{domain: d}
 }
 
 func (g *Generator) Sync() error {

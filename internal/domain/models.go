@@ -24,7 +24,7 @@ type Model struct {
 	Mock       bool
 }
 
-func NewCreateModel(modelConfig *configs.ModelConfig) *Model {
+func NewCreateModel(modelConfig *configs.DomainConfig) *Model {
 	return &Model{
 		Type:       ModelTypeCreate,
 		Name:       modelConfig.CreateTypeName(),
@@ -35,7 +35,7 @@ func NewCreateModel(modelConfig *configs.ModelConfig) *Model {
 	}
 }
 
-func NewUpdateModel(modelConfig *configs.ModelConfig) *Model {
+func NewUpdateModel(modelConfig *configs.DomainConfig) *Model {
 	model := &Model{
 		Type:     ModelTypeUpdate,
 		Name:     modelConfig.UpdateTypeName(),
@@ -58,7 +58,7 @@ func NewUpdateModel(modelConfig *configs.ModelConfig) *Model {
 	return model
 }
 
-func NewMainModel(modelConfig *configs.ModelConfig) *Model {
+func NewMainModel(modelConfig *configs.DomainConfig) *Model {
 	model := &Model{
 		Type:     ModelTypeMain,
 		Name:     modelConfig.ModelName(),
@@ -87,7 +87,7 @@ func NewMainModel(modelConfig *configs.ModelConfig) *Model {
 	return model
 }
 
-func NewFilterModel(modelConfig *configs.ModelConfig) *Model {
+func NewFilterModel(modelConfig *configs.DomainConfig) *Model {
 	model := &Model{
 		Type:     ModelTypeFilter,
 		Name:     modelConfig.FilterTypeName(),

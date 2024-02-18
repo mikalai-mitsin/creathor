@@ -7,7 +7,7 @@ import (
 	"github.com/018bf/creathor/internal/configs"
 )
 
-func NewInterceptor(m *configs.ModelConfig) *Layer {
+func NewInterceptor(m *configs.DomainConfig) *Layer {
 	interceptor := &Layer{
 		Auth:     m.Auth,
 		Events:   m.KafkaEnabled,

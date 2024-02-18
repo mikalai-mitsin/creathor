@@ -15,7 +15,7 @@ import (
 	"github.com/018bf/creathor/internal/configs"
 )
 
-func CreateCRUD(model *configs.ModelConfig) error {
+func CreateCRUD(model *configs.DomainConfig) error {
 	if err := model.Validate(); err != nil {
 		fmt.Printf("invalid model %s: %s\n", model.Model, err)
 		return err

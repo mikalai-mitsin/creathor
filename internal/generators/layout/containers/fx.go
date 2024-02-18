@@ -148,7 +148,7 @@ func (f FxContainer) file() *ast.File {
 			},
 		})
 	}
-	for _, modelConfig := range f.project.Models {
+	for _, modelConfig := range f.project.Domains {
 		imports = append(
 			imports,
 			&ast.ImportSpec{
@@ -306,7 +306,7 @@ func (f FxContainer) toProvide() []ast.Expr {
 	}
 	if f.project.Auth {
 		var ddd []string
-		for _, model := range f.project.Models {
+		for _, model := range f.project.Domains {
 			ddd = append(ddd, fmt.Sprintf("fx.As(new(%sInterceptors.AuthUseCase))", model.DomainAlias()))
 		}
 		toProvide = append(
@@ -317,7 +317,7 @@ func (f FxContainer) toProvide() []ast.Expr {
 			ast.NewIdent("fx.Annotate(userPostgresRepositories.NewPermissionRepository, fx.As(new(authUseCases.PermissionRepository)))"),
 		)
 	}
-	for _, model := range f.project.Models {
+	for _, model := range f.project.Domains {
 		toProvide = append(
 			toProvide,
 			ast.NewIdent(

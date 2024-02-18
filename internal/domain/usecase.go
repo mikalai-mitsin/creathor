@@ -7,7 +7,7 @@ import (
 	"github.com/018bf/creathor/internal/configs"
 )
 
-func NewUseCase(m *configs.ModelConfig) *Layer {
+func NewUseCase(m *configs.DomainConfig) *Layer {
 	layer := &Layer{
 		Auth:     m.Auth,
 		Events:   m.KafkaEnabled,

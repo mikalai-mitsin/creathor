@@ -11,18 +11,18 @@ import (
 )
 
 type Project struct {
-	Name           string         `yaml:"name"`
-	Module         string         `yaml:"module"`
-	GoVersion      string         `yaml:"goVersion"`
-	Auth           bool           `yaml:"auth"`
-	CI             string         `yaml:"ci"`
-	Models         []*ModelConfig `yaml:"models"`
-	GRPCEnabled    bool           `yaml:"gRPC"`
-	GatewayEnabled bool           `yaml:"gateway"`
-	MakeEnabled    bool           `yaml:"make"`
-	TaskEnabled    bool           `yaml:"task"`
-	UptraceEnabled bool           `yaml:"uptrace"`
-	KafkaEnabled   bool           `yaml:"kafka"`
+	Name           string          `yaml:"name"`
+	Module         string          `yaml:"module"`
+	GoVersion      string          `yaml:"goVersion"`
+	Auth           bool            `yaml:"auth"`
+	CI             string          `yaml:"ci"`
+	Domains        []*DomainConfig `yaml:"models"`
+	GRPCEnabled    bool            `yaml:"gRPC"`
+	GatewayEnabled bool            `yaml:"gateway"`
+	MakeEnabled    bool            `yaml:"make"`
+	TaskEnabled    bool            `yaml:"task"`
+	UptraceEnabled bool            `yaml:"uptrace"`
+	KafkaEnabled   bool            `yaml:"kafka"`
 }
 
 func NewProject(configPath string) (*Project, error) {
@@ -32,7 +32,7 @@ func NewProject(configPath string) (*Project, error) {
 		GoVersion:      "1.20",
 		Auth:           true,
 		CI:             "github",
-		Models:         nil,
+		Domains:        nil,
 		GRPCEnabled:    true,
 		GatewayEnabled: false,
 		MakeEnabled:    false,
@@ -48,7 +48,7 @@ func NewProject(configPath string) (*Project, error) {
 		log.Fatalf("error: %v", err)
 	}
 	if project.Auth {
-		project.Models = append(project.Models, &ModelConfig{
+		project.Domains = append(project.Domains, &DomainConfig{
 			Model:        "user",
 			Module:       project.Module,
 			ProjectName:  project.Name,
@@ -66,13 +66,13 @@ func NewProject(configPath string) (*Project, error) {
 			KafkaEnabled:   project.KafkaEnabled,
 		})
 	}
-	for _, model := range project.Models {
-		model.Module = project.Module
-		model.Auth = project.Auth
-		model.ProjectName = project.Name
-		model.ProtoPackage = project.ProtoPackage()
-		model.GRPCEnabled = project.GRPCEnabled
-		model.GatewayEnabled = project.GatewayEnabled
+	for _, domain := range project.Domains {
+		domain.Module = project.Module
+		domain.Auth = project.Auth
+		domain.ProjectName = project.Name
+		domain.ProtoPackage = project.ProtoPackage()
+		domain.GRPCEnabled = project.GRPCEnabled
+		domain.GatewayEnabled = project.GatewayEnabled
 	}
 	return project, nil
 }
@@ -85,7 +85,7 @@ func (p *Project) Validate() error {
 		validation.Field(&p.GoVersion, validation.Required),
 		validation.Field(&p.Auth, validation.Required),
 		validation.Field(&p.CI),
-		validation.Field(&p.Models),
+		validation.Field(&p.Domains),
 		validation.Field(&p.GRPCEnabled),
 	)
 	if err != nil {

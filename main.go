@@ -84,7 +84,7 @@ func initProject(ctx *cli.Context) error {
 	if err := crud.Sync(); err != nil {
 		return err
 	}
-	for _, m := range project.Models {
+	for _, m := range project.Domains {
 		domain := &mods.Domain{
 			Name:        m.Model,
 			Module:      project.Module,
@@ -107,7 +107,7 @@ func initProject(ctx *cli.Context) error {
 			return err
 		}
 	}
-	for _, model := range project.Models {
+	for _, model := range project.Domains {
 		if err := CreateCRUD(model); err != nil {
 			return err
 		}

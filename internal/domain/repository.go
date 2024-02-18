@@ -7,7 +7,7 @@ import (
 	"github.com/018bf/creathor/internal/configs"
 )
 
-func NewRepository(m *configs.ModelConfig) *Layer {
+func NewRepository(m *configs.DomainConfig) *Layer {
 	layer := &Layer{
 		Auth:     m.Auth,
 		Events:   m.KafkaEnabled,

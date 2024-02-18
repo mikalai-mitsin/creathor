@@ -248,7 +248,7 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 			},
 		)
 	}
-	for _, modelConfig := range s.project.Models {
+	for _, modelConfig := range s.project.Domains {
 		fields = append(
 			fields,
 			&ast.Field{

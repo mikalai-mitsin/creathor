@@ -7,7 +7,7 @@ import (
 	"github.com/018bf/creathor/internal/configs"
 )
 
-func NewGRPCHandler(m *configs.ModelConfig) *Layer {
+func NewGRPCHandler(m *configs.DomainConfig) *Layer {
 	return &Layer{
 		Auth:     m.Auth,
 		Events:   m.KafkaEnabled,

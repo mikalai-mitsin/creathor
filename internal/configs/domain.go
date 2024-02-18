@@ -2,13 +2,8 @@ package configs
 
 import (
 	"fmt"
-	"go/ast"
-	"go/parser"
-	"go/token"
-	"io/fs"
 	"os"
 	"path"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -17,7 +12,7 @@ import (
 	"github.com/jinzhu/inflection"
 )
 
-type ModelConfig struct {
+type DomainConfig struct {
 	Model          string   `json:"model"         yaml:"model"`
 	Module         string   `json:"module"        yaml:"module"`
 	ProjectName    string   `json:"project_name"  yaml:"projectName"`
@@ -29,7 +24,7 @@ type ModelConfig struct {
 	KafkaEnabled   bool     `                     yaml:"kafka"`
 }
 
-func (m *ModelConfig) Validate() error {
+func (m *DomainConfig) Validate() error {
 	err := validation.ValidateStruct(
 		m,
 		validation.Field(&m.Model, validation.Required),
@@ -44,34 +39,7 @@ func (m *ModelConfig) Validate() error {
 	return nil
 }
 
-func (m *ModelConfig) IsExists() bool {
-	packagePath := filepath.Join("internal", "domain", "models")
-	fileset := token.NewFileSet()
-	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
-		return true
-	}, parser.ParseComments)
-	if err != nil {
-		return false
-	}
-	for _, p := range tree {
-		for _, file := range p.Files {
-			for _, decl := range file.Decls {
-				gen, ok := decl.(*ast.GenDecl)
-				if ok {
-					for _, spec := range gen.Specs {
-						t, ok := spec.(*ast.TypeSpec)
-						if ok && t.Name.String() == m.ModelName() {
-							return true
-						}
-					}
-				}
-			}
-		}
-	}
-	return false
-}
-
-func (m *ModelConfig) SearchEnabled() bool {
+func (m *DomainConfig) SearchEnabled() bool {
 	for _, param := range m.Params {
 		if param.Search {
 			return true
@@ -80,7 +48,7 @@ func (m *ModelConfig) SearchEnabled() bool {
 	return false
 }
 
-func (m *ModelConfig) SearchVector() string {
+func (m *DomainConfig) SearchVector() string {
 	var params []string
 	for _, param := range m.Params {
 		if param.Search {
@@ -91,107 +59,107 @@ func (m *ModelConfig) SearchVector() string {
 	return vector
 }
 
-func (m *ModelConfig) Variable() string {
+func (m *DomainConfig) Variable() string {
 	return strcase.ToLowerCamel(m.Model)
 }
 
-func (m *ModelConfig) ListVariable() string {
+func (m *DomainConfig) ListVariable() string {
 	return strcase.ToLowerCamel(fmt.Sprintf("list%s", strcase.ToCamel(inflection.Plural(m.Model))))
 }
 
-func (m *ModelConfig) ModelName() string {
+func (m *DomainConfig) ModelName() string {
 	return strcase.ToCamel(m.Model)
 }
 
-func (m *ModelConfig) DomainName() string {
+func (m *DomainConfig) DomainName() string {
 	return strcase.ToSnake(m.Model)
 }
 
-func (m *ModelConfig) DomainAlias() string {
+func (m *DomainConfig) DomainAlias() string {
 	return strcase.ToLowerCamel(m.Model)
 }
 
-func (m *ModelConfig) UseCaseTypeName() string {
+func (m *DomainConfig) UseCaseTypeName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Model))
 }
 
-func (m *ModelConfig) GRPCHandlerTypeName() string {
+func (m *DomainConfig) GRPCHandlerTypeName() string {
 	return fmt.Sprintf("%sServiceServer", strcase.ToCamel(m.Model))
 }
 
-func (m *ModelConfig) RESTHandlerTypeName() string {
+func (m *DomainConfig) RESTHandlerTypeName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Model))
 }
 
-func (m *ModelConfig) GatewayHandlerTypeName() string {
+func (m *DomainConfig) GatewayHandlerTypeName() string {
 	return fmt.Sprintf("Register%sServiceHandlerFromEndpoint", strcase.ToCamel(m.Model))
 }
 
-func (m *ModelConfig) RESTHandlerPath() string {
+func (m *DomainConfig) RESTHandlerPath() string {
 	return strcase.ToSnake(inflection.Plural(m.Model))
 }
 
-func (m *ModelConfig) RESTHandlerVariableName() string {
+func (m *DomainConfig) RESTHandlerVariableName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToLowerCamel(m.Model))
 }
 
-func (m *ModelConfig) GRPCHandlerVariableName() string {
+func (m *DomainConfig) GRPCHandlerVariableName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToLowerCamel(m.Model))
 }
 
-func (m *ModelConfig) UseCaseVariableName() string {
+func (m *DomainConfig) UseCaseVariableName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToLowerCamel(m.Model))
 }
 
-func (m *ModelConfig) InterceptorTypeName() string {
+func (m *DomainConfig) InterceptorTypeName() string {
 	return fmt.Sprintf("%sInterceptor", strcase.ToCamel(m.Model))
 }
 
-func (m *ModelConfig) InterceptorVariableName() string {
+func (m *DomainConfig) InterceptorVariableName() string {
 	return fmt.Sprintf("%sInterceptor", strcase.ToLowerCamel(m.Model))
 }
 
-func (m *ModelConfig) RepositoryTypeName() string {
+func (m *DomainConfig) RepositoryTypeName() string {
 	return fmt.Sprintf("%sRepository", strcase.ToCamel(m.Model))
 }
 
-func (m *ModelConfig) RepositoryVariableName() string {
+func (m *DomainConfig) RepositoryVariableName() string {
 	return fmt.Sprintf("%sRepository", strcase.ToLowerCamel(m.Model))
 }
 
-func (m *ModelConfig) FilterTypeName() string {
+func (m *DomainConfig) FilterTypeName() string {
 	return fmt.Sprintf("%sFilter", strcase.ToCamel(m.Model))
 }
 
-func (m *ModelConfig) UpdateTypeName() string {
+func (m *DomainConfig) UpdateTypeName() string {
 	return fmt.Sprintf("%sUpdate", strcase.ToCamel(m.Model))
 }
 
-func (m *ModelConfig) CreateTypeName() string {
+func (m *DomainConfig) CreateTypeName() string {
 	return fmt.Sprintf("%sCreate", strcase.ToCamel(m.Model))
 }
 
-func (m *ModelConfig) PostgresDTOTypeName() string {
+func (m *DomainConfig) PostgresDTOTypeName() string {
 	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.Model))
 }
 
-func (m *ModelConfig) PostgresDTOListTypeName() string {
+func (m *DomainConfig) PostgresDTOListTypeName() string {
 	return fmt.Sprintf("%sListDTO", strcase.ToCamel(m.Model))
 }
 
-func (m *ModelConfig) KeyName() string {
+func (m *DomainConfig) KeyName() string {
 	return strcase.ToSnake(m.Model)
 }
 
-func (m *ModelConfig) SnakeName() string {
+func (m *DomainConfig) SnakeName() string {
 	return strcase.ToSnake(m.Model)
 }
 
-func (m *ModelConfig) FileName() string {
+func (m *DomainConfig) FileName() string {
 	return fmt.Sprintf("%s.go", m.SnakeName())
 }
 
-func (m *ModelConfig) MigrationUpFileName() string {
+func (m *DomainConfig) MigrationUpFileName() string {
 	last, err := lastMigration()
 	if err != nil {
 		return ""
@@ -199,7 +167,7 @@ func (m *ModelConfig) MigrationUpFileName() string {
 	return fmt.Sprintf("%06d_%s.up.sql", last+1, m.TableName())
 }
 
-func (m *ModelConfig) MigrationDownFileName() string {
+func (m *DomainConfig) MigrationDownFileName() string {
 	last, err := lastMigration()
 	if err != nil {
 		return ""
@@ -227,38 +195,38 @@ func lastMigration() (int, error) {
 	return index, nil
 }
 
-func (m *ModelConfig) TestFileName() string {
+func (m *DomainConfig) TestFileName() string {
 	return fmt.Sprintf("%s_test.go", m.SnakeName())
 }
 
-func (m *ModelConfig) ProtoFileName() string {
+func (m *DomainConfig) ProtoFileName() string {
 	return fmt.Sprintf("%s.proto", m.SnakeName())
 }
 
-func (m *ModelConfig) MockFileName() string {
+func (m *DomainConfig) MockFileName() string {
 	return fmt.Sprintf("%s_mock.go", m.SnakeName())
 }
 
-func (m *ModelConfig) TableName() string {
+func (m *DomainConfig) TableName() string {
 	return strcase.ToSnake(inflection.Plural(m.Model))
 }
 
-func (m *ModelConfig) PermissionIDList() string {
+func (m *DomainConfig) PermissionIDList() string {
 	return fmt.Sprintf("PermissionID%sList", m.ModelName())
 }
 
-func (m *ModelConfig) PermissionIDDetail() string {
+func (m *DomainConfig) PermissionIDDetail() string {
 	return fmt.Sprintf("PermissionID%sDetail", m.ModelName())
 }
 
-func (m *ModelConfig) PermissionIDCreate() string {
+func (m *DomainConfig) PermissionIDCreate() string {
 	return fmt.Sprintf("PermissionID%sCreate", m.ModelName())
 }
 
-func (m *ModelConfig) PermissionIDUpdate() string {
+func (m *DomainConfig) PermissionIDUpdate() string {
 	return fmt.Sprintf("PermissionID%sUpdate", m.ModelName())
 }
 
-func (m *ModelConfig) PermissionIDDelete() string {
+func (m *DomainConfig) PermissionIDDelete() string {
 	return fmt.Sprintf("PermissionID%sDelete", m.ModelName())
 }

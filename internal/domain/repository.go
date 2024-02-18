@@ -16,7 +16,6 @@ func NewRepository(m *configs.ModelConfig) *Layer {
 		Methods: []*Method{
 			{
 				Name: "Create",
-				Type: MethodTypeCreate,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -47,7 +46,6 @@ func NewRepository(m *configs.ModelConfig) *Layer {
 			},
 			{
 				Name: "List",
-				Type: MethodTypeList,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -81,7 +79,6 @@ func NewRepository(m *configs.ModelConfig) *Layer {
 			},
 			{
 				Name: "Count",
-				Type: MethodTypeCount,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -115,7 +112,6 @@ func NewRepository(m *configs.ModelConfig) *Layer {
 			},
 			{
 				Name: "Get",
-				Type: MethodTypeGet,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -152,7 +148,6 @@ func NewRepository(m *configs.ModelConfig) *Layer {
 			},
 			{
 				Name: "Update",
-				Type: MethodTypeUpdate,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{
@@ -183,7 +178,6 @@ func NewRepository(m *configs.ModelConfig) *Layer {
 			},
 			{
 				Name: "Delete",
-				Type: MethodTypeDelete,
 				Args: []*ast.Field{
 					{
 						Names: []*ast.Ident{

@@ -79,7 +79,7 @@ func (f FxContainer) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/pkg/log"`, f.project.Module),
+				Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, f.project.Module),
 			},
 		},
 		&ast.ImportSpec{
@@ -111,7 +111,7 @@ func (f FxContainer) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/pkg/clock"`, f.project.Module),
+				Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, f.project.Module),
 			},
 		},
 		&ast.ImportSpec{
@@ -152,31 +152,49 @@ func (f FxContainer) file() *ast.File {
 		imports = append(
 			imports,
 			&ast.ImportSpec{
-				Name: ast.NewIdent(fmt.Sprintf("%sPostgresRepositories", modelConfig.DomainAlias())),
+				Name: ast.NewIdent(
+					fmt.Sprintf("%sPostgresRepositories", modelConfig.DomainAlias()),
+				),
 				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/app/%s/repositories/postgres"`, f.project.Module, modelConfig.DomainName()),
+					Kind: token.STRING,
+					Value: fmt.Sprintf(
+						`"%s/internal/app/%s/repositories/postgres"`,
+						f.project.Module,
+						modelConfig.DomainName(),
+					),
 				},
 			},
 			&ast.ImportSpec{
 				Name: ast.NewIdent(fmt.Sprintf("%sUseCases", modelConfig.DomainAlias())),
 				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/app/%s/usecases"`, f.project.Module, modelConfig.DomainName()),
+					Kind: token.STRING,
+					Value: fmt.Sprintf(
+						`"%s/internal/app/%s/usecases"`,
+						f.project.Module,
+						modelConfig.DomainName(),
+					),
 				},
 			},
 			&ast.ImportSpec{
 				Name: ast.NewIdent(fmt.Sprintf("%sInterceptors", modelConfig.DomainAlias())),
 				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/app/%s/interceptors"`, f.project.Module, modelConfig.DomainName()),
+					Kind: token.STRING,
+					Value: fmt.Sprintf(
+						`"%s/internal/app/%s/interceptors"`,
+						f.project.Module,
+						modelConfig.DomainName(),
+					),
 				},
 			},
 			&ast.ImportSpec{
 				Name: ast.NewIdent(fmt.Sprintf("%sGrpcHandlers", modelConfig.DomainAlias())),
 				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/app/%s/handlers/grpc"`, f.project.Module, modelConfig.DomainName()),
+					Kind: token.STRING,
+					Value: fmt.Sprintf(
+						`"%s/internal/app/%s/handlers/grpc"`,
+						f.project.Module,
+						modelConfig.DomainName(),
+					),
 				},
 			},
 		)
@@ -307,14 +325,28 @@ func (f FxContainer) toProvide() []ast.Expr {
 	if f.project.Auth {
 		var ddd []string
 		for _, model := range f.project.Domains {
-			ddd = append(ddd, fmt.Sprintf("fx.As(new(%sInterceptors.AuthUseCase))", model.DomainAlias()))
+			ddd = append(
+				ddd,
+				fmt.Sprintf("fx.As(new(%sInterceptors.AuthUseCase))", model.DomainAlias()),
+			)
 		}
 		toProvide = append(
 			toProvide,
-			ast.NewIdent("fx.Annotate(authInterceptors.NewAuthInterceptor, fx.As(new(authGrpcHandlers.AuthInterceptor)), fx.As(new(grpcInterface.AuthInterceptor)))"),
-			ast.NewIdent(fmt.Sprintf("fx.Annotate(authUseCases.NewAuthUseCase, fx.As(new(authInterceptors.AuthUseCase)), %s)", strings.Join(ddd, ", "))),
-			ast.NewIdent("fx.Annotate(authRepositories.NewAuthRepository, fx.As(new(authUseCases.AuthRepository)))"),
-			ast.NewIdent("fx.Annotate(userPostgresRepositories.NewPermissionRepository, fx.As(new(authUseCases.PermissionRepository)))"),
+			ast.NewIdent(
+				"fx.Annotate(authInterceptors.NewAuthInterceptor, fx.As(new(authGrpcHandlers.AuthInterceptor)), fx.As(new(grpcInterface.AuthInterceptor)))",
+			),
+			ast.NewIdent(
+				fmt.Sprintf(
+					"fx.Annotate(authUseCases.NewAuthUseCase, fx.As(new(authInterceptors.AuthUseCase)), %s)",
+					strings.Join(ddd, ", "),
+				),
+			),
+			ast.NewIdent(
+				"fx.Annotate(authRepositories.NewAuthRepository, fx.As(new(authUseCases.AuthRepository)))",
+			),
+			ast.NewIdent(
+				"fx.Annotate(userPostgresRepositories.NewPermissionRepository, fx.As(new(authUseCases.PermissionRepository)))",
+			),
 		)
 	}
 	for _, model := range f.project.Domains {

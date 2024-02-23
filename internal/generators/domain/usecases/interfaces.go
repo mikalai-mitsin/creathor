@@ -44,7 +44,7 @@ func (i RepositoryInterfaceCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/uuid"`, i.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, i.domain.Module),
 						},
 					},
 				},

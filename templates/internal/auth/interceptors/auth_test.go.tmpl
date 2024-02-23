@@ -12,10 +12,10 @@ import (
     mock_models "{{ .Module }}/internal/app/auth/models/mock"
     mock_user_models "{{ .Module }}/internal/app/user/models/mock"
     user_models "{{ .Module }}/internal/app/user/models"
-    "{{ .Module }}/pkg/clock"
-    mock_clock "{{ .Module }}/pkg/clock/mock"
-    "{{ .Module }}/pkg/log"
-    mock_log "{{ .Module }}/pkg/log/mock"
+    mock_clock "{{ .Module }}/internal/pkg/clock/mock"
+    "{{ .Module }}/internal/pkg/clock"
+    "{{ .Module }}/internal/pkg/log"
+    mock_log "{{ .Module }}/internal/pkg/log/mock"
     "github.com/golang/mock/gomock"
 )
 

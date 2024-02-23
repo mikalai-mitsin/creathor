@@ -33,7 +33,14 @@ func (r RepositoryCrud) getDTOListName() string {
 }
 
 func (r RepositoryCrud) filename() string {
-	return filepath.Join("internal", "app", r.domain.DirName(), "repositories", "postgres", r.domain.FileName())
+	return filepath.Join(
+		"internal",
+		"app",
+		r.domain.DirName(),
+		"repositories",
+		"postgres",
+		r.domain.FileName(),
+	)
 }
 
 func (r RepositoryCrud) Sync() error {
@@ -846,25 +853,31 @@ func (r RepositoryCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/log"`, r.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, r.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/postgresql"`, r.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/postgres"`, r.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/utils"`, r.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/pointer"`, r.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/uuid"`, r.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, r.domain.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, r.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -1464,7 +1477,7 @@ func (r RepositoryCrud) search() ast.Stmt {
 								&ast.CompositeLit{
 									Type: &ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: "postgresql",
+											Name: "postgres",
 										},
 										Sel: &ast.Ident{
 											Name: "Search",
@@ -1735,7 +1748,7 @@ func (r RepositoryCrud) listMethod() *ast.FuncDecl {
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
 											X: &ast.Ident{
-												Name: "utils",
+												Name: "pointer",
 											},
 											Sel: &ast.Ident{
 												Name: "Pointer",

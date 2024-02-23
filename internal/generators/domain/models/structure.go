@@ -3,7 +3,6 @@ package models
 import (
 	"bytes"
 	"fmt"
-	mods "github.com/018bf/creathor/internal/domain"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -11,6 +10,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+
+	mods "github.com/018bf/creathor/internal/domain"
 )
 
 type Structure struct {
@@ -20,7 +21,12 @@ type Structure struct {
 	params   []*ast.Field
 }
 
-func NewStructure(fileName string, name string, params []*ast.Field, domain *mods.Domain) *Structure {
+func NewStructure(
+	fileName string,
+	name string,
+	params []*ast.Field,
+	domain *mods.Domain,
+) *Structure {
 	return &Structure{
 		fileName: fileName,
 		name:     name,
@@ -55,7 +61,7 @@ func (m *Structure) file() *ast.File {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/pkg/uuid"`, m.domain.Module),
+					Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, m.domain.Module),
 				},
 			},
 			&ast.ImportSpec{

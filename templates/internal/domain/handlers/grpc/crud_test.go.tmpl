@@ -5,15 +5,16 @@ import (
     "errors"
     "{{ .Module }}/internal/pkg/errs"
     "{{ .Module }}/internal/pkg/grpc"
+    "{{ .Module }}/internal/pkg/log"
     mock_grpc "{{ .Module }}/internal/app/{{ .Model }}/handlers/grpc/mock"
 
     mock_interceptors "{{ .Module }}/internal/app/{{ .Model }}/interceptors/mock"
     "{{ .Module }}/internal/app/{{ .Model }}/models"
     mock_models "{{ .Module }}/internal/app/{{ .Model }}/models/mock"
-    "{{ .Module }}/pkg/log"
-    mock_log "{{ .Module }}/pkg/log/mock"
-    "{{ .Module }}/pkg/utils"
-    "{{ .Module }}/pkg/uuid"
+    "{{ .Module }}/internal/pkg/clock"
+    mock_log "{{ .Module }}/internal/pkg/log/mock"
+    "{{ .Module }}/internal/pkg/pointer"
+    "{{ .Module }}/internal/pkg/uuid"
     {{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
     "github.com/golang/mock/gomock"
     "google.golang.org/protobuf/types/known/emptypb"
@@ -582,10 +583,10 @@ func Test_encode{{ .FilterTypeName }}(t *testing.T) {
                 },
             },
             want: &models.{{ .FilterTypeName }}{
-                PageSize:   utils.Pointer(uint64(5)),
-                PageNumber: utils.Pointer(uint64(2)),
+                PageSize:   pointer.Pointer(uint64(5)),
+                PageNumber: pointer.Pointer(uint64(2)),
                 OrderBy:    []string{"created_at", "id"},
-                Search:     utils.Pointer("my name is"),
+                Search:     pointer.Pointer("my name is"),
                 IDs:        []uuid.UUID{id},
             },
         },

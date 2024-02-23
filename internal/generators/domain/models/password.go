@@ -2,13 +2,14 @@ package models
 
 import (
 	"bytes"
-	mods "github.com/018bf/creathor/internal/domain"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path"
+
+	mods "github.com/018bf/creathor/internal/domain"
 )
 
 type Password struct {

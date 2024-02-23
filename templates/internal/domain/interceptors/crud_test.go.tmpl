@@ -7,18 +7,19 @@ import (
     "testing"
 
     "{{ .Module }}/internal/pkg/errs"
+    "{{ .Module }}/internal/pkg/log"
     "{{ .Module }}/internal/app/{{ .Model }}/models"
     mock_models "{{ .Module }}/internal/app/{{ .Model }}/models/mock"
     userMockModels "{{ .Module }}/internal/app/user/models/mock"
     userModels "{{ .Module }}/internal/app/user/models"
     mock_interceptors "{{ .Module }}/internal/app/{{ .Model }}/interceptors/mock"
 
-    mock_log "{{ .Module }}/pkg/log/mock"
+    mock_log "{{ .Module }}/internal/pkg/log/mock"
     "github.com/golang/mock/gomock"
     "github.com/jaswdr/faker"
 
-    "{{ .Module }}/pkg/log"
-    "{{ .Module }}/pkg/uuid"
+    "{{ .Module }}/internal/pkg/clock"
+    "{{ .Module }}/internal/pkg/uuid"
 )
 
 func TestNew{{ .InterceptorTypeName }}(t *testing.T) {

@@ -131,7 +131,7 @@ func Value(t ast.Expr) ast.Expr {
 		case *ast.ArrayType:
 			fake = &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
-					X:   ast.NewIdent("utils"),
+					X:   ast.NewIdent("pointer"),
 					Sel: ast.NewIdent("Pointer"),
 				},
 				Args: []ast.Expr{
@@ -149,7 +149,7 @@ func Value(t ast.Expr) ast.Expr {
 		default:
 			fake = &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
-					X:   ast.NewIdent("utils"),
+					X:   ast.NewIdent("pointer"),
 					Sel: ast.NewIdent("Pointer"),
 				},
 				Args: []ast.Expr{baseValue(x)},
@@ -190,7 +190,7 @@ func Email(t ast.Expr) ast.Expr {
 	case *ast.StarExpr:
 		fake = &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
-				X:   ast.NewIdent("utils"),
+				X:   ast.NewIdent("pointer"),
 				Sel: ast.NewIdent("Pointer"),
 			},
 			Args: []ast.Expr{baseEmail()},

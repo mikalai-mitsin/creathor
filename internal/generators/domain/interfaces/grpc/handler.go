@@ -68,19 +68,25 @@ func (h Handler) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/log"`, h.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, h.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/utils"`, h.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/pointer"`, h.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/uuid"`, h.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, h.domain.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, h.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -396,7 +402,7 @@ func (h Handler) updateStmts() []*ast.IfStmt {
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "utils",
+									Name: "pointer",
 								},
 								Sel: &ast.Ident{
 									Name: "Pointer",
@@ -522,7 +528,7 @@ func (h Handler) updateStmts() []*ast.IfStmt {
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "utils",
+									Name: "pointer",
 								},
 								Sel: &ast.Ident{
 									Name: "Pointer",
@@ -579,7 +585,7 @@ func (h Handler) updateStmts() []*ast.IfStmt {
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "utils",
+									Name: "pointer",
 								},
 								Sel: &ast.Ident{
 									Name: "Pointer",
@@ -868,7 +874,7 @@ func (h Handler) encodeFilter() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "utils",
+										Name: "pointer",
 									},
 									Sel: &ast.Ident{
 										Name: "Pointer",
@@ -934,7 +940,7 @@ func (h Handler) encodeFilter() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "utils",
+										Name: "pointer",
 									},
 									Sel: &ast.Ident{
 										Name: "Pointer",
@@ -1070,7 +1076,7 @@ func (h Handler) encodeFilter() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "utils",
+										Name: "pointer",
 									},
 									Sel: &ast.Ident{
 										Name: "Pointer",
@@ -1300,7 +1306,7 @@ func (h Handler) modelParams() []ast.Expr {
 				Fun: &ast.IndexListExpr{
 					X: &ast.SelectorExpr{
 						X: &ast.Ident{
-							Name: "utils",
+							Name: "pointer",
 						},
 						Sel: &ast.Ident{
 							Name: "ChangeType",
@@ -1699,7 +1705,7 @@ func (h Handler) decodeUpdate() *ast.FuncDecl {
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
 											X: &ast.Ident{
-												Name: "utils",
+												Name: "pointer",
 											},
 											Sel: &ast.Ident{
 												Name: "ToAnySlice",
@@ -2042,7 +2048,10 @@ func (h Handler) constructor() *ast.FuncDecl {
 							Op: token.AND,
 							X: &ast.CompositeLit{
 								Type: &ast.Ident{
-									Name: fmt.Sprintf("%sServiceServer", h.domain.GetMainModel().Name),
+									Name: fmt.Sprintf(
+										"%sServiceServer",
+										h.domain.GetMainModel().Name,
+									),
 								},
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
@@ -2120,35 +2129,6 @@ func (h Handler) create() *ast.FuncDecl {
 				},
 			},
 		},
-	}
-	if h.domain.Auth {
-		//args = append(args, &ast.TypeAssertExpr{
-		//	X: &ast.CallExpr{
-		//		Fun: &ast.SelectorExpr{
-		//			X: &ast.Ident{
-		//				Name: "ctx",
-		//			},
-		//			Sel: &ast.Ident{
-		//				Name: "Value",
-		//			},
-		//		},
-		//		Args: []ast.Expr{
-		//			&ast.Ident{
-		//				Name: "UserKey",
-		//			},
-		//		},
-		//	},
-		//	Type: &ast.StarExpr{
-		//		X: &ast.SelectorExpr{
-		//			X: &ast.Ident{
-		//				Name: "models",
-		//			},
-		//			Sel: &ast.Ident{
-		//				Name: "User",
-		//			},
-		//		},
-		//	},
-		//})
 	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
@@ -2374,35 +2354,6 @@ func (h Handler) get() *ast.FuncDecl {
 			},
 		},
 	}
-	if h.domain.Auth {
-		//args = append(args, &ast.TypeAssertExpr{
-		//	X: &ast.CallExpr{
-		//		Fun: &ast.SelectorExpr{
-		//			X: &ast.Ident{
-		//				Name: "ctx",
-		//			},
-		//			Sel: &ast.Ident{
-		//				Name: "Value",
-		//			},
-		//		},
-		//		Args: []ast.Expr{
-		//			&ast.Ident{
-		//				Name: "UserKey",
-		//			},
-		//		},
-		//	},
-		//	Type: &ast.StarExpr{
-		//		X: &ast.SelectorExpr{
-		//			X: &ast.Ident{
-		//				Name: "models",
-		//			},
-		//			Sel: &ast.Ident{
-		//				Name: "User",
-		//			},
-		//		},
-		//	},
-		//})
-	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -2615,35 +2566,6 @@ func (h Handler) list() *ast.FuncDecl {
 				},
 			},
 		},
-	}
-	if h.domain.Auth {
-		//args = append(args, &ast.TypeAssertExpr{
-		//	X: &ast.CallExpr{
-		//		Fun: &ast.SelectorExpr{
-		//			X: &ast.Ident{
-		//				Name: "ctx",
-		//			},
-		//			Sel: &ast.Ident{
-		//				Name: "Value",
-		//			},
-		//		},
-		//		Args: []ast.Expr{
-		//			&ast.Ident{
-		//				Name: "UserKey",
-		//			},
-		//		},
-		//	},
-		//	Type: &ast.StarExpr{
-		//		X: &ast.SelectorExpr{
-		//			X: &ast.Ident{
-		//				Name: "models",
-		//			},
-		//			Sel: &ast.Ident{
-		//				Name: "User",
-		//			},
-		//		},
-		//	},
-		//})
 	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
@@ -2863,35 +2785,6 @@ func (h Handler) update() *ast.FuncDecl {
 				},
 			},
 		},
-	}
-	if h.domain.Auth {
-		//args = append(args, &ast.TypeAssertExpr{
-		//	X: &ast.CallExpr{
-		//		Fun: &ast.SelectorExpr{
-		//			X: &ast.Ident{
-		//				Name: "ctx",
-		//			},
-		//			Sel: &ast.Ident{
-		//				Name: "Value",
-		//			},
-		//		},
-		//		Args: []ast.Expr{
-		//			&ast.Ident{
-		//				Name: "UserKey",
-		//			},
-		//		},
-		//	},
-		//	Type: &ast.StarExpr{
-		//		X: &ast.SelectorExpr{
-		//			X: &ast.Ident{
-		//				Name: "models",
-		//			},
-		//			Sel: &ast.Ident{
-		//				Name: "User",
-		//			},
-		//		},
-		//	},
-		//})
 	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
@@ -3117,35 +3010,6 @@ func (h Handler) delete() *ast.FuncDecl {
 				},
 			},
 		},
-	}
-	if h.domain.Auth {
-		//args = append(args, &ast.TypeAssertExpr{
-		//	X: &ast.CallExpr{
-		//		Fun: &ast.SelectorExpr{
-		//			X: &ast.Ident{
-		//				Name: "ctx",
-		//			},
-		//			Sel: &ast.Ident{
-		//				Name: "Value",
-		//			},
-		//		},
-		//		Args: []ast.Expr{
-		//			&ast.Ident{
-		//				Name: "UserKey",
-		//			},
-		//		},
-		//	},
-		//	Type: &ast.StarExpr{
-		//		X: &ast.SelectorExpr{
-		//			X: &ast.Ident{
-		//				Name: "models",
-		//			},
-		//			Sel: &ast.Ident{
-		//				Name: "User",
-		//			},
-		//		},
-		//	},
-		//})
 	}
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{

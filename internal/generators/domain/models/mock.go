@@ -3,13 +3,14 @@ package models
 import (
 	"bytes"
 	"fmt"
-	mods "github.com/018bf/creathor/internal/domain"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path"
+
+	mods "github.com/018bf/creathor/internal/domain"
 
 	"github.com/018bf/creathor/internal/fake"
 )
@@ -140,13 +141,13 @@ func (m *Mock) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/utils"`, m.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/pointer"`, m.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/uuid"`, m.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, m.domain.Module),
 						},
 					},
 					&ast.ImportSpec{

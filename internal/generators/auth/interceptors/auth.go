@@ -73,13 +73,13 @@ func (i InterceptorAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/clock"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, i.project.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/log"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, i.project.Module),
 						},
 					},
 				},

@@ -10,7 +10,7 @@ import (
     "{{ .Module }}/internal/app/user/models"
     mock_models "{{ .Module }}/internal/app/user/models/mock"
     "{{ .Module }}/internal/pkg/postgres"
-    "{{ .Module }}/pkg/utils"
+    "{{ .Module }}/internal/pkg/pointer"
     "github.com/DATA-DOG/go-sqlmock"
     "github.com/jmoiron/sqlx"
 )
@@ -152,7 +152,7 @@ func TestPermissionRepository_objectOwner(t *testing.T) {
                 model: struct {
                     ID *string
                 }{
-                    ID: utils.Pointer("asd-241"),
+                    ID: pointer.Pointer("asd-241"),
                 },
                 user: &models.User{ID: "asd-241"},
             },
@@ -433,7 +433,7 @@ func TestPermissionRepository_objectOwnerOrAll(t *testing.T) {
                 model: struct {
                     ID *string
                 }{
-                    ID: utils.Pointer("asd-241"),
+                    ID: pointer.Pointer("asd-241"),
                 },
                 user: &models.User{ID: "asd-241"},
             },

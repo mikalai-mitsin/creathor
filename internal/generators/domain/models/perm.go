@@ -3,7 +3,6 @@ package models
 import (
 	"bytes"
 	"fmt"
-	mods "github.com/018bf/creathor/internal/domain"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -11,6 +10,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+
+	mods "github.com/018bf/creathor/internal/domain"
 
 	"golang.org/x/exp/slices"
 
@@ -133,7 +134,13 @@ func (m *Perm) perms() *ast.GenDecl {
 }
 
 func (m *Perm) filename() string {
-	return filepath.Join("internal", "app", "user", "models", fmt.Sprintf("permission_%s", m.fileName))
+	return filepath.Join(
+		"internal",
+		"app",
+		"user",
+		"models",
+		fmt.Sprintf("permission_%s", m.fileName),
+	)
 }
 
 func (m *Perm) Sync() error {

@@ -244,7 +244,9 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 																Name: "permission",
 															},
 														},
-														Type: ast.NewIdent("userModels.PermissionID"),
+														Type: ast.NewIdent(
+															"userModels.PermissionID",
+														),
 													},
 												},
 											},
@@ -304,7 +306,9 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 																Name: "permission",
 															},
 														},
-														Type: ast.NewIdent("userModels.PermissionID"),
+														Type: ast.NewIdent(
+															"userModels.PermissionID",
+														),
 													},
 													{
 														Names: []*ast.Ident{

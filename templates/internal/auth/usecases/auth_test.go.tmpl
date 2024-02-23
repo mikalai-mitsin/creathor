@@ -7,13 +7,13 @@ import (
     "testing"
 
     "{{ .Module }}/internal/pkg/errs"
+    "{{ .Module }}/internal/pkg/log"
     "{{ .Module }}/internal/app/auth/models"
     mockUseCases "github.com/018bf/example/internal/app/auth/usecases/mock"
     userModels "github.com/018bf/example/internal/app/user/models"
     mockModels "{{ .Module }}/internal/app/auth/models/mock"
     mockUserModels "{{ .Module }}/internal/app/user/models/mock"
-    "{{ .Module }}/pkg/log"
-    mockLog "{{ .Module }}/pkg/log/mock"
+    mockLog "{{ .Module }}/internal/pkg/log/mock"
 
     "github.com/golang/mock/gomock"
 )

@@ -90,19 +90,25 @@ func (u UseCaseCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/clock"`, u.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, u.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/log"`, u.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, u.domain.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/uuid"`, u.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, u.domain.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, u.domain.Module),
 						},
 					},
 				},

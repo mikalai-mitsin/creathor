@@ -62,7 +62,7 @@ func CreateCRUD(model *configs.DomainConfig) error {
 			Name: "repository test",
 		},
 		{
-			SourcePath: "templates/internal/interfaces/postgres/migrations/crud.up.sql.tmpl",
+			SourcePath: "templates/internal/pkg/postgres/migrations/crud.up.sql.tmpl",
 			DestinationPath: path.Join(
 				destinationPath,
 				"internal",
@@ -74,7 +74,7 @@ func CreateCRUD(model *configs.DomainConfig) error {
 			Name: "migration up",
 		},
 		{
-			SourcePath: "templates/internal/interfaces/postgres/migrations/crud.down.sql.tmpl",
+			SourcePath: "templates/internal/pkg/postgres/migrations/crud.down.sql.tmpl",
 			DestinationPath: path.Join(
 				destinationPath,
 				"internal",
@@ -142,7 +142,14 @@ func CreateCRUD(model *configs.DomainConfig) error {
 }
 
 func addPermission(permission, check string) error {
-	packagePath := filepath.Join(destinationPath, "internal", "app", "user", "repositories", "postgres")
+	packagePath := filepath.Join(
+		destinationPath,
+		"internal",
+		"app",
+		"user",
+		"repositories",
+		"postgres",
+	)
 	if err := os.MkdirAll(packagePath, 0777); err != nil {
 		return err
 	}

@@ -17,17 +17,17 @@ func createDirectories(project *configs.Project) error {
 		path.Join(destinationPath, "docs"),
 		path.Join(destinationPath, "docs", ".chglog"),
 		path.Join(destinationPath, "internal"),
+		path.Join(destinationPath, "pkg"),
 		path.Join(destinationPath, "internal", "app"),
 		path.Join(destinationPath, "internal", "pkg"),
 		path.Join(destinationPath, "internal", "pkg", "configs"),
 		path.Join(destinationPath, "internal", "pkg", "postgres"),
 		path.Join(destinationPath, "internal", "pkg", "postgres", "migrations"),
-		path.Join(destinationPath, "pkg"),
-		path.Join(destinationPath, "pkg", "clock"),
-		path.Join(destinationPath, "pkg", "log"),
-		path.Join(destinationPath, "pkg", "utils"),
-		path.Join(destinationPath, "pkg", "uuid"),
-		path.Join(destinationPath, "pkg", "postgresql"),
+		path.Join(destinationPath, "internal", "pkg"),
+		path.Join(destinationPath, "internal", "pkg", "clock"),
+		path.Join(destinationPath, "internal", "pkg", "log"),
+		path.Join(destinationPath, "internal", "pkg", "pointer"),
+		path.Join(destinationPath, "internal", "pkg", "uuid"),
 	}
 	if project.GRPCEnabled {
 		directories = append(
@@ -90,39 +90,39 @@ func CreateLayout(project *configs.Project) error {
 			Name:            "test config",
 		},
 		{
-			SourcePath:      "templates/internal/configs/config.go.tmpl",
+			SourcePath:      "templates/internal/pkg/configs/config.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "pkg", "configs", "config.go"),
 			Name:            "config struct",
 		},
 		{
-			SourcePath:      "templates/internal/configs/testing.go.tmpl",
+			SourcePath:      "templates/internal/pkg/configs/testing.go.tmpl",
 			DestinationPath: path.Join(destinationPath, "internal", "pkg", "configs", "testing.go"),
 			Name:            "config testing",
 		},
 
 		{
-			SourcePath:      "templates/pkg/clock/clock.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "pkg", "clock", "clock.go"),
+			SourcePath:      "templates/internal/pkg/clock/clock.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "pkg", "clock", "clock.go"),
 			Name:            "clock",
 		},
 		{
-			SourcePath:      "templates/pkg/postgresql/search.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "pkg", "postgresql", "search.go"),
+			SourcePath:      "templates/internal/pkg/postgres/search.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "pkg", "postgres", "search.go"),
 			Name:            "search",
 		},
 		{
-			SourcePath:      "templates/pkg/log/logger.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "pkg", "log", "logger.go"),
+			SourcePath:      "templates/internal/pkg/log/logger.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "pkg", "log", "logger.go"),
 			Name:            "logger interface",
 		},
 		{
-			SourcePath:      "templates/pkg/utils/pointer.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "pkg", "utils", "pointer.go"),
+			SourcePath:      "templates/internal/pkg/pointer/pointer.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "pkg", "pointer", "pointer.go"),
 			Name:            "utils pointer",
 		},
 		{
-			SourcePath:      "templates/pkg/uuid/uuid.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "pkg", "uuid", "uuid.go"),
+			SourcePath:      "templates/internal/pkg/uuid/uuid.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "pkg", "uuid", "uuid.go"),
 			Name:            "utils pointer",
 		},
 		{
@@ -156,7 +156,7 @@ func CreateLayout(project *configs.Project) error {
 			Name:            "CHANGELOG.md",
 		},
 		{
-			SourcePath: "templates/internal/interfaces/postgres/postgres.go.tmpl",
+			SourcePath: "templates/internal/pkg/postgres/postgres.go.tmpl",
 			DestinationPath: path.Join(
 				destinationPath,
 				"internal",
@@ -167,7 +167,7 @@ func CreateLayout(project *configs.Project) error {
 			Name: "postgres",
 		},
 		{
-			SourcePath: "templates/internal/interfaces/postgres/testing.go.tmpl",
+			SourcePath: "templates/internal/pkg/postgres/testing.go.tmpl",
 			DestinationPath: path.Join(
 				destinationPath,
 				"internal",
@@ -178,7 +178,7 @@ func CreateLayout(project *configs.Project) error {
 			Name: "postgres testing",
 		},
 		{
-			SourcePath: "templates/internal/interfaces/postgres/migrations/init.sql.tmpl",
+			SourcePath: "templates/internal/pkg/postgres/migrations/init.sql.tmpl",
 			DestinationPath: path.Join(
 				destinationPath,
 				"internal",
@@ -235,7 +235,7 @@ func CreateLayout(project *configs.Project) error {
 			},
 
 			&Template{
-				SourcePath: "templates/internal/interfaces/postgres/migrations/permissions.up.sql.tmpl",
+				SourcePath: "templates/internal/pkg/postgres/migrations/permissions.up.sql.tmpl",
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
@@ -247,7 +247,7 @@ func CreateLayout(project *configs.Project) error {
 				Name: "postgres permissions migration up",
 			},
 			&Template{
-				SourcePath: "templates/internal/interfaces/postgres/migrations/permissions.down.sql.tmpl",
+				SourcePath: "templates/internal/pkg/postgres/migrations/permissions.down.sql.tmpl",
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
@@ -259,7 +259,7 @@ func CreateLayout(project *configs.Project) error {
 				Name: "postgres permissions migration down",
 			},
 			&Template{
-				SourcePath: "templates/internal/interfaces/postgres/migrations/groups.up.sql.tmpl",
+				SourcePath: "templates/internal/pkg/postgres/migrations/groups.up.sql.tmpl",
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
@@ -271,7 +271,7 @@ func CreateLayout(project *configs.Project) error {
 				Name: "postgres groups migration up",
 			},
 			&Template{
-				SourcePath: "templates/internal/interfaces/postgres/migrations/groups.down.sql.tmpl",
+				SourcePath: "templates/internal/pkg/postgres/migrations/groups.down.sql.tmpl",
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
@@ -283,7 +283,7 @@ func CreateLayout(project *configs.Project) error {
 				Name: "postgres groups migration down",
 			},
 			&Template{
-				SourcePath: "templates/internal/interfaces/postgres/migrations/group_permissions.up.sql.tmpl",
+				SourcePath: "templates/internal/pkg/postgres/migrations/group_permissions.up.sql.tmpl",
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
@@ -295,7 +295,7 @@ func CreateLayout(project *configs.Project) error {
 				Name: "postgres group permissions migration up",
 			},
 			&Template{
-				SourcePath: "templates/internal/interfaces/postgres/migrations/group_permissions.down.sql.tmpl",
+				SourcePath: "templates/internal/pkg/postgres/migrations/group_permissions.down.sql.tmpl",
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
@@ -399,12 +399,18 @@ func CreateLayout(project *configs.Project) error {
 func RenderTests(project *configs.Project) error {
 	tests := []*Template{
 		{
-			SourcePath:      "templates/internal/configs/config_test.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "pkg", "configs", "config_test.go"),
-			Name:            "config tests",
+			SourcePath: "templates/internal/pkg/configs/config_test.go.tmpl",
+			DestinationPath: path.Join(
+				destinationPath,
+				"internal",
+				"pkg",
+				"configs",
+				"config_test.go",
+			),
+			Name: "config tests",
 		},
 		{
-			SourcePath: "templates/internal/errs/errors_test.go.tmpl",
+			SourcePath: "templates/internal/pkg/errs/errors_test.go.tmpl",
 			DestinationPath: path.Join(
 				destinationPath,
 				"internal",
@@ -419,9 +425,16 @@ func RenderTests(project *configs.Project) error {
 		tests = append(
 			tests,
 			&Template{
-				SourcePath:      "templates/internal/auth/usecases/auth_test.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "app", "auth", "usecases", "auth_test.go"),
-				Name:            "test auth usecase implementation",
+				SourcePath: "templates/internal/auth/usecases/auth_test.go.tmpl",
+				DestinationPath: path.Join(
+					destinationPath,
+					"internal",
+					"app",
+					"auth",
+					"usecases",
+					"auth_test.go",
+				),
+				Name: "test auth usecase implementation",
 			},
 			&Template{
 				SourcePath: "templates/internal/auth/interceptors/auth_test.go.tmpl",
@@ -475,7 +488,7 @@ func RenderTests(project *configs.Project) error {
 				Name: "grpc auth test",
 			},
 			&Template{
-				SourcePath: "templates/internal/interfaces/grpc/auth_middleware_test.go.tmpl",
+				SourcePath: "templates/internal/pkg/grpc/auth_middleware_test.go.tmpl",
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",

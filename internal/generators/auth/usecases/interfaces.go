@@ -52,7 +52,7 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/uuid"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, i.project.Module),
 						},
 					},
 				},
@@ -512,7 +512,9 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 																Name: "permission",
 															},
 														},
-														Type: ast.NewIdent("userModels.PermissionID"),
+														Type: ast.NewIdent(
+															"userModels.PermissionID",
+														),
 													},
 													{
 														Names: []*ast.Ident{
@@ -574,7 +576,9 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 																Name: "permission",
 															},
 														},
-														Type: ast.NewIdent("userModels.PermissionID"),
+														Type: ast.NewIdent(
+															"userModels.PermissionID",
+														),
 													},
 													{
 														Names: []*ast.Ident{

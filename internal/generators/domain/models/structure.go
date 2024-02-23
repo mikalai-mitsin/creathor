@@ -30,45 +30,54 @@ func NewStructure(fileName string, name string, params []*ast.Field, domain *mod
 }
 
 func (m *Structure) file() *ast.File {
+	imports := &ast.GenDecl{
+		Tok: token.IMPORT,
+		Specs: []ast.Spec{
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: `"time"`,
+				},
+			},
+			&ast.ImportSpec{
+				Name: ast.NewIdent("validation"),
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: `"github.com/go-ozzo/ozzo-validation/v4"`,
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: `"github.com/go-ozzo/ozzo-validation/v4/is"`,
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/pkg/uuid"`, m.domain.Module),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/errs"`, m.domain.Module),
+				},
+			},
+		},
+	}
+	if m.domain.SnakeName() == "user" {
+		imports.Specs = append(imports.Specs, &ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"golang.org/x/crypto/bcrypt"`,
+			},
+		})
+	}
 	return &ast.File{
 		Name: ast.NewIdent("models"),
 		Decls: []ast.Decl{
-			&ast.GenDecl{
-				Tok: token.IMPORT,
-				Specs: []ast.Spec{
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"time"`,
-						},
-					},
-					&ast.ImportSpec{
-						Name: ast.NewIdent("validation"),
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"github.com/go-ozzo/ozzo-validation/v4"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"github.com/go-ozzo/ozzo-validation/v4/is"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/uuid"`, m.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/errs"`, m.domain.Module),
-						},
-					},
-				},
-			},
+			imports,
 		},
 	}
 }

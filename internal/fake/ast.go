@@ -165,6 +165,44 @@ func Value(t ast.Expr) ast.Expr {
 	return fake
 }
 
+func baseEmail() ast.Expr {
+	return &ast.CallExpr{
+		Fun: &ast.SelectorExpr{
+			X: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X:   ast.NewIdent("faker"),
+							Sel: ast.NewIdent("New"),
+						},
+					},
+					Sel: ast.NewIdent("Internet"),
+				},
+			},
+			Sel: ast.NewIdent("Email"),
+		},
+	}
+}
+
+func Email(t ast.Expr) ast.Expr {
+	var fake ast.Expr
+	switch t.(type) {
+	case *ast.StarExpr:
+		fake = &ast.CallExpr{
+			Fun: &ast.SelectorExpr{
+				X:   ast.NewIdent("utils"),
+				Sel: ast.NewIdent("Pointer"),
+			},
+			Args: []ast.Expr{baseEmail()},
+		}
+	case *ast.Ident:
+		fake = baseEmail()
+	default:
+		fake = baseValue(ast.NewIdent("TODO"))
+	}
+	return fake
+}
+
 func numberFunc(t string) string {
 	switch t {
 	case "int", "int64", "int8", "int16", "int32", "float32", "float64":

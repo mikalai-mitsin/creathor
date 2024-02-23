@@ -99,7 +99,12 @@ func (m *Mock) values() []*ast.KeyValueExpr {
 	if st, ok := m.typeSpec.Type.(*ast.StructType); ok && st.Fields != nil {
 		for _, field := range st.Fields.List {
 			for _, name := range field.Names {
-				kvs = append(kvs, &ast.KeyValueExpr{Key: name, Value: fake.Value(field.Type)})
+				switch name.String() {
+				case "Email":
+					kvs = append(kvs, &ast.KeyValueExpr{Key: name, Value: fake.Email(field.Type)})
+				default:
+					kvs = append(kvs, &ast.KeyValueExpr{Key: name, Value: fake.Value(field.Type)})
+				}
 			}
 		}
 	}

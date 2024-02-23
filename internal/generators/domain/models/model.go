@@ -8,8 +8,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/018bf/creathor/internal/generators/layout/domain/models"
-
 	mods "github.com/018bf/creathor/internal/domain"
 )
 
@@ -73,8 +71,14 @@ func (m *Model) Sync() error {
 		return err
 	}
 	if m.model.Validation {
-		validate := models.NewValidate(structure.spec(), m.domain.FileName(), m.domain)
+		validate := NewValidate(structure.spec(), m.domain.FileName(), m.domain)
 		if err := validate.Sync(); err != nil {
+			return err
+		}
+	}
+	if m.model.Name == "User" {
+		password := NewPassword(m.domain)
+		if err := password.Sync(); err != nil {
 			return err
 		}
 	}

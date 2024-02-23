@@ -834,7 +834,7 @@ func (r RepositoryCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/errs"`, r.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/errs"`, r.domain.Module),
 						},
 					},
 					&ast.ImportSpec{

@@ -61,7 +61,7 @@ func (m *Structure) file() *ast.File {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/errs"`, m.domain.Module),
+					Value: fmt.Sprintf(`"%s/internal/pkg/errs"`, m.domain.Module),
 				},
 			},
 		},

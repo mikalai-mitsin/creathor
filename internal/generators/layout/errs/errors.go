@@ -2501,7 +2501,7 @@ func (i Errors) file() *ast.File {
 
 func (i Errors) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "errs", "errors.go")
+	filename := path.Join("internal", "pkg", "errs", "errors.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err

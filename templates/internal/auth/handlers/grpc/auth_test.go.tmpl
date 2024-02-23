@@ -5,9 +5,9 @@ import (
     "errors"
     "github.com/018bf/example/internal/interfaces/grpc"
     "{{ .Module }}/internal/pkg/errs"
-    "{{ .Module }}/internal/auth/models"
-    mock_models "{{ .Module }}/internal/auth/models/mock"
-    mock_grpc "{{ .Module }}/internal/auth/handlers/grpc/mock"
+    "{{ .Module }}/internal/app/auth/models"
+    mock_models "{{ .Module }}/internal/app/auth/models/mock"
+    mock_grpc "{{ .Module }}/internal/app/auth/handlers/grpc/mock"
 
     {{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
     "github.com/golang/mock/gomock"

@@ -54,7 +54,7 @@ func (i InterceptorInterfaceCrud) file() *ast.File {
 
 func (i InterceptorInterfaceCrud) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", i.domain.DirName(), "handlers", "grpc", "interfaces.go")
+	filename := path.Join("internal", "app", i.domain.DirName(), "handlers", "grpc", "interfaces.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err

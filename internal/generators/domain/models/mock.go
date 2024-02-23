@@ -181,7 +181,7 @@ func (m *Mock) file() *ast.File {
 
 func (m *Mock) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", m.domain.DirName(), "models", "mock", m.fileName)
+	filename := path.Join("internal", "app", m.domain.DirName(), "models", "mock", m.fileName)
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err

@@ -33,7 +33,7 @@ func (r RepositoryCrud) getDTOListName() string {
 }
 
 func (r RepositoryCrud) filename() string {
-	return filepath.Join("internal", r.domain.DirName(), "repositories", "postgres", r.domain.FileName())
+	return filepath.Join("internal", "app", r.domain.DirName(), "repositories", "postgres", r.domain.FileName())
 }
 
 func (r RepositoryCrud) Sync() error {

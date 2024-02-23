@@ -24,7 +24,7 @@ func NewUseCaseAuth(project *configs.Project) *UseCaseAuth {
 
 func (u UseCaseAuth) Sync() error {
 	fileset := token.NewFileSet()
-	filename := filepath.Join("internal", "auth", "usecases", "auth.go")
+	filename := filepath.Join("internal", "app", "auth", "usecases", "auth.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}
@@ -60,14 +60,14 @@ func (u UseCaseAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/auth/models"`, u.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/auth/models"`, u.project.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Name: ast.NewIdent("userModels"),
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/user/models"`, u.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/user/models"`, u.project.Module),
 						},
 					},
 					&ast.ImportSpec{

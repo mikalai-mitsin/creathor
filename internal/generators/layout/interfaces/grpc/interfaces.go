@@ -39,14 +39,14 @@ func (i InterceptorInterfaceAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/auth/models"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/auth/models"`, i.project.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Name: ast.NewIdent("userModels"),
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/user/models"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/user/models"`, i.project.Module),
 						},
 					},
 				},

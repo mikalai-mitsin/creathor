@@ -17,8 +17,8 @@ func createDirectories(project *configs.Project) error {
 		path.Join(destinationPath, "docs"),
 		path.Join(destinationPath, "docs", ".chglog"),
 		path.Join(destinationPath, "internal"),
+		path.Join(destinationPath, "internal", "app"),
 		path.Join(destinationPath, "internal", "configs"),
-		path.Join(destinationPath, "internal", "errs"),
 		path.Join(destinationPath, "internal", "interfaces"),
 		path.Join(destinationPath, "internal", "interfaces", "postgres"),
 		path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations"),
@@ -199,6 +199,7 @@ func CreateLayout(project *configs.Project) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
+					"app",
 					"auth",
 					"models",
 					"mock",
@@ -211,6 +212,7 @@ func CreateLayout(project *configs.Project) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
+					"app",
 					"user",
 					"repositories",
 					"postgres",
@@ -223,6 +225,7 @@ func CreateLayout(project *configs.Project) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
+					"app",
 					"auth",
 					"repositories",
 					"jwt",
@@ -343,6 +346,7 @@ func CreateLayout(project *configs.Project) error {
 					DestinationPath: path.Join(
 						destinationPath,
 						"internal",
+						"app",
 						"auth",
 						"handlers",
 						"grpc",
@@ -404,6 +408,7 @@ func RenderTests(project *configs.Project) error {
 			DestinationPath: path.Join(
 				destinationPath,
 				"internal",
+				"pkg",
 				"errs",
 				"errors_test.go",
 			),
@@ -415,7 +420,7 @@ func RenderTests(project *configs.Project) error {
 			tests,
 			&Template{
 				SourcePath:      "templates/internal/auth/usecases/auth_test.go.tmpl",
-				DestinationPath: path.Join(destinationPath, "internal", "auth", "usecases", "auth_test.go"),
+				DestinationPath: path.Join(destinationPath, "internal", "app", "auth", "usecases", "auth_test.go"),
 				Name:            "test auth usecase implementation",
 			},
 			&Template{
@@ -423,6 +428,7 @@ func RenderTests(project *configs.Project) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
+					"app",
 					"auth",
 					"interceptors",
 					"auth_test.go",
@@ -434,6 +440,7 @@ func RenderTests(project *configs.Project) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
+					"app",
 					"user",
 					"repositories",
 					"postgres",
@@ -446,6 +453,7 @@ func RenderTests(project *configs.Project) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
+					"app",
 					"auth",
 					"repositories",
 					"jwt",
@@ -458,6 +466,7 @@ func RenderTests(project *configs.Project) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
+					"app",
 					"auth",
 					"handlers",
 					"grpc",

@@ -7,11 +7,11 @@ import (
     "testing"
 
     "{{ .Module }}/internal/pkg/errs"
-    "{{ .Module }}/internal/{{ .Model }}/models"
-    mock_models "{{ .Module }}/internal/{{ .Model }}/models/mock"
-    userMockModels "{{ .Module }}/internal/user/models/mock"
-    userModels "{{ .Module }}/internal/user/models"
-    mock_interceptors "{{ .Module }}/internal/{{ .Model }}/interceptors/mock"
+    "{{ .Module }}/internal/app/{{ .Model }}/models"
+    mock_models "{{ .Module }}/internal/app/{{ .Model }}/models/mock"
+    userMockModels "{{ .Module }}/internal/app/user/models/mock"
+    userModels "{{ .Module }}/internal/app/user/models"
+    mock_interceptors "{{ .Module }}/internal/app/{{ .Model }}/interceptors/mock"
 
     mock_log "{{ .Module }}/pkg/log/mock"
     "github.com/golang/mock/gomock"

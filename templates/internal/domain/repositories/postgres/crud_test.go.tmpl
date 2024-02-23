@@ -14,14 +14,14 @@ import (
     "testing"
 
     "{{ .Module }}/internal/pkg/errs"
-    mock_models "{{ .Module }}/internal/{{ .Model }}/models/mock"
+    mock_models "{{ .Module }}/internal/app/{{ .Model }}/models/mock"
     "{{ .Module }}/internal/interfaces/postgres"
     mock_log "{{ .Module }}/pkg/log/mock"
     "github.com/DATA-DOG/go-sqlmock"
     "github.com/golang/mock/gomock"
     "github.com/jaswdr/faker"
 
-    "{{ .Module }}/internal/{{ .Model }}/models"
+    "{{ .Module }}/internal/app/{{ .Model }}/models"
     "{{ .Module }}/pkg/log"
     "{{ .Module }}/pkg/uuid"
     "github.com/jmoiron/sqlx"

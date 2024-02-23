@@ -61,7 +61,7 @@ func (i InterceptorCrud) Sync() error {
 }
 
 func (i InterceptorCrud) filename() string {
-	return filepath.Join("internal", i.domain.DirName(), "interceptors", i.domain.FileName())
+	return filepath.Join("internal", "app", i.domain.DirName(), "interceptors", i.domain.FileName())
 }
 
 func (i InterceptorCrud) structure() *ast.TypeSpec {
@@ -1688,7 +1688,7 @@ func (i InterceptorCrud) file() *ast.File {
 						Name: ast.NewIdent("userModels"),
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/user/models"`, i.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/user/models"`, i.domain.Module),
 						},
 					},
 				},

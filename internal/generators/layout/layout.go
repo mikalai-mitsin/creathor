@@ -11,7 +11,6 @@ import (
 	"github.com/018bf/creathor/internal/generators/layout/errs"
 	"github.com/018bf/creathor/internal/generators/layout/interfaces/grpc"
 	"github.com/018bf/creathor/internal/generators/layout/interfaces/uptrace"
-	userModel "github.com/018bf/creathor/internal/generators/user/models"
 )
 
 type Generator struct {
@@ -34,7 +33,6 @@ func (g *Generator) Sync() error {
 		generators = append(
 			generators,
 			authModel.NewModelAuth(g.project),
-			//TODO: auth repository
 			//Use case and interfaces
 			authUseCases.NewUseCaseAuth(g.project),
 			authUseCases.NewRepositoryInterfaceAuth(g.project),
@@ -43,24 +41,12 @@ func (g *Generator) Sync() error {
 			authInterceptors.NewUseCaseInterfaceAuth(g.project),
 			//Handlers and interfaces
 			authGrpcHandlers.NewInterceptorInterfaceAuth(g.project),
-			//
-			//userModel.NewModelUser(g.project),
-			userModel.NewModelPermission(g.project),
-			//
-			//Use case and interfaces
-			//userUseCases.NewUseCaseUser(g.project),
-			//userUseCases.NewRepositoryInterfaceUser(g.project),
-			//Interceptor and interfaces
-			//userInterceptors.NewInterceptorUser(g.project),
-			//userInterceptors.NewUseCaseInterfaceUser(g.project),
-			//Handlers and interfaces
-			//userGrpcHandlers.OldNewInterceptorInterfaceUser(g.project),
+			authModel.NewModelPermission(g.project),
 		)
 	}
 	if g.project.KafkaEnabled {
 		generators = append(
 			generators,
-			//models2.NewModelEvent(g.project),
 			repositories.NewRepositoryInterfaceEvent(g.project),
 		)
 	}

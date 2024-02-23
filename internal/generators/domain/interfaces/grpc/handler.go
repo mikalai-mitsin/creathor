@@ -114,7 +114,7 @@ func (h Handler) file() *ast.File {
 }
 
 func (h Handler) filename() string {
-	return path.Join("internal", h.domain.DirName(), "handlers", "grpc", h.domain.FileName())
+	return path.Join("internal", "app", h.domain.DirName(), "handlers", "grpc", h.domain.FileName())
 }
 
 func (h Handler) createParams() []ast.Expr {

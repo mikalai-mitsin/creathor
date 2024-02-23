@@ -42,7 +42,7 @@ func (m *Domain) DirName() string {
 }
 
 func (m *Domain) ModelsImportPath() string {
-	return fmt.Sprintf(`"%s/internal/%s/models"`, m.Module, m.DirName())
+	return fmt.Sprintf(`"%s/internal/app/%s/models"`, m.Module, m.DirName())
 }
 
 func (m *Domain) GetMainModel() *Model {

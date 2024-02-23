@@ -54,7 +54,7 @@ func (m AuthMiddleware) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/auth/models"`, m.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/auth/models"`, m.project.Module),
 						},
 					},
 					&ast.ImportSpec{

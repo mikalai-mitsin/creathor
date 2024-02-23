@@ -66,14 +66,14 @@ func (f FxContainer) file() *ast.File {
 			Name: ast.NewIdent("authRepositories"),
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/auth/repositories/jwt"`, f.project.Module),
+				Value: fmt.Sprintf(`"%s/internal/app/auth/repositories/jwt"`, f.project.Module),
 			},
 		},
 		&ast.ImportSpec{
 			Name: ast.NewIdent("authGrpcHandlers"),
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/auth/handlers/grpc"`, f.project.Module),
+				Value: fmt.Sprintf(`"%s/internal/app/auth/handlers/grpc"`, f.project.Module),
 			},
 		},
 		&ast.ImportSpec{
@@ -98,14 +98,14 @@ func (f FxContainer) file() *ast.File {
 			Name: ast.NewIdent("authInterceptors"),
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/auth/interceptors"`, f.project.Module),
+				Value: fmt.Sprintf(`"%s/internal/app/auth/interceptors"`, f.project.Module),
 			},
 		},
 		&ast.ImportSpec{
 			Name: ast.NewIdent("authUseCases"),
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/auth/usecases"`, f.project.Module),
+				Value: fmt.Sprintf(`"%s/internal/app/auth/usecases"`, f.project.Module),
 			},
 		},
 		&ast.ImportSpec{
@@ -155,28 +155,28 @@ func (f FxContainer) file() *ast.File {
 				Name: ast.NewIdent(fmt.Sprintf("%sPostgresRepositories", modelConfig.DomainAlias())),
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/%s/repositories/postgres"`, f.project.Module, modelConfig.DomainName()),
+					Value: fmt.Sprintf(`"%s/internal/app/%s/repositories/postgres"`, f.project.Module, modelConfig.DomainName()),
 				},
 			},
 			&ast.ImportSpec{
 				Name: ast.NewIdent(fmt.Sprintf("%sUseCases", modelConfig.DomainAlias())),
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/%s/usecases"`, f.project.Module, modelConfig.DomainName()),
+					Value: fmt.Sprintf(`"%s/internal/app/%s/usecases"`, f.project.Module, modelConfig.DomainName()),
 				},
 			},
 			&ast.ImportSpec{
 				Name: ast.NewIdent(fmt.Sprintf("%sInterceptors", modelConfig.DomainAlias())),
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/%s/interceptors"`, f.project.Module, modelConfig.DomainName()),
+					Value: fmt.Sprintf(`"%s/internal/app/%s/interceptors"`, f.project.Module, modelConfig.DomainName()),
 				},
 			},
 			&ast.ImportSpec{
 				Name: ast.NewIdent(fmt.Sprintf("%sGrpcHandlers", modelConfig.DomainAlias())),
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/%s/handlers/grpc"`, f.project.Module, modelConfig.DomainName()),
+					Value: fmt.Sprintf(`"%s/internal/app/%s/handlers/grpc"`, f.project.Module, modelConfig.DomainName()),
 				},
 			},
 		)

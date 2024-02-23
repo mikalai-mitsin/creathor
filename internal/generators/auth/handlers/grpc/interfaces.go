@@ -322,7 +322,7 @@ func (i InterceptorInterfaceAuth) file() *ast.File {
 
 func (i InterceptorInterfaceAuth) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "auth", "interceptors", "auth.go")
+	filename := path.Join("internal", "app", "auth", "interceptors", "auth.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}

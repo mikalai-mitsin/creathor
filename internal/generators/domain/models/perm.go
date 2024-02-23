@@ -133,7 +133,7 @@ func (m *Perm) perms() *ast.GenDecl {
 }
 
 func (m *Perm) filename() string {
-	return filepath.Join("internal", "user", "models", fmt.Sprintf("permission_%s", m.fileName))
+	return filepath.Join("internal", "app", "user", "models", fmt.Sprintf("permission_%s", m.fileName))
 }
 
 func (m *Perm) Sync() error {

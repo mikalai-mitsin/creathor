@@ -50,7 +50,7 @@ func (i UseCaseInterfaceCrud) file() *ast.File {
 						Name: ast.NewIdent("userModels"),
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/user/models"`, i.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/user/models"`, i.domain.Module),
 						},
 					},
 				},
@@ -262,7 +262,7 @@ func (i UseCaseInterfaceCrud) file() *ast.File {
 
 func (i UseCaseInterfaceCrud) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", i.domain.DirName(), "interceptors", "interfaces.go")
+	filename := path.Join("internal", "app", i.domain.DirName(), "interceptors", "interfaces.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err

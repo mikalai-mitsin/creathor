@@ -65,7 +65,7 @@ func (u UseCaseCrud) Sync() error {
 }
 
 func (u UseCaseCrud) filename() string {
-	return filepath.Join("internal", u.domain.DirName(), "usecases", "usecase.go")
+	return filepath.Join("internal", "app", u.domain.DirName(), "usecases", "usecase.go")
 }
 
 func (u UseCaseCrud) file() *ast.File {

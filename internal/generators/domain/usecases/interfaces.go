@@ -55,7 +55,7 @@ func (i RepositoryInterfaceCrud) file() *ast.File {
 
 func (i RepositoryInterfaceCrud) Sync() error {
 	fileset := token.NewFileSet()
-	filename := filepath.Join("internal", i.domain.DirName(), "usecases", "interfaces.go")
+	filename := filepath.Join("internal", "app", i.domain.DirName(), "usecases", "interfaces.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err

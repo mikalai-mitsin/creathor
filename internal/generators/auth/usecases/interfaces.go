@@ -39,14 +39,14 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/auth/models"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/auth/models"`, i.project.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Name: ast.NewIdent("userModels"),
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/user/models"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/user/models"`, i.project.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -628,7 +628,7 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 
 func (i RepositoryInterfaceAuth) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "auth", "usecases", "interfaces.go")
+	filename := path.Join("internal", "app", "auth", "usecases", "interfaces.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}

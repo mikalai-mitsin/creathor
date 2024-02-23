@@ -27,6 +27,7 @@ func CreateCRUD(model *configs.DomainConfig) error {
 			DestinationPath: filepath.Join(
 				destinationPath,
 				"internal",
+				"app",
 				model.Model,
 				"usecases",
 				model.TestFileName(),
@@ -39,6 +40,7 @@ func CreateCRUD(model *configs.DomainConfig) error {
 			DestinationPath: filepath.Join(
 				destinationPath,
 				"internal",
+				"app",
 				model.Model,
 				"interceptors",
 				model.TestFileName(),
@@ -51,6 +53,7 @@ func CreateCRUD(model *configs.DomainConfig) error {
 			DestinationPath: filepath.Join(
 				destinationPath,
 				"internal",
+				"app",
 				model.Model,
 				"repositories",
 				"postgres",
@@ -91,6 +94,7 @@ func CreateCRUD(model *configs.DomainConfig) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
+					"app",
 					model.Model,
 					"handlers",
 					"grpc",
@@ -138,7 +142,10 @@ func CreateCRUD(model *configs.DomainConfig) error {
 }
 
 func addPermission(permission, check string) error {
-	packagePath := filepath.Join(destinationPath, "internal", "user", "repositories", "postgres")
+	packagePath := filepath.Join(destinationPath, "internal", "app", "user", "repositories", "postgres")
+	if err := os.MkdirAll(packagePath, 0777); err != nil {
+		return err
+	}
 	fileset := token.NewFileSet()
 	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
 		return true

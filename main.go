@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	ddd "github.com/018bf/creathor/internal/generators/domain"
-	"github.com/018bf/creathor/internal/generators/layout"
+	"github.com/018bf/creathor/internal/generators/pkg"
 
 	mods "github.com/018bf/creathor/internal/domain"
 
@@ -80,7 +80,7 @@ func initProject(ctx *cli.Context) error {
 	if err := CreateDeployment(project); err != nil {
 		return err
 	}
-	crud := layout.NewGenerator(project)
+	crud := pkg.NewGenerator(project)
 	if err := crud.Sync(); err != nil {
 		return err
 	}

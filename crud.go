@@ -66,7 +66,7 @@ func CreateCRUD(model *configs.DomainConfig) error {
 			DestinationPath: path.Join(
 				destinationPath,
 				"internal",
-				"interfaces",
+				"pkg",
 				"postgres",
 				"migrations",
 				model.MigrationUpFileName(),
@@ -78,7 +78,7 @@ func CreateCRUD(model *configs.DomainConfig) error {
 			DestinationPath: path.Join(
 				destinationPath,
 				"internal",
-				"interfaces",
+				"pkg",
 				"postgres",
 				"migrations",
 				model.MigrationDownFileName(),

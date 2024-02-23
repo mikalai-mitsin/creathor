@@ -7,12 +7,12 @@ import (
     "reflect"
     "testing"
 
-    "{{ .Module }}/internal/configs"
+    "{{ .Module }}/internal/pkg/configs"
     "{{ .Module }}/internal/pkg/errs"
     "{{ .Module }}/internal/app/auth/models"
     mock_user_models "{{ .Module }}/internal/app/user/models/mock"
     mock_models "{{ .Module }}/internal/app/auth/models/mock"
-    mock_grpc "{{ .Module }}/internal/interfaces/grpc/mock"
+    mock_grpc "{{ .Module }}/internal/pkg/grpc/mock"
 
     "{{ .Module }}/pkg/log"
 

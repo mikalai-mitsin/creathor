@@ -44,7 +44,7 @@ func (f FxContainer) Sync() error {
 }
 
 func (f FxContainer) filename() string {
-	return filepath.Join("internal", "containers", "fx.go")
+	return filepath.Join("internal", "pkg", "containers", "fx.go")
 }
 
 func (f FxContainer) file() *ast.File {
@@ -59,7 +59,7 @@ func (f FxContainer) file() *ast.File {
 			Name: ast.NewIdent("postgresInterface"),
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/interfaces/postgres"`, f.project.Module),
+				Value: fmt.Sprintf(`"%s/internal/pkg/postgres"`, f.project.Module),
 			},
 		},
 		&ast.ImportSpec{
@@ -117,7 +117,7 @@ func (f FxContainer) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/configs"`, f.project.Module),
+				Value: fmt.Sprintf(`"%s/internal/pkg/configs"`, f.project.Module),
 			},
 		},
 	}
@@ -126,7 +126,7 @@ func (f FxContainer) file() *ast.File {
 			Name: ast.NewIdent("grpcInterface"),
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/interfaces/grpc"`, f.project.Module),
+				Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, f.project.Module),
 			},
 		})
 	}
@@ -135,7 +135,7 @@ func (f FxContainer) file() *ast.File {
 			Name: ast.NewIdent("uptraceInterface"),
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/interfaces/uptrace"`, f.project.Module),
+				Value: fmt.Sprintf(`"%s/internal/pkg/uptrace"`, f.project.Module),
 			},
 		})
 	}
@@ -144,7 +144,7 @@ func (f FxContainer) file() *ast.File {
 			Name: ast.NewIdent("gatewayInterface"),
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/interfaces/gateway"`, f.project.Module),
+				Value: fmt.Sprintf(`"%s/internal/pkg/gateway"`, f.project.Module),
 			},
 		})
 	}
@@ -1143,7 +1143,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 
 func (f FxContainer) syncGrpcContainer() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "containers", "fx.go")
+	filename := path.Join("internal", "pkg", "containers", "fx.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err
@@ -1559,7 +1559,7 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 
 func (f FxContainer) syncGatewayContainer() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "containers", "fx.go")
+	filename := path.Join("internal", "pkg", "containers", "fx.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err
@@ -1975,7 +1975,7 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 
 func (f FxContainer) syncMigrateContainer() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "containers", "fx.go")
+	filename := path.Join("internal", "pkg", "containers", "fx.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err

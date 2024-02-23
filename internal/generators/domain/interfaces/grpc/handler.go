@@ -49,7 +49,7 @@ func (h Handler) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/interfaces/grpc"`, h.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, h.domain.Module),
 						},
 					},
 					&ast.ImportSpec{

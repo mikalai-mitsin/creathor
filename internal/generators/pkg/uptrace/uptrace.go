@@ -45,7 +45,7 @@ func (u Provider) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/configs"`, u.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/configs"`, u.project.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -422,7 +422,10 @@ func (u Provider) file() *ast.File {
 
 func (u Provider) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "interfaces", "uptrace", "uptrace.go")
+	filename := path.Join("internal", "pkg", "uptrace", "uptrace.go")
+	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
+		return err
+	}
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		file = u.file()

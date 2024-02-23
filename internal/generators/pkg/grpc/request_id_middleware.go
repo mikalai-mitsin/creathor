@@ -21,7 +21,7 @@ func NewRequestIDMiddleware(project *configs.Project) *RequestIDMiddleware {
 	return &RequestIDMiddleware{project: project}
 }
 func (m RequestIDMiddleware) filename() string {
-	return path.Join("internal", "interfaces", "grpc", "request_id_middleware.go")
+	return path.Join("internal", "pkg", "grpc", "request_id_middleware.go")
 }
 
 func (m RequestIDMiddleware) file() *ast.File {

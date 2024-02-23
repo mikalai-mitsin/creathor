@@ -21,7 +21,7 @@ func NewAuthMiddleware(project *configs.Project) *AuthMiddleware {
 	return &AuthMiddleware{project: project}
 }
 func (m AuthMiddleware) filename() string {
-	return path.Join("internal", "interfaces", "grpc", "auth_middleware.go")
+	return path.Join("internal", "pkg", "grpc", "auth_middleware.go")
 }
 
 func (m AuthMiddleware) file() *ast.File {
@@ -48,7 +48,7 @@ func (m AuthMiddleware) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/configs"`, m.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/configs"`, m.project.Module),
 						},
 					},
 					&ast.ImportSpec{

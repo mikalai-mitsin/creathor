@@ -109,7 +109,7 @@ func (s Server) astServerStruct() *ast.TypeSpec {
 
 func (s Server) syncServerStruct() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "interfaces", "grpc", "server.go")
+	filename := path.Join("internal", "pkg", "grpc", "server.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}
@@ -581,7 +581,7 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 
 func (s Server) syncServerConstructor() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "interfaces", "grpc", "server.go")
+	filename := path.Join("internal", "pkg", "grpc", "server.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err
@@ -760,7 +760,7 @@ func (s Server) astServerStart() *ast.FuncDecl {
 
 func (s Server) syncServerStart() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "interfaces", "grpc", "server.go")
+	filename := path.Join("internal", "pkg", "grpc", "server.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err
@@ -875,7 +875,7 @@ func (s Server) astServerStop() *ast.FuncDecl {
 
 func (s Server) syncServerStop() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "interfaces", "grpc", "server.go")
+	filename := path.Join("internal", "pkg", "grpc", "server.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err
@@ -1465,7 +1465,7 @@ func (s Server) astMessageProducer() *ast.FuncDecl {
 
 func (s Server) syncMessageProducer() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "interfaces", "grpc", "server.go")
+	filename := path.Join("internal", "pkg", "grpc", "server.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err
@@ -2059,7 +2059,7 @@ func (s Server) astDecodeError() *ast.FuncDecl {
 
 func (s Server) syncDecodeError() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "interfaces", "grpc", "server.go")
+	filename := path.Join("internal", "pkg", "grpc", "server.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err
@@ -2120,7 +2120,7 @@ func (s Server) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/configs"`, s.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/configs"`, s.project.Module),
 						},
 					},
 					&ast.ImportSpec{

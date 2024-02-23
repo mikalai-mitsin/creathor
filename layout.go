@@ -18,10 +18,10 @@ func createDirectories(project *configs.Project) error {
 		path.Join(destinationPath, "docs", ".chglog"),
 		path.Join(destinationPath, "internal"),
 		path.Join(destinationPath, "internal", "app"),
-		path.Join(destinationPath, "internal", "configs"),
-		path.Join(destinationPath, "internal", "interfaces"),
-		path.Join(destinationPath, "internal", "interfaces", "postgres"),
-		path.Join(destinationPath, "internal", "interfaces", "postgres", "migrations"),
+		path.Join(destinationPath, "internal", "pkg"),
+		path.Join(destinationPath, "internal", "pkg", "configs"),
+		path.Join(destinationPath, "internal", "pkg", "postgres"),
+		path.Join(destinationPath, "internal", "pkg", "postgres", "migrations"),
 		path.Join(destinationPath, "pkg"),
 		path.Join(destinationPath, "pkg", "clock"),
 		path.Join(destinationPath, "pkg", "log"),
@@ -32,20 +32,20 @@ func createDirectories(project *configs.Project) error {
 	if project.GRPCEnabled {
 		directories = append(
 			directories,
-			path.Join(destinationPath, "internal", "interfaces", "grpc"),
+			path.Join(destinationPath, "internal", "pkg", "grpc"),
 			path.Join(destinationPath, "api", "proto", project.ProtoPackage(), "v1"),
 		)
 	}
 	if project.GRPCEnabled && project.GatewayEnabled {
 		directories = append(
 			directories,
-			path.Join(destinationPath, "internal", "interfaces", "gateway"),
+			path.Join(destinationPath, "internal", "pkg", "gateway"),
 		)
 	}
 	if project.UptraceEnabled {
 		directories = append(
 			directories,
-			path.Join(destinationPath, "internal", "interfaces", "uptrace"),
+			path.Join(destinationPath, "internal", "pkg", "uptrace"),
 		)
 	}
 	if project.KafkaEnabled {
@@ -91,12 +91,12 @@ func CreateLayout(project *configs.Project) error {
 		},
 		{
 			SourcePath:      "templates/internal/configs/config.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "configs", "config.go"),
+			DestinationPath: path.Join(destinationPath, "internal", "pkg", "configs", "config.go"),
 			Name:            "config struct",
 		},
 		{
 			SourcePath:      "templates/internal/configs/testing.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "configs", "testing.go"),
+			DestinationPath: path.Join(destinationPath, "internal", "pkg", "configs", "testing.go"),
 			Name:            "config testing",
 		},
 
@@ -160,7 +160,7 @@ func CreateLayout(project *configs.Project) error {
 			DestinationPath: path.Join(
 				destinationPath,
 				"internal",
-				"interfaces",
+				"pkg",
 				"postgres",
 				"postgres.go",
 			),
@@ -171,7 +171,7 @@ func CreateLayout(project *configs.Project) error {
 			DestinationPath: path.Join(
 				destinationPath,
 				"internal",
-				"interfaces",
+				"pkg",
 				"postgres",
 				"testing.go",
 			),
@@ -182,7 +182,7 @@ func CreateLayout(project *configs.Project) error {
 			DestinationPath: path.Join(
 				destinationPath,
 				"internal",
-				"interfaces",
+				"pkg",
 				"postgres",
 				"migrations",
 				"000001_init.up.sql",
@@ -239,7 +239,7 @@ func CreateLayout(project *configs.Project) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
-					"interfaces",
+					"pkg",
 					"postgres",
 					"migrations",
 					"000002_permissions.up.sql",
@@ -251,7 +251,7 @@ func CreateLayout(project *configs.Project) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
-					"interfaces",
+					"pkg",
 					"postgres",
 					"migrations",
 					"000002_permissions.down.sql",
@@ -263,7 +263,7 @@ func CreateLayout(project *configs.Project) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
-					"interfaces",
+					"pkg",
 					"postgres",
 					"migrations",
 					"000003_groups.up.sql",
@@ -275,7 +275,7 @@ func CreateLayout(project *configs.Project) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
-					"interfaces",
+					"pkg",
 					"postgres",
 					"migrations",
 					"000003_groups.down.sql",
@@ -287,7 +287,7 @@ func CreateLayout(project *configs.Project) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
-					"interfaces",
+					"pkg",
 					"postgres",
 					"migrations",
 					"000004_group_permissions.up.sql",
@@ -299,7 +299,7 @@ func CreateLayout(project *configs.Project) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
-					"interfaces",
+					"pkg",
 					"postgres",
 					"migrations",
 					"000004_group_permissions.down.sql",
@@ -365,7 +365,7 @@ func CreateLayout(project *configs.Project) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
-					"interfaces",
+					"pkg",
 					"gateway",
 					"server.go",
 				),
@@ -400,7 +400,7 @@ func RenderTests(project *configs.Project) error {
 	tests := []*Template{
 		{
 			SourcePath:      "templates/internal/configs/config_test.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "configs", "config_test.go"),
+			DestinationPath: path.Join(destinationPath, "internal", "pkg", "configs", "config_test.go"),
 			Name:            "config tests",
 		},
 		{
@@ -479,7 +479,7 @@ func RenderTests(project *configs.Project) error {
 				DestinationPath: path.Join(
 					destinationPath,
 					"internal",
-					"interfaces",
+					"pkg",
 					"grpc",
 					"auth_middleware_test.go",
 				),

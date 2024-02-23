@@ -1,4 +1,4 @@
-package layout
+package pkg
 
 import (
 	"github.com/018bf/creathor/internal/configs"
@@ -7,10 +7,10 @@ import (
 	authInterceptors "github.com/018bf/creathor/internal/generators/auth/interceptors"
 	authModel "github.com/018bf/creathor/internal/generators/auth/models"
 	authUseCases "github.com/018bf/creathor/internal/generators/auth/usecases"
-	"github.com/018bf/creathor/internal/generators/layout/domain/repositories"
-	"github.com/018bf/creathor/internal/generators/layout/errs"
-	"github.com/018bf/creathor/internal/generators/layout/interfaces/grpc"
-	"github.com/018bf/creathor/internal/generators/layout/interfaces/uptrace"
+	"github.com/018bf/creathor/internal/generators/pkg/domain/repositories"
+	"github.com/018bf/creathor/internal/generators/pkg/errs"
+	"github.com/018bf/creathor/internal/generators/pkg/grpc"
+	"github.com/018bf/creathor/internal/generators/pkg/uptrace"
 )
 
 type Generator struct {

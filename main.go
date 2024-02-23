@@ -11,10 +11,10 @@ import (
 	"path"
 	"strings"
 
-	ddd "github.com/018bf/creathor/internal/generators/domain"
+	"github.com/018bf/creathor/internal/generators/app"
 	"github.com/018bf/creathor/internal/generators/pkg"
 
-	mods "github.com/018bf/creathor/internal/domain"
+	"github.com/018bf/creathor/internal/domain"
 
 	"github.com/018bf/creathor/internal/configs"
 	"github.com/iancoleman/strcase"
@@ -80,29 +80,29 @@ func initProject(ctx *cli.Context) error {
 	if err := CreateDeployment(project); err != nil {
 		return err
 	}
-	crud := pkg.NewGenerator(project)
-	if err := crud.Sync(); err != nil {
+	pkgGenerator := pkg.NewGenerator(project)
+	if err := pkgGenerator.Sync(); err != nil {
 		return err
 	}
 	for _, m := range project.Domains {
-		domain := &mods.Domain{
+		d := &domain.Domain{
 			Name:        m.Model,
 			Module:      project.Module,
 			ProtoModule: project.ProtoPackage(),
-			Models: []*mods.Model{
-				mods.NewMainModel(m),
-				mods.NewFilterModel(m),
-				mods.NewCreateModel(m),
-				mods.NewUpdateModel(m),
+			Models: []*domain.Model{
+				domain.NewMainModel(m),
+				domain.NewFilterModel(m),
+				domain.NewCreateModel(m),
+				domain.NewUpdateModel(m),
 			},
-			UseCase:     mods.NewUseCase(m),
-			Repository:  mods.NewRepository(m),
-			Interceptor: mods.NewInterceptor(m),
-			GRPCHandler: mods.NewGRPCHandler(m),
+			UseCase:     domain.NewUseCase(m),
+			Repository:  domain.NewRepository(m),
+			Interceptor: domain.NewInterceptor(m),
+			GRPCHandler: domain.NewGRPCHandler(m),
 			Auth:        project.Auth,
 		}
-		crud := ddd.NewGenerator(domain)
-		if err := crud.Sync(); err != nil {
+		appGenerator := app.NewGenerator(d)
+		if err := appGenerator.Sync(); err != nil {
 			return err
 		}
 	}

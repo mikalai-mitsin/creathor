@@ -1,13 +1,13 @@
-package domain
+package app
 
 import (
 	"github.com/018bf/creathor/internal/domain"
 	"github.com/018bf/creathor/internal/generators"
-	"github.com/018bf/creathor/internal/generators/domain/interceptors"
-	"github.com/018bf/creathor/internal/generators/domain/interfaces/grpc"
-	"github.com/018bf/creathor/internal/generators/domain/models"
-	"github.com/018bf/creathor/internal/generators/domain/repositories/postgres"
-	"github.com/018bf/creathor/internal/generators/domain/usecases"
+	"github.com/018bf/creathor/internal/generators/app/interceptors"
+	"github.com/018bf/creathor/internal/generators/app/interfaces/grpc"
+	"github.com/018bf/creathor/internal/generators/app/models"
+	"github.com/018bf/creathor/internal/generators/app/repositories/postgres"
+	"github.com/018bf/creathor/internal/generators/app/usecases"
 )
 
 type Generator struct {

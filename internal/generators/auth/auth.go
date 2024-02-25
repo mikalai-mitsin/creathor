@@ -1,4 +1,4 @@
-package pkg
+package auth
 
 import (
 	"github.com/018bf/creathor/internal/configs"
@@ -7,10 +7,6 @@ import (
 	authInterceptors "github.com/018bf/creathor/internal/generators/auth/interceptors"
 	authModel "github.com/018bf/creathor/internal/generators/auth/models"
 	authUseCases "github.com/018bf/creathor/internal/generators/auth/usecases"
-	"github.com/018bf/creathor/internal/generators/pkg/domain/repositories"
-	"github.com/018bf/creathor/internal/generators/pkg/errs"
-	"github.com/018bf/creathor/internal/generators/pkg/grpc"
-	"github.com/018bf/creathor/internal/generators/pkg/uptrace"
 )
 
 type Generator struct {
@@ -22,13 +18,7 @@ func NewGenerator(project *configs.Project) *Generator {
 }
 
 func (g *Generator) Sync() error {
-	generators := []generators2.Generator{
-		grpc.NewServer(g.project),
-		errs.NewErrors(g.project),
-	}
-	if g.project.UptraceEnabled {
-		generators = append(generators, uptrace.NewProvider(g.project))
-	}
+	var generators []generators2.Generator
 	if g.project.Auth {
 		generators = append(
 			generators,
@@ -42,12 +32,6 @@ func (g *Generator) Sync() error {
 			//Handlers and interfaces
 			authGrpcHandlers.NewInterceptorInterfaceAuth(g.project),
 			authModel.NewModelPermission(g.project),
-		)
-	}
-	if g.project.KafkaEnabled {
-		generators = append(
-			generators,
-			repositories.NewRepositoryInterfaceEvent(g.project),
 		)
 	}
 	for _, generator := range generators {

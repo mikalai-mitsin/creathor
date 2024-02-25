@@ -5,6 +5,7 @@ import (
 	"embed"
 	_ "embed"
 	"fmt"
+	"github.com/018bf/creathor/internal/generators/auth"
 	"log"
 	"os"
 	"os/exec"
@@ -71,9 +72,6 @@ func initProject(ctx *cli.Context) error {
 	if err := CreateCI(project); err != nil {
 		return err
 	}
-	if err := CreateDI(project); err != nil {
-		return err
-	}
 	if err := CreateBuild(project); err != nil {
 		return err
 	}
@@ -82,6 +80,10 @@ func initProject(ctx *cli.Context) error {
 	}
 	pkgGenerator := pkg.NewGenerator(project)
 	if err := pkgGenerator.Sync(); err != nil {
+		return err
+	}
+	authGenerator := auth.NewGenerator(project)
+	if err := authGenerator.Sync(); err != nil {
 		return err
 	}
 	for _, m := range project.Domains {

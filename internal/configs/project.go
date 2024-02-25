@@ -16,7 +16,7 @@ type Project struct {
 	GoVersion      string          `yaml:"goVersion"`
 	Auth           bool            `yaml:"auth"`
 	CI             string          `yaml:"ci"`
-	Domains        []*DomainConfig `yaml:"models"`
+	Domains        []*DomainConfig `yaml:"domains"`
 	GRPCEnabled    bool            `yaml:"gRPC"`
 	GatewayEnabled bool            `yaml:"gateway"`
 	MakeEnabled    bool            `yaml:"make"`

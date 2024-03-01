@@ -1,0 +1,44 @@
+CREATE TABLE public.{{ .TableName }}
+(
+    id          uuid                  DEFAULT uuid_generate_v4()
+        CONSTRAINT {{ .TableName }}_pk PRIMARY KEY,
+{{- range $value := .Params }}
+    {{ $value.Tag }} {{ $value.SQLType }} NOT NULL,
+{{- end }}
+    updated_at  timestamp    NOT NULL DEFAULT (now() at time zone 'utc'),
+    created_at  timestamp    NOT NULL DEFAULT (now() at time zone 'utc')
+);
+
+{{- if .SearchEnabled }}
+CREATE INDEX search_{{ .TableName }}
+    ON public.{{ .TableName }}
+        USING GIN ({{ .SearchVector }});
+{{- end}}
+
+CREATE TRIGGER update_{{ .TableName }}_updated_at
+    BEFORE UPDATE
+    ON
+        public.{{ .TableName }}
+    FOR EACH ROW
+EXECUTE PROCEDURE update_updated_at_task();
+
+INSERT INTO public.permissions (id, name)
+VALUES ('{{- .KeyName -}}_list', '{{ .Config.ModelName }} list'),
+       ('{{- .KeyName -}}_detail', '{{ .Config.ModelName }} detail'),
+       ('{{- .KeyName -}}_create', '{{ .Config.ModelName }} create'),
+       ('{{- .KeyName -}}_update', '{{ .Config.ModelName }} update'),
+       ('{{- .KeyName -}}_delete', '{{ .Config.ModelName }} delete');
+
+INSERT INTO public.group_permissions (group_id, permission_id)
+VALUES ('admin', '{{- .KeyName -}}_list'),
+       ('admin', '{{- .KeyName -}}_detail'),
+       ('admin', '{{- .KeyName -}}_create'),
+       ('admin', '{{- .KeyName -}}_update'),
+       ('admin', '{{- .KeyName -}}_delete'),
+       ('user', '{{- .KeyName -}}_list'),
+       ('user', '{{- .KeyName -}}_detail'),
+       ('user', '{{- .KeyName -}}_create'),
+       ('user', '{{- .KeyName -}}_update'),
+       ('user', '{{- .KeyName -}}_delete'),
+       ('guest', '{{- .KeyName -}}_list'),
+       ('guest', '{{- .KeyName -}}_detail');

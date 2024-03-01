@@ -1,0 +1,601 @@
+package grpc
+
+import (
+    "context"
+    "errors"
+    "{{ .Module }}/internal/pkg/errs"
+    "{{ .Module }}/internal/pkg/grpc"
+    "{{ .Module }}/internal/pkg/log"
+    mock_grpc "{{ .Module }}/internal/app/{{ .DirName }}/handlers/grpc/mock"
+
+    mock_interceptors "{{ .Module }}/internal/app/{{ .DirName }}/interceptors/mock"
+    "{{ .Module }}/internal/app/{{ .DirName }}/models"
+    mock_models "{{ .Module }}/internal/app/{{ .DirName }}/models/mock"
+    "{{ .Module }}/internal/pkg/clock"
+    mock_log "{{ .Module }}/internal/pkg/log/mock"
+    "{{ .Module }}/internal/pkg/pointer"
+    "{{ .Module }}/internal/pkg/uuid"
+    {{ .Config.ProtoPackage }} "{{ .Module }}/pkg/{{ .Config.ProtoPackage }}/v1"
+    "github.com/golang/mock/gomock"
+    "google.golang.org/protobuf/types/known/emptypb"
+    "google.golang.org/protobuf/types/known/timestamppb"
+    "google.golang.org/protobuf/types/known/wrapperspb"
+    "reflect"
+    "github.com/jaswdr/faker"
+    "testing"
+)
+
+func TestNew{{ .Config.GRPCHandlerTypeName }}(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    {{ .Config.InterceptorVariableName }} := mock_grpc.NewMock{{ .Config.InterceptorTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    type args struct {
+        {{ .Config.InterceptorVariableName }} {{ .Config.InterceptorTypeName }}
+        logger             log.Logger
+    }
+    tests := []struct {
+        name string
+        args args
+        want {{ .Config.ProtoPackage }}.{{ .Config.GRPCHandlerTypeName }}
+    }{
+        {
+            name: "ok",
+            args: args{
+                {{ .Config.InterceptorVariableName }}: {{ .Config.InterceptorVariableName }},
+                logger:             logger,
+            },
+            want: &{{ .Config.GRPCHandlerTypeName }}{
+                {{ .Config.InterceptorVariableName }}: {{ .Config.InterceptorVariableName }},
+                logger:             logger,
+            },
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            if got := New{{ .Config.GRPCHandlerTypeName }}(tt.args.{{ .Config.InterceptorVariableName }}, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("New{{ .Config.GRPCHandlerTypeName }}() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func Test{{ .Config.GRPCHandlerTypeName }}_Create(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    {{ .Config.InterceptorVariableName }} := mock_grpc.NewMock{{ .Config.InterceptorTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    ctx := context.Background()
+    // create := mock_models.New{{ .Config.CreateTypeName }}(t)
+    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    type fields struct {
+        Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
+        {{ .Config.InterceptorVariableName }} {{ .Config.InterceptorTypeName }}
+        logger log.Logger
+    }
+    type args struct {
+        ctx   context.Context
+        input *{{ .Config.ProtoPackage }}.{{ .Config.CreateTypeName }}
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    *{{ .Config.ProtoPackage }}.{{ .Config.ModelName }}
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+                {{ .Config.InterceptorVariableName }}.
+                    EXPECT().
+                    Create(ctx, gomock.Any()).
+                    Return({{ .Config.Variable }}, nil)
+            },
+            fields: fields{
+                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
+                {{ .Config.InterceptorVariableName }}: {{ .Config.InterceptorVariableName }},
+                logger: logger,
+            },
+            args: args{
+                ctx: ctx,
+                input: &{{ .Config.ProtoPackage }}.{{ .Config.CreateTypeName }}{},
+            },
+            want:    decode{{ .Config.ModelName }}({{ .Config.Variable }}),
+            wantErr: nil,
+        },
+        {
+            name: "interceptor error",
+            setup: func() {
+                {{ .Config.InterceptorVariableName }}.
+                    EXPECT().
+                    Create(ctx, gomock.Any()).
+                    Return(nil, errs.NewUnexpectedBehaviorError("interceptor error")).
+                    Times(1)
+            },
+            fields: fields{
+                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
+                {{ .Config.InterceptorVariableName }}:                {{ .Config.InterceptorVariableName }},
+                logger:                            logger,
+            },
+            args: args{
+                ctx: ctx,
+                input: &{{ .Config.ProtoPackage }}.{{ .Config.CreateTypeName }}{},
+            },
+            want:    nil,
+            wantErr: grpc.DecodeError(errs.NewUnexpectedBehaviorError("interceptor error")),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            s := {{ .Config.GRPCHandlerTypeName }}{
+                Unimplemented{{ .Config.GRPCHandlerTypeName }}: tt.fields.Unimplemented{{ .Config.GRPCHandlerTypeName }},
+                {{ .Config.InterceptorVariableName }}:                tt.fields.{{ .Config.InterceptorVariableName }},
+                logger:                            tt.fields.logger,
+            }
+            got, err := s.Create(tt.args.ctx, tt.args.input)
+            if !errors.Is(err, tt.wantErr) {
+                t.Errorf("Create() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("Create() got = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func Test{{ .Config.GRPCHandlerTypeName }}_Delete(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    {{ .Config.InterceptorVariableName }} := mock_grpc.NewMock{{ .Config.InterceptorTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    ctx := context.Background()
+    id := uuid.NewUUID()
+    type fields struct {
+        Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
+        {{ .Config.InterceptorVariableName }}                {{ .Config.InterceptorTypeName }}
+        logger                            log.Logger
+    }
+    type args struct {
+        ctx   context.Context
+        input *{{ .Config.ProtoPackage }}.{{ .Config.ModelName }}Delete
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    *emptypb.Empty
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+                {{ .Config.InterceptorVariableName }}.EXPECT().Delete(ctx, id).Return(nil).Times(1)
+            },
+            fields: fields{
+                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
+                {{ .Config.InterceptorVariableName }}:                {{ .Config.InterceptorVariableName }},
+                logger:                            logger,
+            },
+            args: args{
+                ctx: ctx,
+                input: &{{ .Config.ProtoPackage }}.{{ .Config.ModelName }}Delete{
+                    Id: id.String(),
+                },
+            },
+            want:    &emptypb.Empty{},
+            wantErr: nil,
+        },
+        {
+            name: "interceptor error",
+            setup: func() {
+                {{ .Config.InterceptorVariableName }}.EXPECT().Delete(ctx, id).
+                    Return(errs.NewUnexpectedBehaviorError("i error")).
+                    Times(1)
+            },
+            fields: fields{
+                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
+                {{ .Config.InterceptorVariableName }}:                {{ .Config.InterceptorVariableName }},
+                logger:                            logger,
+            },
+            args: args{
+                ctx: ctx,
+                input: &{{ .Config.ProtoPackage }}.{{ .Config.ModelName }}Delete{
+                    Id: id.String(),
+                },
+            },
+            want: nil,
+            wantErr: grpc.DecodeError(&errs.Error{
+                Code:    13,
+                Message: "Unexpected behavior.",
+                Params: map[string]string{
+                    "details": "i error",
+                },
+            }),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            s := {{ .Config.GRPCHandlerTypeName }}{
+                Unimplemented{{ .Config.GRPCHandlerTypeName }}: tt.fields.Unimplemented{{ .Config.GRPCHandlerTypeName }},
+                {{ .Config.InterceptorVariableName }}:                tt.fields.{{ .Config.InterceptorVariableName }},
+                logger:                            tt.fields.logger,
+            }
+            got, err := s.Delete(tt.args.ctx, tt.args.input)
+            if !errors.Is(err, tt.wantErr) {
+                t.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("Delete() got = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func Test{{ .Config.GRPCHandlerTypeName }}_Get(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    {{ .Config.InterceptorVariableName }} := mock_grpc.NewMock{{ .Config.InterceptorTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    ctx := context.Background()
+    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    type fields struct {
+        Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
+        {{ .Config.InterceptorVariableName }}                {{ .Config.InterceptorTypeName }}
+        logger                            log.Logger
+    }
+    type args struct {
+        ctx   context.Context
+        input *{{ .Config.ProtoPackage }}.{{ .Config.ModelName }}Get
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    *{{ .Config.ProtoPackage }}.{{ .Config.ModelName }}
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+                {{ .Config.InterceptorVariableName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return({{ .Config.Variable }}, nil).Times(1)
+            },
+            fields: fields{
+                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
+                {{ .Config.InterceptorVariableName }}:                {{ .Config.InterceptorVariableName }},
+                logger:                            logger,
+            },
+            args: args{
+                ctx: ctx,
+                input: &{{ .Config.ProtoPackage }}.{{ .Config.ModelName }}Get{
+                    Id: string({{ .Config.Variable }}.ID),
+                },
+            },
+            want:    decode{{ .Config.ModelName }}({{ .Config.Variable }}),
+            wantErr: nil,
+        },
+        {
+            name: "interceptor error",
+            setup: func() {
+                {{ .Config.InterceptorVariableName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).
+                    Return(nil, errs.NewUnexpectedBehaviorError("i error")).
+                    Times(1)
+            },
+            fields: fields{
+                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
+                {{ .Config.InterceptorVariableName }}:                {{ .Config.InterceptorVariableName }},
+                logger:                            logger,
+            },
+            args: args{
+                ctx: ctx,
+                input: &{{ .Config.ProtoPackage }}.{{ .Config.ModelName }}Get{
+                    Id: string({{ .Config.Variable }}.ID),
+                },
+            },
+            want:    nil,
+            wantErr: grpc.DecodeError(errs.NewUnexpectedBehaviorError("i error")),
+        },
+    }
+    for _, tt := range tests {
+        tt.setup()
+        t.Run(tt.name, func(t *testing.T) {
+            s := {{ .Config.GRPCHandlerTypeName }}{
+                Unimplemented{{ .Config.GRPCHandlerTypeName }}: tt.fields.Unimplemented{{ .Config.GRPCHandlerTypeName }},
+                {{ .Config.InterceptorVariableName }}:                tt.fields.{{ .Config.InterceptorVariableName }},
+                logger:                            tt.fields.logger,
+            }
+            got, err := s.Get(tt.args.ctx, tt.args.input)
+            if !errors.Is(err, tt.wantErr) {
+                t.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("Get() got = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    {{ .Config.InterceptorVariableName }} := mock_grpc.NewMock{{ .Config.InterceptorTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    ctx := context.Background()
+    filter := mock_models.New{{ .Config.FilterTypeName }}(t)
+    var ids []uuid.UUID
+    var stringIDs []string
+    count := faker.New().UInt64Between(2, 20)
+    response := &{{ .Config.ProtoPackage }}.List{{ .Config.ModelName }}{
+        Items: make([]*{{ .Config.ProtoPackage }}.{{ .Config.ModelName }}, 0, int(count)),
+        Count:    count,
+    }
+    {{ .Config.ListVariable }} := make([]*models.{{ .Config.ModelName }}, 0, int(count))
+    for i := 0; i < int(count); i++ {
+        a := mock_models.New{{ .Config.ModelName }}(t)
+        ids = append(ids, a.ID)
+        stringIDs = append(stringIDs, string(a.ID))
+        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, a)
+        response.Items = append(response.Items, decode{{ .Config.ModelName }}(a))
+    }
+    filter.IDs = ids
+    type fields struct {
+        Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
+        {{ .Config.InterceptorVariableName }}                {{ .Config.InterceptorTypeName }}
+        logger                            log.Logger
+    }
+    type args struct {
+        ctx   context.Context
+        input *{{ .Config.ProtoPackage }}.{{ .Config.FilterTypeName }}
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    *{{ .Config.ProtoPackage }}.List{{ .Config.ModelName }}
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+                {{ .Config.InterceptorVariableName }}.EXPECT().List(ctx, filter).Return({{ .Config.ListVariable }}, count, nil).Times(1)
+            },
+            fields: fields{
+                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
+                {{ .Config.InterceptorVariableName }}:                {{ .Config.InterceptorVariableName }},
+                logger:                            logger,
+            },
+            args: args{
+                ctx: ctx,
+                input: &{{ .Config.ProtoPackage }}.{{ .Config.FilterTypeName }}{
+                    PageNumber: wrapperspb.UInt64(*filter.PageNumber),
+                    PageSize:   wrapperspb.UInt64(*filter.PageSize),
+                    Search:     wrapperspb.String(*filter.Search),
+                    OrderBy:    filter.OrderBy,
+                    Ids:        stringIDs,
+                },
+            },
+            want:    response,
+            wantErr: nil,
+        },
+        {
+            name: "interceptor error",
+            setup: func() {
+                {{ .Config.InterceptorVariableName }}.
+                    EXPECT().
+                    List(ctx, filter).
+                    Return(nil, uint64(0), errs.NewUnexpectedBehaviorError("i error")).
+                    Times(1)
+            },
+            fields: fields{
+                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
+                {{ .Config.InterceptorVariableName }}:                {{ .Config.InterceptorVariableName }},
+                logger:                            logger,
+            },
+            args: args{
+                ctx: ctx,
+                input: &{{ .Config.ProtoPackage }}.{{ .Config.FilterTypeName }}{
+                    PageNumber: wrapperspb.UInt64(*filter.PageNumber),
+                    PageSize:   wrapperspb.UInt64(*filter.PageSize),
+                    Search:     wrapperspb.String(*filter.Search),
+                    OrderBy:    filter.OrderBy,
+                    Ids:        stringIDs,
+                },
+            },
+            want:    nil,
+            wantErr: grpc.DecodeError(errs.NewUnexpectedBehaviorError("i error")),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            s := {{ .Config.GRPCHandlerTypeName }}{
+                Unimplemented{{ .Config.GRPCHandlerTypeName }}: tt.fields.Unimplemented{{ .Config.GRPCHandlerTypeName }},
+                {{ .Config.InterceptorVariableName }}:                tt.fields.{{ .Config.InterceptorVariableName }},
+                logger:                            tt.fields.logger,
+            }
+            got, err := s.List(tt.args.ctx, tt.args.input)
+            if !errors.Is(err, tt.wantErr) {
+                t.Errorf("List() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("List() got = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func Test{{ .Config.GRPCHandlerTypeName }}_Update(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    {{ .Config.InterceptorVariableName }} := mock_grpc.NewMock{{ .Config.InterceptorTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    ctx := context.Background()
+    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    update := mock_models.New{{ .Config.UpdateTypeName }}(t)
+    type fields struct {
+        Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
+        {{ .Config.InterceptorVariableName }}                {{ .Config.InterceptorTypeName }}
+        logger                            log.Logger
+    }
+    type args struct {
+        ctx   context.Context
+        input *{{ .Config.ProtoPackage }}.{{ .Config.UpdateTypeName }}
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    *{{ .Config.ProtoPackage }}.{{ .Config.ModelName }}
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+                {{ .Config.InterceptorVariableName }}.EXPECT().Update(ctx, gomock.Any()).Return({{ .Config.Variable }}, nil).Times(1)
+            },
+            fields: fields{
+                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
+                {{ .Config.InterceptorVariableName }}:                {{ .Config.InterceptorVariableName }},
+                logger:                            logger,
+            },
+            args: args{
+                ctx: ctx,
+                input: decode{{ .Config.UpdateTypeName }}(update),
+            },
+            want:    decode{{ .Config.ModelName }}({{ .Config.Variable }}),
+            wantErr: nil,
+        },
+        {
+            name: "interceptor error",
+            setup: func() {
+                {{ .Config.InterceptorVariableName }}.EXPECT().Update(ctx, gomock.Any()).
+                    Return(nil, errs.NewUnexpectedBehaviorError("i error"))
+            },
+            fields: fields{
+                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
+                {{ .Config.InterceptorVariableName }}:                {{ .Config.InterceptorVariableName }},
+                logger:                            logger,
+            },
+            args: args{
+                ctx: ctx,
+                input: decode{{ .Config.UpdateTypeName }}(update),
+            },
+            want:    nil,
+            wantErr: grpc.DecodeError(errs.NewUnexpectedBehaviorError("i error")),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            s := {{ .Config.GRPCHandlerTypeName }}{
+                Unimplemented{{ .Config.GRPCHandlerTypeName }}: tt.fields.Unimplemented{{ .Config.GRPCHandlerTypeName }},
+                {{ .Config.InterceptorVariableName }}:                tt.fields.{{ .Config.InterceptorVariableName }},
+                logger:                            tt.fields.logger,
+            }
+            got, err := s.Update(tt.args.ctx, tt.args.input)
+            if !errors.Is(err, tt.wantErr) {
+                t.Errorf("Update() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("Update() got = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func Test_decode{{ .Config.ModelName }}(t *testing.T) {
+    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    result := &{{ .Config.ProtoPackage }}.{{ .Config.ModelName }}{
+        Id:          string({{ .Config.Variable }}.ID),
+        UpdatedAt:   timestamppb.New({{ .Config.Variable }}.UpdatedAt),
+        CreatedAt:   timestamppb.New({{ .Config.Variable }}.CreatedAt),
+        {{- range $value := .Config.Params }}
+            {{- if $value.IsSlice }}
+        {{ $value.GRPCParam }}: {{ $value.GRPCType }}{},
+            {{- else }}
+        {{ $value.GRPCParam }}: {{ $value.GRPCType }}({{ $.Config.Variable }}.{{ $value.GetName }}),
+            {{- end }}
+        {{- end }}
+    }
+{{- range $value := .Config.Params }}
+    {{- if $value.IsSlice }}
+    for _, param := range {{ $.Config.Variable }}.{{ $value.GetName }} {
+        result.{{ $value.GRPCParam }} = append(result.{{ $value.GRPCParam }}, {{ $value.GRPCSliceType }}(param))
+    }
+    {{- end }}
+{{- end }}
+    type args struct {
+        {{ .Config.Variable }} *models.{{ .Config.ModelName }}
+    }
+    tests := []struct {
+        name string
+        args args
+        want *{{ .Config.ProtoPackage }}.{{ .Config.ModelName }}
+    }{
+        {
+            name: "ok",
+            args: args{
+                {{ .Config.Variable }}: {{ .Config.Variable }},
+            },
+            want: result,
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            if got := decode{{ .Config.ModelName }}(tt.args.{{ .Config.Variable }}); !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("decode{{ .Config.ModelName }}() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func Test_encode{{ .Config.FilterTypeName }}(t *testing.T) {
+    id := uuid.UUID(uuid.NewUUID())
+    type args struct {
+        input *{{ .Config.ProtoPackage }}.{{ .Config.FilterTypeName }}
+    }
+    tests := []struct {
+        name string
+        args args
+        want *models.{{ .Config.FilterTypeName }}
+    }{
+        {
+            name: "ok",
+            args: args{
+                input: &{{ .Config.ProtoPackage }}.{{ .Config.FilterTypeName }}{
+                    PageNumber: wrapperspb.UInt64(2),
+                    PageSize:   wrapperspb.UInt64(5),
+                    Search:     wrapperspb.String("my name is"),
+                    OrderBy:    []string{"created_at", "id"},
+                    Ids:        []string{string(id)},
+                },
+            },
+            want: &models.{{ .Config.FilterTypeName }}{
+                PageSize:   pointer.Pointer(uint64(5)),
+                PageNumber: pointer.Pointer(uint64(2)),
+                OrderBy:    []string{"created_at", "id"},
+                Search:     pointer.Pointer("my name is"),
+                IDs:        []uuid.UUID{id},
+            },
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            if got := encode{{ .Config.FilterTypeName }}(tt.args.input); !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("encodeUserFilter() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}

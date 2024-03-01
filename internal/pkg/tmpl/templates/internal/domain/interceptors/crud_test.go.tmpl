@@ -1,0 +1,932 @@
+package interceptors
+
+import (
+    "context"
+    "errors"
+    "reflect"
+    "testing"
+
+    "{{ .Module }}/internal/pkg/errs"
+    "{{ .Module }}/internal/pkg/log"
+    "{{ .Module }}/internal/app/{{ .DirName }}/models"
+    mock_models "{{ .Module }}/internal/app/{{ .DirName }}/models/mock"
+    userMockModels "{{ .Module }}/internal/app/user/models/mock"
+    userModels "{{ .Module }}/internal/app/user/models"
+    mock_interceptors "{{ .Module }}/internal/app/{{ .DirName }}/interceptors/mock"
+
+    mock_log "{{ .Module }}/internal/pkg/log/mock"
+    "github.com/golang/mock/gomock"
+    "github.com/jaswdr/faker"
+
+    "{{ .Module }}/internal/pkg/clock"
+    "{{ .Module }}/internal/pkg/uuid"
+)
+
+func TestNew{{ .Interceptor.Name }}(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+{{- if .Auth }}
+    authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
+{{- end }}
+    {{ .Config.UseCaseVariableName }} := mock_interceptors.NewMock{{ .Config.UseCaseTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    type args struct {
+{{- if .Auth }}
+        authUseCase     AuthUseCase
+{{- end}}
+        {{ .Config.UseCaseVariableName }} {{ .Config.UseCaseTypeName }}
+        logger          log.Logger
+    }
+    tests := []struct {
+        name  string
+        setup func()
+        args  args
+        want  *{{ .Interceptor.Name }}
+    }{
+        {
+            name:  "ok",
+            setup: func() {},
+            args: args{
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+{{- if .Auth }}
+                authUseCase:     authUseCase,
+{{- end }}
+                logger:          logger,
+            },
+            want: &{{ .Interceptor.Name }}{
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+{{- if .Auth }}
+                authUseCase:     authUseCase,
+{{- end }}
+                logger:          logger,
+            },
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            if got := New{{ .Interceptor.Name }}(tt.args.{{ .Config.UseCaseVariableName }}, tt.args.logger{{if .Auth}}, tt.args.authUseCase{{end}}); !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("New{{ .Interceptor.Name }}() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func Test{{ .Interceptor.Name }}_Get(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+{{- if .Auth }}
+    authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
+    requestUser := userMockModels.NewUser(t)
+{{- end }}
+    {{ .Config.UseCaseVariableName }} := mock_interceptors.NewMock{{ .Config.UseCaseTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    ctx := context.Background()
+    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    type fields struct {
+{{- if .Auth }}
+        authUseCase     AuthUseCase
+{{- end }}
+        {{ .Config.UseCaseVariableName }} {{ .Config.UseCaseTypeName }}
+        logger          log.Logger
+    }
+    type args struct {
+        ctx context.Context
+        id  uuid.UUID
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    *models.{{ .Config.ModelName }}
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+{{- if .Auth }}
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx, requestUser, userModels.{{ .PermissionIDDetail }}).
+                    Return(nil)
+{{- end }}
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    Get(ctx, {{ .Config.Variable }}.ID).
+                    Return({{ .Config.Variable }}, nil)
+{{- if .Auth }}
+                authUseCase.EXPECT().
+                    HasObjectPermission(ctx, requestUser, userModels.{{ .PermissionIDDetail }}, {{ .Config.Variable }}).
+                    Return(nil)
+{{- end }}
+            },
+            fields: fields{
+{{- if .Auth }}
+                authUseCase:     authUseCase,
+{{- end }}
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  uuid.UUID({{ .Config.Variable }}.ID),
+            },
+            want:    {{ .Config.Variable }},
+            wantErr: nil,
+        },
+{{- if .Auth }}
+        {
+            name: "object permission error",
+            setup: func() {
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx, requestUser, userModels.{{ .PermissionIDDetail }}).
+                    Return(nil)
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    Get(ctx, {{ .Config.Variable }}.ID).
+                    Return({{ .Config.Variable }}, nil)
+                authUseCase.EXPECT().
+                    HasObjectPermission(ctx, requestUser, userModels.{{ .PermissionIDDetail }}, {{ .Config.Variable }}).
+                    Return(errs.NewPermissionDeniedError())
+            },
+            fields: fields{
+                authUseCase:     authUseCase,
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  {{ .Config.Variable }}.ID,
+            },
+            want:    nil,
+            wantErr: errs.NewPermissionDeniedError(),
+        },
+        {
+            name: "permission denied",
+            setup: func() {
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx, requestUser, userModels.{{ .PermissionIDDetail }}).
+                    Return(errs.NewPermissionDeniedError())
+            },
+            fields: fields{
+                authUseCase:     authUseCase,
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  {{ .Config.Variable }}.ID,
+            },
+            want:    nil,
+            wantErr: errs.NewPermissionDeniedError(),
+        },
+{{- end }}
+        {
+            name: "{{ .Config.ModelName }} not found",
+            setup: func() {
+{{- if .Auth }}
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx, requestUser, userModels.{{ .PermissionIDDetail }}).
+                    Return(nil)
+{{- end }}
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    Get(ctx, {{ .Config.Variable }}.ID).
+                    Return(nil, errs.NewEntityNotFound())
+            },
+            fields: fields{
+{{- if .Auth }}
+                authUseCase:     authUseCase,
+{{- end }}
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx:         ctx,
+                id:          {{ .Config.Variable }}.ID,
+            },
+            want:    nil,
+            wantErr: errs.NewEntityNotFound(),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            i := &{{ .Interceptor.Name }}{
+                {{ .Config.UseCaseVariableName }}: tt.fields.{{ .Config.UseCaseVariableName }},
+{{- if .Auth }}
+                authUseCase:     tt.fields.authUseCase,
+{{- end }}
+                logger:          tt.fields.logger,
+            }
+            got, err := i.Get(tt.args.ctx, tt.args.id)
+            if !errors.Is(err, tt.wantErr) {
+                t.Errorf("{{ .Interceptor.Name }}.Get() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("{{ .Interceptor.Name }}.Get() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func Test{{ .Interceptor.Name }}_Create(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+{{- if .Auth }}
+    authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
+    requestUser := userMockModels.NewUser(t)
+{{- end }}
+    {{ .Config.UseCaseVariableName }} := mock_interceptors.NewMock{{ .Config.UseCaseTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    ctx := context.Background()
+    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    create := mock_models.New{{ .Config.CreateTypeName }}(t)
+    type fields struct {
+        {{ .Config.UseCaseVariableName }} {{ .Config.UseCaseTypeName }}
+{{- if .Auth }}
+        authUseCase     AuthUseCase
+{{- end }}
+        logger          log.Logger
+    }
+    type args struct {
+        ctx    context.Context
+        create *models.{{ .Config.CreateTypeName }}
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    *models.{{ .Config.ModelName }}
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+{{- if .Auth }}
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDCreate }}).
+                    Return(nil)
+                authUseCase.EXPECT().
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDCreate }}, create).
+                    Return(nil)
+{{- end }}
+                {{ .Config.UseCaseVariableName }}.EXPECT().Create(ctx, create).Return({{ .Config.Variable }}, nil)
+            },
+            fields: fields{
+{{- if .Auth }}
+                authUseCase:     authUseCase,
+{{- end }}
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx:    ctx,
+                create: create,
+            },
+            want:    {{ .Config.Variable }},
+            wantErr: nil,
+        },
+{{- if .Auth }}
+        {
+            name: "object permission denied",
+            setup: func() {
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDCreate }}).
+                    Return(nil)
+                authUseCase.EXPECT().
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDCreate }}, create).
+                    Return(errs.NewPermissionDeniedError())
+            },
+            fields: fields{
+                authUseCase:     authUseCase,
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx:    ctx,
+                create: create,
+            },
+            want:    nil,
+            wantErr: errs.NewPermissionDeniedError(),
+        },
+        {
+            name: "permission denied",
+            setup: func() {
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDCreate }}).
+                    Return(errs.NewPermissionDeniedError())
+            },
+            fields: fields{
+                authUseCase:     authUseCase,
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx:         ctx,
+                create:      create,
+            },
+            want:    nil,
+            wantErr: errs.NewPermissionDeniedError(),
+        },
+{{- end }}
+        {
+            name: "create error",
+            setup: func() {
+{{- if .Auth }}
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDCreate }}).
+                    Return(nil)
+                authUseCase.EXPECT().
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDCreate }}, create).
+                    Return(nil)
+{{- end }}
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    Create(ctx, create).
+                    Return(nil, errs.NewUnexpectedBehaviorError("c u"))
+            },
+            fields: fields{
+{{- if .Auth}}
+                authUseCase:     authUseCase,
+{{- end }}
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx:    ctx,
+                create: create,
+            },
+            want:    nil,
+            wantErr: errs.NewUnexpectedBehaviorError("c u"),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            i := &{{ .Interceptor.Name }}{
+                {{ .Config.UseCaseVariableName }}: tt.fields.{{ .Config.UseCaseVariableName }},
+{{- if .Auth }}
+                authUseCase:     tt.fields.authUseCase,
+{{- end }}
+                logger:          tt.fields.logger,
+            }
+            got, err := i.Create(tt.args.ctx, tt.args.create)
+            if !errors.Is(err, tt.wantErr) {
+                t.Errorf("{{ .Interceptor.Name }}.Create() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("{{ .Interceptor.Name }}.Create() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func Test{{ .Interceptor.Name }}_Update(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+{{- if .Auth }}
+    authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
+    requestUser := userMockModels.NewUser(t)
+{{- end }}
+    {{ .Config.UseCaseVariableName }} := mock_interceptors.NewMock{{ .Config.UseCaseTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    ctx := context.Background()
+    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    update := mock_models.New{{ .Config.UpdateTypeName }}(t)
+    type fields struct {
+        {{ .Config.UseCaseVariableName }} {{ .Config.UseCaseTypeName }}
+{{- if .Auth }}
+        authUseCase     AuthUseCase
+{{- end }}
+        logger          log.Logger
+    }
+    type args struct {
+        ctx    context.Context
+        update *models.{{ .Config.UpdateTypeName }}
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    *models.{{ .Config.ModelName }}
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+{{- if .Auth }}
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}).
+                    Return(nil)
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    Get(ctx, update.ID).
+                    Return({{ .Config.Variable }}, nil)
+                authUseCase.EXPECT().
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}, {{ .Config.Variable }}).
+                    Return(nil)
+{{- end }}
+                {{ .Config.UseCaseVariableName }}.EXPECT().Update(ctx, update).Return({{ .Config.Variable }}, nil)
+            },
+            fields: fields{
+{{- if .Auth }}
+                authUseCase:     authUseCase,
+{{- end }}
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx:    ctx,
+                update: update,
+            },
+            want:    {{ .Config.Variable }},
+            wantErr: nil,
+        },
+{{- if .Auth }}
+        {
+            name: "object permission denied",
+            setup: func() {
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}).
+                    Return(nil)
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    Get(ctx, update.ID).
+                    Return({{ .Config.Variable }}, nil)
+                authUseCase.EXPECT().
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}, {{ .Config.Variable }}).
+                    Return(errs.NewPermissionDeniedError())
+            },
+            fields: fields{
+                authUseCase:     authUseCase,
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx:    ctx,
+                update: update,
+            },
+            want:    nil,
+            wantErr: errs.NewPermissionDeniedError(),
+        },
+        {
+            name: "not found",
+            setup: func() {
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}).
+                    Return(nil)
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    Get(ctx, update.ID).
+                    Return(nil, errs.NewEntityNotFound())
+            },
+            fields: fields{
+                authUseCase:     authUseCase,
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx:    ctx,
+                update: update,
+            },
+            want:    nil,
+            wantErr: errs.NewEntityNotFound(),
+        },
+{{- end }}
+        {
+            name: "update error",
+            setup: func() {
+{{- if .Auth }}
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}).
+                    Return(nil)
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    Get(ctx, update.ID).
+                    Return({{ .Config.Variable }}, nil)
+                authUseCase.EXPECT().
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}, {{ .Config.Variable }}).
+                    Return(nil)
+{{- end }}
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    Update(ctx, update).
+                    Return(nil, errs.NewUnexpectedBehaviorError("d 2"))
+            },
+            fields: fields{
+{{- if .Auth }}
+                authUseCase:     authUseCase,
+{{- end }}
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx:    ctx,
+                update: update,
+            },
+            want:    nil,
+            wantErr: errs.NewUnexpectedBehaviorError("d 2"),
+        },
+{{- if .Auth }}
+        {
+            name: "permission denied",
+            setup: func() {
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDUpdate }}).
+                    Return(errs.NewPermissionDeniedError())
+            },
+            fields: fields{
+                authUseCase:     authUseCase,
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx:    ctx,
+                update: update,
+            },
+            wantErr: errs.NewPermissionDeniedError(),
+        },
+{{- end }}
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            i := &{{ .Interceptor.Name }}{
+                {{ .Config.UseCaseVariableName }}: tt.fields.{{ .Config.UseCaseVariableName }},
+{{- if .Auth }}
+                authUseCase:     tt.fields.authUseCase,
+{{- end }}
+                logger:          tt.fields.logger,
+            }
+            got, err := i.Update(tt.args.ctx, tt.args.update)
+            if !errors.Is(err, tt.wantErr) {
+                t.Errorf("{{ .Interceptor.Name }}.Update() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("{{ .Interceptor.Name }}.Update() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func Test{{ .Interceptor.Name }}_Delete(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+{{- if .Auth }}
+    authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
+    requestUser := userMockModels.NewUser(t)
+{{- end }}
+    {{ .Config.UseCaseVariableName }} := mock_interceptors.NewMock{{ .Config.UseCaseTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    ctx := context.Background()
+    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    type fields struct {
+        {{ .Config.UseCaseVariableName }} {{ .Config.UseCaseTypeName }}
+{{- if .Auth }}
+        authUseCase     AuthUseCase
+{{- end }}
+        logger          log.Logger
+    }
+    type args struct {
+        ctx context.Context
+        id  uuid.UUID
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+{{- if .Auth }}
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}).
+                    Return(nil)
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    Get(ctx, {{ .Config.Variable }}.ID).
+                    Return({{ .Config.Variable }}, nil)
+                authUseCase.EXPECT().
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}, {{ .Config.Variable }}).
+                    Return(nil)
+{{- end }}
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    Delete(ctx, {{ .Config.Variable }}.ID).
+                    Return(nil)
+            },
+            fields: fields{
+{{- if .Auth }}
+                authUseCase:     authUseCase,
+{{- end }}
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  {{ .Config.Variable }}.ID,
+            },
+            wantErr: nil,
+        },
+{{- if .Auth }}
+        {
+            name: "{{ .Config.ModelName }} not found",
+            setup: func() {
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}).
+                    Return(nil)
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    Get(ctx, {{ .Config.Variable }}.ID).
+                    Return({{ .Config.Variable }}, errs.NewEntityNotFound())
+            },
+            fields: fields{
+                authUseCase:     authUseCase,
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  {{ .Config.Variable }}.ID,
+            },
+            wantErr: errs.NewEntityNotFound(),
+        },
+        {
+            name: "object permission denied",
+            setup: func() {
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}).
+                    Return(nil)
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    Get(ctx, {{ .Config.Variable }}.ID).
+                    Return({{ .Config.Variable }}, nil)
+                authUseCase.EXPECT().
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}, {{ .Config.Variable }}).
+                    Return(errs.NewPermissionDeniedError())
+            },
+            fields: fields{
+                authUseCase:     authUseCase,
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  {{ .Config.Variable }}.ID,
+            },
+            wantErr: errs.NewPermissionDeniedError(),
+        },
+{{- end }}
+        {
+            name: "delete error",
+            setup: func() {
+{{- if .Auth }}
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}).
+                    Return(nil)
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    Get(ctx, {{ .Config.Variable }}.ID).
+                    Return({{ .Config.Variable }}, nil)
+                authUseCase.EXPECT().
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}, {{ .Config.Variable }}).
+                    Return(nil)
+{{- end }}
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    Delete(ctx, {{ .Config.Variable }}.ID).
+                    Return(errs.NewUnexpectedBehaviorError("d 2"))
+            },
+            fields: fields{
+{{- if .Auth }}
+                authUseCase:     authUseCase,
+{{- end }}
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  {{ .Config.Variable }}.ID,
+            },
+            wantErr: errs.NewUnexpectedBehaviorError("d 2"),
+        },
+{{- if .Auth }}
+        {
+            name: "permission denied",
+            setup: func() {
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDDelete }}).
+                    Return(errs.NewPermissionDeniedError())
+            },
+            fields: fields{
+                authUseCase:     authUseCase,
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                logger:          logger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  {{ .Config.Variable }}.ID,
+            },
+            wantErr: errs.NewPermissionDeniedError(),
+        },
+{{- end }}
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            i := &{{ .Interceptor.Name }}{
+                {{ .Config.UseCaseVariableName }}: tt.fields.{{ .Config.UseCaseVariableName }},
+{{- if .Auth }}
+                authUseCase:     tt.fields.authUseCase,
+{{- end }}
+                logger:          tt.fields.logger,
+            }
+            if err := i.Delete(tt.args.ctx, tt.args.id); !errors.Is(err, tt.wantErr) {
+                t.Errorf("{{ .Interceptor.Name }}.Delete() error = %v, wantErr %v", err, tt.wantErr)
+            }
+        })
+    }
+}
+
+func Test{{ .Interceptor.Name }}_List(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+{{- if .Auth }}
+    authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
+    requestUser := userMockModels.NewUser(t)
+{{- end }}
+    {{ .Config.UseCaseVariableName }} := mock_interceptors.NewMock{{ .Config.UseCaseTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    ctx := context.Background()
+    filter := mock_models.New{{ .Config.FilterTypeName }}(t)
+    count := faker.New().UInt64Between(2, 20)
+    {{ .Config.ListVariable }} := make([]*models.{{ .Config.ModelName }}, 0, count)
+    for i := uint64(0); i < count; i++ {
+        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mock_models.New{{ .Config.ModelName }}(t))
+    }
+    type fields struct {
+        {{ .Config.UseCaseVariableName }} {{ .Config.UseCaseTypeName }}
+{{- if .Auth }}
+        authUseCase     AuthUseCase
+{{- end }}
+        logger          log.Logger
+    }
+    type args struct {
+        ctx         context.Context
+        filter      *models.{{ .Config.FilterTypeName }}
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    []*models.{{ .Config.ModelName }}
+        want1   uint64
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+{{- if .Auth }}
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDList }}).
+                    Return(nil)
+                authUseCase.EXPECT().
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDList }}, filter).
+                    Return(nil)
+{{- end }}
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    List(ctx, filter).
+                    Return({{ .Config.ListVariable }}, count, nil)
+            },
+            fields: fields{
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+{{- if .Auth }}
+                authUseCase:     authUseCase,
+{{- end }}
+                logger:          logger,
+            },
+            args: args{
+                ctx:         ctx,
+                filter:      filter,
+            },
+            want:    {{ .Config.ListVariable }},
+            want1:   count,
+            wantErr: nil,
+        },
+{{- if .Auth }}
+        {
+            name: "object permission denied",
+            setup: func() {
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDList }}).
+                    Return(nil)
+                authUseCase.EXPECT().
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDList }}, filter).
+                    Return(errs.NewPermissionDeniedError())
+            },
+            fields: fields{
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                authUseCase:     authUseCase,
+                logger:          logger,
+            },
+            args: args{
+                ctx:         ctx,
+                filter:      filter,
+            },
+            want:    nil,
+            want1:   0,
+            wantErr: errs.NewPermissionDeniedError(),
+        },
+        {
+            name: "permission error",
+            setup: func() {
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDList }}).
+                    Return(errs.NewPermissionDeniedError())
+            },
+            fields: fields{
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+                authUseCase:     authUseCase,
+                logger:          logger,
+            },
+            args: args{
+                ctx:         ctx,
+                filter:      filter,
+            },
+            want:    nil,
+            want1:   0,
+            wantErr: errs.NewPermissionDeniedError(),
+        },
+{{- end }}
+        {
+            name: "list error",
+            setup: func() {
+{{- if .Auth }}
+                authUseCase.EXPECT().GetUser(ctx).Return(requestUser, nil)
+                authUseCase.EXPECT().
+                    HasPermission(ctx,requestUser, userModels.{{ .PermissionIDList }}).
+                    Return(nil)
+                authUseCase.EXPECT().
+                    HasObjectPermission(ctx,requestUser, userModels.{{ .PermissionIDList }}, filter).
+                    Return(nil)
+{{- end }}
+                {{ .Config.UseCaseVariableName }}.EXPECT().
+                    List(ctx, filter).
+                    Return(nil, uint64(0), errs.NewUnexpectedBehaviorError("l e"))
+            },
+            fields: fields{
+                {{ .Config.UseCaseVariableName }}: {{ .Config.UseCaseVariableName }},
+{{- if .Auth }}
+                authUseCase:     authUseCase,
+{{- end }}
+                logger:          logger,
+            },
+            args: args{
+                ctx:         ctx,
+                filter:      filter,
+            },
+            want:    nil,
+            want1:   0,
+            wantErr: errs.NewUnexpectedBehaviorError("l e"),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            i := &{{ .Interceptor.Name }}{
+                {{ .Config.UseCaseVariableName }}: tt.fields.{{ .Config.UseCaseVariableName }},
+{{- if .Auth }}
+                authUseCase:     tt.fields.authUseCase,
+{{- end }}
+                logger:          tt.fields.logger,
+            }
+            got, got1, err := i.List(tt.args.ctx, tt.args.filter)
+            if !errors.Is(err, tt.wantErr) {
+                t.Errorf("{{ .Interceptor.Name }}.List() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("{{ .Interceptor.Name }}.List() got = %v, want %v", got, tt.want)
+            }
+            if got1 != tt.want1 {
+                t.Errorf("{{ .Interceptor.Name }}.List() got1 = %v, want %v", got1, tt.want1)
+            }
+        })
+    }
+}

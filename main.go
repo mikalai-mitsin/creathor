@@ -2,22 +2,24 @@ package main
 
 import (
 	"bytes"
-	"embed"
-	_ "embed"
+
+	"github.com/018bf/creathor/internal/app/generator/layout"
+
 	"fmt"
-	"github.com/018bf/creathor/internal/generators/auth"
 	"log"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
 
-	"github.com/018bf/creathor/internal/generators/app"
-	"github.com/018bf/creathor/internal/generators/pkg"
+	"github.com/018bf/creathor/internal/app/generator/auth"
 
-	"github.com/018bf/creathor/internal/domain"
+	"github.com/018bf/creathor/internal/app/generator/app"
+	"github.com/018bf/creathor/internal/app/generator/pkg"
 
-	"github.com/018bf/creathor/internal/configs"
+	"github.com/018bf/creathor/internal/pkg/domain"
+
+	"github.com/018bf/creathor/internal/pkg/configs"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 )
@@ -28,9 +30,6 @@ var (
 	destinationPath = "."
 	configPath      = "./creathor.yaml"
 )
-
-//go:embed templates/*
-var content embed.FS
 
 func main() {
 	app := &cli.App{
@@ -66,16 +65,8 @@ func initProject(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := CreateLayout(project); err != nil {
-		return err
-	}
-	if err := CreateCI(project); err != nil {
-		return err
-	}
-	if err := CreateBuild(project); err != nil {
-		return err
-	}
-	if err := CreateDeployment(project); err != nil {
+	layoutGenerator := layout.NewGenerator(project)
+	if err := layoutGenerator.Sync(); err != nil {
 		return err
 	}
 	pkgGenerator := pkg.NewGenerator(project)
@@ -88,6 +79,7 @@ func initProject(ctx *cli.Context) error {
 	}
 	for _, m := range project.Domains {
 		d := &domain.Domain{
+			Config:      m,
 			Name:        m.Model,
 			Module:      project.Module,
 			ProtoModule: project.ProtoPackage(),
@@ -108,15 +100,7 @@ func initProject(ctx *cli.Context) error {
 			return err
 		}
 	}
-	for _, model := range project.Domains {
-		if err := CreateCRUD(model); err != nil {
-			return err
-		}
-	}
 	if err := postInit(project); err != nil {
-		return err
-	}
-	if err := RenderTests(project); err != nil {
 		return err
 	}
 	return nil

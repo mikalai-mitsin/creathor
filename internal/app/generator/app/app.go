@@ -2,14 +2,12 @@ package app
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/018bf/creathor/internal/app/generator"
@@ -19,7 +17,6 @@ import (
 	"github.com/018bf/creathor/internal/app/generator/app/repositories/postgres"
 	"github.com/018bf/creathor/internal/app/generator/app/usecases"
 	"github.com/018bf/creathor/internal/pkg/domain"
-	"github.com/018bf/creathor/internal/pkg/tmpl"
 )
 
 type Generator struct {
@@ -41,6 +38,7 @@ func (g *Generator) Sync() error {
 		postgres.NewRepositoryCrud(g.domain),
 
 		grpc.NewHandler(g.domain),
+		grpc.NewProto(g.domain),
 		grpc.NewInterceptorInterfaceCrud(g.domain),
 	}
 	for _, model := range g.domain.Models {
@@ -50,9 +48,6 @@ func (g *Generator) Sync() error {
 		if err := domainGenerator.Sync(); err != nil {
 			return err
 		}
-	}
-	if err := renderTemplates(g.domain); err != nil {
-		return err
 	}
 	if g.domain.Auth && g.domain.CamelName() != "User" {
 		if err := addPermission(g.domain.PermissionIDList(), "objectAnybody"); err != nil {
@@ -157,161 +152,3 @@ func addPermission(permission, check string) error {
 }
 
 var destinationPath = "."
-
-func renderTemplates(domain *domain.Domain) error {
-	if err := renderMigrations(domain); err != nil {
-		return err
-	}
-	if err := renderTests(domain); err != nil {
-		return err
-	}
-	if domain.Config.GRPCEnabled {
-		if err := renderGrpc(domain); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func renderGrpc(domain *domain.Domain) error {
-	files := []*tmpl.Template{
-		{
-			SourcePath: "templates/internal/domain/handlers/grpc/crud_test.go.tmpl",
-			DestinationPath: path.Join(
-				destinationPath,
-				"internal",
-				"app",
-				domain.DirName(),
-				"handlers",
-				"grpc",
-				domain.TestFileName(),
-			),
-			Name: "test grpc service server",
-		},
-		{
-			SourcePath: "templates/api/proto/service/v1/crud.proto.tmpl",
-			DestinationPath: path.Join(
-				destinationPath,
-				"api",
-				"proto",
-				domain.ProtoModule,
-				"v1",
-				fmt.Sprintf("%s.proto", domain.SnakeName()),
-			),
-			Name: "proto def",
-		},
-	}
-	for _, template := range files {
-		if err := template.RenderToFile(domain); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func renderMigrations(domain *domain.Domain) error {
-	files := []*tmpl.Template{
-		{
-			SourcePath: "templates/internal/pkg/postgres/migrations/crud.up.sql.tmpl",
-			DestinationPath: path.Join(
-				destinationPath,
-				"internal",
-				"pkg",
-				"postgres",
-				"migrations",
-				domain.MigrationUpFileName(),
-			),
-			Name: "migration up",
-		},
-		{
-			SourcePath: "templates/internal/pkg/postgres/migrations/crud.down.sql.tmpl",
-			DestinationPath: path.Join(
-				destinationPath,
-				"internal",
-				"pkg",
-				"postgres",
-				"migrations",
-				domain.MigrationDownFileName(),
-			),
-			Name: "migration down",
-		},
-	}
-	for _, template := range files {
-		if err := template.RenderToFile(domain); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func renderTests(domain *domain.Domain) error {
-	files := []*tmpl.Template{
-		{
-			SourcePath: "templates/internal/domain/usecases/crud_test.go.tmpl",
-			DestinationPath: filepath.Join(
-				destinationPath,
-				"internal",
-				"app",
-				domain.DirName(),
-				"usecases",
-				domain.TestFileName(),
-			),
-			Name: "usecase test",
-		},
-		{
-			SourcePath: "templates/internal/domain/interceptors/crud_test.go.tmpl",
-			DestinationPath: filepath.Join(
-				destinationPath,
-				"internal",
-				"app",
-				domain.DirName(),
-				"interceptors",
-				domain.TestFileName(),
-			),
-			Name: "interceptor test",
-		},
-		{
-			SourcePath: "templates/internal/domain/repositories/postgres/crud_test.go.tmpl",
-			DestinationPath: filepath.Join(
-				destinationPath,
-				"internal",
-				"app",
-				domain.DirName(),
-				"repositories",
-				"postgres",
-				domain.TestFileName(),
-			),
-			Name: "repository test",
-		},
-		{
-			SourcePath: "templates/internal/pkg/postgres/migrations/crud.up.sql.tmpl",
-			DestinationPath: path.Join(
-				destinationPath,
-				"internal",
-				"pkg",
-				"postgres",
-				"migrations",
-				domain.MigrationUpFileName(),
-			),
-			Name: "migration up",
-		},
-		{
-			SourcePath: "templates/internal/pkg/postgres/migrations/crud.down.sql.tmpl",
-			DestinationPath: path.Join(
-				destinationPath,
-				"internal",
-				"pkg",
-				"postgres",
-				"migrations",
-				domain.MigrationDownFileName(),
-			),
-			Name: "migration down",
-		},
-	}
-	for _, template := range files {
-		if err := template.RenderToFile(domain); err != nil {
-			return err
-		}
-	}
-	return nil
-}

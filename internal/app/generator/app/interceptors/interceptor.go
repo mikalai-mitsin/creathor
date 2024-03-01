@@ -3,6 +3,7 @@ package interceptors
 import (
 	"bytes"
 	"fmt"
+	"github.com/018bf/creathor/internal/pkg/tmpl"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -56,6 +57,9 @@ func (i InterceptorCrud) Sync() error {
 				return err
 			}
 		}
+	}
+	if err := i.syncTest(); err != nil {
+		return err
 	}
 	return nil
 }
@@ -1701,4 +1705,25 @@ func (i InterceptorCrud) file() *ast.File {
 			},
 		},
 	}
+}
+
+var destinationPath = "."
+
+func (i InterceptorCrud) syncTest() error {
+	test := tmpl.Template{
+		SourcePath: "templates/internal/domain/interceptors/crud_test.go.tmpl",
+		DestinationPath: filepath.Join(
+			destinationPath,
+			"internal",
+			"app",
+			i.domain.DirName(),
+			"interceptors",
+			i.domain.TestFileName(),
+		),
+		Name: "interceptor test",
+	}
+	if err := test.RenderToFile(i.domain); err != nil {
+		return err
+	}
+	return nil
 }

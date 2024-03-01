@@ -3,6 +3,7 @@ package usecases
 import (
 	"bytes"
 	"fmt"
+	"github.com/018bf/creathor/internal/pkg/tmpl"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -60,6 +61,9 @@ func (u UseCaseCrud) Sync() error {
 				return err
 			}
 		}
+	}
+	if err := u.syncTest(); err != nil {
+		return err
 	}
 	return nil
 }
@@ -1447,6 +1451,27 @@ func (u UseCaseCrud) syncGetByEmailMethod() error {
 		return err
 	}
 	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
+var destinationPath = "."
+
+func (u UseCaseCrud) syncTest() error {
+	test := tmpl.Template{
+		SourcePath: "templates/internal/domain/usecases/crud_test.go.tmpl",
+		DestinationPath: filepath.Join(
+			destinationPath,
+			"internal",
+			"app",
+			u.domain.DirName(),
+			"usecases",
+			u.domain.TestFileName(),
+		),
+		Name: "usecase test",
+	}
+	if err := test.RenderToFile(u.domain); err != nil {
 		return err
 	}
 	return nil

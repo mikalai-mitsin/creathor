@@ -3,6 +3,7 @@ package postgres
 import (
 	"bytes"
 	"fmt"
+	"github.com/018bf/creathor/internal/pkg/tmpl"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -100,6 +101,12 @@ func (r RepositoryCrud) Sync() error {
 				return err
 			}
 		}
+	}
+	if err := r.syncMigrations(); err != nil {
+		return err
+	}
+	if err := r.syncTest(); err != nil {
+		return err
 	}
 	return nil
 }
@@ -5178,6 +5185,63 @@ func (r RepositoryCrud) syncDTOListToModels() error {
 	}
 	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
 		return err
+	}
+	return nil
+}
+
+var destinationPath = "."
+
+func (r RepositoryCrud) syncTest() error {
+	test := tmpl.Template{
+		SourcePath: "templates/internal/domain/repositories/postgres/crud_test.go.tmpl",
+		DestinationPath: filepath.Join(
+			destinationPath,
+			"internal",
+			"app",
+			r.domain.DirName(),
+			"repositories",
+			"postgres",
+			r.domain.TestFileName(),
+		),
+		Name: "repository test",
+	}
+	if err := test.RenderToFile(r.domain); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r RepositoryCrud) syncMigrations() error {
+	files := []*tmpl.Template{
+		{
+			SourcePath: "templates/internal/pkg/postgres/migrations/crud.up.sql.tmpl",
+			DestinationPath: path.Join(
+				destinationPath,
+				"internal",
+				"pkg",
+				"postgres",
+				"migrations",
+				r.domain.MigrationUpFileName(),
+			),
+			Name: "migration up",
+		},
+		{
+			SourcePath: "templates/internal/pkg/postgres/migrations/crud.down.sql.tmpl",
+			DestinationPath: path.Join(
+				destinationPath,
+				"internal",
+				"pkg",
+				"postgres",
+				"migrations",
+				r.domain.MigrationDownFileName(),
+			),
+			Name: "migration down",
+		},
+	}
+	for _, file := range files {
+		if err := file.RenderToFile(r.domain.Config); err != nil {
+			return err
+		}
 	}
 	return nil
 }

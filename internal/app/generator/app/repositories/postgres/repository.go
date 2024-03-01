@@ -1247,7 +1247,7 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 									Args: []ast.Expr{
 										&ast.SelectorExpr{
 											X:   ast.NewIdent("sq"),
-											Sel: ast.NewIdent("Dollar"),
+											Sel: ast.NewIdent("Question"),
 										},
 									},
 								},
@@ -2104,7 +2104,7 @@ func (r RepositoryCrud) listMethod() *ast.FuncDecl {
 												Name: "sq",
 											},
 											Sel: &ast.Ident{
-												Name: "Dollar",
+												Name: "Question",
 											},
 										},
 									},
@@ -2567,7 +2567,7 @@ func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 												Name: "sq",
 											},
 											Sel: &ast.Ident{
-												Name: "Dollar",
+												Name: "Question",
 											},
 										},
 									},
@@ -3087,7 +3087,7 @@ func (r RepositoryCrud) getMethod() *ast.FuncDecl {
 												Name: "sq",
 											},
 											Sel: &ast.Ident{
-												Name: "Dollar",
+												Name: "Question",
 											},
 										},
 									},
@@ -3485,7 +3485,7 @@ func (r RepositoryCrud) getByEmailMethod() *ast.FuncDecl {
 												Name: "sq",
 											},
 											Sel: &ast.Ident{
-												Name: "Dollar",
+												Name: "Question",
 											},
 										},
 									},
@@ -4000,7 +4000,7 @@ func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
 												Name: "sq",
 											},
 											Sel: &ast.Ident{
-												Name: "Dollar",
+												Name: "Question",
 											},
 										},
 									},
@@ -4622,7 +4622,7 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 												Name: "sq",
 											},
 											Sel: &ast.Ident{
-												Name: "Dollar",
+												Name: "Question",
 											},
 										},
 									},

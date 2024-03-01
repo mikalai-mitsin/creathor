@@ -76,7 +76,7 @@ func Test{{ .Config.RepositoryTypeName }}_Create(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     logger := mock_log.NewMockLogger(ctrl)
-    query := "INSERT INTO public.{{ .TableName }}"
+    query := "INSERT INTO public.{{ .TableName }} (created_at,updated_at,{{- range $i, $value := .Config.Params }}{{if $i}},{{end}}{{ $value.Tag }}{{- end }}) VALUES (?,?,{{ range $i, $value := .Config.Params }}{{if $i}},{{end}}?{{- end }}) RETURNING id"
     {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
     ctx := context.Background()
     type fields struct {
@@ -174,7 +174,7 @@ func Test{{ .Config.RepositoryTypeName }}_Get(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     logger := mock_log.NewMockLogger(ctrl)
-    query := "SELECT {{ .TableName }}.id, {{ .TableName }}.created_at, {{ .TableName }}.updated_at{{ range $key, $value := .Config.Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }} WHERE id = $1 LIMIT 1"
+    query := "SELECT {{ .TableName }}.id, {{ .TableName }}.created_at, {{ .TableName }}.updated_at{{ range $key, $value := .Config.Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }} WHERE id = ? LIMIT 1"
     {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
     ctx := context.Background()
     type fields struct {
@@ -279,7 +279,7 @@ func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
         {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mock_models.New{{ .Config.ModelName }}(t))
     }
     filter := mock_models.New{{ .Config.FilterTypeName }}(t)
-    query := "SELECT {{ .TableName }}.id, {{ .TableName }}.created_at, {{ .TableName }}.updated_at{{ range $key, $value := .Config.Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }}"
+    query := "SELECT {{ .TableName }}.id, {{ .TableName }}.created_at, {{ .TableName }}.updated_at{{ range $key, $value := .Config.Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }} WHERE FIXME=FIXME ORDER BY FIXME LIMIT FIXME OFFSET FIXME"
     type fields struct {
         database *sqlx.DB
         logger   log.Logger
@@ -400,7 +400,7 @@ func Test{{ .Config.RepositoryTypeName }}_Update(t *testing.T) {
     defer ctrl.Finish()
     logger := mock_log.NewMockLogger(ctrl)
     {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
-    query := `UPDATE public.{{ .TableName }}`
+    query := `UPDATE public.{{ .TableName }} SET {{ .TableName }}.created_at = ?, {{ .TableName }}.updated_at = ?, {{ range $i, $value := .Config.Params }}{{if $i}}, {{end}}{{ $.TableName }}.{{ $value.Tag }} = ?{{- end }} WHERE id = ?`
     ctx := context.Background()
     type fields struct {
         database *sqlx.DB
@@ -605,7 +605,7 @@ func Test{{ .Config.RepositoryTypeName }}_Delete(t *testing.T) {
                 logger:   logger,
             },
             setup: func() {
-                mock.ExpectExec("DELETE FROM public.{{ .TableName }} WHERE id = $1").
+                mock.ExpectExec("DELETE FROM public.{{ .TableName }} WHERE id = ?").
                     WithArgs({{ .Config.Variable }}.ID).
                     WillReturnResult(sqlmock.NewResult(0, 1))
             },
@@ -618,7 +618,7 @@ func Test{{ .Config.RepositoryTypeName }}_Delete(t *testing.T) {
         {
             name: "article card not found",
             setup: func() {
-                mock.ExpectExec("DELETE FROM public.{{ .TableName }} WHERE id = $1").
+                mock.ExpectExec("DELETE FROM public.{{ .TableName }} WHERE id = ?").
                     WithArgs({{ .Config.Variable }}.ID).
                     WillReturnResult(sqlmock.NewResult(0, 0))
             },
@@ -635,7 +635,7 @@ func Test{{ .Config.RepositoryTypeName }}_Delete(t *testing.T) {
         {
             name: "database error",
             setup: func() {
-                mock.ExpectExec("DELETE FROM public.{{ .TableName }} WHERE id = $1").
+                mock.ExpectExec("DELETE FROM public.{{ .TableName }} WHERE id = ?").
                     WithArgs({{ .Config.Variable }}.ID).
                     WillReturnError(errors.New("test error"))
             },
@@ -652,7 +652,7 @@ func Test{{ .Config.RepositoryTypeName }}_Delete(t *testing.T) {
         {
             name: "result error",
             setup: func() {
-                mock.ExpectExec("DELETE FROM public.{{ .TableName }} WHERE id = $1").
+                mock.ExpectExec("DELETE FROM public.{{ .TableName }} WHERE id = ?").
                     WithArgs({{ .Config.Variable }}.ID).
                     WillReturnResult(sqlmock.NewErrorResult(errors.New("test error")))
             },
@@ -688,7 +688,7 @@ func Test{{ .Config.RepositoryTypeName }}_Count(t *testing.T) {
         return
     }
     defer db.Close()
-    query := `SELECT count\(id\) FROM public.{{ .TableName }}`
+    query := `SELECT count\(id\) FROM public.{{ .TableName }} WHERE FIXME=FIXME`
     ctx := context.Background()
     filter := mock_models.New{{ .Config.FilterTypeName }}(t)
     type fields struct {

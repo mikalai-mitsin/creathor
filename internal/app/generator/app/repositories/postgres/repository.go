@@ -5212,6 +5212,27 @@ func (r RepositoryCrud) syncTest() error {
 }
 
 func (r RepositoryCrud) syncMigrations() error {
+	pattern := fmt.Sprintf("*_%s.up.sql", r.domain.TableName())
+	dir, err := os.ReadDir(path.Join(
+		destinationPath,
+		"internal",
+		"pkg",
+		"postgres",
+		"migrations",
+	))
+	if err != nil {
+		return err
+	}
+	for _, file := range dir {
+		match, err := filepath.Match(pattern, file.Name())
+		if err != nil {
+			return err
+		}
+		if match {
+			return nil
+		}
+	}
+
 	files := []*tmpl.Template{
 		{
 			SourcePath: "templates/internal/pkg/postgres/migrations/crud.up.sql.tmpl",
@@ -5239,7 +5260,7 @@ func (r RepositoryCrud) syncMigrations() error {
 		},
 	}
 	for _, file := range files {
-		if err := file.RenderToFile(r.domain.Config); err != nil {
+		if err := file.RenderToFile(r.domain); err != nil {
 			return err
 		}
 	}

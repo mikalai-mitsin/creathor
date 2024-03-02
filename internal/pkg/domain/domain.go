@@ -54,7 +54,7 @@ func (m *Domain) MigrationDownFileName() string {
 }
 
 func lastMigration() (int, error) {
-	dir, err := os.ReadDir(path.Join("internal", "interfaces", "postgres", "migrations"))
+	dir, err := os.ReadDir(path.Join("internal", "pkg", "postgres", "migrations"))
 	if err != nil {
 		return 0, err
 	}

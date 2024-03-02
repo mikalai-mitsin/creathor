@@ -1940,29 +1940,29 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 																																},
 																															},
 																														},
-																														&ast.AssignStmt{
-																															Lhs: []ast.Expr{
-																																&ast.Ident{
-																																	Name: "_",
-																																},
-																															},
-																															Tok: token.ASSIGN,
-																															Rhs: []ast.Expr{
-																																&ast.CallExpr{
-																																	Fun: &ast.SelectorExpr{
-																																		X: &ast.Ident{
-																																			Name: "shutdowner",
-																																		},
-																																		Sel: &ast.Ident{
-																																			Name: "Shutdown",
-																																		},
-																																	},
-																																},
-																															},
-																														},
 																													},
 																												},
 																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																						&ast.AssignStmt{
+																							Lhs: []ast.Expr{
+																								&ast.Ident{
+																									Name: "_",
+																								},
+																							},
+																							Tok: token.ASSIGN,
+																							Rhs: []ast.Expr{
+																								&ast.CallExpr{
+																									Fun: &ast.SelectorExpr{
+																										X: &ast.Ident{
+																											Name: "shutdowner",
+																										},
+																										Sel: &ast.Ident{
+																											Name: "Shutdown",
 																										},
 																									},
 																								},

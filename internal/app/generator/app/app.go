@@ -10,13 +10,13 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/018bf/creathor/internal/app/generator"
-	"github.com/018bf/creathor/internal/app/generator/app/interceptors"
-	"github.com/018bf/creathor/internal/app/generator/app/interfaces/grpc"
-	"github.com/018bf/creathor/internal/app/generator/app/models"
-	"github.com/018bf/creathor/internal/app/generator/app/repositories/postgres"
-	"github.com/018bf/creathor/internal/app/generator/app/usecases"
-	"github.com/018bf/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/interceptors"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/interfaces/grpc"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/models"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/repositories/postgres"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/usecases"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
 type Generator struct {

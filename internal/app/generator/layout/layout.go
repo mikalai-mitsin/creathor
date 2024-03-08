@@ -1,8 +1,8 @@
 package layout
 
 import (
-	"github.com/018bf/creathor/internal/app/generator"
-	"github.com/018bf/creathor/internal/pkg/configs"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type Generator struct {

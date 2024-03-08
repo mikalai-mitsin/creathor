@@ -3,8 +3,8 @@ package clock
 import (
 	"path"
 
-	"github.com/018bf/creathor/internal/pkg/configs"
-	"github.com/018bf/creathor/internal/pkg/tmpl"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 )
 
 var destinationPath = "."

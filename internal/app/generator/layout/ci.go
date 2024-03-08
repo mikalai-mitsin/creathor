@@ -4,10 +4,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/018bf/creathor/internal/pkg/errs"
-	"github.com/018bf/creathor/internal/pkg/tmpl"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/errs"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 
-	"github.com/018bf/creathor/internal/pkg/configs"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type CIGenerator struct {

@@ -1,19 +1,19 @@
 package pkg
 
 import (
-	generators2 "github.com/018bf/creathor/internal/app/generator"
-	"github.com/018bf/creathor/internal/app/generator/pkg/clock"
-	cg "github.com/018bf/creathor/internal/app/generator/pkg/configs"
-	"github.com/018bf/creathor/internal/app/generator/pkg/containers"
-	"github.com/018bf/creathor/internal/app/generator/pkg/domain/repositories"
-	"github.com/018bf/creathor/internal/app/generator/pkg/errs"
-	"github.com/018bf/creathor/internal/app/generator/pkg/grpc"
-	"github.com/018bf/creathor/internal/app/generator/pkg/log"
-	"github.com/018bf/creathor/internal/app/generator/pkg/pointer"
-	"github.com/018bf/creathor/internal/app/generator/pkg/postgres"
-	"github.com/018bf/creathor/internal/app/generator/pkg/uptrace"
-	"github.com/018bf/creathor/internal/app/generator/pkg/uuid"
-	"github.com/018bf/creathor/internal/pkg/configs"
+	generators2 "github.com/mikalai-mitsin/creathor/internal/app/generator"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/clock"
+	cg "github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/configs"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/containers"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/domain/repositories"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/errs"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/grpc"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/log"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/pointer"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/postgres"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/uptrace"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/uuid"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type Generator struct {

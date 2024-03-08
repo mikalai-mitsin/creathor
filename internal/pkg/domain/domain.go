@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/018bf/creathor/internal/pkg/configs"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 
 	"github.com/iancoleman/strcase"
 	"github.com/jinzhu/inflection"

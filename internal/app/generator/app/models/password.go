@@ -9,7 +9,7 @@ import (
 	"os"
 	"path"
 
-	mods "github.com/018bf/creathor/internal/pkg/domain"
+	mods "github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
 type Password struct {

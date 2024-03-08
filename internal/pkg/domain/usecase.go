@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"go/ast"
 
-	"github.com/018bf/creathor/internal/pkg/configs"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 func NewUseCase(m *configs.DomainConfig) *Layer {

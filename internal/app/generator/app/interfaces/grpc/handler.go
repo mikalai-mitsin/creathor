@@ -11,7 +11,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/018bf/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
 type Handler struct {

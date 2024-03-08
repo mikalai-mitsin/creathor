@@ -2,7 +2,7 @@ style: github
 template: CHANGELOG.tpl.md
 info:
   title: CHANGELOG
-  repository_url: https://github.com/018bf/creathor
+  repository_url: https://github.com/mikalai-mitsin/creathor
 options:
   commits:
     # filters:

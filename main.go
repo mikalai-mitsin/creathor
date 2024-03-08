@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 
-	"github.com/018bf/creathor/internal/app/generator/layout"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/layout"
 
 	"fmt"
 	"log"
@@ -12,15 +12,15 @@ import (
 	"path"
 	"strings"
 
-	"github.com/018bf/creathor/internal/app/generator/auth"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/auth"
 
-	"github.com/018bf/creathor/internal/app/generator/app"
-	"github.com/018bf/creathor/internal/app/generator/pkg"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg"
 
-	"github.com/018bf/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 
-	"github.com/018bf/creathor/internal/pkg/configs"
 	"github.com/iancoleman/strcase"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 	"github.com/urfave/cli/v2"
 )
 

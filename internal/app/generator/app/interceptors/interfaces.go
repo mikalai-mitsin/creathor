@@ -10,7 +10,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/018bf/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
 type UseCaseInterfaceCrud struct {

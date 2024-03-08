@@ -1,1 +1,0 @@
-drop table public.group_permissions;

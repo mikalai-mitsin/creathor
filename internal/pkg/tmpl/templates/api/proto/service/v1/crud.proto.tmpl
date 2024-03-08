@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package {{ .Config.ProtoPackage }}.v1;
+
+option go_package = "{{ .Module }}/pkg/{{ .Config.ProtoPackage }}/v1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+
+message {{ .Config.CreateTypeName }} {
+{{- range $i, $value := .Config.Params }}
+  {{ $value.ProtoType }} {{ $value.Tag }} = {{ add $i 1 }};
+{{- end }}
+}
+
+message {{ .Config.ModelName }}Get {
+  string id = 1;
+}
+
+message {{ .Config.UpdateTypeName }} {
+  string id = 1;
+{{- range $i, $value := .Config.Params }}
+  {{ $value.ProtoWrapType }} {{ $value.Tag }} = {{ add $i 2 }};
+{{- end }}
+}
+
+message {{ .Config.ModelName }} {
+  string id = 1;
+  google.protobuf.Timestamp updated_at = 2;
+  google.protobuf.Timestamp created_at = 3;
+{{- range $i, $value := .Config.Params }}
+  {{ $value.ProtoType }} {{ $value.Tag }} = {{ add $i 4 }};
+{{- end }}
+}
+
+message List{{ .Config.ModelName }} {
+  repeated {{ .Config.ModelName }} items = 1;
+  uint64 count = 2;
+}
+
+message {{ .Config.ModelName }}Delete {
+  string id = 1;
+}
+
+message {{ .Config.FilterTypeName }} {
+  google.protobuf.UInt64Value page_number = 1;
+  google.protobuf.UInt64Value page_size = 2;
+  repeated string order_by = 3;
+  repeated string ids = 4;
+{{- if .SearchEnabled }}
+  google.protobuf.StringValue search = 5;
+{{- end }}
+}
+
+service {{ .Config.ModelName }}Service {
+  rpc Create({{ .Config.ProtoPackage }}.v1.{{ .Config.CreateTypeName }}) returns ({{ .Config.ProtoPackage }}.v1.{{ .Config.ModelName }}) {
+    option (google.api.http) = {
+      post: "/api/v1/{{ .Config.RESTHandlerPath }}"
+      body: "*"
+    };
+  }
+  rpc Get({{ .Config.ProtoPackage }}.v1.{{ .Config.ModelName}}Get) returns ({{ .Config.ProtoPackage }}.v1.{{ .Config.ModelName }}) {
+    option (google.api.http) = {get: "/api/v1/{{ .Config.RESTHandlerPath }}/{id}"};
+  }
+  rpc Update({{ .Config.ProtoPackage }}.v1.{{ .Config.UpdateTypeName }}) returns ({{ .Config.ProtoPackage }}.v1.{{ .Config.ModelName }}) {
+    option (google.api.http) = {
+      patch: "/api/v1/{{ .Config.RESTHandlerPath }}/{id}"
+      body: "*"
+    };
+  }
+  rpc Delete({{ .Config.ProtoPackage }}.v1.{{ .Config.ModelName }}Delete) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/api/v1/{{ .Config.RESTHandlerPath }}/{id}"};
+  }
+  rpc List({{ .Config.ProtoPackage }}.v1.{{ .Config.FilterTypeName }}) returns ({{ .Config.ProtoPackage }}.v1.List{{ .Config.ModelName }}) {
+    option (google.api.http) = {get: "/api/v1/{{ .Config.RESTHandlerPath }}"};
+  }
+}

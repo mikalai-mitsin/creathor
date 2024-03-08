@@ -1,0 +1,574 @@
+package usecases
+
+import (
+    "context"
+    "errors"
+    "reflect"
+    "testing"
+    "time"
+
+    "{{ .Module }}/internal/pkg/errs"
+    "{{ .Module }}/internal/app/{{ .DirName }}/models"
+    mock_models "{{ .Module }}/internal/app/{{ .DirName }}/models/mock"
+    mock_usecases "{{ .Module }}/internal/app/{{ .DirName }}/usecases/mock"
+    mock_clock "{{ .Module }}/internal/pkg/clock/mock"
+    "{{ .Module }}/internal/pkg/clock"
+    "{{ .Module }}/internal/pkg/uuid"
+    mock_log "{{ .Module }}/internal/pkg/log/mock"
+    "{{ .Module }}/internal/pkg/log"
+    "github.com/golang/mock/gomock"
+    "github.com/jaswdr/faker"
+)
+
+func TestNew{{ .Config.UseCaseTypeName }}(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    clockMock := mock_clock.NewMockClock(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    type args struct {
+        {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
+        clock  clock.Clock
+        logger log.Logger
+    }
+    tests := []struct {
+        name  string
+        setup func()
+        args  args
+        want  *{{ .Config.UseCaseTypeName }}
+    }{
+        {
+            name: "ok",
+            setup: func() {
+            },
+            args: args{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                clock:  clockMock,
+                logger: logger,
+            },
+            want: &{{ .Config.UseCaseTypeName }}{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                clock:  clockMock,
+                logger: logger,
+            },
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            if got := New{{ .Config.UseCaseTypeName }}(tt.args.{{ .Config.RepositoryVariableName }}, tt.args.clock, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("New{{ .Config.UseCaseTypeName }}() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func Test{{ .Config.UseCaseTypeName }}_Get(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    ctx := context.Background()
+    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    type fields struct {
+        {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
+        logger           log.Logger
+    }
+    type args struct {
+        ctx context.Context
+        id  uuid.UUID
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    *models.{{ .Config.ModelName }}
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+                {{ .Config.RepositoryVariableName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return({{ .Config.Variable }}, nil)
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                logger:           logger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  {{ .Config.Variable }}.ID,
+            },
+            want:    {{ .Config.Variable }},
+            wantErr: nil,
+        },
+        {
+            name: "{{ .Config.ModelName }} not found",
+            setup: func() {
+                {{ .Config.RepositoryVariableName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return(nil, errs.NewEntityNotFound())
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                logger:           logger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  {{ .Config.Variable }}.ID,
+            },
+            want:    nil,
+            wantErr: errs.NewEntityNotFound(),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            u := &{{ .Config.UseCaseTypeName }}{
+                {{ .Config.RepositoryVariableName }}: tt.fields.{{ .Config.RepositoryVariableName }},
+                logger:           tt.fields.logger,
+            }
+            got, err := u.Get(tt.args.ctx, tt.args.id)
+            if !errors.Is(err, tt.wantErr) {
+                t.Errorf("{{ .Config.UseCaseTypeName }}.Get() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("{{ .Config.UseCaseTypeName }}.Get() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func Test{{ .Config.UseCaseTypeName }}_List(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    ctx := context.Background()
+    var {{ .Config.ListVariable }} []*models.{{ .Config.ModelName }}
+    count := faker.New().UInt64Between(2, 20)
+    for i := uint64(0); i < count; i++ {
+        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mock_models.New{{ .Config.ModelName }}(t))
+    }
+    filter := mock_models.New{{ .Config.FilterTypeName }}(t)
+    type fields struct {
+        {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
+        logger           log.Logger
+    }
+    type args struct {
+        ctx    context.Context
+        filter *models.{{ .Config.FilterTypeName }}
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    []*models.{{ .Config.ModelName }}
+        want1   uint64
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+                {{ .Config.RepositoryVariableName }}.EXPECT().List(ctx, filter).Return({{ .Config.ListVariable }}, nil)
+                {{ .Config.RepositoryVariableName }}.EXPECT().Count(ctx, filter).Return(count, nil)
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                logger:           logger,
+            },
+            args: args{
+                ctx:    ctx,
+                filter: filter,
+            },
+            want:    {{ .Config.ListVariable }},
+            want1:   count,
+            wantErr: nil,
+        },
+        {
+            name: "list error",
+            setup: func() {
+                {{ .Config.RepositoryVariableName }}.EXPECT().List(ctx, filter).Return(nil, errs.NewUnexpectedBehaviorError("test error"))
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                logger:           logger,
+            },
+            args: args{
+                ctx:    ctx,
+                filter: filter,
+            },
+            want:    nil,
+            want1:   0,
+            wantErr: errs.NewUnexpectedBehaviorError("test error"),
+        },
+        {
+            name: "count error",
+            setup: func() {
+                {{ .Config.RepositoryVariableName }}.EXPECT().List(ctx, filter).Return({{ .Config.ListVariable }}, nil)
+                {{ .Config.RepositoryVariableName }}.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                logger:           logger,
+            },
+            args: args{
+                ctx:    ctx,
+                filter: filter,
+            },
+            want:    nil,
+            want1:   0,
+            wantErr: errs.NewUnexpectedBehaviorError("test error"),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            u := &{{ .Config.UseCaseTypeName }}{
+                {{ .Config.RepositoryVariableName }}: tt.fields.{{ .Config.RepositoryVariableName }},
+                logger:           tt.fields.logger,
+            }
+            got, got1, err := u.List(tt.args.ctx, tt.args.filter)
+            if !errors.Is(err, tt.wantErr) {
+                t.Errorf("{{ .Config.UseCaseTypeName }}.List() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("{{ .Config.UseCaseTypeName }}.List() = %v, want %v", got, tt.want)
+            }
+            if got1 != tt.want1 {
+                t.Errorf("{{ .Config.UseCaseTypeName }}.List() got1 = %v, want %v", got1, tt.want1)
+            }
+        })
+    }
+}
+
+func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    clockMock := mock_clock.NewMockClock(ctrl)
+    ctx := context.Background()
+    create := mock_models.New{{ .Config.CreateTypeName }}(t)
+    now := time.Now().UTC()
+    type fields struct {
+        {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
+        clock            clock.Clock
+        logger           log.Logger
+    }
+    type args struct {
+        ctx    context.Context
+        create *models.{{ .Config.CreateTypeName }}
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    *models.{{ .Config.ModelName }}
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+                clockMock.EXPECT().Now().Return(now)
+                {{ .Config.RepositoryVariableName }}.EXPECT().
+                    Create(
+                        ctx,
+                        &models.{{ .Config.ModelName }}{
+{{- range $key, $value := .Config.Params }}
+                            {{ $value.GetName }}: create.{{ $value.GetName }},
+{{- end }}
+                            UpdatedAt: now,
+                            CreatedAt: now,
+                        },
+                    ).
+                    Return(nil)
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                clock:            clockMock,
+                logger:           logger,
+            },
+            args: args{
+                ctx: ctx,
+                create: create,
+            },
+            want: &models.{{ .Config.ModelName }}{
+                ID: "",
+{{- range $key, $value := .Config.Params }}
+                {{ $value.GetName }}: create.{{ $value.GetName }},
+{{- end }}
+                UpdatedAt: now,
+                CreatedAt: now,
+            },
+            wantErr: nil,
+        },
+        {
+            name: "unexpected behavior",
+            setup: func() {
+                clockMock.EXPECT().Now().Return(now)
+                {{ .Config.RepositoryVariableName }}.EXPECT().
+                    Create(
+                        ctx,
+                        &models.{{ .Config.ModelName }}{
+                            ID: "",
+{{- range $key, $value := .Config.Params }}
+                            {{ $value.GetName }}: create.{{ $value.GetName }},
+{{- end }}
+                            UpdatedAt: now,
+                            CreatedAt: now,
+                        },
+                    ).
+                    Return(errs.NewUnexpectedBehaviorError("test error"))
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                clock:            clockMock,
+                logger:           logger,
+            },
+            args: args{
+                ctx: ctx,
+                create: create,
+            },
+            want:    nil,
+            wantErr: errs.NewUnexpectedBehaviorError("test error"),
+        },
+        {
+            name: "invalid",
+            setup: func() {
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                logger:           logger,
+            },
+            args: args{
+                ctx: ctx,
+                create: &models.{{ .Config.CreateTypeName }}{},
+            },
+            want: nil,
+            wantErr: errs.NewInvalidFormError().WithParams(map[string]string{
+{{- range $key, $value := .Config.Params }}
+                "{{ $value.Tag }}": "cannot be blank",
+{{- end }}
+            }),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            u := &{{ .Config.UseCaseTypeName }}{
+                {{ .Config.RepositoryVariableName }}: tt.fields.{{ .Config.RepositoryVariableName }},
+                clock:            tt.fields.clock,
+                logger:           tt.fields.logger,
+            }
+            got, err := u.Create(tt.args.ctx, tt.args.create)
+            if !errors.Is(err, tt.wantErr) {
+                t.Errorf("{{ .Config.UseCaseTypeName }}.Create() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("{{ .Config.UseCaseTypeName }}.Create() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func Test{{ .Config.UseCaseTypeName }}_Update(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    ctx := context.Background()
+    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    clockMock := mock_clock.NewMockClock(ctrl)
+    update := mock_models.New{{ .Config.UpdateTypeName }}(t)
+    now := {{ .Config.Variable }}.UpdatedAt
+    type fields struct {
+        {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
+        clock            clock.Clock
+        logger           log.Logger
+    }
+    type args struct {
+        ctx    context.Context
+        update *models.{{ .Config.UpdateTypeName }}
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    *models.{{ .Config.ModelName }}
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+                clockMock.EXPECT().Now().Return(now)
+                {{ .Config.RepositoryVariableName }}.EXPECT().
+                    Get(ctx, update.ID).Return({{ .Config.Variable }}, nil)
+                {{ .Config.RepositoryVariableName }}.EXPECT().
+                    Update(ctx, {{ .Config.Variable }}).Return(nil)
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                clock:            clockMock,
+                logger:           logger,
+            },
+            args: args{
+                ctx: ctx,
+                update: update,
+            },
+            want:    {{ .Config.Variable }},
+            wantErr: nil,
+        },
+        {
+            name: "update error",
+            setup: func() {
+                clockMock.EXPECT().Now().Return(now)
+                {{ .Config.RepositoryVariableName }}.EXPECT().
+                    Get(ctx, update.ID).
+                    Return({{ .Config.Variable }}, nil)
+                {{ .Config.RepositoryVariableName }}.EXPECT().
+                    Update(ctx, {{ .Config.Variable }}).
+                    Return(errs.NewUnexpectedBehaviorError("test error"))
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                clock:            clockMock,
+                logger:           logger,
+            },
+            args: args{
+                ctx: ctx,
+                update: update,
+            },
+            want:    nil,
+            wantErr: errs.NewUnexpectedBehaviorError("test error"),
+        },
+        {
+            name: "{{ .Config.ModelName }} not found",
+            setup: func() {
+                {{ .Config.RepositoryVariableName }}.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFound())
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                clock:            clockMock,
+                logger:           logger,
+            },
+            args: args{
+                ctx: ctx,
+                update: update,
+            },
+            want:    nil,
+            wantErr: errs.NewEntityNotFound(),
+        },
+        {
+            name: "invalid",
+            setup: func() {
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                clock:            clockMock,
+                logger:           logger,
+            },
+            args: args{
+                ctx: ctx,
+                update: &models.{{ .Config.UpdateTypeName }}{
+                    ID: uuid.UUID("baduuid"),
+                },
+            },
+            want: nil,
+            wantErr: errs.NewInvalidFormError().WithParam("id", "must be a valid UUID"),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            u := &{{ .Config.UseCaseTypeName }}{
+                {{ .Config.RepositoryVariableName }}: tt.fields.{{ .Config.RepositoryVariableName }},
+                clock:            tt.fields.clock,
+                logger:           tt.fields.logger,
+            }
+            got, err := u.Update(tt.args.ctx, tt.args.update)
+            if !errors.Is(err, tt.wantErr) {
+                t.Errorf("{{ .Config.UseCaseTypeName }}.Update() error = %v, wantErr %v", err, tt.wantErr)
+                return
+            }
+            if !reflect.DeepEqual(got, tt.want) {
+                t.Errorf("{{ .Config.UseCaseTypeName }}.Update() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+
+func Test{{ .Config.UseCaseTypeName }}_Delete(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    logger := mock_log.NewMockLogger(ctrl)
+    ctx := context.Background()
+    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    type fields struct {
+        {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
+        logger           log.Logger
+    }
+    type args struct {
+        ctx context.Context
+        id  uuid.UUID
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+                {{ .Config.RepositoryVariableName }}.EXPECT().
+                    Delete(ctx, {{ .Config.Variable }}.ID).
+                    Return(nil)
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                logger:           logger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  {{ .Config.Variable }}.ID,
+            },
+            wantErr: nil,
+        },
+        {
+            name: "{{ .Config.ModelName }} not found",
+            setup: func() {
+                {{ .Config.RepositoryVariableName }}.EXPECT().
+                    Delete(ctx, {{ .Config.Variable }}.ID).
+                    Return(errs.NewEntityNotFound())
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                logger:           logger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  {{ .Config.Variable }}.ID,
+            },
+            wantErr: errs.NewEntityNotFound(),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            u := &{{ .Config.UseCaseTypeName }}{
+                {{ .Config.RepositoryVariableName }}: tt.fields.{{ .Config.RepositoryVariableName }},
+                logger:           tt.fields.logger,
+            }
+            if err := u.Delete(tt.args.ctx, tt.args.id); !errors.Is(err, tt.wantErr) {
+                t.Errorf("{{ .Config.UseCaseTypeName }}.Delete() error = %v, wantErr %v", err, tt.wantErr)
+            }
+        })
+    }
+}

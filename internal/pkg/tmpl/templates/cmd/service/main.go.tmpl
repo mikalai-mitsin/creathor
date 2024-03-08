@@ -1,0 +1,95 @@
+package main
+
+import (
+    "os"
+    "{{ .Module }}"
+    "{{ .Module }}/internal/pkg/containers"
+    "github.com/urfave/cli/v2"
+)
+
+var (
+    configPath = ""
+)
+
+func main() {
+    app := &cli.App{
+        Name:    {{ .Name }}.Name,
+        Usage:   "service",
+        Version: {{ .Name }}.Version,
+        Flags: []cli.Flag{
+            &cli.StringFlag{
+                Name:        "config",
+                Aliases:     []string{"c"},
+                Usage:       "Load configuration from `FILE`",
+                EnvVars:     []string{"{{ .Name | ToUpper }}_CONFIG_PATH"},
+                TakesFile:   true,
+                Value:       configPath,
+                Destination: &configPath,
+                HasBeenSet:  false,
+            },
+        },
+        Action: runApp,
+        Commands: []*cli.Command{
+            {
+                Name:      "migrate",
+                Usage:     "Run migrations",
+                Action:    runMigrations,
+                ArgsUsage: "",
+            },
+{{- if .GRPCEnabled }}
+            {
+                Name:      "grpc",
+                Usage:     "Run gRPC server",
+                Action:    runGRPC,
+                ArgsUsage: "",
+            },
+{{- end  }}
+{{- if .GatewayEnabled }}
+            {
+                Name:      "gateway",
+                Usage:     "Run gateway-grpc server",
+                Action:    runGateway,
+                ArgsUsage: "",
+            },
+{{- end  }}
+        },
+    }
+    if err := app.Run(os.Args); err != nil {
+        panic(err)
+    }
+}
+
+// runApp - run app
+func runApp(context *cli.Context) error {
+{{- if .GRPCEnabled }}
+    app := containers.NewGRPCContainer(configPath)
+    app.Run()
+{{- end }}
+    return nil
+}
+
+{{- if .GRPCEnabled }}
+// runGRPC - run grpc api
+func runGRPC(context *cli.Context) error {
+    app := containers.NewGRPCContainer(configPath)
+    app.Run()
+    return nil
+}
+{{- end }}
+
+{{- if .GatewayEnabled }}
+// runGateway - run gateway api
+func runGateway(context *cli.Context) error {
+    app := containers.NewGatewayContainer(configPath)
+    app.Run()
+    return nil
+}
+{{- end }}
+
+
+// runMigrations - migrate database
+func runMigrations(context *cli.Context) error {
+	app := containers.NewMigrateContainer(configPath)
+    app.Run()
+	return nil
+}

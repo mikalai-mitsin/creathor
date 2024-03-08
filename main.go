@@ -2,8 +2,9 @@ package main
 
 import (
 	"bytes"
-	"embed"
-	_ "embed"
+
+	"github.com/018bf/creathor/internal/app/generator/layout"
+
 	"fmt"
 	"log"
 	"os"
@@ -11,9 +12,14 @@ import (
 	"path"
 	"strings"
 
-	"github.com/018bf/creathor/internal/configs"
-	"github.com/018bf/creathor/internal/generators"
-	generatorsInterfacesGrpc "github.com/018bf/creathor/internal/generators/interfaces/grpc"
+	"github.com/018bf/creathor/internal/app/generator/auth"
+
+	"github.com/018bf/creathor/internal/app/generator/app"
+	"github.com/018bf/creathor/internal/app/generator/pkg"
+
+	"github.com/018bf/creathor/internal/pkg/domain"
+
+	"github.com/018bf/creathor/internal/pkg/configs"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 )
@@ -24,9 +30,6 @@ var (
 	destinationPath = "."
 	configPath      = "./creathor.yaml"
 )
-
-//go:embed templates/*
-var content embed.FS
 
 func main() {
 	app := &cli.App{
@@ -62,33 +65,40 @@ func initProject(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := CreateLayout(project); err != nil {
+	layoutGenerator := layout.NewGenerator(project)
+	if err := layoutGenerator.Sync(); err != nil {
 		return err
 	}
-	if err := CreateCI(project); err != nil {
+	pkgGenerator := pkg.NewGenerator(project)
+	if err := pkgGenerator.Sync(); err != nil {
 		return err
 	}
-	if err := CreateDI(project); err != nil {
+	authGenerator := auth.NewGenerator(project)
+	if err := authGenerator.Sync(); err != nil {
 		return err
 	}
-	if err := CreateBuild(project); err != nil {
-		return err
-	}
-	if err := CreateDeployment(project); err != nil {
-		return err
-	}
-	for _, model := range project.Models {
-		if err := CreateCRUD(model); err != nil {
+	for _, m := range project.Domains {
+		d := &domain.Domain{
+			Config:      m,
+			Name:        m.Model,
+			Module:      project.Module,
+			ProtoModule: project.ProtoPackage(),
+			Models: []*domain.Model{
+				domain.NewMainModel(m),
+				domain.NewFilterModel(m),
+				domain.NewCreateModel(m),
+				domain.NewUpdateModel(m),
+			},
+			UseCase:     domain.NewUseCase(m),
+			Repository:  domain.NewRepository(m),
+			Interceptor: domain.NewInterceptor(m),
+			GRPCHandler: domain.NewGRPCHandler(m),
+			Auth:        project.Auth,
+		}
+		appGenerator := app.NewGenerator(d)
+		if err := appGenerator.Sync(); err != nil {
 			return err
 		}
-	}
-	crud := generators.NewCrudGenerator(project)
-	if err := crud.Sync(); err != nil {
-		return err
-	}
-	interfaceGrpcServer := generatorsInterfacesGrpc.NewServer(project)
-	if err := interfaceGrpcServer.Sync(); err != nil {
-		return err
 	}
 	if err := postInit(project); err != nil {
 		return err
@@ -99,34 +109,6 @@ func initProject(ctx *cli.Context) error {
 func postInit(project *configs.Project) error {
 	fmt.Println("post init...")
 	var errb bytes.Buffer
-	generate := exec.Command("go", "generate", "./...")
-	generate.Dir = destinationPath
-	generate.Stderr = &errb
-	fmt.Println(strings.Join(generate.Args, " "))
-	if err := generate.Run(); err != nil {
-		fmt.Println(errb.String())
-	}
-	if project.RESTEnabled {
-		swag := exec.Command(
-			"swag",
-			"init",
-			"-d",
-			"./internal/interfaces/rest",
-			"-g",
-			"server.go",
-			"--parseDependency",
-			"-o",
-			"./api/rest",
-			"-ot",
-			"json",
-		)
-		swag.Dir = destinationPath
-		swag.Stderr = &errb
-		fmt.Println(strings.Join(swag.Args, " "))
-		if err := swag.Run(); err != nil {
-			fmt.Println(errb.String())
-		}
-	}
 	if project.GRPCEnabled {
 		bufUpdate := exec.Command("buf", "mod", "update")
 		bufUpdate.Dir = path.Join(destinationPath, "api", "proto")
@@ -143,13 +125,6 @@ func postInit(project *configs.Project) error {
 			fmt.Println(errb.String())
 		}
 	}
-	tidy := exec.Command("go", "mod", "tidy")
-	tidy.Dir = destinationPath
-	tidy.Stderr = &errb
-	fmt.Println(strings.Join(tidy.Args, " "))
-	if err := tidy.Run(); err != nil {
-		fmt.Println(errb.String())
-	}
 	goLines := exec.Command("golines", ".", "-w", "--ignore-generated")
 	goLines.Dir = destinationPath
 	fmt.Println(strings.Join(goLines.Args, " "))
@@ -160,6 +135,20 @@ func postInit(project *configs.Project) error {
 	clean.Dir = destinationPath
 	fmt.Println(strings.Join(clean.Args, " "))
 	if err := clean.Run(); err != nil {
+		fmt.Println(errb.String())
+	}
+	generate := exec.Command("go", "generate", "./...")
+	generate.Dir = destinationPath
+	generate.Stderr = &errb
+	fmt.Println(strings.Join(generate.Args, " "))
+	if err := generate.Run(); err != nil {
+		fmt.Println(errb.String())
+	}
+	tidy := exec.Command("go", "mod", "tidy")
+	tidy.Dir = destinationPath
+	tidy.Stderr = &errb
+	fmt.Println(strings.Join(tidy.Args, " "))
+	if err := tidy.Run(); err != nil {
 		fmt.Println(errb.String())
 	}
 	return nil

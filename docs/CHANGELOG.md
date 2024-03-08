@@ -331,25 +331,25 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/018bf/creathor/compare/v0.5.7...HEAD
-[v0.5.7]: https://github.com/018bf/creathor/compare/v0.4.7...v0.5.7
-[v0.4.7]: https://github.com/018bf/creathor/compare/v0.4.6...v0.4.7
-[v0.4.6]: https://github.com/018bf/creathor/compare/v0.4.5...v0.4.6
-[v0.4.5]: https://github.com/018bf/creathor/compare/v0.4.4...v0.4.5
-[v0.4.4]: https://github.com/018bf/creathor/compare/v0.4.3...v0.4.4
-[v0.4.3]: https://github.com/018bf/creathor/compare/v0.4.2...v0.4.3
-[v0.4.2]: https://github.com/018bf/creathor/compare/v0.4.1...v0.4.2
-[v0.4.1]: https://github.com/018bf/creathor/compare/v0.4.0...v0.4.1
-[v0.4.0]: https://github.com/018bf/creathor/compare/v0.3.3...v0.4.0
-[v0.3.3]: https://github.com/018bf/creathor/compare/v0.3.2...v0.3.3
-[v0.3.2]: https://github.com/018bf/creathor/compare/v0.3.1...v0.3.2
-[v0.3.1]: https://github.com/018bf/creathor/compare/v0.3.0...v0.3.1
-[v0.3.0]: https://github.com/018bf/creathor/compare/v0.2.1...v0.3.0
-[v0.2.1]: https://github.com/018bf/creathor/compare/v0.2.0...v0.2.1
-[v0.2.0]: https://github.com/018bf/creathor/compare/v0.1.7...v0.2.0
-[v0.1.7]: https://github.com/018bf/creathor/compare/v0.1.6...v0.1.7
-[v0.1.6]: https://github.com/018bf/creathor/compare/v0.1.5...v0.1.6
-[v0.1.5]: https://github.com/018bf/creathor/compare/v0.1.3...v0.1.5
-[v0.1.3]: https://github.com/018bf/creathor/compare/v0.1.4...v0.1.3
-[v0.1.4]: https://github.com/018bf/creathor/compare/v0.1.1...v0.1.4
-[v0.1.1]: https://github.com/018bf/creathor/compare/v0.1.0...v0.1.1
+[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.5.7...HEAD
+[v0.5.7]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.7...v0.5.7
+[v0.4.7]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.6...v0.4.7
+[v0.4.6]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.5...v0.4.6
+[v0.4.5]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.4...v0.4.5
+[v0.4.4]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.3...v0.4.4
+[v0.4.3]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.2...v0.4.3
+[v0.4.2]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.1...v0.4.2
+[v0.4.1]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.0...v0.4.1
+[v0.4.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.3.3...v0.4.0
+[v0.3.3]: https://github.com/mikalai-mitsin/creathor/compare/v0.3.2...v0.3.3
+[v0.3.2]: https://github.com/mikalai-mitsin/creathor/compare/v0.3.1...v0.3.2
+[v0.3.1]: https://github.com/mikalai-mitsin/creathor/compare/v0.3.0...v0.3.1
+[v0.3.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.2.1...v0.3.0
+[v0.2.1]: https://github.com/mikalai-mitsin/creathor/compare/v0.2.0...v0.2.1
+[v0.2.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.1.7...v0.2.0
+[v0.1.7]: https://github.com/mikalai-mitsin/creathor/compare/v0.1.6...v0.1.7
+[v0.1.6]: https://github.com/mikalai-mitsin/creathor/compare/v0.1.5...v0.1.6
+[v0.1.5]: https://github.com/mikalai-mitsin/creathor/compare/v0.1.3...v0.1.5
+[v0.1.3]: https://github.com/mikalai-mitsin/creathor/compare/v0.1.4...v0.1.3
+[v0.1.4]: https://github.com/mikalai-mitsin/creathor/compare/v0.1.1...v0.1.4
+[v0.1.1]: https://github.com/mikalai-mitsin/creathor/compare/v0.1.0...v0.1.1

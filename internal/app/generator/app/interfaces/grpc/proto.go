@@ -2,10 +2,10 @@ package grpc
 
 import (
 	"fmt"
-	"github.com/018bf/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 	"path"
 
-	"github.com/018bf/creathor/internal/pkg/tmpl"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 )
 
 type Proto struct {

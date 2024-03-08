@@ -25,7 +25,7 @@ creathor -d example -c creathor.yaml
 # Installing
 
 ```
-go install github.com/018bf/creathor@latest
+go install github.com/mikalai-mitsin/creathor@latest
 ```
 
 # Usage

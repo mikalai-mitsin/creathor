@@ -10,7 +10,7 @@ import (
 	"path"
 	"strings"
 
-	mods "github.com/018bf/creathor/internal/pkg/domain"
+	mods "github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
 type Validate struct {

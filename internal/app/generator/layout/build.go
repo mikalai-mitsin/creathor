@@ -3,9 +3,9 @@ package layout
 import (
 	"path/filepath"
 
-	"github.com/018bf/creathor/internal/pkg/tmpl"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 
-	"github.com/018bf/creathor/internal/pkg/configs"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type BuilderGenerator struct {

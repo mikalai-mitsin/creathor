@@ -9,7 +9,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/018bf/creathor/internal/pkg/errs"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/errs"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"

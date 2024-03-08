@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/018bf/creathor/internal/pkg/errs"
-	"github.com/018bf/creathor/internal/pkg/tmpl"
 	"github.com/iancoleman/strcase"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/errs"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 
-	"github.com/018bf/creathor/internal/pkg/configs"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 var destinationPath = "."

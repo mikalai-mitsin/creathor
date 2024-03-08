@@ -3,15 +3,15 @@ package auth
 import (
 	"path"
 
-	"github.com/018bf/creathor/internal/app/generator"
-	authGrpcHandlers "github.com/018bf/creathor/internal/app/generator/auth/handlers/grpc"
-	authInterceptors "github.com/018bf/creathor/internal/app/generator/auth/interceptors"
-	authModel "github.com/018bf/creathor/internal/app/generator/auth/models"
-	authRepositoriesJwt "github.com/018bf/creathor/internal/app/generator/auth/repositories/jwt"
-	authRepositoriesPosgres "github.com/018bf/creathor/internal/app/generator/auth/repositories/postgres"
-	authUseCases "github.com/018bf/creathor/internal/app/generator/auth/usecases"
-	"github.com/018bf/creathor/internal/pkg/configs"
-	"github.com/018bf/creathor/internal/pkg/tmpl"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator"
+	authGrpcHandlers "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/handlers/grpc"
+	authInterceptors "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/interceptors"
+	authModel "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/models"
+	authRepositoriesJwt "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/repositories/jwt"
+	authRepositoriesPosgres "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/repositories/postgres"
+	authUseCases "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/usecases"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 )
 
 type Generator struct {

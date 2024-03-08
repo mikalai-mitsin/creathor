@@ -3,7 +3,7 @@ package postgres
 import (
 	"bytes"
 	"fmt"
-	"github.com/018bf/creathor/internal/pkg/tmpl"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -12,7 +12,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/018bf/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 
 	"github.com/iancoleman/strcase"
 )

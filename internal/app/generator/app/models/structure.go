@@ -11,7 +11,7 @@ import (
 	"path"
 	"path/filepath"
 
-	mods "github.com/018bf/creathor/internal/pkg/domain"
+	mods "github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
 type Structure struct {

@@ -8,7 +8,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/018bf/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
 func astType(t string) ast.Expr {

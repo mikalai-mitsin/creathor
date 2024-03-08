@@ -2,8 +2,73 @@
 ## [Unreleased]
 
 
-<a name="0.4.6"></a>
-## [0.4.6] - 2023-04-03
+<a name="v0.5.7"></a>
+## [v0.5.7] - 2024-03-02
+### Feat
+- move interfaces to internal pkg
+- move interfaces to internal pkg
+- move domains to app dir
+- move errors to internal pkg
+- add password and email generation
+- add new arch
+- something old
+- **configs:** generate repository from mod
+- **configs:** generate grpc handler from mod
+- **configs:** generate interceptors from mod
+- **configs:** add ids to the filter model
+- **configs:** generate use case methods by mod
+- **configs:** generate use case methods by mod
+- **configs:** generate use case from mod
+- **configs:** generate interfaces from config
+- **fakes:** add separate generator
+- **kafka:** add event repository
+- **models:** use separate generators
+- **perms:** add perms if not exists
+
+### Fix
+- fix search
+- fix migrations
+- update postgresql test
+- renaming
+- auth
+- update auth
+- generate user from domain
+- generate user from domain
+- update rest path
+- generate uptrace if enabled
+
+### Refactor
+- move templates to generators
+- move templates to generators
+- sync di from pkg
+- update config
+- update package name
+- update package name
+- renaming
+- renaming
+- rename package
+- remove method type
+- **generators:** separate mods with layout
+- **mods:** separate mods with configs
+
+### Style
+- remove extra call
+
+
+<a name="v0.4.7"></a>
+## [v0.4.7] - 2023-04-06
+### Docs
+- rebuild example
+
+### Feat
+- **models:** generate auth and user from ast
+- **repositories:** generate interfaces from ast
+- **rest:** add auth and user tests
+- **rest:** add crud tests
+
+
+<a name="v0.4.6"></a>
+## [v0.4.6] - 2023-04-03
 ### Feat
 - **implementations:** generate auth and user from ast
 - **rest:** handle error
@@ -42,13 +107,13 @@
 - **generators:** generate grpc interface
 - **grpc:** generate server from ast
 - **grpc:** add otel middleware
-- **interceptor:** generate implementation from AST
 - **interceptor:** cleanup templates
+- **interceptor:** generate implementation from AST
 - **interfaces:** generate from AST
 - **models:** generate filter from ast
 - **models:** generate from AST
-- **repositories:** generate implementation from AST
 - **repositories:** generate implementation of create from AST
+- **repositories:** generate implementation from AST
 - **usecases:** generate implementation from AST
 
 ### Fix
@@ -100,12 +165,12 @@
 - **build:** use task
 - **ci:** update validation rules
 - **di:** extract DI to container package
-- **grpc:** fill update test
 - **grpc:** update proto package
+- **grpc:** fill update test
 - **models:** add creation validation
 - **postgres:** add dto
-- **repositories:** separate repositories implementation
 - **repositories:** add args to the test
+- **repositories:** separate repositories implementation
 
 ### Refactor
 - move models to pkg
@@ -266,8 +331,10 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/018bf/creathor/compare/0.4.6...HEAD
-[0.4.6]: https://github.com/018bf/creathor/compare/v0.4.5...0.4.6
+[Unreleased]: https://github.com/018bf/creathor/compare/v0.5.7...HEAD
+[v0.5.7]: https://github.com/018bf/creathor/compare/v0.4.7...v0.5.7
+[v0.4.7]: https://github.com/018bf/creathor/compare/v0.4.6...v0.4.7
+[v0.4.6]: https://github.com/018bf/creathor/compare/v0.4.5...v0.4.6
 [v0.4.5]: https://github.com/018bf/creathor/compare/v0.4.4...v0.4.5
 [v0.4.4]: https://github.com/018bf/creathor/compare/v0.4.3...v0.4.4
 [v0.4.3]: https://github.com/018bf/creathor/compare/v0.4.2...v0.4.3

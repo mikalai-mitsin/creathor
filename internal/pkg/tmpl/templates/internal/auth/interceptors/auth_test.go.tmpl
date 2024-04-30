@@ -16,7 +16,7 @@ import (
     "{{ .Module }}/internal/pkg/clock"
     "{{ .Module }}/internal/pkg/log"
     mock_log "{{ .Module }}/internal/pkg/log/mock"
-    "github.com/golang/mock/gomock"
+    "go.uber.org/mock/gomock"
 )
 
 func TestAuthInterceptor_Auth(t *testing.T) {
@@ -64,7 +64,7 @@ func TestAuthInterceptor_Auth(t *testing.T) {
             setup: func() {
                 authUseCase.EXPECT().
                     Auth(ctx, token).
-                    Return(nil, errs.NewBadToken()).
+                    Return(nil, errs.NewBadTokenError()).
                     Times(1)
             },
             fields: fields{
@@ -76,7 +76,7 @@ func TestAuthInterceptor_Auth(t *testing.T) {
                 access: token,
             },
             want:    nil,
-            wantErr: errs.NewBadToken(),
+            wantErr: errs.NewBadTokenError(),
         },
     }
     for _, tt := range tests {
@@ -230,7 +230,7 @@ func TestAuthInterceptor_RefreshToken(t *testing.T) {
             setup: func() {
                 authUseCase.EXPECT().
                     RefreshToken(ctx, refresh).
-                    Return(nil, errs.NewBadToken()).Times(1)
+                    Return(nil, errs.NewBadTokenError()).Times(1)
             },
             fields: fields{
                 authUseCase: authUseCase,
@@ -242,7 +242,7 @@ func TestAuthInterceptor_RefreshToken(t *testing.T) {
                 refresh: refresh,
             },
             want:    nil,
-            wantErr: errs.NewBadToken(),
+            wantErr: errs.NewBadTokenError(),
         },
     }
     for _, tt := range tests {
@@ -361,9 +361,7 @@ func TestAuthInterceptor_ValidateToken(t *testing.T) {
             wantErr: &errs.Error{
                 Code:    13,
                 Message: "Unexpected behavior.",
-                Params: map[string]string{
-                    "details": "35124345",
-                },
+                Params: errs.Params{ {Key: "details", Value: "35124345"} },
             },
         },
     }

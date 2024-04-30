@@ -16,7 +16,7 @@ import (
     "{{ .Module }}/internal/pkg/pointer"
     "{{ .Module }}/internal/pkg/uuid"
     {{ .Config.ProtoPackage }} "{{ .Module }}/pkg/{{ .Config.ProtoPackage }}/v1"
-    "github.com/golang/mock/gomock"
+    "go.uber.org/mock/gomock"
     "google.golang.org/protobuf/types/known/emptypb"
     "google.golang.org/protobuf/types/known/timestamppb"
     "google.golang.org/protobuf/types/known/wrapperspb"
@@ -212,9 +212,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Delete(t *testing.T) {
             wantErr: grpc.DecodeError(&errs.Error{
                 Code:    13,
                 Message: "Unexpected behavior.",
-                Params: map[string]string{
-                    "details": "i error",
-                },
+                Params: errs.Params{ {Key: "details", Value: "i error"} },
             }),
         },
     }

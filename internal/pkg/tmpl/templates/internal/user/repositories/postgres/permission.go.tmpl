@@ -45,7 +45,7 @@ func (r *PermissionRepository) HasPermission(
     if err := r.database.GetContext(ctx, permission, query, args...); err != nil {
         e := errs.FromPostgresError(err)
 		if e.Code == errs.ErrorCodeNotFound {
-			e = errs.NewPermissionDenied()
+			e = errs.NewPermissionDeniedError()
 		}
 		e.AddParam("user_id", fmt.Sprint(user.ID))
 		e.AddParam("permission_id", fmt.Sprint(permissionID))

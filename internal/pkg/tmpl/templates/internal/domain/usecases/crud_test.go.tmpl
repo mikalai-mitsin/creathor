@@ -16,7 +16,7 @@ import (
     "{{ .Module }}/internal/pkg/uuid"
     mock_log "{{ .Module }}/internal/pkg/log/mock"
     "{{ .Module }}/internal/pkg/log"
-    "github.com/golang/mock/gomock"
+    "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
 )
 
@@ -105,7 +105,7 @@ func Test{{ .Config.UseCaseTypeName }}_Get(t *testing.T) {
         {
             name: "{{ .Config.ModelName }} not found",
             setup: func() {
-                {{ .Config.RepositoryVariableName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return(nil, errs.NewEntityNotFound())
+                {{ .Config.RepositoryVariableName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return(nil, errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
@@ -116,7 +116,7 @@ func Test{{ .Config.UseCaseTypeName }}_Get(t *testing.T) {
                 id:  {{ .Config.Variable }}.ID,
             },
             want:    nil,
-            wantErr: errs.NewEntityNotFound(),
+            wantErr: errs.NewEntityNotFoundError(),
         },
     }
     for _, tt := range tests {
@@ -348,11 +348,11 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
                 create: &models.{{ .Config.CreateTypeName }}{},
             },
             want: nil,
-            wantErr: errs.NewInvalidFormError().WithParams(map[string]string{
+            wantErr: errs.NewInvalidFormError().WithParams(
 {{- range $key, $value := .Config.Params }}
-                "{{ $value.Tag }}": "cannot be blank",
+                errs.Param{Key: "{{ $value.Tag }}", Value: "cannot be blank"},
 {{- end }}
-            }),
+            ),
         },
     }
     for _, tt := range tests {
@@ -449,7 +449,7 @@ func Test{{ .Config.UseCaseTypeName }}_Update(t *testing.T) {
         {
             name: "{{ .Config.ModelName }} not found",
             setup: func() {
-                {{ .Config.RepositoryVariableName }}.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFound())
+                {{ .Config.RepositoryVariableName }}.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
@@ -461,7 +461,7 @@ func Test{{ .Config.UseCaseTypeName }}_Update(t *testing.T) {
                 update: update,
             },
             want:    nil,
-            wantErr: errs.NewEntityNotFound(),
+            wantErr: errs.NewEntityNotFoundError(),
         },
         {
             name: "invalid",
@@ -546,7 +546,7 @@ func Test{{ .Config.UseCaseTypeName }}_Delete(t *testing.T) {
             setup: func() {
                 {{ .Config.RepositoryVariableName }}.EXPECT().
                     Delete(ctx, {{ .Config.Variable }}.ID).
-                    Return(errs.NewEntityNotFound())
+                    Return(errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
@@ -556,7 +556,7 @@ func Test{{ .Config.UseCaseTypeName }}_Delete(t *testing.T) {
                 ctx: ctx,
                 id:  {{ .Config.Variable }}.ID,
             },
-            wantErr: errs.NewEntityNotFound(),
+            wantErr: errs.NewEntityNotFoundError(),
         },
     }
     for _, tt := range tests {

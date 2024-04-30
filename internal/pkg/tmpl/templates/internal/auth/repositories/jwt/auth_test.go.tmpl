@@ -20,7 +20,7 @@ import (
     mock_log "{{ .Module }}/internal/pkg/log/mock"
 
     "github.com/golang-jwt/jwt/v4"
-    "github.com/golang/mock/gomock"
+    "go.uber.org/mock/gomock"
 )
 
 func TestAuthRepository_Create(t *testing.T) {
@@ -148,7 +148,7 @@ func TestAuthRepository_GetSubject(t *testing.T) {
             wantErr: &errs.Error{
                 Code:    16,
                 Message: "Invalid token.",
-                Params:  map[string]string{},
+                Params:  nil,
             },
         },
     }
@@ -232,7 +232,7 @@ func TestAuthRepository_RefreshToken(t *testing.T) {
                 in0:   context.Background(),
                 token: "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzNjRiOGIwZC00ZDg1LTRiMjMtOWQ3Ny0wNTRmMDY5MGU0OTgiLCJhdWQiOlsiYWNjZXNzIl0sImV4cCI6MTc0NzY1MjQzOCwibmJmIjoxNjYxMjUyNDM4LCJpYXQiOjE2NjEyNTI0MzgsImp0aSI6ImViY2M0MDUwLTU3YzMtNGVlMy1hNjMzLWY1NzgyOTc0MjRjYSJ9.N2amwawNdnpgVNcZq4LOwtcDK88USnilTPeH79Dvv10oHU2QW4hC4t68n7LcbPRWyX-ZwvhcpWAq3xaTkGNP0vmvuPGUJrPcwbxmqSdXLrrg7U-xH2tyXtdSZeZwtYgSp3D9haQXTm74S2fqNDvhhSx28Pp_3uSsXMYzxS4R2mo",
             },
-            wantErr: errs.NewBadToken(),
+            wantErr: errs.NewBadTokenError(),
         },
         {
             name: "invalid",
@@ -248,7 +248,7 @@ func TestAuthRepository_RefreshToken(t *testing.T) {
                 in0:   context.Background(),
                 token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJyZWZyZXNoIiwiZXhwIjoxNj1Q1NzE4NjcwLCJqdGkiOiI4NGVkN2Y0My01YTZiLTQzNjQtODk2Mi05ZWFiZDU1YTVlNjciLCJpYXQiOjE2NDU1NDU4NzAsIm5iZiI6MTY0NTU0NTg3MCwic3ViIjoiY2M0YTM1NWEtOTQ3Zi00ZmE0LWFmNDctNGZmZjFlYWUwNmExIn0.QduyrjDwcIyaywheuJiaKG59q0mVo8qjjCmWnAzuy8Q",
             },
-            wantErr: errs.NewBadToken(),
+            wantErr: errs.NewBadTokenError(),
         },
     }
     for _, tt := range tests {
@@ -321,7 +321,7 @@ func TestAuthRepository_Validate(t *testing.T) {
             args: args{
                 token: "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzNjRiOGIwZC00ZDg1LTRiMjMtOWQ3Ny0wNTRmMDY5MGU0OTgiLCJhdWQiOlsicmVmcmVzaCJdLCJleHAiOjE4MzQwNTI0MzgsIm5iZiI6MTY2MTI1MjQzOCwiaWF0IjoxNjYxMjUyNDM4LCJqdGkiOiI2MTg3YTI1Ni0zZjg3LTQwZDktOGFhZi01MzlmMzEzNDFkNTYifQ.AWQ9-QPvCoqRIq1I8_xGfCyv8KDgDaQBiGrtqmnJeW78_4HKcjTqMG6E30O6R2nV7XuVhz-ZRmLHgng2pdCem2L6BC2maPSI4U9YZ9Lh_Bp-K_niS-cgqFxm6akjHpFAxzE2Y-7ZqE30Wp_U2B3ts9-6EL7tyx1FMQZ_lgIGeto",
             },
-            wantErr: errs.NewBadToken(),
+            wantErr: errs.NewBadTokenError(),
         },
         {
             name: "invalid",
@@ -336,7 +336,7 @@ func TestAuthRepository_Validate(t *testing.T) {
             args: args{
                 token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiO1JhY2Nlc3MiLCJqdGkiOiJjMzE3OWQwZC0zM2VkLTQ0ZjYtOGEyMS05MzExZGExMWU3OWYiLCJzdWIiOiJjYzRhMzU1YS05NDdmLTRmYTQtYWY0Ny00ZmZmMWVhZTA2YTEifQ.6-U_fSeDCLfXtYlJ6aivTw-4O3-EuVVw2KYWNNay5zU",
             },
-            wantErr: errs.NewBadToken(),
+            wantErr: errs.NewBadTokenError(),
         },
     }
     for _, tt := range tests {
@@ -561,7 +561,7 @@ func TestAuthRepository_validate(t *testing.T) {
                 token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiO1JhY2Nlc3MiLCJqdGkiOiJjMzE3OWQwZC0zM2VkLTQ0ZjYtOGEyMS05MzExZGExMWU3OWYiLCJzdWIiOiJjYzRhMzU1YS05NDdmLTRmYTQtYWY0Ny00ZmZmMWVhZTA2YTEifQ.6-U_fSeDCLfXtYlJ6aivTw-4O3-EuVVw2KYWNNay5zU",
             },
             want:    nil,
-            wantErr: errs.NewBadToken(),
+            wantErr: errs.NewBadTokenError(),
         },
     }
     for _, tt := range tests {

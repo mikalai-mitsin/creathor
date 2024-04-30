@@ -19,7 +19,7 @@ import (
     mock_log "{{ .Module }}/internal/pkg/log/mock"
     "{{ .Module }}/internal/pkg/log"
     "github.com/DATA-DOG/go-sqlmock"
-    "github.com/golang/mock/gomock"
+    "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
 
     "{{ .Module }}/internal/app/{{ .DirName }}/models"
@@ -241,7 +241,7 @@ func Test{{ .Config.RepositoryTypeName }}_Get(t *testing.T) {
                 id:  {{ .Config.Variable }}.ID,
             },
             want:    nil,
-            wantErr: errs.NewEntityNotFound().WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
+            wantErr: errs.NewEntityNotFoundError().WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
         },
     }
     for _, tt := range tests {
@@ -347,9 +347,7 @@ func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
             wantErr: &errs.Error{
                 Code:    13,
                 Message: "Unexpected behavior.",
-                Params: map[string]string{
-                    "error": "test error",
-                },
+                Params: errs.Params{ {Key: "error", Value: "test error"} },
             },
         },
         {
@@ -471,7 +469,7 @@ func Test{{ .Config.RepositoryTypeName }}_Update(t *testing.T) {
                 ctx:  ctx,
                 card: {{ .Config.Variable }},
             },
-            wantErr: errs.NewEntityNotFound().WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
+            wantErr: errs.NewEntityNotFoundError().WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
         },
         {
             name: "database error",
@@ -630,7 +628,7 @@ func Test{{ .Config.RepositoryTypeName }}_Delete(t *testing.T) {
                 ctx: context.Background(),
                 id:  {{ .Config.Variable }}.ID,
             },
-            wantErr: errs.NewEntityNotFound().WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
+            wantErr: errs.NewEntityNotFoundError().WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
         },
         {
             name: "database error",
@@ -742,9 +740,7 @@ func Test{{ .Config.RepositoryTypeName }}_Count(t *testing.T) {
             wantErr: &errs.Error{
                 Code:    13,
                 Message: "Unexpected behavior.",
-                Params: map[string]string{
-                    "error": "sql: Scan error on column index 0, name \"count\": converting driver.Value type string (\"one\") to a uint64: invalid syntax",
-                },
+                Params: errs.Params{ {Key: "error", Value: "sql: Scan error on column index 0, name \"count\": converting driver.Value type string (\"one\") to a uint64: invalid syntax"} },
             },
         },
         {

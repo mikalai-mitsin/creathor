@@ -139,6 +139,13 @@ func (u UseCaseCrud) structure() *ast.TypeSpec {
 							Sel: ast.NewIdent("Logger"),
 						},
 					},
+					{
+						Names: []*ast.Ident{ast.NewIdent("uuid")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("uuid"),
+							Sel: ast.NewIdent("Generator"),
+						},
+					},
 				},
 			},
 		},
@@ -206,6 +213,13 @@ func (u UseCaseCrud) constructor() *ast.FuncDecl {
 							Sel: ast.NewIdent("Logger"),
 						},
 					},
+					{
+						Names: []*ast.Ident{ast.NewIdent("uuid")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("uuid"),
+							Sel: ast.NewIdent("Generator"),
+						},
+					},
 				},
 			},
 			Results: &ast.FieldList{
@@ -236,6 +250,10 @@ func (u UseCaseCrud) constructor() *ast.FuncDecl {
 									&ast.KeyValueExpr{
 										Key:   ast.NewIdent("logger"),
 										Value: ast.NewIdent("logger"),
+									},
+									&ast.KeyValueExpr{
+										Key:   ast.NewIdent("uuid"),
+										Value: ast.NewIdent("uuid"),
 									},
 								},
 							},
@@ -285,7 +303,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 	params := []ast.Expr{
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("ID"),
-			Value: ast.NewIdent(`""`),
+			Value: ast.NewIdent(`u.uuid.NewUUID()`),
 		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("UpdatedAt"),

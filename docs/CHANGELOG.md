@@ -2,8 +2,17 @@
 ## [Unreleased]
 
 
-<a name="v0.5.0"></a>
-## [v0.5.0] - 2024-03-08
+<a name="0.4.8"></a>
+## [0.4.8] - 2024-06-18
+### Feat
+- add uuid generator
+- fix tests
+- fix imports
+- update errors
+
+
+<a name="vv0.5.0"></a>
+## [vv0.5.0] - 2024-03-08
 ### Feat
 - rename package
 - move interfaces to internal pkg
@@ -332,8 +341,9 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.5.0...HEAD
-[v0.5.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.7...v0.5.0
+[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/0.4.8...HEAD
+[0.4.8]: https://github.com/mikalai-mitsin/creathor/compare/vv0.5.0...0.4.8
+[vv0.5.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.7...vv0.5.0
 [v0.4.7]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.6...v0.4.7
 [v0.4.6]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.5...v0.4.6
 [v0.4.5]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.4...v0.4.5

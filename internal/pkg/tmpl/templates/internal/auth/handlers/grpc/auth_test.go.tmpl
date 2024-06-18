@@ -10,7 +10,7 @@ import (
     mock_grpc "{{ .Module }}/internal/app/auth/handlers/grpc/mock"
 
     {{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
-    "github.com/golang/mock/gomock"
+    "go.uber.org/mock/gomock"
     "reflect"
     "testing"
 )
@@ -63,7 +63,7 @@ func TestAuthServiceServer_CreateToken(t *testing.T) {
             setup: func() {
                 authInterceptor.EXPECT().
                     CreateToken(ctx, login).
-                    Return(nil, errs.NewBadToken()).
+                    Return(nil, errs.NewBadTokenError()).
                     Times(1)
             },
             fields: fields{
@@ -78,7 +78,7 @@ func TestAuthServiceServer_CreateToken(t *testing.T) {
                 },
             },
             want:    nil,
-            wantErr: grpc.DecodeError(errs.NewBadToken()),
+            wantErr: grpc.DecodeError(errs.NewBadTokenError()),
         },
     }
     for _, tt := range tests {
@@ -147,7 +147,7 @@ func TestAuthServiceServer_RefreshToken(t *testing.T) {
             setup: func() {
                 authInterceptor.EXPECT().
                     RefreshToken(ctx, token).
-                    Return(nil, errs.NewBadToken()).
+                    Return(nil, errs.NewBadTokenError()).
                     Times(1)
             },
             fields: fields{
@@ -161,7 +161,7 @@ func TestAuthServiceServer_RefreshToken(t *testing.T) {
                 },
             },
             want:    nil,
-            wantErr: grpc.DecodeError(errs.NewBadToken()),
+            wantErr: grpc.DecodeError(errs.NewBadTokenError()),
         },
     }
     for _, tt := range tests {

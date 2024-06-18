@@ -15,8 +15,9 @@ import (
     "{{ .Module }}/internal/pkg/clock"
     "{{ .Module }}/internal/pkg/uuid"
     mock_log "{{ .Module }}/internal/pkg/log/mock"
+    mock_uuid "{{ .Module }}/internal/pkg/uuid/mock"
     "{{ .Module }}/internal/pkg/log"
-    "github.com/golang/mock/gomock"
+    "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
 )
 
@@ -24,12 +25,14 @@ func TestNew{{ .Config.UseCaseTypeName }}(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    clockMock := mock_clock.NewMockClock(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    mockClock := mock_clock.NewMockClock(ctrl)
+    mockLogger := mock_log.NewMockLogger(ctrl)
+    mockUUID := mock_uuid.NewMockGenerator(ctrl)
     type args struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
         clock  clock.Clock
         logger log.Logger
+        uuid   uuid.Generator
     }
     tests := []struct {
         name  string
@@ -43,20 +46,22 @@ func TestNew{{ .Config.UseCaseTypeName }}(t *testing.T) {
             },
             args: args{
                 {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                clock:  clockMock,
-                logger: logger,
+                clock:  mockClock,
+                logger: mockLogger,
+                uuid:   mockUUID,
             },
             want: &{{ .Config.UseCaseTypeName }}{
                 {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                clock:  clockMock,
-                logger: logger,
+                clock:  mockClock,
+                logger: mockLogger,
+                uuid:   mockUUID,
             },
         },
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
-            if got := New{{ .Config.UseCaseTypeName }}(tt.args.{{ .Config.RepositoryVariableName }}, tt.args.clock, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+            if got := New{{ .Config.UseCaseTypeName }}(tt.args.{{ .Config.RepositoryVariableName }}, tt.args.clock, tt.args.logger, tt.args.uuid); !reflect.DeepEqual(got, tt.want) {
                 t.Errorf("New{{ .Config.UseCaseTypeName }}() = %v, want %v", got, tt.want)
             }
         })
@@ -105,7 +110,7 @@ func Test{{ .Config.UseCaseTypeName }}_Get(t *testing.T) {
         {
             name: "{{ .Config.ModelName }} not found",
             setup: func() {
-                {{ .Config.RepositoryVariableName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return(nil, errs.NewEntityNotFound())
+                {{ .Config.RepositoryVariableName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return(nil, errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
@@ -116,7 +121,7 @@ func Test{{ .Config.UseCaseTypeName }}_Get(t *testing.T) {
                 id:  {{ .Config.Variable }}.ID,
             },
             want:    nil,
-            wantErr: errs.NewEntityNotFound(),
+            wantErr: errs.NewEntityNotFoundError(),
         },
     }
     for _, tt := range tests {
@@ -247,8 +252,9 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
-    clockMock := mock_clock.NewMockClock(ctrl)
+    mockClock := mock_clock.NewMockClock(ctrl)
+    mockLogger := mock_log.NewMockLogger(ctrl)
+    mockUUID := mock_uuid.NewMockGenerator(ctrl)
     ctx := context.Background()
     create := mock_models.New{{ .Config.CreateTypeName }}(t)
     now := time.Now().UTC()
@@ -256,6 +262,7 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
         clock            clock.Clock
         logger           log.Logger
+        uuid             uuid.Generator
     }
     type args struct {
         ctx    context.Context
@@ -272,11 +279,13 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                clockMock.EXPECT().Now().Return(now)
+                mockClock.EXPECT().Now().Return(now)
+                mockUUID.EXPECT().NewUUID().Return(uuid.UUID("test"))
                 {{ .Config.RepositoryVariableName }}.EXPECT().
                     Create(
                         ctx,
                         &models.{{ .Config.ModelName }}{
+                            ID: uuid.UUID("test"),
 {{- range $key, $value := .Config.Params }}
                             {{ $value.GetName }}: create.{{ $value.GetName }},
 {{- end }}
@@ -288,15 +297,16 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                clock:            clockMock,
-                logger:           logger,
+                clock:            mockClock,
+                logger:           mockLogger,
+                uuid: mockUUID,
             },
             args: args{
                 ctx: ctx,
                 create: create,
             },
             want: &models.{{ .Config.ModelName }}{
-                ID: "",
+                ID: uuid.UUID("test"),
 {{- range $key, $value := .Config.Params }}
                 {{ $value.GetName }}: create.{{ $value.GetName }},
 {{- end }}
@@ -308,12 +318,13 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
         {
             name: "unexpected behavior",
             setup: func() {
-                clockMock.EXPECT().Now().Return(now)
+                mockClock.EXPECT().Now().Return(now)
+                mockUUID.EXPECT().NewUUID().Return(uuid.UUID("test 2"))
                 {{ .Config.RepositoryVariableName }}.EXPECT().
                     Create(
                         ctx,
                         &models.{{ .Config.ModelName }}{
-                            ID: "",
+                            ID: uuid.UUID("test 2"),
 {{- range $key, $value := .Config.Params }}
                             {{ $value.GetName }}: create.{{ $value.GetName }},
 {{- end }}
@@ -325,8 +336,9 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                clock:            clockMock,
-                logger:           logger,
+                clock:            mockClock,
+                logger:           mockLogger,
+                uuid:             mockUUID,
             },
             args: args{
                 ctx: ctx,
@@ -341,18 +353,20 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                logger:           logger,
+                logger:           mockLogger,
+                clock:            mockClock,
+                uuid:             mockUUID,
             },
             args: args{
                 ctx: ctx,
                 create: &models.{{ .Config.CreateTypeName }}{},
             },
             want: nil,
-            wantErr: errs.NewInvalidFormError().WithParams(map[string]string{
+            wantErr: errs.NewInvalidFormError().WithParams(
 {{- range $key, $value := .Config.Params }}
-                "{{ $value.Tag }}": "cannot be blank",
+                errs.Param{Key: "{{ $value.Tag }}", Value: "cannot be blank"},
 {{- end }}
-            }),
+            ),
         },
     }
     for _, tt := range tests {
@@ -362,6 +376,7 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
                 {{ .Config.RepositoryVariableName }}: tt.fields.{{ .Config.RepositoryVariableName }},
                 clock:            tt.fields.clock,
                 logger:           tt.fields.logger,
+                uuid:             tt.fields.uuid,
             }
             got, err := u.Create(tt.args.ctx, tt.args.create)
             if !errors.Is(err, tt.wantErr) {
@@ -382,7 +397,7 @@ func Test{{ .Config.UseCaseTypeName }}_Update(t *testing.T) {
     logger := mock_log.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
-    clockMock := mock_clock.NewMockClock(ctrl)
+    mockClock := mock_clock.NewMockClock(ctrl)
     update := mock_models.New{{ .Config.UpdateTypeName }}(t)
     now := {{ .Config.Variable }}.UpdatedAt
     type fields struct {
@@ -405,7 +420,7 @@ func Test{{ .Config.UseCaseTypeName }}_Update(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                clockMock.EXPECT().Now().Return(now)
+                mockClock.EXPECT().Now().Return(now)
                 {{ .Config.RepositoryVariableName }}.EXPECT().
                     Get(ctx, update.ID).Return({{ .Config.Variable }}, nil)
                 {{ .Config.RepositoryVariableName }}.EXPECT().
@@ -413,7 +428,7 @@ func Test{{ .Config.UseCaseTypeName }}_Update(t *testing.T) {
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                clock:            clockMock,
+                clock:            mockClock,
                 logger:           logger,
             },
             args: args{
@@ -426,7 +441,7 @@ func Test{{ .Config.UseCaseTypeName }}_Update(t *testing.T) {
         {
             name: "update error",
             setup: func() {
-                clockMock.EXPECT().Now().Return(now)
+                mockClock.EXPECT().Now().Return(now)
                 {{ .Config.RepositoryVariableName }}.EXPECT().
                     Get(ctx, update.ID).
                     Return({{ .Config.Variable }}, nil)
@@ -436,7 +451,7 @@ func Test{{ .Config.UseCaseTypeName }}_Update(t *testing.T) {
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                clock:            clockMock,
+                clock:            mockClock,
                 logger:           logger,
             },
             args: args{
@@ -449,11 +464,11 @@ func Test{{ .Config.UseCaseTypeName }}_Update(t *testing.T) {
         {
             name: "{{ .Config.ModelName }} not found",
             setup: func() {
-                {{ .Config.RepositoryVariableName }}.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFound())
+                {{ .Config.RepositoryVariableName }}.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                clock:            clockMock,
+                clock:            mockClock,
                 logger:           logger,
             },
             args: args{
@@ -461,7 +476,7 @@ func Test{{ .Config.UseCaseTypeName }}_Update(t *testing.T) {
                 update: update,
             },
             want:    nil,
-            wantErr: errs.NewEntityNotFound(),
+            wantErr: errs.NewEntityNotFoundError(),
         },
         {
             name: "invalid",
@@ -469,7 +484,7 @@ func Test{{ .Config.UseCaseTypeName }}_Update(t *testing.T) {
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                clock:            clockMock,
+                clock:            mockClock,
                 logger:           logger,
             },
             args: args{
@@ -546,7 +561,7 @@ func Test{{ .Config.UseCaseTypeName }}_Delete(t *testing.T) {
             setup: func() {
                 {{ .Config.RepositoryVariableName }}.EXPECT().
                     Delete(ctx, {{ .Config.Variable }}.ID).
-                    Return(errs.NewEntityNotFound())
+                    Return(errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
@@ -556,7 +571,7 @@ func Test{{ .Config.UseCaseTypeName }}_Delete(t *testing.T) {
                 ctx: ctx,
                 id:  {{ .Config.Variable }}.ID,
             },
-            wantErr: errs.NewEntityNotFound(),
+            wantErr: errs.NewEntityNotFoundError(),
         },
     }
     for _, tt := range tests {

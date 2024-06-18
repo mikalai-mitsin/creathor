@@ -25,95 +25,95 @@ func NewHandler(domain *domain.Domain) *Handler {
 }
 
 func (h Handler) file() *ast.File {
+	importSpec := []ast.Spec{
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"context"`,
+			},
+		},
+
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: h.domain.ModelsImportPath(),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, h.domain.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Name: &ast.Ident{
+				Name: h.domain.ProtoModule,
+			},
+			Path: &ast.BasicLit{
+				Kind: token.STRING,
+				Value: fmt.Sprintf(
+					`"%s/pkg/%s/v1"`,
+					h.domain.Module,
+					h.domain.ProtoModule,
+				),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/pkg/pointer"`, h.domain.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/pkg/log"`, h.domain.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, h.domain.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"google.golang.org/protobuf/types/known/emptypb"`,
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"google.golang.org/protobuf/types/known/timestamppb"`,
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"google.golang.org/protobuf/types/known/wrapperspb"`,
+			},
+		},
+	}
+	for _, param := range h.domain.GetUpdateModel().Params {
+		if param.IsSlice() {
+			importSpec = append(importSpec, &ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: `"google.golang.org/protobuf/types/known/structpb"`,
+				},
+			})
+			break
+		}
+	}
 	return &ast.File{
 		Name: &ast.Ident{
 			Name: "grpc",
 		},
 		Decls: []ast.Decl{
 			&ast.GenDecl{
-				Tok: token.IMPORT,
-				Specs: []ast.Spec{
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"context"`,
-						},
-					},
-
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: h.domain.ModelsImportPath(),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, h.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Name: &ast.Ident{
-							Name: h.domain.ProtoModule,
-						},
-						Path: &ast.BasicLit{
-							Kind: token.STRING,
-							Value: fmt.Sprintf(
-								`"%s/pkg/%s/v1"`,
-								h.domain.Module,
-								h.domain.ProtoModule,
-							),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, h.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/pointer"`, h.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, h.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, h.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"google.golang.org/protobuf/types/known/emptypb"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"google.golang.org/protobuf/types/known/structpb"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"google.golang.org/protobuf/types/known/timestamppb"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"google.golang.org/protobuf/types/known/wrapperspb"`,
-						},
-					},
-				},
+				Tok:   token.IMPORT,
+				Specs: importSpec,
 			},
 		},
 	}

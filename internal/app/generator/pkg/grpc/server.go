@@ -1056,7 +1056,7 @@ func (s Server) astMessageProducer() *ast.FuncDecl {
 									Args: []ast.Expr{
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: `"grpc.code"`,
+											Value: "\"grpc.code\"",
 										},
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
@@ -1085,7 +1085,7 @@ func (s Server) astMessageProducer() *ast.FuncDecl {
 									Args: []ast.Expr{
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: `"request_id"`,
+											Value: "\"request_id\"",
 										},
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
@@ -1266,31 +1266,61 @@ func (s Server) astMessageProducer() *ast.FuncDecl {
 															List: []ast.Stmt{
 																&ast.AssignStmt{
 																	Lhs: []ast.Expr{
-																		&ast.IndexExpr{
-																			X: &ast.Ident{
-																				Name: "errParams",
-																			},
-																			Index: &ast.CallExpr{
-																				Fun: &ast.SelectorExpr{
-																					X: &ast.Ident{
-																						Name: "violation",
-																					},
-																					Sel: &ast.Ident{
-																						Name: "GetField",
-																					},
-																				},
-																			},
+																		&ast.Ident{
+																			Name: "errParams",
 																		},
 																	},
 																	Tok: token.ASSIGN,
 																	Rhs: []ast.Expr{
 																		&ast.CallExpr{
-																			Fun: &ast.SelectorExpr{
-																				X: &ast.Ident{
-																					Name: "violation",
+																			Fun: &ast.Ident{
+																				Name: "append",
+																			},
+																			Args: []ast.Expr{
+																				&ast.Ident{
+																					Name: "errParams",
 																				},
-																				Sel: &ast.Ident{
-																					Name: "GetDescription",
+																				&ast.CompositeLit{
+																					Type: &ast.SelectorExpr{
+																						X: &ast.Ident{
+																							Name: "errs",
+																						},
+																						Sel: &ast.Ident{
+																							Name: "Param",
+																						},
+																					},
+																					Elts: []ast.Expr{
+																						&ast.KeyValueExpr{
+																							Key: &ast.Ident{
+																								Name: "Key",
+																							},
+																							Value: &ast.CallExpr{
+																								Fun: &ast.SelectorExpr{
+																									X: &ast.Ident{
+																										Name: "violation",
+																									},
+																									Sel: &ast.Ident{
+																										Name: "GetField",
+																									},
+																								},
+																							},
+																						},
+																						&ast.KeyValueExpr{
+																							Key: &ast.Ident{
+																								Name: "Value",
+																							},
+																							Value: &ast.CallExpr{
+																								Fun: &ast.SelectorExpr{
+																									X: &ast.Ident{
+																										Name: "violation",
+																									},
+																									Sel: &ast.Ident{
+																										Name: "GetDescription",
+																									},
+																								},
+																							},
+																						},
+																					},
 																				},
 																			},
 																		},
@@ -1358,19 +1388,49 @@ func (s Server) astMessageProducer() *ast.FuncDecl {
 															List: []ast.Stmt{
 																&ast.AssignStmt{
 																	Lhs: []ast.Expr{
-																		&ast.IndexExpr{
-																			X: &ast.Ident{
-																				Name: "errParams",
-																			},
-																			Index: &ast.Ident{
-																				Name: "key",
-																			},
+																		&ast.Ident{
+																			Name: "errParams",
 																		},
 																	},
 																	Tok: token.ASSIGN,
 																	Rhs: []ast.Expr{
-																		&ast.Ident{
-																			Name: "value",
+																		&ast.CallExpr{
+																			Fun: &ast.Ident{
+																				Name: "append",
+																			},
+																			Args: []ast.Expr{
+																				&ast.Ident{
+																					Name: "errParams",
+																				},
+																				&ast.CompositeLit{
+																					Type: &ast.SelectorExpr{
+																						X: &ast.Ident{
+																							Name: "errs",
+																						},
+																						Sel: &ast.Ident{
+																							Name: "Param",
+																						},
+																					},
+																					Elts: []ast.Expr{
+																						&ast.KeyValueExpr{
+																							Key: &ast.Ident{
+																								Name: "Key",
+																							},
+																							Value: &ast.Ident{
+																								Name: "key",
+																							},
+																						},
+																						&ast.KeyValueExpr{
+																							Key: &ast.Ident{
+																								Name: "Value",
+																							},
+																							Value: &ast.Ident{
+																								Name: "value",
+																							},
+																						},
+																					},
+																				},
+																			},
 																		},
 																	},
 																},
@@ -1408,7 +1468,7 @@ func (s Server) astMessageProducer() *ast.FuncDecl {
 															Args: []ast.Expr{
 																&ast.BasicLit{
 																	Kind:  token.STRING,
-																	Value: `"params"`,
+																	Value: "\"params\"",
 																},
 																&ast.Ident{
 																	Name: "errParams",
@@ -1455,7 +1515,7 @@ func (s Server) astMessageProducer() *ast.FuncDecl {
 								Name: "params",
 							},
 						},
-						Ellipsis: 2996,
+						Ellipsis: 3692,
 					},
 				},
 			},
@@ -1698,10 +1758,10 @@ func (s Server) astDecodeError() *ast.FuncDecl {
 												},
 												&ast.RangeStmt{
 													Key: &ast.Ident{
-														Name: "key",
+														Name: "_",
 													},
 													Value: &ast.Ident{
-														Name: "value",
+														Name: "param",
 													},
 													Tok: token.DEFINE,
 													X: &ast.SelectorExpr{
@@ -1756,16 +1816,26 @@ func (s Server) astDecodeError() *ast.FuncDecl {
 																							Key: &ast.Ident{
 																								Name: "Field",
 																							},
-																							Value: &ast.Ident{
-																								Name: "key",
+																							Value: &ast.SelectorExpr{
+																								X: &ast.Ident{
+																									Name: "param",
+																								},
+																								Sel: &ast.Ident{
+																									Name: "Key",
+																								},
 																							},
 																						},
 																						&ast.KeyValueExpr{
 																							Key: &ast.Ident{
 																								Name: "Description",
 																							},
-																							Value: &ast.Ident{
-																								Name: "value",
+																							Value: &ast.SelectorExpr{
+																								X: &ast.Ident{
+																									Name: "param",
+																								},
+																								Sel: &ast.Ident{
+																									Name: "Value",
+																								},
 																							},
 																						},
 																					},
@@ -1898,20 +1968,81 @@ func (s Server) astDecodeError() *ast.FuncDecl {
 																		},
 																		Value: &ast.BasicLit{
 																			Kind:  token.STRING,
-																			Value: `""`,
+																			Value: "\"\"",
 																		},
 																	},
 																	&ast.KeyValueExpr{
 																		Key: &ast.Ident{
 																			Name: "Metadata",
 																		},
-																		Value: &ast.SelectorExpr{
+																		Value: &ast.CallExpr{
+																			Fun: &ast.Ident{
+																				Name: "make",
+																			},
+																			Args: []ast.Expr{
+																				&ast.MapType{
+																					Key: &ast.Ident{
+																						Name: "string",
+																					},
+																					Value: &ast.Ident{
+																						Name: "string",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												&ast.RangeStmt{
+													Key: &ast.Ident{
+														Name: "_",
+													},
+													Value: &ast.Ident{
+														Name: "param",
+													},
+													Tok: token.DEFINE,
+													X: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "domainError",
+														},
+														Sel: &ast.Ident{
+															Name: "Params",
+														},
+													},
+													Body: &ast.BlockStmt{
+														List: []ast.Stmt{
+															&ast.AssignStmt{
+																Lhs: []ast.Expr{
+																	&ast.IndexExpr{
+																		X: &ast.SelectorExpr{
 																			X: &ast.Ident{
-																				Name: "domainError",
+																				Name: "d",
 																			},
 																			Sel: &ast.Ident{
-																				Name: "Params",
+																				Name: "Metadata",
 																			},
+																		},
+																		Index: &ast.SelectorExpr{
+																			X: &ast.Ident{
+																				Name: "param",
+																			},
+																			Sel: &ast.Ident{
+																				Name: "Key",
+																			},
+																		},
+																	},
+																},
+																Tok: token.ASSIGN,
+																Rhs: []ast.Expr{
+																	&ast.SelectorExpr{
+																		X: &ast.Ident{
+																			Name: "param",
+																		},
+																		Sel: &ast.Ident{
+																			Name: "Value",
 																		},
 																	},
 																},
@@ -2132,7 +2263,7 @@ func (s Server) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, s.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, s.project.Module),
 						},
 					},
 					&ast.ImportSpec{

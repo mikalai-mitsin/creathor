@@ -299,7 +299,7 @@ func (m ModelAuth) file() *ast.File {
 														Name: "errs",
 													},
 													Sel: &ast.Ident{
-														Name: "FromValidationError",
+														Name: "NewFromValidationError",
 													},
 												},
 												Args: []ast.Expr{
@@ -500,7 +500,7 @@ func (m ModelAuth) file() *ast.File {
 														Name: "errs",
 													},
 													Sel: &ast.Ident{
-														Name: "FromValidationError",
+														Name: "NewFromValidationError",
 													},
 												},
 												Args: []ast.Expr{

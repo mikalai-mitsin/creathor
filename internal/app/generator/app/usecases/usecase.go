@@ -100,12 +100,6 @@ func (u UseCaseCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, u.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
 							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, u.domain.Module),
 						},
 					},
@@ -143,6 +137,13 @@ func (u UseCaseCrud) structure() *ast.TypeSpec {
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("log"),
 							Sel: ast.NewIdent("Logger"),
+						},
+					},
+					{
+						Names: []*ast.Ident{ast.NewIdent("uuid")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("uuid"),
+							Sel: ast.NewIdent("Generator"),
 						},
 					},
 				},
@@ -212,6 +213,13 @@ func (u UseCaseCrud) constructor() *ast.FuncDecl {
 							Sel: ast.NewIdent("Logger"),
 						},
 					},
+					{
+						Names: []*ast.Ident{ast.NewIdent("uuid")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("uuid"),
+							Sel: ast.NewIdent("Generator"),
+						},
+					},
 				},
 			},
 			Results: &ast.FieldList{
@@ -242,6 +250,10 @@ func (u UseCaseCrud) constructor() *ast.FuncDecl {
 									&ast.KeyValueExpr{
 										Key:   ast.NewIdent("logger"),
 										Value: ast.NewIdent("logger"),
+									},
+									&ast.KeyValueExpr{
+										Key:   ast.NewIdent("uuid"),
+										Value: ast.NewIdent("uuid"),
 									},
 								},
 							},
@@ -291,7 +303,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 	params := []ast.Expr{
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("ID"),
-			Value: ast.NewIdent(`""`),
+			Value: ast.NewIdent(`u.uuid.NewUUID()`),
 		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("UpdatedAt"),

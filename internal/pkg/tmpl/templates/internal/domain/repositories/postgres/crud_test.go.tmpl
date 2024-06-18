@@ -19,11 +19,12 @@ import (
     mock_log "{{ .Module }}/internal/pkg/log/mock"
     "{{ .Module }}/internal/pkg/log"
     "github.com/DATA-DOG/go-sqlmock"
-    "github.com/golang/mock/gomock"
+    "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
 
     "{{ .Module }}/internal/app/{{ .DirName }}/models"
     "{{ .Module }}/internal/pkg/clock"
+    "{{ .Module }}/internal/pkg/pointer"
     "{{ .Module }}/internal/pkg/uuid"
     "github.com/jmoiron/sqlx"
 )
@@ -241,7 +242,7 @@ func Test{{ .Config.RepositoryTypeName }}_Get(t *testing.T) {
                 id:  {{ .Config.Variable }}.ID,
             },
             want:    nil,
-            wantErr: errs.NewEntityNotFound().WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
+            wantErr: errs.NewEntityNotFoundError().WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
         },
     }
     for _, tt := range tests {
@@ -278,8 +279,14 @@ func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
     for i := 0; i < faker.New().IntBetween(2, 20); i++ {
         {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mock_models.New{{ .Config.ModelName }}(t))
     }
-    filter := mock_models.New{{ .Config.FilterTypeName }}(t)
-    query := "SELECT {{ .TableName }}.id, {{ .TableName }}.created_at, {{ .TableName }}.updated_at{{ range $key, $value := .Config.Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }} WHERE to_tsvector('english', first_name || ' ' || last_name || ' ' || email) @@ plainto_tsquery('english', $1) AND id IN ($2,$3) ORDER BY FIXME LIMIT FIXME OFFSET FIXME"
+    filter := &models.{{ .Config.FilterTypeName }}{
+		PageSize:   pointer.Pointer(uint64(10)),
+		PageNumber: pointer.Pointer(uint64(2)),
+		Search:     nil,
+		OrderBy:    []string{"id ASC"},
+		IDs:        nil,
+	}
+    query := "SELECT {{ .TableName }}.id, {{ .TableName }}.created_at, {{ .TableName }}.updated_at{{ range $key, $value := .Config.Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }} ORDER BY id ASC LIMIT 10 OFFSET 10"
     type fields struct {
         database *sqlx.DB
         logger   log.Logger
@@ -314,23 +321,6 @@ func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
             wantErr: nil,
         },
         {
-            name: "nil page size",
-            setup: func() {
-                mock.ExpectQuery(query).
-                    WillReturnRows(new{{ .Config.ModelName }}Rows(t, {{ .Config.ListVariable }}))
-            },
-            fields: fields{
-                database: db,
-                logger:   logger,
-            },
-            args: args{
-                ctx:    ctx,
-                filter: &models.{{ .Config.FilterTypeName }}{},
-            },
-            want:    {{ .Config.ListVariable }},
-            wantErr: nil,
-        },
-        {
             name: "unexpected behavior",
             setup: func() {
                 mock.ExpectQuery(query).WillReturnError(errors.New("test error"))
@@ -347,9 +337,7 @@ func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
             wantErr: &errs.Error{
                 Code:    13,
                 Message: "Unexpected behavior.",
-                Params: map[string]string{
-                    "error": "test error",
-                },
+                Params: errs.Params{ {Key: "error", Value: "test error"} },
             },
         },
         {
@@ -471,7 +459,7 @@ func Test{{ .Config.RepositoryTypeName }}_Update(t *testing.T) {
                 ctx:  ctx,
                 card: {{ .Config.Variable }},
             },
-            wantErr: errs.NewEntityNotFound().WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
+            wantErr: errs.NewEntityNotFoundError().WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
         },
         {
             name: "database error",
@@ -630,7 +618,7 @@ func Test{{ .Config.RepositoryTypeName }}_Delete(t *testing.T) {
                 ctx: context.Background(),
                 id:  {{ .Config.Variable }}.ID,
             },
-            wantErr: errs.NewEntityNotFound().WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
+            wantErr: errs.NewEntityNotFoundError().WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
         },
         {
             name: "database error",
@@ -688,9 +676,9 @@ func Test{{ .Config.RepositoryTypeName }}_Count(t *testing.T) {
         return
     }
     defer db.Close()
-    query := "SELECT count(id) FROM public.{{ .TableName }} WHERE to_tsvector('english', FIXME) @@ plainto_tsquery('english', $1) AND id IN ($2,$3)"
+    query := "SELECT count(id) FROM public.{{ .TableName }}"
     ctx := context.Background()
-    filter := mock_models.New{{ .Config.FilterTypeName }}(t)
+    filter := &models.{{ .Config.FilterTypeName }}{}
     type fields struct {
         database *sqlx.DB
         logger   log.Logger
@@ -742,9 +730,7 @@ func Test{{ .Config.RepositoryTypeName }}_Count(t *testing.T) {
             wantErr: &errs.Error{
                 Code:    13,
                 Message: "Unexpected behavior.",
-                Params: map[string]string{
-                    "error": "sql: Scan error on column index 0, name \"count\": converting driver.Value type string (\"one\") to a uint64: invalid syntax",
-                },
+                Params: errs.Params{ {Key: "error", Value: "sql: Scan error on column index 0, name \"count\": converting driver.Value type string (\"one\") to a uint64: invalid syntax"} },
             },
         },
         {

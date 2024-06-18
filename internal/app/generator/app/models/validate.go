@@ -210,7 +210,7 @@ func (m *Validate) method() *ast.FuncDecl {
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
 											X:   ast.NewIdent("errs"),
-											Sel: ast.NewIdent("FromValidationError"),
+											Sel: ast.NewIdent("NewFromValidationError"),
 										},
 										Args: []ast.Expr{
 											ast.NewIdent("err"),

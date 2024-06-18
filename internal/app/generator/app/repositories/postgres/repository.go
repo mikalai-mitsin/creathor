@@ -4257,7 +4257,7 @@ func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
 														Name: "errs",
 													},
 													Sel: &ast.Ident{
-														Name: "NewEntityNotFound",
+														Name: "NewEntityNotFoundError",
 													},
 												},
 											},
@@ -4882,7 +4882,7 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 														Name: "errs",
 													},
 													Sel: &ast.Ident{
-														Name: "NewEntityNotFound",
+														Name: "NewEntityNotFoundError",
 													},
 												},
 											},

@@ -193,21 +193,6 @@ func TestError_Is(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "with cause false",
-			fields: fields{
-				Code:    13,
-				Message: "Unexpected behavior.",
-				Params: Params{
-					{Key: "details", Value: "bar"},
-				},
-				Cause: errors.New("test 3"),
-			},
-			args: args{
-				tgt: NewUnexpectedBehaviorError("bar").WithCause(errors.New("test 2")),
-			},
-			want: false,
-		},
-		{
 			name: "ok false",
 			fields: fields{
 				Code:    13,

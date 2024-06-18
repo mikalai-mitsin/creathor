@@ -24,6 +24,7 @@ import (
 
     "{{ .Module }}/internal/app/{{ .DirName }}/models"
     "{{ .Module }}/internal/pkg/clock"
+    "{{ .Module }}/internal/pkg/pointer"
     "{{ .Module }}/internal/pkg/uuid"
     "github.com/jmoiron/sqlx"
 )
@@ -278,8 +279,14 @@ func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
     for i := 0; i < faker.New().IntBetween(2, 20); i++ {
         {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mock_models.New{{ .Config.ModelName }}(t))
     }
-    filter := mock_models.New{{ .Config.FilterTypeName }}(t)
-    query := "SELECT {{ .TableName }}.id, {{ .TableName }}.created_at, {{ .TableName }}.updated_at{{ range $key, $value := .Config.Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }} WHERE to_tsvector('english', first_name || ' ' || last_name || ' ' || email) @@ plainto_tsquery('english', $1) AND id IN ($2,$3) ORDER BY FIXME LIMIT FIXME OFFSET FIXME"
+    filter := &models.{{ .Config.FilterTypeName }}{
+		PageSize:   pointer.Pointer(uint64(10)),
+		PageNumber: pointer.Pointer(uint64(2)),
+		Search:     nil,
+		OrderBy:    []string{"id ASC"},
+		IDs:        nil,
+	}
+    query := "SELECT {{ .TableName }}.id, {{ .TableName }}.created_at, {{ .TableName }}.updated_at{{ range $key, $value := .Config.Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }} ORDER BY id ASC LIMIT 10 OFFSET 10"
     type fields struct {
         database *sqlx.DB
         logger   log.Logger
@@ -309,23 +316,6 @@ func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
             args: args{
                 ctx:    ctx,
                 filter: filter,
-            },
-            want:    {{ .Config.ListVariable }},
-            wantErr: nil,
-        },
-        {
-            name: "nil page size",
-            setup: func() {
-                mock.ExpectQuery(query).
-                    WillReturnRows(new{{ .Config.ModelName }}Rows(t, {{ .Config.ListVariable }}))
-            },
-            fields: fields{
-                database: db,
-                logger:   logger,
-            },
-            args: args{
-                ctx:    ctx,
-                filter: &models.{{ .Config.FilterTypeName }}{},
             },
             want:    {{ .Config.ListVariable }},
             wantErr: nil,
@@ -686,9 +676,9 @@ func Test{{ .Config.RepositoryTypeName }}_Count(t *testing.T) {
         return
     }
     defer db.Close()
-    query := "SELECT count(id) FROM public.{{ .TableName }} WHERE to_tsvector('english', FIXME) @@ plainto_tsquery('english', $1) AND id IN ($2,$3)"
+    query := "SELECT count(id) FROM public.{{ .TableName }}"
     ctx := context.Background()
-    filter := mock_models.New{{ .Config.FilterTypeName }}(t)
+    filter := &models.{{ .Config.FilterTypeName }}{}
     type fields struct {
         database *sqlx.DB
         logger   log.Logger

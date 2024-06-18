@@ -1679,12 +1679,6 @@ func (i InterceptorCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, i.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
 							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, i.domain.Module),
 						},
 					},

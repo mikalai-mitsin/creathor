@@ -2263,7 +2263,7 @@ func (s Server) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, s.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, s.project.Module),
 						},
 					},
 					&ast.ImportSpec{

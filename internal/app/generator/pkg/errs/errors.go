@@ -1739,83 +1739,185 @@ func (i Errors) file() *ast.File {
 								},
 							},
 						},
-						&ast.AssignStmt{
-							Lhs: []ast.Expr{
-								&ast.SelectorExpr{
+						&ast.IfStmt{
+							Cond: &ast.BinaryExpr{
+								X: &ast.SelectorExpr{
 									X: &ast.Ident{
 										Name: "target",
 									},
 									Sel: &ast.Ident{
-										Name: "Err",
+										Name: "Code",
 									},
 								},
-							},
-							Tok: token.ASSIGN,
-							Rhs: []ast.Expr{
-								&ast.Ident{
-									Name: "nil",
-								},
-							},
-						},
-						&ast.AssignStmt{
-							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "err",
-								},
-							},
-							Tok: token.DEFINE,
-							Rhs: []ast.Expr{
-								&ast.StarExpr{
+								Op: token.NEQ,
+								Y: &ast.SelectorExpr{
 									X: &ast.Ident{
 										Name: "e",
 									},
-								},
-							},
-						},
-						&ast.AssignStmt{
-							Lhs: []ast.Expr{
-								&ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "err",
-									},
 									Sel: &ast.Ident{
-										Name: "Err",
+										Name: "Code",
 									},
 								},
 							},
-							Tok: token.ASSIGN,
-							Rhs: []ast.Expr{
-								&ast.Ident{
-									Name: "nil",
-								},
-							},
-						},
-						&ast.AssignStmt{
-							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "eq",
-								},
-							},
-							Tok: token.DEFINE,
-							Rhs: []ast.Expr{
-								&ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "reflect",
-										},
-										Sel: &ast.Ident{
-											Name: "DeepEqual",
-										},
-									},
-									Args: []ast.Expr{
-										&ast.UnaryExpr{
-											Op: token.AND,
-											X: &ast.Ident{
-												Name: "err",
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.ReturnStmt{
+										Results: []ast.Expr{
+											&ast.Ident{
+												Name: "false",
 											},
 										},
-										&ast.Ident{
-											Name: "target",
+									},
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.BinaryExpr{
+								X: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "target",
+									},
+									Sel: &ast.Ident{
+										Name: "Message",
+									},
+								},
+								Op: token.NEQ,
+								Y: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "e",
+									},
+									Sel: &ast.Ident{
+										Name: "Message",
+									},
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.ReturnStmt{
+										Results: []ast.Expr{
+											&ast.Ident{
+												Name: "false",
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.RangeStmt{
+							Key: &ast.Ident{
+								Name: "_",
+							},
+							Value: &ast.Ident{
+								Name: "param",
+							},
+							Tok: token.DEFINE,
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "target",
+								},
+								Sel: &ast.Ident{
+									Name: "Params",
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.IfStmt{
+										Cond: &ast.UnaryExpr{
+											Op: token.NOT,
+											X: &ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "slices",
+													},
+													Sel: &ast.Ident{
+														Name: "Contains",
+													},
+												},
+												Args: []ast.Expr{
+													&ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "e",
+														},
+														Sel: &ast.Ident{
+															Name: "Params",
+														},
+													},
+													&ast.Ident{
+														Name: "param",
+													},
+												},
+											},
+										},
+										Body: &ast.BlockStmt{
+											List: []ast.Stmt{
+												&ast.ReturnStmt{
+													Results: []ast.Expr{
+														&ast.Ident{
+															Name: "false",
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.RangeStmt{
+							Key: &ast.Ident{
+								Name: "_",
+							},
+							Value: &ast.Ident{
+								Name: "param",
+							},
+							Tok: token.DEFINE,
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "e",
+								},
+								Sel: &ast.Ident{
+									Name: "Params",
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.IfStmt{
+										Cond: &ast.UnaryExpr{
+											Op: token.NOT,
+											X: &ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "slices",
+													},
+													Sel: &ast.Ident{
+														Name: "Contains",
+													},
+												},
+												Args: []ast.Expr{
+													&ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "target",
+														},
+														Sel: &ast.Ident{
+															Name: "Params",
+														},
+													},
+													&ast.Ident{
+														Name: "param",
+													},
+												},
+											},
+										},
+										Body: &ast.BlockStmt{
+											List: []ast.Stmt{
+												&ast.ReturnStmt{
+													Results: []ast.Expr{
+														&ast.Ident{
+															Name: "false",
+														},
+													},
+												},
+											},
 										},
 									},
 								},
@@ -1824,7 +1926,7 @@ func (i Errors) file() *ast.File {
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
 								&ast.Ident{
-									Name: "eq",
+									Name: "true",
 								},
 							},
 						},

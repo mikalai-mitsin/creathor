@@ -1940,14 +1940,7 @@ func (h Handler) structure() *ast.TypeSpec {
 								Name: "logger",
 							},
 						},
-						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "log",
-							},
-							Sel: &ast.Ident{
-								Name: "Logger",
-							},
-						},
+						Type: ast.NewIdent("Logger"),
 					},
 				},
 			},
@@ -2014,14 +2007,7 @@ func (h Handler) constructor() *ast.FuncDecl {
 								Name: "logger",
 							},
 						},
-						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "log",
-							},
-							Sel: &ast.Ident{
-								Name: "Logger",
-							},
-						},
+						Type: ast.NewIdent("Logger"),
 					},
 				},
 			},

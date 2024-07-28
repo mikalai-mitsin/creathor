@@ -39,7 +39,7 @@ func (g *Generator) Sync() error {
 
 		grpc.NewHandler(g.domain),
 		grpc.NewProto(g.domain),
-		grpc.NewInterceptorInterfaceCrud(g.domain),
+		grpc.NewHandlerInterfaces(g.domain),
 	}
 	for _, model := range g.domain.Models {
 		domainGenerators = append(domainGenerators, models.NewModel(model, g.domain))

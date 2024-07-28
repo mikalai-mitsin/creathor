@@ -32,7 +32,7 @@ func TestNew{{ .Config.GRPCHandlerTypeName }}(t *testing.T) {
     logger := mock_log.NewMockLogger(ctrl)
     type args struct {
         {{ .Config.InterceptorVariableName }} {{ .Config.InterceptorTypeName }}
-        logger             log.Logger
+        logger             Logger
     }
     tests := []struct {
         name string
@@ -71,7 +71,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Create(t *testing.T) {
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
         {{ .Config.InterceptorVariableName }} {{ .Config.InterceptorTypeName }}
-        logger log.Logger
+        logger Logger
     }
     type args struct {
         ctx   context.Context
@@ -157,7 +157,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Delete(t *testing.T) {
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
         {{ .Config.InterceptorVariableName }}                {{ .Config.InterceptorTypeName }}
-        logger                            log.Logger
+        logger                            Logger
     }
     type args struct {
         ctx   context.Context
@@ -240,13 +240,13 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Get(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     {{ .Config.InterceptorVariableName }} := mock_grpc.NewMock{{ .Config.InterceptorTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_handlers.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
         {{ .Config.InterceptorVariableName }}                {{ .Config.InterceptorTypeName }}
-        logger                            log.Logger
+        logger                            Logger
     }
     type args struct {
         ctx   context.Context
@@ -347,7 +347,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
         {{ .Config.InterceptorVariableName }}                {{ .Config.InterceptorTypeName }}
-        logger                            log.Logger
+        logger                            Logger
     }
     type args struct {
         ctx   context.Context
@@ -443,7 +443,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Update(t *testing.T) {
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
         {{ .Config.InterceptorVariableName }}                {{ .Config.InterceptorTypeName }}
-        logger                            log.Logger
+        logger                            Logger
     }
     type args struct {
         ctx   context.Context

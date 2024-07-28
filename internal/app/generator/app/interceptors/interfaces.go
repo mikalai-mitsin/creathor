@@ -99,6 +99,12 @@ func (i InterceptorInterfaces) imports() *ast.GenDecl {
 					Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, i.domain.Module),
 				},
 			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/pkg/log"`, i.domain.Module),
+				},
+			},
 		},
 	}
 	if i.domain.Auth {

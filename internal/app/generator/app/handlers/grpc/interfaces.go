@@ -13,46 +13,15 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
-type InterceptorInterfaceCrud struct {
+type HandlerInterfaces struct {
 	domain *domain.Domain
 }
 
-func NewInterceptorInterfaceCrud(domain *domain.Domain) *InterceptorInterfaceCrud {
-	return &InterceptorInterfaceCrud{domain: domain}
+func NewHandlerInterfaces(domain *domain.Domain) *HandlerInterfaces {
+	return &HandlerInterfaces{domain: domain}
 }
 
-func (i InterceptorInterfaceCrud) file() *ast.File {
-	return &ast.File{
-		Name: ast.NewIdent("grpc"),
-		Decls: []ast.Decl{
-			&ast.GenDecl{
-				Tok: token.IMPORT,
-				Specs: []ast.Spec{
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"context"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: i.domain.ModelsImportPath(),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, i.domain.Module),
-						},
-					},
-				},
-			},
-		},
-	}
-}
-
-func (i InterceptorInterfaceCrud) Sync() error {
+func (i HandlerInterfaces) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join(
 		"internal",
@@ -70,41 +39,25 @@ func (i InterceptorInterfaceCrud) Sync() error {
 	if err != nil {
 		file = i.file()
 	}
-	var structureExists bool
-	var structure *ast.TypeSpec
+	var loggerExists bool
+	var interceptorExists bool
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.domain.Interceptor.Name {
-			structure = t
-			structureExists = true
-			return false
+		if t, ok := node.(*ast.TypeSpec); ok {
+			if t.Name.String() == i.domain.Interceptor.Name {
+				interceptorExists = true
+			}
+			if t.Name.String() == "Logger" {
+				loggerExists = true
+			}
+			return true
 		}
 		return true
 	})
-	if structure == nil {
-		structure = i.astInterface()
+	if !interceptorExists {
+		file.Decls = append(file.Decls, i.interceptorInterface())
 	}
-	if !structureExists {
-		gd := &ast.GenDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: fmt.Sprintf(
-							"//%s - domain layer interceptor interface",
-							i.domain.Interceptor.Name,
-						),
-					},
-					{
-						Text: fmt.Sprintf(
-							"//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . %s",
-							i.domain.Interceptor.Name,
-						),
-					},
-				},
-			},
-			Tok:   token.TYPE,
-			Specs: []ast.Spec{structure},
-		}
-		file.Decls = append(file.Decls, gd)
+	if !loggerExists {
+		file.Decls = append(file.Decls, i.loggerInterface())
 	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
@@ -116,7 +69,48 @@ func (i InterceptorInterfaceCrud) Sync() error {
 	return nil
 }
 
-func (i InterceptorInterfaceCrud) astInterface() *ast.TypeSpec {
+func (i HandlerInterfaces) file() *ast.File {
+	return &ast.File{
+		Name: ast.NewIdent("grpc"),
+		Decls: []ast.Decl{
+			i.imports(),
+		},
+	}
+}
+
+func (i HandlerInterfaces) imports() *ast.GenDecl {
+	return &ast.GenDecl{
+		Tok: token.IMPORT,
+		Specs: []ast.Spec{
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: `"context"`,
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: i.domain.ModelsImportPath(),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, i.domain.Module),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/pkg/log"`, i.domain.Module),
+				},
+			},
+		},
+	}
+}
+
+func (i HandlerInterfaces) interceptorInterface() *ast.GenDecl {
 	methods := make([]*ast.Field, len(i.domain.Interceptor.Methods))
 	for i, method := range i.domain.Interceptor.Methods {
 		methods[i] = &ast.Field{
@@ -135,13 +129,257 @@ func (i InterceptorInterfaceCrud) astInterface() *ast.TypeSpec {
 			},
 		}
 	}
-	return &ast.TypeSpec{
-		Name: &ast.Ident{
-			Name: i.domain.Interceptor.Name,
+	return &ast.GenDecl{
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Text: fmt.Sprintf(
+						"//%s - domain layer interceptor interface",
+						i.domain.Interceptor.Name,
+					),
+				},
+				{
+					Text: fmt.Sprintf(
+						"//go:generate mockgen -build_flags=-mod=mod -destination mock/interceptor.go . %s",
+						i.domain.Interceptor.Name,
+					),
+				},
+			},
 		},
-		Type: &ast.InterfaceType{
-			Methods: &ast.FieldList{
-				List: methods,
+		Tok: token.TYPE,
+		Specs: []ast.Spec{
+			&ast.TypeSpec{
+				Name: &ast.Ident{
+					Name: i.domain.Interceptor.Name,
+				},
+				Type: &ast.InterfaceType{
+					Methods: &ast.FieldList{
+						List: methods,
+					},
+				},
+			},
+		},
+	}
+}
+
+func (i HandlerInterfaces) loggerInterface() *ast.GenDecl {
+	return &ast.GenDecl{
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Text: "//Logger - base logger interface",
+				},
+				{
+					Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/logger.go . Logger",
+				},
+			},
+		},
+		Tok: token.TYPE,
+		Specs: []ast.Spec{
+			&ast.TypeSpec{
+				Name: ast.NewIdent("Logger"),
+				Type: &ast.InterfaceType{
+					Methods: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("Debug"),
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("msg"),
+												},
+												Type: ast.NewIdent("string"),
+											},
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("fields"),
+												},
+												Type: &ast.Ellipsis{
+													Elt: &ast.SelectorExpr{
+														X:   ast.NewIdent("log"),
+														Sel: ast.NewIdent("Field"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("Info"),
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("msg"),
+												},
+												Type: ast.NewIdent("string"),
+											},
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("fields"),
+												},
+												Type: &ast.Ellipsis{
+													Elt: &ast.SelectorExpr{
+														X:   ast.NewIdent("log"),
+														Sel: ast.NewIdent("Field"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("Print"),
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("msg"),
+												},
+												Type: ast.NewIdent("string"),
+											},
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("fields"),
+												},
+												Type: &ast.Ellipsis{
+													Elt: &ast.SelectorExpr{
+														X:   ast.NewIdent("log"),
+														Sel: ast.NewIdent("Field"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("Warn"),
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("msg"),
+												},
+												Type: ast.NewIdent("string"),
+											},
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("fields"),
+												},
+												Type: &ast.Ellipsis{
+													Elt: &ast.SelectorExpr{
+														X:   ast.NewIdent("log"),
+														Sel: ast.NewIdent("Field"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("Error"),
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("msg"),
+												},
+												Type: ast.NewIdent("string"),
+											},
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("fields"),
+												},
+												Type: &ast.Ellipsis{
+													Elt: &ast.SelectorExpr{
+														X:   ast.NewIdent("log"),
+														Sel: ast.NewIdent("Field"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("Fatal"),
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("msg"),
+												},
+												Type: ast.NewIdent("string"),
+											},
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("fields"),
+												},
+												Type: &ast.Ellipsis{
+													Elt: &ast.SelectorExpr{
+														X:   ast.NewIdent("log"),
+														Sel: ast.NewIdent("Field"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("Panic"),
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("msg"),
+												},
+												Type: ast.NewIdent("string"),
+											},
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("fields"),
+												},
+												Type: &ast.Ellipsis{
+													Elt: &ast.SelectorExpr{
+														X:   ast.NewIdent("log"),
+														Sel: ast.NewIdent("Field"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	}

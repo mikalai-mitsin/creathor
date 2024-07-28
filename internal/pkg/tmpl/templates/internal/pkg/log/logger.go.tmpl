@@ -120,7 +120,7 @@ func (l Log) Panic(msg string, fields ...Field) {
     l.logger.Panic(msg, zf...)
 }
 
-func NewLog(level string) (Logger, error) {
+func NewLog(level string) (*Log, error) {
     config := zap.NewProductionConfig()
     lvl, err := zap.ParseAtomicLevel(level)
     if err != nil {

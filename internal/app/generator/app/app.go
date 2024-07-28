@@ -35,6 +35,7 @@ func (g *Generator) Sync() error {
 		usecases.NewUseCaseCrud(g.domain),
 		usecases.NewRepositoryInterfaceCrud(g.domain),
 
+		postgres.NewRepositoryInterfaces(g.domain),
 		postgres.NewRepositoryCrud(g.domain),
 
 		grpc.NewHandler(g.domain),

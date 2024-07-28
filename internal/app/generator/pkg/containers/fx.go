@@ -237,7 +237,7 @@ func (f FxContainer) toProvide() []ast.Expr {
 				Name: "clock",
 			},
 			Sel: &ast.Ident{
-				Name: "NewRealClock",
+				Name: "NewClock",
 			},
 		},
 		&ast.SelectorExpr{

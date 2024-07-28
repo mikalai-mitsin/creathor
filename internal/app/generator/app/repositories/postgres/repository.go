@@ -803,12 +803,9 @@ func (r RepositoryCrud) astStruct() *ast.TypeSpec {
 						Comment: nil,
 					},
 					{
-						Doc:   nil,
-						Names: []*ast.Ident{ast.NewIdent("logger")},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("log"),
-							Sel: ast.NewIdent("Logger"),
-						},
+						Doc:     nil,
+						Names:   []*ast.Ident{ast.NewIdent("logger")},
+						Type:    ast.NewIdent("Logger"),
 						Tag:     nil,
 						Comment: nil,
 					},
@@ -976,12 +973,9 @@ func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 						Comment: nil,
 					},
 					{
-						Doc:   nil,
-						Names: []*ast.Ident{ast.NewIdent("logger")},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("log"),
-							Sel: ast.NewIdent("Logger"),
-						},
+						Doc:     nil,
+						Names:   []*ast.Ident{ast.NewIdent("logger")},
+						Type:    ast.NewIdent("Logger"),
 						Tag:     nil,
 						Comment: nil,
 					},

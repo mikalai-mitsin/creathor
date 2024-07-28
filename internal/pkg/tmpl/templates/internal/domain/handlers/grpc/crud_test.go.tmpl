@@ -8,11 +8,9 @@ import (
     "{{ .Module }}/internal/pkg/log"
     mock_grpc "{{ .Module }}/internal/app/{{ .DirName }}/handlers/grpc/mock"
 
-    mock_interceptors "{{ .Module }}/internal/app/{{ .DirName }}/interceptors/mock"
     "{{ .Module }}/internal/app/{{ .DirName }}/models"
     mock_models "{{ .Module }}/internal/app/{{ .DirName }}/models/mock"
     "{{ .Module }}/internal/pkg/clock"
-    mock_log "{{ .Module }}/internal/pkg/log/mock"
     "{{ .Module }}/internal/pkg/pointer"
     "{{ .Module }}/internal/pkg/uuid"
     {{ .Config.ProtoPackage }} "{{ .Module }}/pkg/{{ .Config.ProtoPackage }}/v1"
@@ -29,7 +27,7 @@ func TestNew{{ .Config.GRPCHandlerTypeName }}(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     {{ .Config.InterceptorVariableName }} := mock_grpc.NewMock{{ .Config.InterceptorTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_grpc.NewMockLogger(ctrl)
     type args struct {
         {{ .Config.InterceptorVariableName }} {{ .Config.InterceptorTypeName }}
         logger             Logger
@@ -64,7 +62,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Create(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     {{ .Config.InterceptorVariableName }} := mock_grpc.NewMock{{ .Config.InterceptorTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_grpc.NewMockLogger(ctrl)
     ctx := context.Background()
     // create := mock_models.New{{ .Config.CreateTypeName }}(t)
     {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
@@ -151,7 +149,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Delete(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     {{ .Config.InterceptorVariableName }} := mock_grpc.NewMock{{ .Config.InterceptorTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_grpc.NewMockLogger(ctrl)
     ctx := context.Background()
     id := uuid.NewUUID()
     type fields struct {
@@ -240,7 +238,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Get(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     {{ .Config.InterceptorVariableName }} := mock_grpc.NewMock{{ .Config.InterceptorTypeName }}(ctrl)
-    logger := mock_handlers.NewMockLogger(ctrl)
+    logger := mock_grpc.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
     type fields struct {
@@ -325,7 +323,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     {{ .Config.InterceptorVariableName }} := mock_grpc.NewMock{{ .Config.InterceptorTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_grpc.NewMockLogger(ctrl)
     ctx := context.Background()
     filter := mock_models.New{{ .Config.FilterTypeName }}(t)
     var ids []uuid.UUID
@@ -436,7 +434,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Update(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     {{ .Config.InterceptorVariableName }} := mock_grpc.NewMock{{ .Config.InterceptorTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_grpc.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
     update := mock_models.New{{ .Config.UpdateTypeName }}(t)

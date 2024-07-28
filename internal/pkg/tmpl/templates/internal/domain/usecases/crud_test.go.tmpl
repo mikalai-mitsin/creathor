@@ -259,7 +259,7 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
         clock            clock.Clock
         logger           Logger
-        uuid             uuid.Generator
+        uuid             UUIDGenerator
     }
     type args struct {
         ctx    context.Context

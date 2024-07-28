@@ -30,7 +30,7 @@ func NewGenerator(d *domain.Domain) *Generator {
 func (g *Generator) Sync() error {
 	domainGenerators := []generator.Generator{
 		interceptors.NewInterceptorCrud(g.domain),
-		interceptors.NewUseCaseInterfaceCrud(g.domain),
+		interceptors.NewInterceptorInterfaces(g.domain),
 
 		usecases.NewUseCaseCrud(g.domain),
 		usecases.NewRepositoryInterfaceCrud(g.domain),

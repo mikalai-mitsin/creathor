@@ -11,11 +11,8 @@ import (
     "{{ .Module }}/internal/app/{{ .DirName }}/models"
     mock_models "{{ .Module }}/internal/app/{{ .DirName }}/models/mock"
     mock_usecases "{{ .Module }}/internal/app/{{ .DirName }}/usecases/mock"
-    mock_clock "{{ .Module }}/internal/pkg/clock/mock"
     "{{ .Module }}/internal/pkg/clock"
     "{{ .Module }}/internal/pkg/uuid"
-    mock_log "{{ .Module }}/internal/pkg/log/mock"
-    mock_uuid "{{ .Module }}/internal/pkg/uuid/mock"
     "{{ .Module }}/internal/pkg/log"
     "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
@@ -25,14 +22,14 @@ func TestNew{{ .Config.UseCaseTypeName }}(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    mockClock := mock_clock.NewMockClock(ctrl)
-    mockLogger := mock_log.NewMockLogger(ctrl)
-    mockUUID := mock_uuid.NewMockGenerator(ctrl)
+    mockClock := mock_usecases.NewMockClock(ctrl)
+    mockLogger := mock_usecases.NewMockLogger(ctrl)
+    mockUUID := mock_usecases.NewMockUUIDGenerator(ctrl)
     type args struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
-        clock  clock.Clock
-        logger log.Logger
-        uuid   uuid.Generator
+        clock  Clock
+        logger Logger
+        uuid   UUIDGenerator
     }
     tests := []struct {
         name  string
@@ -72,12 +69,12 @@ func Test{{ .Config.UseCaseTypeName }}_Get(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
-        logger           log.Logger
+        logger           Logger
     }
     type args struct {
         ctx context.Context
@@ -147,7 +144,7 @@ func Test{{ .Config.UseCaseTypeName }}_List(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
     var {{ .Config.ListVariable }} []*models.{{ .Config.ModelName }}
     count := faker.New().UInt64Between(2, 20)
@@ -157,7 +154,7 @@ func Test{{ .Config.UseCaseTypeName }}_List(t *testing.T) {
     filter := mock_models.New{{ .Config.FilterTypeName }}(t)
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
-        logger           log.Logger
+        logger           Logger
     }
     type args struct {
         ctx    context.Context
@@ -252,16 +249,16 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    mockClock := mock_clock.NewMockClock(ctrl)
-    mockLogger := mock_log.NewMockLogger(ctrl)
-    mockUUID := mock_uuid.NewMockGenerator(ctrl)
+    mockClock := mock_usecases.NewMockClock(ctrl)
+    mockLogger := mock_usecases.NewMockLogger(ctrl)
+    mockUUID := mock_usecases.NewMockUUIDGenerator(ctrl)
     ctx := context.Background()
     create := mock_models.New{{ .Config.CreateTypeName }}(t)
     now := time.Now().UTC()
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
         clock            clock.Clock
-        logger           log.Logger
+        logger           Logger
         uuid             uuid.Generator
     }
     type args struct {
@@ -394,16 +391,16 @@ func Test{{ .Config.UseCaseTypeName }}_Update(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
-    mockClock := mock_clock.NewMockClock(ctrl)
+    mockClock := mock_usecases.NewMockClock(ctrl)
     update := mock_models.New{{ .Config.UpdateTypeName }}(t)
     now := {{ .Config.Variable }}.UpdatedAt
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
         clock            clock.Clock
-        logger           log.Logger
+        logger           Logger
     }
     type args struct {
         ctx    context.Context
@@ -521,12 +518,12 @@ func Test{{ .Config.UseCaseTypeName }}_Delete(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
-        logger           log.Logger
+        logger           Logger
     }
     type args struct {
         ctx context.Context

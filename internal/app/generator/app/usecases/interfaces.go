@@ -3,6 +3,7 @@ package usecases
 import (
 	"bytes"
 	"fmt"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -10,50 +11,17 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
-type RepositoryInterfaceCrud struct {
+type UseCaseInterfaces struct {
 	domain *domain.Domain
 }
 
-func NewRepositoryInterfaceCrud(domain *domain.Domain) *RepositoryInterfaceCrud {
-	return &RepositoryInterfaceCrud{domain: domain}
+func NewRepositoryInterfaceCrud(domain *domain.Domain) *UseCaseInterfaces {
+	return &UseCaseInterfaces{domain: domain}
 }
 
-func (i RepositoryInterfaceCrud) file() *ast.File {
-	return &ast.File{
-		Name: ast.NewIdent("usecases"),
-		Decls: []ast.Decl{
-			&ast.GenDecl{
-				Tok: token.IMPORT,
-				Specs: []ast.Spec{
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"context"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: i.domain.ModelsImportPath(),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, i.domain.Module),
-						},
-					},
-				},
-			},
-		},
-	}
-}
-
-func (i RepositoryInterfaceCrud) Sync() error {
+func (i UseCaseInterfaces) Sync() error {
 	fileset := token.NewFileSet()
 	filename := filepath.Join("internal", "app", i.domain.DirName(), "usecases", "interfaces.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
@@ -64,41 +32,39 @@ func (i RepositoryInterfaceCrud) Sync() error {
 	if err != nil {
 		file = i.file()
 	}
-	var structureExists bool
-	var structure *ast.TypeSpec
+	repositoryExists := false
+	loggerExists := false
+	clockExists := false
+	uuidGeneratorExists := false
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.domain.Repository.Name {
-			structure = t
-			structureExists = true
-			return false
+		if t, ok := node.(*ast.TypeSpec); ok {
+			if t.Name.String() == i.domain.Repository.Name {
+				repositoryExists = true
+			}
+			if t.Name.String() == "Logger" {
+				loggerExists = true
+			}
+			if t.Name.String() == "Clock" {
+				clockExists = true
+			}
+			if t.Name.String() == "UUIDGenerator" {
+				uuidGeneratorExists = true
+			}
+			return true
 		}
 		return true
 	})
-	if structure == nil {
-		structure = i.astInterface()
+	if !repositoryExists {
+		file.Decls = append(file.Decls, i.repositoryInterface())
 	}
-	if !structureExists {
-		gd := &ast.GenDecl{
-			Doc: &ast.CommentGroup{
-				List: []*ast.Comment{
-					{
-						Text: fmt.Sprintf(
-							"//%s - domain layer repository interface",
-							i.domain.Repository.Name,
-						),
-					},
-					{
-						Text: fmt.Sprintf(
-							"//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . %s",
-							i.domain.Repository.Name,
-						),
-					},
-				},
-			},
-			Tok:   token.TYPE,
-			Specs: []ast.Spec{structure},
-		}
-		file.Decls = append(file.Decls, gd)
+	if !clockExists {
+		file.Decls = append(file.Decls, i.clockInterface())
+	}
+	if !loggerExists {
+		file.Decls = append(file.Decls, i.loggerInterface())
+	}
+	if !uuidGeneratorExists {
+		file.Decls = append(file.Decls, i.uuidGeneratorInterface())
 	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
@@ -110,7 +76,54 @@ func (i RepositoryInterfaceCrud) Sync() error {
 	return nil
 }
 
-func (i RepositoryInterfaceCrud) astInterface() *ast.TypeSpec {
+func (i UseCaseInterfaces) file() *ast.File {
+	return &ast.File{
+		Name: ast.NewIdent("usecases"),
+		Decls: []ast.Decl{
+			i.imports(),
+		},
+	}
+}
+
+func (i UseCaseInterfaces) imports() *ast.GenDecl {
+	return &ast.GenDecl{
+		Tok: token.IMPORT,
+		Specs: []ast.Spec{
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: `"context"`,
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: `"time"`,
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: i.domain.ModelsImportPath(),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/pkg/log"`, i.domain.Module),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, i.domain.Module),
+				},
+			},
+		},
+	}
+}
+
+func (i UseCaseInterfaces) repositoryInterface() *ast.GenDecl {
 	methods := make([]*ast.Field, len(i.domain.Repository.Methods))
 	for i, method := range i.domain.Repository.Methods {
 		methods[i] = &ast.Field{
@@ -129,11 +142,337 @@ func (i RepositoryInterfaceCrud) astInterface() *ast.TypeSpec {
 			},
 		}
 	}
-	return &ast.TypeSpec{
-		Name: ast.NewIdent(i.domain.Repository.Name),
-		Type: &ast.InterfaceType{
-			Methods: &ast.FieldList{
-				List: methods,
+	return &ast.GenDecl{
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Text: fmt.Sprintf(
+						"//%s - domain layer repository interface",
+						i.domain.Repository.Name,
+					),
+				},
+				{
+					Text: fmt.Sprintf(
+						"//go:generate mockgen -build_flags=-mod=mod -destination mock/repository.go . %s",
+						i.domain.Repository.Name,
+					),
+				},
+			},
+		},
+		Tok: token.TYPE,
+		Specs: []ast.Spec{
+			&ast.TypeSpec{
+				Name: ast.NewIdent(i.domain.Repository.Name),
+				Type: &ast.InterfaceType{
+					Methods: &ast.FieldList{
+						List: methods,
+					},
+				},
+			},
+		},
+	}
+}
+
+func (i UseCaseInterfaces) loggerInterface() *ast.GenDecl {
+	return &ast.GenDecl{
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Text: "//Logger - base logger interface",
+				},
+				{
+					Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/logger.go . Logger",
+				},
+			},
+		},
+		Tok: token.TYPE,
+		Specs: []ast.Spec{
+			&ast.TypeSpec{
+				Name: ast.NewIdent("Logger"),
+				Type: &ast.InterfaceType{
+					Methods: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("Debug"),
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("msg"),
+												},
+												Type: ast.NewIdent("string"),
+											},
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("fields"),
+												},
+												Type: &ast.Ellipsis{
+													Elt: &ast.SelectorExpr{
+														X:   ast.NewIdent("log"),
+														Sel: ast.NewIdent("Field"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("Info"),
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("msg"),
+												},
+												Type: ast.NewIdent("string"),
+											},
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("fields"),
+												},
+												Type: &ast.Ellipsis{
+													Elt: &ast.SelectorExpr{
+														X:   ast.NewIdent("log"),
+														Sel: ast.NewIdent("Field"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("Print"),
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("msg"),
+												},
+												Type: ast.NewIdent("string"),
+											},
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("fields"),
+												},
+												Type: &ast.Ellipsis{
+													Elt: &ast.SelectorExpr{
+														X:   ast.NewIdent("log"),
+														Sel: ast.NewIdent("Field"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("Warn"),
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("msg"),
+												},
+												Type: ast.NewIdent("string"),
+											},
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("fields"),
+												},
+												Type: &ast.Ellipsis{
+													Elt: &ast.SelectorExpr{
+														X:   ast.NewIdent("log"),
+														Sel: ast.NewIdent("Field"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("Error"),
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("msg"),
+												},
+												Type: ast.NewIdent("string"),
+											},
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("fields"),
+												},
+												Type: &ast.Ellipsis{
+													Elt: &ast.SelectorExpr{
+														X:   ast.NewIdent("log"),
+														Sel: ast.NewIdent("Field"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("Fatal"),
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("msg"),
+												},
+												Type: ast.NewIdent("string"),
+											},
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("fields"),
+												},
+												Type: &ast.Ellipsis{
+													Elt: &ast.SelectorExpr{
+														X:   ast.NewIdent("log"),
+														Sel: ast.NewIdent("Field"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("Panic"),
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("msg"),
+												},
+												Type: ast.NewIdent("string"),
+											},
+											{
+												Names: []*ast.Ident{
+													ast.NewIdent("fields"),
+												},
+												Type: &ast.Ellipsis{
+													Elt: &ast.SelectorExpr{
+														X:   ast.NewIdent("log"),
+														Sel: ast.NewIdent("Field"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (i UseCaseInterfaces) clockInterface() *ast.GenDecl {
+	return &ast.GenDecl{
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Text: "// Clock - clock interface",
+				},
+				{
+					Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/clock.go . Clock",
+				},
+			},
+		},
+		Tok: token.TYPE,
+		Specs: []ast.Spec{
+			&ast.TypeSpec{
+				Name: ast.NewIdent("Clock"),
+				Type: &ast.InterfaceType{
+					Methods: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("Now"),
+								},
+								Type: &ast.FuncType{
+									Results: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: ast.NewIdent("time.Time"),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (i UseCaseInterfaces) uuidGeneratorInterface() *ast.GenDecl {
+	return &ast.GenDecl{
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Text: "// UUIDGenerator - UUID generator interface",
+				},
+				{
+					Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/uuid_generator.go . UUIDGenerator",
+				},
+			},
+		},
+		Tok: token.TYPE,
+		Specs: []ast.Spec{
+			&ast.TypeSpec{
+				Name: ast.NewIdent("UUIDGenerator"),
+				Type: &ast.InterfaceType{
+					Methods: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("NewUUID"),
+								},
+								Type: &ast.FuncType{
+									Results: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: ast.NewIdent("uuid.UUID"),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	}

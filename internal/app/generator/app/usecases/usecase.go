@@ -91,24 +91,6 @@ func (u UseCaseCrud) file() *ast.File {
 							Value: u.domain.ModelsImportPath(),
 						},
 					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, u.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, u.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, u.domain.Module),
-						},
-					},
 				},
 			},
 		},
@@ -127,24 +109,15 @@ func (u UseCaseCrud) structure() *ast.TypeSpec {
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("clock")},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("clock"),
-							Sel: ast.NewIdent("Clock"),
-						},
+						Type:  ast.NewIdent("Clock"),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("logger")},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("log"),
-							Sel: ast.NewIdent("Logger"),
-						},
+						Type:  ast.NewIdent("Logger"),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("uuid")},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("uuid"),
-							Sel: ast.NewIdent("Generator"),
-						},
+						Type:  ast.NewIdent("UUIDGenerator"),
 					},
 				},
 			},
@@ -201,24 +174,15 @@ func (u UseCaseCrud) constructor() *ast.FuncDecl {
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("clock")},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("clock"),
-							Sel: ast.NewIdent("Clock"),
-						},
+						Type:  ast.NewIdent("Clock"),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("logger")},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("log"),
-							Sel: ast.NewIdent("Logger"),
-						},
+						Type:  ast.NewIdent("Logger"),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("uuid")},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("uuid"),
-							Sel: ast.NewIdent("Generator"),
-						},
+						Type:  ast.NewIdent("UUIDGenerator"),
 					},
 				},
 			},

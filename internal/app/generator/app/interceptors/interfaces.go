@@ -19,6 +19,7 @@ type InterceptorInterfaces struct {
 func NewInterceptorInterfaces(domain *domain.Domain) *InterceptorInterfaces {
 	return &InterceptorInterfaces{domain: domain}
 }
+
 func (i InterceptorInterfaces) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "app", i.domain.DirName(), "interceptors", "interfaces.go")

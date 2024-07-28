@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 
 	"github.com/mikalai-mitsin/creathor/internal/app/generator"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/handlers/grpc"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/interceptors"
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/interfaces/grpc"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/models"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/repositories/postgres"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/usecases"

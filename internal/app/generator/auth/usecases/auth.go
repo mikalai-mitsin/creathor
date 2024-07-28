@@ -124,14 +124,7 @@ func (u UseCaseAuth) file() *ast.File {
 												Name: "logger",
 											},
 										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "log",
-											},
-											Sel: &ast.Ident{
-												Name: "Logger",
-											},
-										},
+										Type: ast.NewIdent("Logger"),
 									},
 								},
 							},
@@ -176,14 +169,7 @@ func (u UseCaseAuth) file() *ast.File {
 										Name: "logger",
 									},
 								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "log",
-									},
-									Sel: &ast.Ident{
-										Name: "Logger",
-									},
-								},
+								Type: ast.NewIdent("Logger"),
 							},
 						},
 					},

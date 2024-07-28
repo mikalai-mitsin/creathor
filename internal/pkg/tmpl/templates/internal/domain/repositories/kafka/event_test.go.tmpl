@@ -29,7 +29,7 @@ func TestEventRepository_Send(t *testing.T) {
 	event := mock_models.NewEvent(t)
 	type fields struct {
 		producer sarama.SyncProducer
-		logger   log.Logger
+		logger   Logger
 		topic    string
 	}
 	type args struct {
@@ -100,7 +100,7 @@ func TestNewEventRepository(t *testing.T) {
 	type args struct {
 		producer sarama.SyncProducer
 		config   *configs.Config
-		logger   log.Logger
+		logger   Logger
 	}
 	tests := []struct {
 		name string

@@ -76,12 +76,6 @@ func (i InterceptorAuth) file() *ast.File {
 							Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, i.project.Module),
 						},
 					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, i.project.Module),
-						},
-					},
 				},
 			},
 			&ast.GenDecl{
@@ -108,14 +102,7 @@ func (i InterceptorAuth) file() *ast.File {
 												Name: "clock",
 											},
 										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "clock",
-											},
-											Sel: &ast.Ident{
-												Name: "Clock",
-											},
-										},
+										Type: ast.NewIdent("Clock"),
 									},
 									{
 										Names: []*ast.Ident{
@@ -123,14 +110,7 @@ func (i InterceptorAuth) file() *ast.File {
 												Name: "logger",
 											},
 										},
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "log",
-											},
-											Sel: &ast.Ident{
-												Name: "Logger",
-											},
-										},
+										Type: ast.NewIdent("Logger"),
 									},
 								},
 							},
@@ -159,14 +139,7 @@ func (i InterceptorAuth) file() *ast.File {
 										Name: "clock",
 									},
 								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "clock",
-									},
-									Sel: &ast.Ident{
-										Name: "Clock",
-									},
-								},
+								Type: ast.NewIdent("Clock"),
 							},
 							{
 								Names: []*ast.Ident{
@@ -174,14 +147,7 @@ func (i InterceptorAuth) file() *ast.File {
 										Name: "logger",
 									},
 								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "log",
-									},
-									Sel: &ast.Ident{
-										Name: "Logger",
-									},
-								},
+								Type: ast.NewIdent("Logger"),
 							},
 						},
 					},

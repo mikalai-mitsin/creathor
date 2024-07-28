@@ -48,12 +48,6 @@ func (m AuthMiddleware) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/configs"`, m.project.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
 							Value: fmt.Sprintf(`"%s/internal/app/auth/models"`, m.project.Module),
 						},
 					},
@@ -488,31 +482,7 @@ func (m AuthMiddleware) astStruct() *ast.TypeSpec {
 								Name: "logger",
 							},
 						},
-						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "log",
-							},
-							Sel: &ast.Ident{
-								Name: "Logger",
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "config",
-							},
-						},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "configs",
-								},
-								Sel: &ast.Ident{
-									Name: "Config",
-								},
-							},
-						},
+						Type: ast.NewIdent("Logger"),
 					},
 					{
 						Names: []*ast.Ident{
@@ -591,31 +561,7 @@ func (m AuthMiddleware) astConstructor() *ast.FuncDecl {
 								Name: "logger",
 							},
 						},
-						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "log",
-							},
-							Sel: &ast.Ident{
-								Name: "Logger",
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "config",
-							},
-						},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "configs",
-								},
-								Sel: &ast.Ident{
-									Name: "Config",
-								},
-							},
-						},
+						Type: ast.NewIdent("Logger"),
 					},
 				},
 			},
@@ -656,14 +602,6 @@ func (m AuthMiddleware) astConstructor() *ast.FuncDecl {
 										},
 										Value: &ast.Ident{
 											Name: "logger",
-										},
-									},
-									&ast.KeyValueExpr{
-										Key: &ast.Ident{
-											Name: "config",
-										},
-										Value: &ast.Ident{
-											Name: "config",
 										},
 									},
 								},

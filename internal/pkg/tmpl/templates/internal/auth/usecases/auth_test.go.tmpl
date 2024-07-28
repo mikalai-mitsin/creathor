@@ -13,7 +13,6 @@ import (
     userModels "github.com/018bf/example/internal/app/user/models"
     mockModels "{{ .Module }}/internal/app/auth/models/mock"
     mockUserModels "{{ .Module }}/internal/app/user/models/mock"
-    mockLog "{{ .Module }}/internal/pkg/log/mock"
 
     "go.uber.org/mock/gomock"
 )
@@ -23,13 +22,13 @@ func TestAuthUseCase_Auth(t *testing.T) {
     defer ctrl.Finish()
     userRepository :=  mockUseCases.NewMockUserRepository(ctrl)
     authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
-    logger := mockLog.NewMockLogger(ctrl)
+    logger := mockUseCases.NewMockLogger(ctrl)
     ctx := context.Background()
     user := mockUserModels.NewUser(t)
     type fields struct {
         authRepository AuthRepository
         userRepository UserRepository
-        logger         log.Logger
+        logger         Logger
     }
     type args struct {
         ctx    context.Context
@@ -125,7 +124,7 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
     defer ctrl.Finish()
     userRepository :=  mockUseCases.NewMockUserRepository(ctrl)
     authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
-    logger := mockLog.NewMockLogger(ctrl)
+    logger := mockUseCases.NewMockLogger(ctrl)
     ctx := context.Background()
     user := mockUserModels.NewUser(t)
     login := mockModels.NewLogin(t)
@@ -135,7 +134,7 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
     type fields struct {
         authRepository AuthRepository
         userRepository UserRepository
-        logger         log.Logger
+        logger         Logger
     }
     type args struct {
         ctx   context.Context
@@ -256,13 +255,13 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
     defer ctrl.Finish()
     userRepository :=  mockUseCases.NewMockUserRepository(ctrl)
     authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
-    logger := mockLog.NewMockLogger(ctrl)
+    logger := mockUseCases.NewMockLogger(ctrl)
     ctx := context.Background()
     pair := mockModels.NewTokenPair(t)
     type fields struct {
         authRepository AuthRepository
         userRepository UserRepository
-        logger         log.Logger
+        logger         Logger
     }
     type args struct {
         ctx     context.Context
@@ -339,12 +338,12 @@ func TestAuthUseCase_ValidateToken(t *testing.T) {
     defer ctrl.Finish()
     userRepository :=  mockUseCases.NewMockUserRepository(ctrl)
     authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
-    logger := mockLog.NewMockLogger(ctrl)
+    logger := mockUseCases.NewMockLogger(ctrl)
     ctx := context.Background()
     type fields struct {
         authRepository AuthRepository
         userRepository UserRepository
-        logger         log.Logger
+        logger         Logger
     }
     type args struct {
         ctx    context.Context
@@ -417,12 +416,12 @@ func TestNewAuthUseCase(t *testing.T) {
     defer ctrl.Finish()
     userRepository :=  mockUseCases.NewMockUserRepository(ctrl)
     authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
-    logger := mockLog.NewMockLogger(ctrl)
+    logger := mockUseCases.NewMockLogger(ctrl)
     type args struct {
         authRepository       AuthRepository
         userRepository       UserRepository
         permissionRepository PermissionRepository
-        logger               log.Logger
+        logger               Logger
     }
     tests := []struct {
         name string
@@ -463,7 +462,7 @@ func TestAuthUseCase_HasPermission(t *testing.T) {
     type fields struct {
         authRepository       AuthRepository
         userRepository       UserRepository
-        logger               log.Logger
+        logger               Logger
         permissionRepository PermissionRepository
     }
     type args struct {
@@ -547,7 +546,7 @@ func TestAuthUseCase_HasObjectPermission(t *testing.T) {
         authRepository       AuthRepository
         userRepository       UserRepository
         permissionRepository PermissionRepository
-        logger               log.Logger
+        logger               Logger
     }
     type args struct {
         in0        context.Context
@@ -647,14 +646,14 @@ func TestAuthUseCase_CreateTokenByUser(t *testing.T) {
     defer ctrl.Finish()
     userRepository :=  mockUseCases.NewMockUserRepository(ctrl)
     authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
-    logger := mockLog.NewMockLogger(ctrl)
+    logger := mockUseCases.NewMockLogger(ctrl)
     ctx := context.Background()
     user := mockUserModels.NewUser(t)
     tokenPair := mockModels.NewTokenPair(t)
     type fields struct {
         authRepository AuthRepository
         userRepository UserRepository
-        logger         log.Logger
+        logger         Logger
     }
     type args struct {
         ctx  context.Context

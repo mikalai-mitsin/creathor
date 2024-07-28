@@ -7,14 +7,11 @@ import (
     "reflect"
     "testing"
 
-    "{{ .Module }}/internal/pkg/configs"
     "{{ .Module }}/internal/pkg/errs"
     "{{ .Module }}/internal/app/auth/models"
     mock_user_models "{{ .Module }}/internal/app/user/models/mock"
     mock_models "{{ .Module }}/internal/app/auth/models/mock"
     mock_grpc "{{ .Module }}/internal/pkg/grpc/mock"
-
-    "{{ .Module }}/internal/pkg/log"
 
     "go.uber.org/mock/gomock"
 
@@ -136,8 +133,7 @@ func TestNewAuthMiddleware(t *testing.T) {
     authInterceptor := mock_grpc.NewMockAuthInterceptor(ctrl)
     type args struct {
         authInterceptor AuthInterceptor
-        logger          log.Logger
-        config          *configs.Config
+        logger          Logger
     }
     tests := []struct {
         name string
@@ -156,7 +152,7 @@ func TestNewAuthMiddleware(t *testing.T) {
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            if got := NewAuthMiddleware(tt.args.authInterceptor, tt.args.logger, tt.args.config); !reflect.DeepEqual(got, tt.want) {
+            if got := NewAuthMiddleware(tt.args.authInterceptor, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
                 t.Errorf("NewAuthMiddleware() = %v, want %v", got, tt.want)
             }
         })

@@ -55,6 +55,264 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 				Doc: &ast.CommentGroup{
 					List: []*ast.Comment{
 						{
+							Text: "// Clock - clock interface",
+						},
+						{
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/clock.go . Clock",
+						},
+					},
+				},
+				Tok: token.TYPE,
+				Specs: []ast.Spec{
+					&ast.TypeSpec{
+						Name: ast.NewIdent("Clock"),
+						Type: &ast.InterfaceType{
+							Methods: &ast.FieldList{
+								List: []*ast.Field{
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("Now"),
+										},
+										Type: &ast.FuncType{
+											Results: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Type: ast.NewIdent("time.Time"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			&ast.GenDecl{
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "//Logger - base logger interface",
+						},
+						{
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/logger.go . Logger",
+						},
+					},
+				},
+				Tok: token.TYPE,
+				Specs: []ast.Spec{
+					&ast.TypeSpec{
+						Name: ast.NewIdent("Logger"),
+						Type: &ast.InterfaceType{
+							Methods: &ast.FieldList{
+								List: []*ast.Field{
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("Debug"),
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("msg"),
+														},
+														Type: ast.NewIdent("string"),
+													},
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("fields"),
+														},
+														Type: &ast.Ellipsis{
+															Elt: &ast.SelectorExpr{
+																X:   ast.NewIdent("log"),
+																Sel: ast.NewIdent("Field"),
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("Info"),
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("msg"),
+														},
+														Type: ast.NewIdent("string"),
+													},
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("fields"),
+														},
+														Type: &ast.Ellipsis{
+															Elt: &ast.SelectorExpr{
+																X:   ast.NewIdent("log"),
+																Sel: ast.NewIdent("Field"),
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("Print"),
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("msg"),
+														},
+														Type: ast.NewIdent("string"),
+													},
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("fields"),
+														},
+														Type: &ast.Ellipsis{
+															Elt: &ast.SelectorExpr{
+																X:   ast.NewIdent("log"),
+																Sel: ast.NewIdent("Field"),
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("Warn"),
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("msg"),
+														},
+														Type: ast.NewIdent("string"),
+													},
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("fields"),
+														},
+														Type: &ast.Ellipsis{
+															Elt: &ast.SelectorExpr{
+																X:   ast.NewIdent("log"),
+																Sel: ast.NewIdent("Field"),
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("Error"),
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("msg"),
+														},
+														Type: ast.NewIdent("string"),
+													},
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("fields"),
+														},
+														Type: &ast.Ellipsis{
+															Elt: &ast.SelectorExpr{
+																X:   ast.NewIdent("log"),
+																Sel: ast.NewIdent("Field"),
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("Fatal"),
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("msg"),
+														},
+														Type: ast.NewIdent("string"),
+													},
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("fields"),
+														},
+														Type: &ast.Ellipsis{
+															Elt: &ast.SelectorExpr{
+																X:   ast.NewIdent("log"),
+																Sel: ast.NewIdent("Field"),
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("Panic"),
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("msg"),
+														},
+														Type: ast.NewIdent("string"),
+													},
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("fields"),
+														},
+														Type: &ast.Ellipsis{
+															Elt: &ast.SelectorExpr{
+																X:   ast.NewIdent("log"),
+																Sel: ast.NewIdent("Field"),
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			&ast.GenDecl{
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
 							Text: "//AuthUseCase - domain layer interceptor interface",
 						},
 						{

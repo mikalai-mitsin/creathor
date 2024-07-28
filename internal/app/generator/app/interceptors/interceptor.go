@@ -76,10 +76,7 @@ func (i InterceptorCrud) structure() *ast.TypeSpec {
 		},
 		{
 			Names: []*ast.Ident{ast.NewIdent("logger")},
-			Type: &ast.SelectorExpr{
-				X:   ast.NewIdent("log"),
-				Sel: ast.NewIdent("Logger"),
-			},
+			Type:  ast.NewIdent("Logger"),
 		},
 	}
 	if i.domain.Auth {
@@ -146,10 +143,7 @@ func (i InterceptorCrud) constructor() *ast.FuncDecl {
 		},
 		{
 			Names: []*ast.Ident{ast.NewIdent("logger")},
-			Type: &ast.SelectorExpr{
-				X:   ast.NewIdent("log"),
-				Sel: ast.NewIdent("Logger"),
-			},
+			Type:  ast.NewIdent("Logger"),
 		},
 	}
 	exprs := []ast.Expr{

@@ -14,7 +14,6 @@ import (
     userModels "{{ .Module }}/internal/app/user/models"
     mock_interceptors "{{ .Module }}/internal/app/{{ .DirName }}/interceptors/mock"
 
-    mock_log "{{ .Module }}/internal/pkg/log/mock"
     "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
 
@@ -29,13 +28,13 @@ func TestNew{{ .Interceptor.Name }}(t *testing.T) {
     authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
 {{- end }}
     {{ .Config.UseCaseVariableName }} := mock_interceptors.NewMock{{ .Config.UseCaseTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_interceptors.NewMockLogger(ctrl)
     type args struct {
 {{- if .Auth }}
         authUseCase     AuthUseCase
 {{- end}}
         {{ .Config.UseCaseVariableName }} {{ .Config.UseCaseTypeName }}
-        logger          log.Logger
+        logger          Logger
     }
     tests := []struct {
         name  string
@@ -80,7 +79,7 @@ func Test{{ .Interceptor.Name }}_Get(t *testing.T) {
     requestUser := userMockModels.NewUser(t)
 {{- end }}
     {{ .Config.UseCaseVariableName }} := mock_interceptors.NewMock{{ .Config.UseCaseTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_interceptors.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
     type fields struct {
@@ -88,7 +87,7 @@ func Test{{ .Interceptor.Name }}_Get(t *testing.T) {
         authUseCase     AuthUseCase
 {{- end }}
         {{ .Config.UseCaseVariableName }} {{ .Config.UseCaseTypeName }}
-        logger          log.Logger
+        logger          Logger
     }
     type args struct {
         ctx context.Context
@@ -240,7 +239,7 @@ func Test{{ .Interceptor.Name }}_Create(t *testing.T) {
     requestUser := userMockModels.NewUser(t)
 {{- end }}
     {{ .Config.UseCaseVariableName }} := mock_interceptors.NewMock{{ .Config.UseCaseTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_interceptors.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
     create := mock_models.New{{ .Config.CreateTypeName }}(t)
@@ -249,7 +248,7 @@ func Test{{ .Interceptor.Name }}_Create(t *testing.T) {
 {{- if .Auth }}
         authUseCase     AuthUseCase
 {{- end }}
-        logger          log.Logger
+        logger          Logger
     }
     type args struct {
         ctx    context.Context
@@ -397,7 +396,7 @@ func Test{{ .Interceptor.Name }}_Update(t *testing.T) {
     requestUser := userMockModels.NewUser(t)
 {{- end }}
     {{ .Config.UseCaseVariableName }} := mock_interceptors.NewMock{{ .Config.UseCaseTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_interceptors.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
     update := mock_models.New{{ .Config.UpdateTypeName }}(t)
@@ -406,7 +405,7 @@ func Test{{ .Interceptor.Name }}_Update(t *testing.T) {
 {{- if .Auth }}
         authUseCase     AuthUseCase
 {{- end }}
-        logger          log.Logger
+        logger          Logger
     }
     type args struct {
         ctx    context.Context
@@ -587,7 +586,7 @@ func Test{{ .Interceptor.Name }}_Delete(t *testing.T) {
     requestUser := userMockModels.NewUser(t)
 {{- end }}
     {{ .Config.UseCaseVariableName }} := mock_interceptors.NewMock{{ .Config.UseCaseTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_interceptors.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
     type fields struct {
@@ -595,7 +594,7 @@ func Test{{ .Interceptor.Name }}_Delete(t *testing.T) {
 {{- if .Auth }}
         authUseCase     AuthUseCase
 {{- end }}
-        logger          log.Logger
+        logger          Logger
     }
     type args struct {
         ctx context.Context
@@ -768,7 +767,7 @@ func Test{{ .Interceptor.Name }}_List(t *testing.T) {
     requestUser := userMockModels.NewUser(t)
 {{- end }}
     {{ .Config.UseCaseVariableName }} := mock_interceptors.NewMock{{ .Config.UseCaseTypeName }}(ctrl)
-    logger := mock_log.NewMockLogger(ctrl)
+    logger := mock_interceptors.NewMockLogger(ctrl)
     ctx := context.Background()
     filter := mock_models.New{{ .Config.FilterTypeName }}(t)
     count := faker.New().UInt64Between(2, 20)
@@ -781,7 +780,7 @@ func Test{{ .Interceptor.Name }}_List(t *testing.T) {
 {{- if .Auth }}
         authUseCase     AuthUseCase
 {{- end }}
-        logger          log.Logger
+        logger          Logger
     }
     type args struct {
         ctx         context.Context

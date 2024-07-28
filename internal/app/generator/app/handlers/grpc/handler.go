@@ -2014,13 +2014,8 @@ func (h Handler) constructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: h.domain.ProtoModule,
-							},
-							Sel: &ast.Ident{
-								Name: fmt.Sprintf("%sServiceServer", h.domain.GetMainModel().Name),
-							},
+						Type: &ast.StarExpr{
+							X: ast.NewIdent(h.domain.GRPCHandler.Name),
 						},
 					},
 				},

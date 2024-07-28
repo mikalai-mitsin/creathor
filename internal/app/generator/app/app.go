@@ -2,154 +2,529 @@ package app
 
 import (
 	"bytes"
+	"fmt"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
-	"io/fs"
 	"os"
-	"path/filepath"
-
-	"github.com/mikalai-mitsin/creathor/internal/app/generator"
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/handlers/grpc"
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/interceptors"
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/models"
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/repositories/postgres"
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/usecases"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"path"
 )
 
-type Generator struct {
+type App struct {
 	domain *domain.Domain
 }
 
-func NewGenerator(d *domain.Domain) *Generator {
-	return &Generator{domain: d}
+func NewApp(domain *domain.Domain) *App {
+	return &App{domain: domain}
 }
 
-func (g *Generator) Sync() error {
-	domainGenerators := []generator.Generator{
-		interceptors.NewInterceptorCrud(g.domain),
-		interceptors.NewInterceptorInterfaces(g.domain),
-
-		usecases.NewUseCaseCrud(g.domain),
-		usecases.NewRepositoryInterfaceCrud(g.domain),
-
-		postgres.NewRepositoryInterfaces(g.domain),
-		postgres.NewRepositoryCrud(g.domain),
-
-		grpc.NewHandler(g.domain),
-		grpc.NewProto(g.domain),
-		grpc.NewHandlerInterfaces(g.domain),
-	}
-	for _, model := range g.domain.Models {
-		domainGenerators = append(domainGenerators, models.NewModel(model, g.domain))
-	}
-	for _, domainGenerator := range domainGenerators {
-		if err := domainGenerator.Sync(); err != nil {
-			return err
-		}
-	}
-	if g.domain.Auth && g.domain.CamelName() != "User" {
-		if err := addPermission(g.domain.PermissionIDList(), "objectAnybody"); err != nil {
-			return err
-		}
-		if err := addPermission(g.domain.PermissionIDDetail(), "objectAnybody"); err != nil {
-			return err
-		}
-		if err := addPermission(g.domain.PermissionIDCreate(), "objectAnybody"); err != nil {
-			return err
-		}
-		if err := addPermission(g.domain.PermissionIDUpdate(), "objectAnybody"); err != nil {
-			return err
-		}
-		if err := addPermission(g.domain.PermissionIDDelete(), "objectAnybody"); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func addPermission(permission, check string) error {
-	packagePath := filepath.Join(
-		destinationPath,
-		"internal",
-		"app",
-		"user",
-		"repositories",
-		"postgres",
-	)
-	if err := os.MkdirAll(packagePath, 0777); err != nil {
-		return err
-	}
+func (a App) Sync() error {
 	fileset := token.NewFileSet()
-	tree, err := parser.ParseDir(fileset, packagePath, func(info fs.FileInfo) bool {
-		return true
-	}, parser.SkipObjectResolution)
+	filename := path.Join("internal", "app", a.domain.DirName(), "app.go")
+	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err
 	}
-	for _, p := range tree {
-		for filePath, file := range p.Files {
-			for _, decl := range file.Decls {
-				genDecl, ok := decl.(*ast.GenDecl)
-				if ok {
-					for _, spec := range genDecl.Specs {
-						variable, ok := spec.(*ast.ValueSpec)
-						if ok {
-							for _, name := range variable.Names {
-								if name.Name == "hasObjectPermission" {
-									for _, values := range variable.Values {
-										lit, ok := values.(*ast.CompositeLit)
-										if ok {
-											var exists bool
-											for _, elt := range lit.Elts {
-												kv, ok := elt.(*ast.KeyValueExpr)
-												if ok {
-													selector, ok := kv.Key.(*ast.SelectorExpr)
-													if ok && selector.Sel.Name == permission {
-														exists = true
-														break
-													}
-												}
-											}
-											if exists {
-												continue
-											}
-											lit.Elts = append(lit.Elts, &ast.KeyValueExpr{
-												Key: &ast.SelectorExpr{
-													X:   ast.NewIdent("models"),
-													Sel: ast.NewIdent(permission),
-												},
-												Colon: 0,
-												Value: &ast.CompositeLit{
-													Type:   nil,
-													Lbrace: 0,
-													Elts: []ast.Expr{
-														ast.NewIdent(check),
-													},
-													Rbrace:     0,
-													Incomplete: false,
-												},
-											})
-											a := &bytes.Buffer{}
-											if err := printer.Fprint(a, fileset, file); err != nil {
-												return err
-											}
-											if err := os.WriteFile(filePath, a.Bytes(), 0777); err != nil {
-												return err
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
+	if err != nil {
+		file = a.file()
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filename, buff.Bytes(), 0777); err != nil {
+		return err
 	}
 	return nil
 }
 
-var destinationPath = "."
+func (a App) file() *ast.File {
+	return &ast.File{
+		Name: &ast.Ident{
+			Name: a.domain.DirName(),
+		},
+		Decls: []ast.Decl{
+			a.imports(),
+			a.structure(),
+			a.constructor(),
+		},
+	}
+}
+
+func (a App) imports() *ast.GenDecl {
+	imports := &ast.GenDecl{
+		Tok: token.IMPORT,
+		Specs: []ast.Spec{
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/app/%s/handlers/grpc"`, a.domain.Module, a.domain.DirName()),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/app/%s/interceptors"`, a.domain.Module, a.domain.DirName()),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/app/%s/repositories/postgres"`, a.domain.Module, a.domain.DirName()),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/app/%s/usecases"`, a.domain.Module, a.domain.DirName()),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, a.domain.Module),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/pkg/log"`, a.domain.Module),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, a.domain.Module),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: `"github.com/jmoiron/sqlx"`,
+				},
+			},
+		},
+	}
+	if a.domain.Auth {
+		imports.Specs = append(
+			imports.Specs,
+			&ast.ImportSpec{
+				Name: &ast.Ident{
+					Name: "authUseCases",
+				},
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/app/auth/usecases"`, a.domain.Module),
+				},
+			},
+		)
+	}
+	return imports
+}
+
+func (a App) constructor() *ast.FuncDecl {
+	args := []*ast.Field{
+		{
+			Names: []*ast.Ident{
+				{
+					Name: "db",
+				},
+			},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "sqlx",
+					},
+					Sel: &ast.Ident{
+						Name: "DB",
+					},
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{
+				{
+					Name: "logger",
+				},
+			},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "log",
+					},
+					Sel: &ast.Ident{
+						Name: "Log",
+					},
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{
+				{
+					Name: "clock",
+				},
+			},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "clock",
+					},
+					Sel: &ast.Ident{
+						Name: "Clock",
+					},
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{
+				{
+					Name: "uuidGenerator",
+				},
+			},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "uuid",
+					},
+					Sel: &ast.Ident{
+						Name: "UUIDv4Generator",
+					},
+				},
+			},
+		},
+	}
+	if a.domain.Auth {
+		args = append(
+			args,
+			&ast.Field{
+				Names: []*ast.Ident{
+					{
+						Name: "authUseCase",
+					},
+				},
+				Type: &ast.StarExpr{
+					X: &ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "authUseCases",
+						},
+						Sel: &ast.Ident{
+							Name: "AuthUseCase",
+						},
+					},
+				},
+			},
+		)
+	}
+	exprs := []ast.Expr{
+		&ast.KeyValueExpr{
+			Key: &ast.Ident{
+				Name: "db",
+			},
+			Value: &ast.Ident{
+				Name: "db",
+			},
+		},
+		&ast.KeyValueExpr{
+			Key: &ast.Ident{
+				Name: "logger",
+			},
+			Value: &ast.Ident{
+				Name: "logger",
+			},
+		},
+		&ast.KeyValueExpr{
+			Key:   ast.NewIdent(fmt.Sprintf("%sPostgresRepository", a.domain.CamelName())),
+			Value: ast.NewIdent(a.domain.Repository.Variable),
+		},
+		&ast.KeyValueExpr{
+			Key:   ast.NewIdent(fmt.Sprintf("%sUseCase", a.domain.CamelName())),
+			Value: ast.NewIdent(a.domain.UseCase.Variable),
+		},
+		&ast.KeyValueExpr{
+			Key:   ast.NewIdent(fmt.Sprintf("%sInterceptor", a.domain.CamelName())),
+			Value: ast.NewIdent(a.domain.Interceptor.Variable),
+		},
+		&ast.KeyValueExpr{
+			Key:   ast.NewIdent(fmt.Sprintf("%sGrpcServer", a.domain.CamelName())),
+			Value: ast.NewIdent(a.domain.GRPCHandler.Variable),
+		},
+	}
+	if a.domain.Auth {
+		exprs = append(
+			exprs,
+			&ast.KeyValueExpr{
+				Key: &ast.Ident{
+					Name: "authUseCase",
+				},
+				Value: &ast.Ident{
+					Name: "authUseCase",
+				},
+			},
+		)
+	}
+	return &ast.FuncDecl{
+		Name: ast.NewIdent("NewApp"),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: args,
+			},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: &ast.StarExpr{
+							X: ast.NewIdent("App"),
+						},
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent(a.domain.Repository.Variable),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "postgres",
+								},
+								Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.Repository.Name)),
+							},
+							Args: []ast.Expr{
+								&ast.Ident{
+									Name: "db",
+								},
+								&ast.Ident{
+									Name: "logger",
+								},
+							},
+						},
+					},
+				},
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent(a.domain.UseCase.Variable),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "usecases",
+								},
+								Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.UseCase.Name)),
+							},
+							Args: []ast.Expr{
+								ast.NewIdent(a.domain.Repository.Variable),
+								&ast.Ident{
+									Name: "clock",
+								},
+								&ast.Ident{
+									Name: "logger",
+								},
+								&ast.Ident{
+									Name: "uuidGenerator",
+								},
+							},
+						},
+					},
+				},
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent(a.domain.Interceptor.Variable),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "interceptors",
+								},
+								Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.Interceptor.Name)),
+							},
+							Args: []ast.Expr{
+								ast.NewIdent(a.domain.UseCase.Variable),
+								&ast.Ident{
+									Name: "logger",
+								},
+								&ast.Ident{
+									Name: "authUseCase",
+								},
+							},
+						},
+					},
+				},
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent(a.domain.GRPCHandler.Variable),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "grpc",
+								},
+								Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.GRPCHandler.Name)),
+							},
+							Args: []ast.Expr{
+								ast.NewIdent(a.domain.Interceptor.Variable),
+								&ast.Ident{
+									Name: "logger",
+								},
+							},
+						},
+					},
+				},
+				&ast.ReturnStmt{
+					Results: []ast.Expr{
+						&ast.UnaryExpr{
+							Op: token.AND,
+							X: &ast.CompositeLit{
+								Type: &ast.Ident{
+									Name: "App",
+								},
+								Elts: exprs,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (a App) structure() *ast.GenDecl {
+	structType := &ast.StructType{
+		Fields: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Names: []*ast.Ident{
+						{
+							Name: "db",
+						},
+					},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "sqlx",
+							},
+							Sel: &ast.Ident{
+								Name: "DB",
+							},
+						},
+					},
+				},
+				{
+					Names: []*ast.Ident{
+						{
+							Name: "logger",
+						},
+					},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "log",
+							},
+							Sel: &ast.Ident{
+								Name: "Log",
+							},
+						},
+					},
+				},
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent(fmt.Sprintf("%sPostgresRepository", a.domain.CamelName())),
+					},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "postgres",
+							},
+							Sel: ast.NewIdent(a.domain.Repository.Name),
+						},
+					},
+				},
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent(fmt.Sprintf("%sUseCase", a.domain.CamelName())),
+					},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "usecases",
+							},
+							Sel: ast.NewIdent(a.domain.UseCase.Name),
+						},
+					},
+				},
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent(fmt.Sprintf("%sInterceptor", a.domain.CamelName())),
+					},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "interceptors",
+							},
+							Sel: ast.NewIdent(a.domain.Interceptor.Name),
+						},
+					},
+				},
+				{
+					Names: []*ast.Ident{
+
+						ast.NewIdent(fmt.Sprintf("%sGrpcServer", a.domain.CamelName())),
+					},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "grpc",
+							},
+							Sel: ast.NewIdent(a.domain.GRPCHandler.Name),
+						},
+					},
+				},
+			},
+		},
+	}
+	if a.domain.Auth {
+		structType.Fields.List = append(
+			structType.Fields.List,
+			&ast.Field{
+				Names: []*ast.Ident{
+					{
+						Name: "authUseCase",
+					},
+				},
+				Type: &ast.StarExpr{
+					X: &ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "authUseCases",
+						},
+						Sel: &ast.Ident{
+							Name: "AuthUseCase",
+						},
+					},
+				},
+			},
+		)
+	}
+	return &ast.GenDecl{
+		Tok: token.TYPE,
+		Specs: []ast.Spec{
+			&ast.TypeSpec{
+				Name: &ast.Ident{
+					Name: "App",
+				},
+				Type: structType,
+			},
+		},
+	}
+}

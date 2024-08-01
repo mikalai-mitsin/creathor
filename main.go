@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/auth"
 
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/layout"
 
@@ -11,8 +12,6 @@ import (
 	"os/exec"
 	"path"
 	"strings"
-
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/auth"
 
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg"
@@ -73,9 +72,11 @@ func initProject(ctx *cli.Context) error {
 	if err := pkgGenerator.Sync(); err != nil {
 		return err
 	}
-	authGenerator := auth.NewGenerator(project)
-	if err := authGenerator.Sync(); err != nil {
-		return err
+	if project.Auth {
+		authGenerator := auth.NewGenerator(project)
+		if err := authGenerator.Sync(); err != nil {
+			return err
+		}
 	}
 	for _, m := range project.Domains {
 		d := &domain.Domain{

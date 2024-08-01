@@ -1,15 +1,15 @@
 package auth
 
 import (
-	"path"
-
-	"github.com/mikalai-mitsin/creathor/internal/app/generator"
 	authGrpcHandlers "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/handlers/grpc"
 	authInterceptors "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/interceptors"
 	authModel "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/models"
 	authRepositoriesJwt "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/repositories/jwt"
 	authRepositoriesPosgres "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/repositories/postgres"
 	authUseCases "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/usecases"
+	"path"
+
+	"github.com/mikalai-mitsin/creathor/internal/app/generator"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 )
@@ -26,26 +26,24 @@ var destinationPath = "."
 
 func (g *Generator) Sync() error {
 	var authGenerators []generator.Generator
-	if g.project.Auth {
-		authGenerators = append(
-			authGenerators,
-			authModel.NewModelAuth(g.project),
-			authRepositoriesJwt.NewRepository(g.project),
-			authRepositoriesPosgres.NewRepository(g.project),
-			//Use case and interfaces
-			authUseCases.NewUseCaseAuth(g.project),
-			authUseCases.NewRepositoryInterfaceAuth(g.project),
-			//Interceptor and interfaces
-			authInterceptors.NewInterceptorAuth(g.project),
-			authInterceptors.NewUseCaseInterfaceAuth(g.project),
-			//Handlers and interfaces
-			authGrpcHandlers.NewInterceptorInterfaceAuth(g.project),
-			authGrpcHandlers.NewHandler(g.project),
-			authGrpcHandlers.NewProto(g.project),
+	authGenerators = append(
+		authGenerators,
+		authModel.NewModelAuth(g.project),
+		authRepositoriesJwt.NewRepository(g.project),
+		authRepositoriesPosgres.NewRepository(g.project),
+		//Use case and interfaces
+		authUseCases.NewUseCaseAuth(g.project),
+		authUseCases.NewRepositoryInterfaceAuth(g.project),
+		//Interceptor and interfaces
+		authInterceptors.NewInterceptorAuth(g.project),
+		authInterceptors.NewUseCaseInterfaceAuth(g.project),
+		//Handlers and interfaces
+		authGrpcHandlers.NewInterceptorInterfaceAuth(g.project),
+		authGrpcHandlers.NewHandler(g.project),
+		authGrpcHandlers.NewProto(g.project),
 
-			authModel.NewModelPermission(g.project),
-		)
-	}
+		authModel.NewModelPermission(g.project),
+	)
 	for _, authGenerator := range authGenerators {
 		if err := authGenerator.Sync(); err != nil {
 			return err

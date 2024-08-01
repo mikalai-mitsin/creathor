@@ -265,6 +265,147 @@ func (a App) constructor() *ast.FuncDecl {
 			},
 		)
 	}
+	body := &ast.BlockStmt{
+		List: []ast.Stmt{
+			&ast.AssignStmt{
+				Lhs: []ast.Expr{
+					ast.NewIdent(a.domain.Repository.Variable),
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "postgres",
+							},
+							Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.Repository.Name)),
+						},
+						Args: []ast.Expr{
+							&ast.Ident{
+								Name: "db",
+							},
+							&ast.Ident{
+								Name: "logger",
+							},
+						},
+					},
+				},
+			},
+			&ast.AssignStmt{
+				Lhs: []ast.Expr{
+					ast.NewIdent(a.domain.UseCase.Variable),
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "usecases",
+							},
+							Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.UseCase.Name)),
+						},
+						Args: []ast.Expr{
+							ast.NewIdent(a.domain.Repository.Variable),
+							&ast.Ident{
+								Name: "clock",
+							},
+							&ast.Ident{
+								Name: "logger",
+							},
+							&ast.Ident{
+								Name: "uuidGenerator",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	if a.domain.Auth {
+		body.List = append(body.List, &ast.AssignStmt{
+			Lhs: []ast.Expr{
+				ast.NewIdent(a.domain.Interceptor.Variable),
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "interceptors",
+						},
+						Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.Interceptor.Name)),
+					},
+					Args: []ast.Expr{
+						ast.NewIdent(a.domain.UseCase.Variable),
+						&ast.Ident{
+							Name: "logger",
+						},
+						&ast.Ident{
+							Name: "authUseCase",
+						},
+					},
+				},
+			},
+		})
+	} else {
+		body.List = append(body.List, &ast.AssignStmt{
+			Lhs: []ast.Expr{
+				ast.NewIdent(a.domain.Interceptor.Variable),
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "interceptors",
+						},
+						Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.Interceptor.Name)),
+					},
+					Args: []ast.Expr{
+						ast.NewIdent(a.domain.UseCase.Variable),
+						&ast.Ident{
+							Name: "logger",
+						},
+					},
+				},
+			},
+		})
+	}
+	body.List = append(body.List, &ast.AssignStmt{
+		Lhs: []ast.Expr{
+			ast.NewIdent(a.domain.GRPCHandler.Variable),
+		},
+		Tok: token.DEFINE,
+		Rhs: []ast.Expr{
+			&ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "grpc",
+					},
+					Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.GRPCHandler.Name)),
+				},
+				Args: []ast.Expr{
+					ast.NewIdent(a.domain.Interceptor.Variable),
+					&ast.Ident{
+						Name: "logger",
+					},
+				},
+			},
+		},
+	})
+	body.List = append(body.List, &ast.ReturnStmt{
+		Results: []ast.Expr{
+			&ast.UnaryExpr{
+				Op: token.AND,
+				X: &ast.CompositeLit{
+					Type: &ast.Ident{
+						Name: "App",
+					},
+					Elts: exprs,
+				},
+			},
+		},
+	})
 	return &ast.FuncDecl{
 		Name: ast.NewIdent("NewApp"),
 		Type: &ast.FuncType{
@@ -281,122 +422,7 @@ func (a App) constructor() *ast.FuncDecl {
 				},
 			},
 		},
-		Body: &ast.BlockStmt{
-			List: []ast.Stmt{
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent(a.domain.Repository.Variable),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "postgres",
-								},
-								Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.Repository.Name)),
-							},
-							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "db",
-								},
-								&ast.Ident{
-									Name: "logger",
-								},
-							},
-						},
-					},
-				},
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent(a.domain.UseCase.Variable),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "usecases",
-								},
-								Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.UseCase.Name)),
-							},
-							Args: []ast.Expr{
-								ast.NewIdent(a.domain.Repository.Variable),
-								&ast.Ident{
-									Name: "clock",
-								},
-								&ast.Ident{
-									Name: "logger",
-								},
-								&ast.Ident{
-									Name: "uuidGenerator",
-								},
-							},
-						},
-					},
-				},
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent(a.domain.Interceptor.Variable),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "interceptors",
-								},
-								Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.Interceptor.Name)),
-							},
-							Args: []ast.Expr{
-								ast.NewIdent(a.domain.UseCase.Variable),
-								&ast.Ident{
-									Name: "logger",
-								},
-								&ast.Ident{
-									Name: "authUseCase",
-								},
-							},
-						},
-					},
-				},
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent(a.domain.GRPCHandler.Variable),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "grpc",
-								},
-								Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.GRPCHandler.Name)),
-							},
-							Args: []ast.Expr{
-								ast.NewIdent(a.domain.Interceptor.Variable),
-								&ast.Ident{
-									Name: "logger",
-								},
-							},
-						},
-					},
-				},
-				&ast.ReturnStmt{
-					Results: []ast.Expr{
-						&ast.UnaryExpr{
-							Op: token.AND,
-							X: &ast.CompositeLit{
-								Type: &ast.Ident{
-									Name: "App",
-								},
-								Elts: exprs,
-							},
-						},
-					},
-				},
-			},
-		},
+		Body: body,
 	}
 }
 

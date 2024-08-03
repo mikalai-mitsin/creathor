@@ -36,10 +36,16 @@ func (s Server) Sync() error {
 	if err := s.syncServerStop(); err != nil {
 		return err
 	}
+	if err := s.syncRegisterMethod(); err != nil {
+		return err
+	}
 	if err := s.syncMessageProducer(); err != nil {
 		return err
 	}
-	if err := s.syncDecodeError(); err != nil {
+	if err := s.syncUnaryErrorServerInterceptor(); err != nil {
+		return err
+	}
+	if err := s.syncHandleUnaryServerError(); err != nil {
 		return err
 	}
 	if s.project.Auth {
@@ -51,10 +57,6 @@ func (s Server) Sync() error {
 		if err := interfaces.Sync(); err != nil {
 			return err
 		}
-	}
-	requestID := NewRequestIDMiddleware(s.project)
-	if err := requestID.Sync(); err != nil {
-		return err
 	}
 	return nil
 }
@@ -151,16 +153,12 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 	fields := []*ast.Field{
 		{
 			Names: []*ast.Ident{
-				{
-					Name: "logger",
-				},
+				ast.NewIdent("logger"),
 			},
-			Type: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "log",
-				},
-				Sel: &ast.Ident{
-					Name: "Logger",
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X:   ast.NewIdent("log"),
+					Sel: ast.NewIdent("Log"),
 				},
 			},
 		},
@@ -179,16 +177,6 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 						Name: "Config",
 					},
 				},
-			},
-		},
-		{
-			Names: []*ast.Ident{
-				{
-					Name: "requestIDMiddleware",
-				},
-			},
-			Type: &ast.StarExpr{
-				X: ast.NewIdent("RequestIDMiddleware"),
 			},
 		},
 	}
@@ -248,50 +236,8 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 			},
 		)
 	}
-	for _, modelConfig := range s.project.Domains {
-		fields = append(
-			fields,
-			&ast.Field{
-				Names: []*ast.Ident{
-					{
-						Name: modelConfig.GRPCHandlerVariableName(),
-					},
-				},
-				Type: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: s.project.ProtoPackage(),
-					},
-					Sel: &ast.Ident{
-						Name: fmt.Sprintf("%sServiceServer", modelConfig.ModelName()),
-					},
-				},
-			},
-		)
-		registerStmts = append(
-			registerStmts,
-			&ast.ExprStmt{
-				X: &ast.CallExpr{
-					Fun: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: s.project.ProtoPackage(),
-						},
-						Sel: &ast.Ident{
-							Name: fmt.Sprintf("Register%sServiceServer", modelConfig.ModelName()),
-						},
-					},
-					Args: []ast.Expr{
-						&ast.Ident{
-							Name: "server",
-						},
-						&ast.Ident{
-							Name: modelConfig.GRPCHandlerVariableName(),
-						},
-					},
-				},
-			},
-		)
-	}
 	middlewares := []ast.Expr{
+		ast.NewIdent("unaryErrorServerInterceptor"),
 		&ast.CallExpr{
 			Fun: &ast.SelectorExpr{
 				X: &ast.Ident{
@@ -300,15 +246,6 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 				Sel: &ast.Ident{
 					Name: "UnaryServerInterceptor",
 				},
-			},
-		},
-
-		&ast.SelectorExpr{
-			X: &ast.Ident{
-				Name: "requestIDMiddleware",
-			},
-			Sel: &ast.Ident{
-				Name: "UnaryServerInterceptor",
 			},
 		},
 		&ast.CallExpr{
@@ -1556,17 +1493,59 @@ func (s Server) syncMessageProducer() error {
 	return nil
 }
 
-func (s Server) astDecodeError() *ast.FuncDecl {
+func (s Server) astHandleUnaryServerError() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
-			Name: "DecodeError",
+			Name: "handleUnaryServerError",
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
-					{
+					&ast.Field{
 						Names: []*ast.Ident{
-							{
+							&ast.Ident{
+								Name: "_",
+							},
+						},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "context",
+							},
+							Sel: &ast.Ident{
+								Name: "Context",
+							},
+						},
+					},
+					&ast.Field{
+						Names: []*ast.Ident{
+							&ast.Ident{
+								Name: "_",
+							},
+						},
+						Type: &ast.Ident{
+							Name: "any",
+						},
+					},
+					&ast.Field{
+						Names: []*ast.Ident{
+							&ast.Ident{
+								Name: "_",
+							},
+						},
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "grpc",
+								},
+								Sel: &ast.Ident{
+									Name: "UnaryServerInfo",
+								},
+							},
+						},
+					},
+					&ast.Field{
+						Names: []*ast.Ident{
+							&ast.Ident{
 								Name: "err",
 							},
 						},
@@ -1578,7 +1557,7 @@ func (s Server) astDecodeError() *ast.FuncDecl {
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
-					{
+					&ast.Field{
 						Type: &ast.Ident{
 							Name: "error",
 						},
@@ -1588,13 +1567,35 @@ func (s Server) astDecodeError() *ast.FuncDecl {
 		},
 		Body: &ast.BlockStmt{
 			List: []ast.Stmt{
+				&ast.IfStmt{
+					Cond: &ast.BinaryExpr{
+						X: &ast.Ident{
+							Name: "err",
+						},
+						Op: token.EQL,
+						Y: &ast.Ident{
+							Name: "nil",
+						},
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.ReturnStmt{
+								Results: []ast.Expr{
+									&ast.Ident{
+										Name: "nil",
+									},
+								},
+							},
+						},
+					},
+				},
 				&ast.DeclStmt{
 					Decl: &ast.GenDecl{
 						Tok: token.VAR,
 						Specs: []ast.Spec{
 							&ast.ValueSpec{
 								Names: []*ast.Ident{
-									{
+									&ast.Ident{
 										Name: "domainError",
 									},
 								},
@@ -1692,7 +1693,7 @@ func (s Server) astDecodeError() *ast.FuncDecl {
 									Specs: []ast.Spec{
 										&ast.ValueSpec{
 											Names: []*ast.Ident{
-												{
+												&ast.Ident{
 													Name: "withDetails",
 												},
 											},
@@ -2188,7 +2189,7 @@ func (s Server) astDecodeError() *ast.FuncDecl {
 	}
 }
 
-func (s Server) syncDecodeError() error {
+func (s Server) syncHandleUnaryServerError() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "grpc", "server.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -2198,7 +2199,7 @@ func (s Server) syncDecodeError() error {
 	var methodExist bool
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "DecodeError" {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "handleUnaryServerError" {
 			methodExist = true
 			method = t
 			return false
@@ -2206,7 +2207,300 @@ func (s Server) syncDecodeError() error {
 		return true
 	})
 	if method == nil {
-		method = s.astDecodeError()
+		method = s.astHandleUnaryServerError()
+	}
+	if !methodExist {
+		file.Decls = append(file.Decls, method)
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filename, buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s Server) astUnaryErrorServerInterceptor() *ast.FuncDecl {
+	return &ast.FuncDecl{
+		Name: &ast.Ident{
+			Name: "unaryErrorServerInterceptor",
+		},
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: []*ast.Field{
+					&ast.Field{
+						Names: []*ast.Ident{
+							&ast.Ident{
+								Name: "ctx",
+							},
+						},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "context",
+							},
+							Sel: &ast.Ident{
+								Name: "Context",
+							},
+						},
+					},
+					&ast.Field{
+						Names: []*ast.Ident{
+							&ast.Ident{
+								Name: "req",
+							},
+						},
+						Type: &ast.InterfaceType{
+							Methods: &ast.FieldList{},
+						},
+					},
+					&ast.Field{
+						Names: []*ast.Ident{
+							&ast.Ident{
+								Name: "info",
+							},
+						},
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "grpc",
+								},
+								Sel: &ast.Ident{
+									Name: "UnaryServerInfo",
+								},
+							},
+						},
+					},
+					&ast.Field{
+						Names: []*ast.Ident{
+							&ast.Ident{
+								Name: "handler",
+							},
+						},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "grpc",
+							},
+							Sel: &ast.Ident{
+								Name: "UnaryHandler",
+							},
+						},
+					},
+				},
+			},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					&ast.Field{
+						Type: &ast.InterfaceType{
+							Methods: &ast.FieldList{},
+						},
+					},
+					&ast.Field{
+						Type: &ast.Ident{
+							Name: "error",
+						},
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						&ast.Ident{
+							Name: "resp",
+						},
+						&ast.Ident{
+							Name: "err",
+						},
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.Ident{
+								Name: "handler",
+							},
+							Args: []ast.Expr{
+								&ast.Ident{
+									Name: "ctx",
+								},
+								&ast.Ident{
+									Name: "req",
+								},
+							},
+						},
+					},
+				},
+				&ast.ReturnStmt{
+					Results: []ast.Expr{
+						&ast.Ident{
+							Name: "resp",
+						},
+						&ast.CallExpr{
+							Fun: &ast.Ident{
+								Name: "handleUnaryServerError",
+							},
+							Args: []ast.Expr{
+								&ast.Ident{
+									Name: "ctx",
+								},
+								&ast.Ident{
+									Name: "req",
+								},
+								&ast.Ident{
+									Name: "info",
+								},
+								&ast.Ident{
+									Name: "err",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (s Server) syncUnaryErrorServerInterceptor() error {
+	fileset := token.NewFileSet()
+	filename := path.Join("internal", "pkg", "grpc", "server.go")
+	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	var methodExist bool
+	var method *ast.FuncDecl
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "unaryErrorServerInterceptor" {
+			methodExist = true
+			method = t
+			return false
+		}
+		return true
+	})
+	if method == nil {
+		method = s.astUnaryErrorServerInterceptor()
+	}
+	if !methodExist {
+		file.Decls = append(file.Decls, method)
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filename, buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s Server) astRegisterMethod() *ast.FuncDecl {
+	return &ast.FuncDecl{
+		Recv: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Names: []*ast.Ident{
+						{
+							Name: "s",
+						},
+					},
+					Type: &ast.StarExpr{
+						X: &ast.Ident{
+							Name: "Server",
+						},
+					},
+				},
+			},
+		},
+		Name: &ast.Ident{
+			Name: "RegisterService",
+		},
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{
+							{
+								Name: "desc",
+							},
+						},
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "grpc",
+								},
+								Sel: &ast.Ident{
+									Name: "ServiceDesc",
+								},
+							},
+						},
+					},
+					{
+						Names: []*ast.Ident{
+							{
+								Name: "impl",
+							},
+						},
+						Type: &ast.Ident{
+							Name: "any",
+						},
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.ExprStmt{
+					X: &ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "s",
+								},
+								Sel: &ast.Ident{
+									Name: "server",
+								},
+							},
+							Sel: &ast.Ident{
+								Name: "RegisterService",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.Ident{
+								Name: "desc",
+							},
+							&ast.Ident{
+								Name: "impl",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (s Server) syncRegisterMethod() error {
+	fileset := token.NewFileSet()
+	filename := path.Join("internal", "pkg", "grpc", "server.go")
+	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	var methodExist bool
+	var method *ast.FuncDecl
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "RegisterService" {
+			methodExist = true
+			method = t
+			return false
+		}
+		return true
+	})
+	if method == nil {
+		method = s.astRegisterMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)

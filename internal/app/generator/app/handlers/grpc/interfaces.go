@@ -71,7 +71,7 @@ func (i HandlerInterfaces) Sync() error {
 
 func (i HandlerInterfaces) file() *ast.File {
 	return &ast.File{
-		Name: ast.NewIdent("grpc"),
+		Name: ast.NewIdent("handlers"),
 		Decls: []ast.Decl{
 			i.imports(),
 		},

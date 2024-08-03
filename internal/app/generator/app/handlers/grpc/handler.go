@@ -32,17 +32,10 @@ func (h Handler) file() *ast.File {
 				Value: `"context"`,
 			},
 		},
-
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
 				Value: h.domain.ModelsImportPath(),
-			},
-		},
-		&ast.ImportSpec{
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, h.domain.Module),
 			},
 		},
 		&ast.ImportSpec{
@@ -108,7 +101,7 @@ func (h Handler) file() *ast.File {
 	}
 	return &ast.File{
 		Name: &ast.Ident{
-			Name: "grpc",
+			Name: "handlers",
 		},
 		Decls: []ast.Decl{
 			&ast.GenDecl{
@@ -2238,16 +2231,7 @@ func (h Handler) create() *ast.FuncDecl {
 									&ast.Ident{
 										Name: "nil",
 									},
-									&ast.CallExpr{
-										Fun: &ast.Ident{
-											Name: "grpc.DecodeError",
-										},
-										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "err",
-											},
-										},
-									},
+									ast.NewIdent("err"),
 								},
 							},
 						},
@@ -2462,16 +2446,7 @@ func (h Handler) get() *ast.FuncDecl {
 									&ast.Ident{
 										Name: "nil",
 									},
-									&ast.CallExpr{
-										Fun: &ast.Ident{
-											Name: "grpc.DecodeError",
-										},
-										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "err",
-											},
-										},
-									},
+									ast.NewIdent("err"),
 								},
 							},
 						},
@@ -2678,16 +2653,7 @@ func (h Handler) list() *ast.FuncDecl {
 									&ast.Ident{
 										Name: "nil",
 									},
-									&ast.CallExpr{
-										Fun: &ast.Ident{
-											Name: "grpc.DecodeError",
-										},
-										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "err",
-											},
-										},
-									},
+									ast.NewIdent("err"),
 								},
 							},
 						},
@@ -2894,16 +2860,7 @@ func (h Handler) update() *ast.FuncDecl {
 									&ast.Ident{
 										Name: "nil",
 									},
-									&ast.CallExpr{
-										Fun: &ast.Ident{
-											Name: "grpc.DecodeError",
-										},
-										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "err",
-											},
-										},
-									},
+									ast.NewIdent("err"),
 								},
 							},
 						},
@@ -3116,16 +3073,7 @@ func (h Handler) delete() *ast.FuncDecl {
 									&ast.Ident{
 										Name: "nil",
 									},
-									&ast.CallExpr{
-										Fun: &ast.Ident{
-											Name: "grpc.DecodeError",
-										},
-										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "err",
-											},
-										},
-									},
+									ast.NewIdent("err"),
 								},
 							},
 						},

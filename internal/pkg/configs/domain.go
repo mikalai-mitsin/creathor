@@ -76,6 +76,10 @@ func (m *DomainConfig) DomainAlias() string {
 	return strcase.ToLowerCamel(m.Model)
 }
 
+func (m *DomainConfig) CamelCase() string {
+	return strcase.ToCamel(m.Model)
+}
+
 func (m *DomainConfig) UseCaseTypeName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Model))
 }

@@ -50,6 +50,8 @@ func (a App) file() *ast.File {
 			a.imports(),
 			a.structure(),
 			a.constructor(),
+			a.start(),
+			a.stop(),
 		},
 	}
 }
@@ -58,6 +60,12 @@ func (a App) imports() *ast.GenDecl {
 	imports := &ast.GenDecl{
 		Tok: token.IMPORT,
 		Specs: []ast.Spec{
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: `"context"`,
+				},
+			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
@@ -89,6 +97,13 @@ func (a App) imports() *ast.GenDecl {
 				},
 			},
 			&ast.ImportSpec{
+				Name: ast.NewIdent("gRPC"),
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, a.domain.Module),
+				},
+			},
+			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: fmt.Sprintf(`"%s/internal/pkg/log"`, a.domain.Module),
@@ -104,6 +119,17 @@ func (a App) imports() *ast.GenDecl {
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: `"github.com/jmoiron/sqlx"`,
+				},
+			},
+			&ast.ImportSpec{
+				Name: ast.NewIdent(a.domain.ProtoModule),
+				Path: &ast.BasicLit{
+					Kind: token.STRING,
+					Value: fmt.Sprintf(
+						`"%s/pkg/%s/v1"`,
+						a.domain.Module,
+						a.domain.ProtoModule,
+					),
 				},
 			},
 		},
@@ -141,6 +167,19 @@ func (a App) constructor() *ast.FuncDecl {
 					Sel: &ast.Ident{
 						Name: "DB",
 					},
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{
+				{
+					Name: "grpcServer",
+				},
+			},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X:   ast.NewIdent("gRPC"),
+					Sel: ast.NewIdent("Server"),
 				},
 			},
 		},
@@ -229,6 +268,14 @@ func (a App) constructor() *ast.FuncDecl {
 		},
 		&ast.KeyValueExpr{
 			Key: &ast.Ident{
+				Name: "grpcServer",
+			},
+			Value: &ast.Ident{
+				Name: "grpcServer",
+			},
+		},
+		&ast.KeyValueExpr{
+			Key: &ast.Ident{
 				Name: "logger",
 			},
 			Value: &ast.Ident{
@@ -236,19 +283,19 @@ func (a App) constructor() *ast.FuncDecl {
 			},
 		},
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(fmt.Sprintf("%sPostgresRepository", a.domain.CamelName())),
+			Key:   ast.NewIdent(fmt.Sprintf("%sRepository", a.domain.LowerCamelName())),
 			Value: ast.NewIdent(a.domain.Repository.Variable),
 		},
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(fmt.Sprintf("%sUseCase", a.domain.CamelName())),
+			Key:   ast.NewIdent(fmt.Sprintf("%sUseCase", a.domain.LowerCamelName())),
 			Value: ast.NewIdent(a.domain.UseCase.Variable),
 		},
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(fmt.Sprintf("%sInterceptor", a.domain.CamelName())),
+			Key:   ast.NewIdent(fmt.Sprintf("%sInterceptor", a.domain.LowerCamelName())),
 			Value: ast.NewIdent(a.domain.Interceptor.Variable),
 		},
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(fmt.Sprintf("%sGrpcServer", a.domain.CamelName())),
+			Key:   ast.NewIdent(fmt.Sprintf("%sHandler", a.domain.LowerCamelName())),
 			Value: ast.NewIdent(a.domain.GRPCHandler.Variable),
 		},
 	}
@@ -379,9 +426,7 @@ func (a App) constructor() *ast.FuncDecl {
 		Rhs: []ast.Expr{
 			&ast.CallExpr{
 				Fun: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "grpc",
-					},
+					X:   ast.NewIdent("handlers"),
 					Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.GRPCHandler.Name)),
 				},
 				Args: []ast.Expr{
@@ -449,6 +494,17 @@ func (a App) structure() *ast.GenDecl {
 				},
 				{
 					Names: []*ast.Ident{
+						ast.NewIdent("grpcServer"),
+					},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent("gRPC"),
+							Sel: ast.NewIdent("Server"),
+						},
+					},
+				},
+				{
+					Names: []*ast.Ident{
 						{
 							Name: "logger",
 						},
@@ -466,7 +522,7 @@ func (a App) structure() *ast.GenDecl {
 				},
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent(fmt.Sprintf("%sPostgresRepository", a.domain.CamelName())),
+						ast.NewIdent(fmt.Sprintf("%sRepository", a.domain.LowerCamelName())),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
@@ -479,7 +535,7 @@ func (a App) structure() *ast.GenDecl {
 				},
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent(fmt.Sprintf("%sUseCase", a.domain.CamelName())),
+						ast.NewIdent(fmt.Sprintf("%sUseCase", a.domain.LowerCamelName())),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
@@ -492,7 +548,7 @@ func (a App) structure() *ast.GenDecl {
 				},
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent(fmt.Sprintf("%sInterceptor", a.domain.CamelName())),
+						ast.NewIdent(fmt.Sprintf("%sInterceptor", a.domain.LowerCamelName())),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
@@ -505,14 +561,11 @@ func (a App) structure() *ast.GenDecl {
 				},
 				{
 					Names: []*ast.Ident{
-
-						ast.NewIdent(fmt.Sprintf("%sGrpcServer", a.domain.CamelName())),
+						ast.NewIdent(fmt.Sprintf("%sHandler", a.domain.LowerCamelName())),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "grpc",
-							},
+							X:   ast.NewIdent("handlers"),
 							Sel: ast.NewIdent(a.domain.GRPCHandler.Name),
 						},
 					},
@@ -550,6 +603,122 @@ func (a App) structure() *ast.GenDecl {
 					Name: "App",
 				},
 				Type: structType,
+			},
+		},
+	}
+}
+
+func (a App) start() *ast.FuncDecl {
+	return &ast.FuncDecl{
+		Recv: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent("a"),
+					},
+					Type: &ast.StarExpr{
+						X: ast.NewIdent("App"),
+					},
+				},
+			},
+		},
+		Name: ast.NewIdent("Start"),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{
+							ast.NewIdent("ctx"),
+						},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
+						},
+					},
+				},
+			},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: ast.NewIdent("error"),
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.ExprStmt{
+					X: &ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X:   ast.NewIdent(a.domain.ProtoModule),
+							Sel: ast.NewIdent(fmt.Sprintf("Register%sServiceServer", a.domain.CamelName())),
+						},
+						Args: []ast.Expr{
+							&ast.SelectorExpr{
+								X:   ast.NewIdent("a"),
+								Sel: ast.NewIdent("grpcServer"),
+							},
+							&ast.SelectorExpr{
+								X:   ast.NewIdent("a"),
+								Sel: ast.NewIdent(fmt.Sprintf("%sHandler", a.domain.LowerCamelName())),
+							},
+						},
+					},
+				},
+				&ast.ReturnStmt{
+					Results: []ast.Expr{
+						ast.NewIdent("nil"),
+					},
+				},
+			},
+		},
+	}
+}
+
+func (a App) stop() *ast.FuncDecl {
+	return &ast.FuncDecl{
+		Recv: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent("a"),
+					},
+					Type: &ast.StarExpr{
+						X: ast.NewIdent("App"),
+					},
+				},
+			},
+		},
+		Name: ast.NewIdent("Stop"),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{
+							ast.NewIdent("ctx"),
+						},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
+						},
+					},
+				},
+			},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: ast.NewIdent("error"),
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.ReturnStmt{
+					Results: []ast.Expr{
+						ast.NewIdent("nil"),
+					},
+				},
 			},
 		},
 	}

@@ -122,7 +122,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Create(t *testing.T) {
                 input: &{{ .Config.ProtoPackage }}.{{ .Config.CreateTypeName }}{},
             },
             want:    nil,
-            wantErr: grpc.DecodeError(errs.NewUnexpectedBehaviorError("interceptor error")),
+            wantErr: errs.NewUnexpectedBehaviorError("interceptor error"),
         },
     }
     for _, tt := range tests {
@@ -207,11 +207,11 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Delete(t *testing.T) {
                 },
             },
             want: nil,
-            wantErr: grpc.DecodeError(&errs.Error{
+            wantErr: &errs.Error{
                 Code:    13,
                 Message: "Unexpected behavior.",
                 Params: errs.Params{ {Key: "details", Value: "i error"} },
-            }),
+            },
         },
     }
     for _, tt := range tests {
@@ -296,7 +296,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Get(t *testing.T) {
                 },
             },
             want:    nil,
-            wantErr: grpc.DecodeError(errs.NewUnexpectedBehaviorError("i error")),
+            wantErr: errs.NewUnexpectedBehaviorError("i error"),
         },
     }
     for _, tt := range tests {
@@ -407,7 +407,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
                 },
             },
             want:    nil,
-            wantErr: grpc.DecodeError(errs.NewUnexpectedBehaviorError("i error")),
+            wantErr: errs.NewUnexpectedBehaviorError("i error"),
         },
     }
     for _, tt := range tests {
@@ -488,7 +488,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Update(t *testing.T) {
                 input: decode{{ .Config.UpdateTypeName }}(update),
             },
             want:    nil,
-            wantErr: grpc.DecodeError(errs.NewUnexpectedBehaviorError("i error")),
+            wantErr: errs.NewUnexpectedBehaviorError("i error"),
         },
     }
     for _, tt := range tests {

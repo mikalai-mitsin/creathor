@@ -97,7 +97,6 @@ func (a App) imports() *ast.GenDecl {
 				},
 			},
 			&ast.ImportSpec{
-				Name: ast.NewIdent("gRPC"),
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, a.domain.Module),
@@ -178,7 +177,7 @@ func (a App) constructor() *ast.FuncDecl {
 			},
 			Type: &ast.StarExpr{
 				X: &ast.SelectorExpr{
-					X:   ast.NewIdent("gRPC"),
+					X:   ast.NewIdent("grpc"),
 					Sel: ast.NewIdent("Server"),
 				},
 			},
@@ -498,7 +497,7 @@ func (a App) structure() *ast.GenDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
-							X:   ast.NewIdent("gRPC"),
+							X:   ast.NewIdent("grpc"),
 							Sel: ast.NewIdent("Server"),
 						},
 					},

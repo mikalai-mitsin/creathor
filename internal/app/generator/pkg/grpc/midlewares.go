@@ -1561,13 +1561,13 @@ func (u Middlewares) file() *ast.File {
 			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: `"github.com/018bf/example/internal/pkg/errs"`,
+					Value: fmt.Sprintf(`"%s/internal/pkg/errs"`, u.project.Module),
 				},
 			},
 			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: `"github.com/018bf/example/internal/pkg/log"`,
+					Value: fmt.Sprintf(`"%s/internal/pkg/log"`, u.project.Module),
 				},
 			},
 			{

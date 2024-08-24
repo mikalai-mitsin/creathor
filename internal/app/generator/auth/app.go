@@ -44,7 +44,6 @@ func (i AppAuth) Sync() error {
 
 func (i AppAuth) file() *ast.File {
 	return &ast.File{
-		Package: 1,
 		Name: &ast.Ident{
 			Name: "auth",
 		},
@@ -248,6 +247,22 @@ func (i AppAuth) file() *ast.File {
 												},
 												Sel: &ast.Ident{
 													Name: "AuthServiceServer",
+												},
+											},
+										},
+									}, {
+										Names: []*ast.Ident{
+											{
+												Name: "authMiddleware",
+											},
+										},
+										Type: &ast.StarExpr{
+											X: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "handlers",
+												},
+												Sel: &ast.Ident{
+													Name: "AuthMiddleware",
 												},
 											},
 										},
@@ -512,6 +527,37 @@ func (i AppAuth) file() *ast.File {
 								},
 							},
 						},
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
+								&ast.Ident{
+									Name: "authMiddleware",
+								},
+							},
+							Tok: token.DEFINE,
+							Rhs: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "handlers",
+										},
+										Sel: &ast.Ident{
+											Name: "NewAuthMiddleware",
+										},
+									},
+									Args: []ast.Expr{
+										&ast.Ident{
+											Name: "authUseCase",
+										},
+										&ast.Ident{
+											Name: "logger",
+										},
+										&ast.Ident{
+											Name: "config",
+										},
+									},
+								},
+							},
+						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
 								&ast.UnaryExpr{
@@ -575,6 +621,14 @@ func (i AppAuth) file() *ast.File {
 												},
 												Value: &ast.Ident{
 													Name: "authHandler",
+												},
+											},
+											&ast.KeyValueExpr{
+												Key: &ast.Ident{
+													Name: "authMiddleware",
+												},
+												Value: &ast.Ident{
+													Name: "authMiddleware",
 												},
 											},
 										},
@@ -665,11 +719,29 @@ func (i AppAuth) file() *ast.File {
 								},
 							},
 						},
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.SelectorExpr{
+										X:   ast.NewIdent("a"),
+										Sel: ast.NewIdent("grpcServer"),
+									},
+									Sel: ast.NewIdent("AddInterceptor"),
+								},
+								Args: []ast.Expr{
+									&ast.SelectorExpr{
+										X: &ast.SelectorExpr{
+											X:   ast.NewIdent("a"),
+											Sel: ast.NewIdent("authMiddleware"),
+										},
+										Sel: ast.NewIdent("UnaryServerInterceptor"),
+									},
+								},
+							},
+						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("nil"),
 							},
 						},
 					},

@@ -38,8 +38,9 @@ func (g *Generator) Sync() error {
 		authInterceptors.NewInterceptorAuth(g.project),
 		authInterceptors.NewUseCaseInterfaceAuth(g.project),
 		//Handlers and interfaces
-		authGrpcHandlers.NewInterceptorInterfaceAuth(g.project),
+		authGrpcHandlers.NewInterfaces(g.project),
 		authGrpcHandlers.NewHandler(g.project),
+		authGrpcHandlers.NewMiddlewares(g.project),
 		authGrpcHandlers.NewProto(g.project),
 
 		authModel.NewModelPermission(g.project),

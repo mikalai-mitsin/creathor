@@ -13,18 +13,18 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
-type InterceptorInterfaceAuth struct {
+type Interfaces struct {
 	project *configs.Project
 }
 
-func NewInterceptorInterfaceAuth(project *configs.Project) *InterceptorInterfaceAuth {
-	return &InterceptorInterfaceAuth{project: project}
+func NewInterfaces(project *configs.Project) *Interfaces {
+	return &Interfaces{project: project}
 }
 
-func (i InterceptorInterfaceAuth) file() *ast.File {
+func (i *Interfaces) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
-			Name: "interceptors",
+			Name: "handlers",
 		},
 		Decls: []ast.Decl{
 			&ast.GenDecl{
@@ -39,7 +39,7 @@ func (i InterceptorInterfaceAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/models"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/auth/models"`, i.project.Module),
 						},
 					},
 				},
@@ -414,122 +414,6 @@ func (i InterceptorInterfaceAuth) file() *ast.File {
 											},
 										},
 									},
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "Auth",
-											},
-										},
-										Type: &ast.FuncType{
-											Params: &ast.FieldList{
-												List: []*ast.Field{
-													{
-														Names: []*ast.Ident{
-															{
-																Name: "ctx",
-															},
-														},
-														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "context",
-															},
-															Sel: &ast.Ident{
-																Name: "Context",
-															},
-														},
-													},
-													{
-														Names: []*ast.Ident{
-															{
-																Name: "access",
-															},
-														},
-														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "models",
-															},
-															Sel: &ast.Ident{
-																Name: "Token",
-															},
-														},
-													},
-												},
-											},
-											Results: &ast.FieldList{
-												List: []*ast.Field{
-													{
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "models",
-																},
-																Sel: &ast.Ident{
-																	Name: "User",
-																},
-															},
-														},
-													},
-													{
-														Type: &ast.Ident{
-															Name: "error",
-														},
-													},
-												},
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											{
-												Name: "ValidateToken",
-											},
-										},
-										Type: &ast.FuncType{
-											Params: &ast.FieldList{
-												List: []*ast.Field{
-													{
-														Names: []*ast.Ident{
-															{
-																Name: "ctx",
-															},
-														},
-														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "context",
-															},
-															Sel: &ast.Ident{
-																Name: "Context",
-															},
-														},
-													},
-													{
-														Names: []*ast.Ident{
-															{
-																Name: "access",
-															},
-														},
-														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "models",
-															},
-															Sel: &ast.Ident{
-																Name: "Token",
-															},
-														},
-													},
-												},
-											},
-											Results: &ast.FieldList{
-												List: []*ast.Field{
-													{
-														Type: &ast.Ident{
-															Name: "error",
-														},
-													},
-												},
-											},
-										},
-									},
 								},
 							},
 						},
@@ -540,9 +424,9 @@ func (i InterceptorInterfaceAuth) file() *ast.File {
 	}
 }
 
-func (i InterceptorInterfaceAuth) Sync() error {
+func (i *Interfaces) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", "auth", "interceptors", "auth.go")
+	filename := path.Join("internal", "app", "auth", "handlers", "grpc", "interfaces.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}

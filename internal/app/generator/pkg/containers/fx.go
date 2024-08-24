@@ -687,7 +687,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 			Name: "FXModule",
 		},
 	}
-	for _, domain := range f.project.Domains {
+	if f.project.Auth {
 		args = append(args, &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
 				X: &ast.Ident{
@@ -725,9 +725,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: domain.DomainName(),
-											},
+											X:   ast.NewIdent("auth"),
 											Sel: ast.NewIdent("App"),
 										},
 									},
@@ -787,7 +785,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 			},
 		})
 	}
-	if f.project.Auth {
+	for _, domain := range f.project.Domains {
 		args = append(args, &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
 				X: &ast.Ident{
@@ -825,7 +823,9 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X:   ast.NewIdent("auth"),
+											X: &ast.Ident{
+												Name: domain.DomainName(),
+											},
 											Sel: ast.NewIdent("App"),
 										},
 									},

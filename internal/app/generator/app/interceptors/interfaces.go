@@ -31,16 +31,12 @@ func (i InterceptorInterfaces) Sync() error {
 	if err != nil {
 		file = i.file()
 	}
-	authUseCaseExists := false
 	appUseCaseExists := false
 	loggerExists := false
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.TypeSpec); ok {
 			if t.Name.String() == i.domain.UseCase.Name {
 				appUseCaseExists = true
-			}
-			if t.Name.String() == "AuthUseCase" {
-				authUseCaseExists = true
 			}
 			if t.Name.String() == "Logger" {
 				loggerExists = true
@@ -54,9 +50,6 @@ func (i InterceptorInterfaces) Sync() error {
 	}
 	if !loggerExists {
 		file.Decls = append(file.Decls, i.loggerInterface())
-	}
-	if i.domain.Auth && !authUseCaseExists {
-		file.Decls = append(file.Decls, i.authUseCaseInterface())
 	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
@@ -118,206 +111,6 @@ func (i InterceptorInterfaces) imports() *ast.GenDecl {
 		})
 	}
 	return imports
-}
-
-func (i InterceptorInterfaces) authUseCaseInterface() *ast.GenDecl {
-	return &ast.GenDecl{
-		Doc: &ast.CommentGroup{
-			List: []*ast.Comment{
-				{
-					Text: "//AuthUseCase - domain layer interceptor interface",
-				},
-				{
-					Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth.go . AuthUseCase",
-				},
-			},
-		},
-		Tok: token.TYPE,
-		Specs: []ast.Spec{
-			&ast.TypeSpec{
-				Name: &ast.Ident{
-					Name: "AuthUseCase",
-				},
-				Type: &ast.InterfaceType{
-					Methods: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "GetUser",
-									},
-								},
-								Type: &ast.FuncType{
-									Params: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "ctx",
-													},
-												},
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "context",
-													},
-													Sel: &ast.Ident{
-														Name: "Context",
-													},
-												},
-											},
-										},
-									},
-									Results: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Type: &ast.StarExpr{
-													X: &ast.SelectorExpr{
-														X:   ast.NewIdent("userModels"),
-														Sel: ast.NewIdent("User"),
-													},
-												},
-											},
-											{
-												Type: &ast.Ident{
-													Name: "error",
-												},
-											},
-										},
-									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "HasPermission",
-									},
-								},
-								Type: &ast.FuncType{
-									Params: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "ctx",
-													},
-												},
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "context",
-													},
-													Sel: &ast.Ident{
-														Name: "Context",
-													},
-												},
-											},
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "user",
-													},
-												},
-												Type: &ast.StarExpr{
-													X: &ast.SelectorExpr{
-														X:   ast.NewIdent("userModels"),
-														Sel: ast.NewIdent("User"),
-													},
-												},
-											},
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "permission",
-													},
-												},
-												Type: ast.NewIdent("userModels.PermissionID"),
-											},
-										},
-									},
-									Results: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Type: &ast.Ident{
-													Name: "error",
-												},
-											},
-										},
-									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "HasObjectPermission",
-									},
-								},
-								Type: &ast.FuncType{
-									Params: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "ctx",
-													},
-												},
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "context",
-													},
-													Sel: &ast.Ident{
-														Name: "Context",
-													},
-												},
-											},
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "user",
-													},
-												},
-												Type: &ast.StarExpr{
-													X: &ast.SelectorExpr{
-														X:   ast.NewIdent("userModels"),
-														Sel: ast.NewIdent("User"),
-													},
-												},
-											},
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "permission",
-													},
-												},
-												Type: ast.NewIdent("userModels.PermissionID"),
-											},
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "object",
-													},
-												},
-												Type: &ast.Ident{
-													Name: "any",
-												},
-											},
-										},
-									},
-									Results: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Type: &ast.Ident{
-													Name: "error",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
 }
 
 func (i InterceptorInterfaces) appUseCaseInterface() *ast.GenDecl {

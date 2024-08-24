@@ -43,6 +43,9 @@ func (g *Generator) Sync() error {
 		authGrpcHandlers.NewProto(g.project),
 
 		authModel.NewModelPermission(g.project),
+
+		//App constructor
+		NewAppAuth(g.project),
 	)
 	for _, authGenerator := range authGenerators {
 		if err := authGenerator.Sync(); err != nil {
@@ -86,17 +89,6 @@ func (g *Generator) Sync() error {
 				"auth_test.go",
 			),
 			Name: "grpc auth test",
-		},
-		{
-			SourcePath: "templates/internal/pkg/grpc/auth_middleware_test.go.tmpl",
-			DestinationPath: path.Join(
-				destinationPath,
-				"internal",
-				"pkg",
-				"grpc",
-				"auth_middleware_test.go",
-			),
-			Name: "grpc middleware test",
 		},
 	}
 	for _, test := range tests {

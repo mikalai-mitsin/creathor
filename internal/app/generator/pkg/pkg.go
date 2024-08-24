@@ -2,6 +2,7 @@ package pkg
 
 import (
 	generators2 "github.com/mikalai-mitsin/creathor/internal/app/generator"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/auth"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/clock"
 	cg "github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/configs"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/containers"
@@ -35,6 +36,9 @@ func (g *Generator) Sync() error {
 		pointer.NewGenerator(g.project),
 		postgres.NewGenerator(g.project),
 		uuid.NewGenerator(g.project),
+	}
+	if g.project.Auth {
+		generators = append(generators, auth.NewGenerator(g.project))
 	}
 	if g.project.UptraceEnabled {
 		generators = append(generators, uptrace.NewProvider(g.project))

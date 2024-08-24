@@ -1,4 +1,4 @@
-package grpc
+package handlers
 
 import (
     "context"
@@ -78,7 +78,7 @@ func TestAuthServiceServer_CreateToken(t *testing.T) {
                 },
             },
             want:    nil,
-            wantErr: grpc.DecodeError(errs.NewBadTokenError()),
+            wantErr: errs.NewBadTokenError(),
         },
     }
     for _, tt := range tests {
@@ -161,7 +161,7 @@ func TestAuthServiceServer_RefreshToken(t *testing.T) {
                 },
             },
             want:    nil,
-            wantErr: grpc.DecodeError(errs.NewBadTokenError()),
+            wantErr: errs.NewBadTokenError(),
         },
     }
     for _, tt := range tests {

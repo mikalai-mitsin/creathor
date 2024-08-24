@@ -930,16 +930,7 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 									&ast.Ident{
 										Name: "nil",
 									},
-									&ast.CallExpr{
-										Fun: &ast.Ident{
-											Name: "DecodeError",
-										},
-										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "err",
-											},
-										},
-									},
+									ast.NewIdent("err"),
 								},
 							},
 						},

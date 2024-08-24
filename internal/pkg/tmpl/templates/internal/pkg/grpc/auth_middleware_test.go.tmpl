@@ -94,7 +94,7 @@ func TestAuthMiddleware_Auth(t *testing.T) {
                 ctx: ctxWithBadToken,
             },
             want:    nil,
-            wantErr: DecodeError(errs.NewBadTokenError()),
+            wantErr: errs.NewBadTokenError(),
         },
         {
             name:  "without token",

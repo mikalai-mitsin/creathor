@@ -48,16 +48,6 @@ func (s Server) Sync() error {
 	if err := s.syncHandleUnaryServerError(); err != nil {
 		return err
 	}
-	if s.project.Auth {
-		auth := NewAuthMiddleware(s.project)
-		if err := auth.Sync(); err != nil {
-			return err
-		}
-		interfaces := NewInterceptorInterfaceAuth(s.project)
-		if err := interfaces.Sync(); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
@@ -181,61 +171,6 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 		},
 	}
 	var registerStmts []ast.Stmt
-	if s.project.Auth {
-		fields = append(
-			fields,
-			&ast.Field{
-				Names: []*ast.Ident{
-					{
-						Name: "authMiddleware",
-					},
-				},
-				Type: &ast.StarExpr{
-					X: &ast.Ident{
-						Name: "AuthMiddleware",
-					},
-				},
-			},
-			&ast.Field{
-				Names: []*ast.Ident{
-					{
-						Name: "authHandler",
-					},
-				},
-				Type: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: s.project.ProtoPackage(),
-					},
-					Sel: &ast.Ident{
-						Name: "AuthServiceServer",
-					},
-				},
-			},
-		)
-		registerStmts = append(
-			registerStmts,
-			&ast.ExprStmt{
-				X: &ast.CallExpr{
-					Fun: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: s.project.ProtoPackage(),
-						},
-						Sel: &ast.Ident{
-							Name: "RegisterAuthServiceServer",
-						},
-					},
-					Args: []ast.Expr{
-						&ast.Ident{
-							Name: "server",
-						},
-						&ast.Ident{
-							Name: "authHandler",
-						},
-					},
-				},
-			},
-		)
-	}
 	middlewares := []ast.Expr{
 		ast.NewIdent("unaryErrorServerInterceptor"),
 		&ast.CallExpr{
@@ -285,19 +220,6 @@ func (s Server) astServerConstructor() *ast.FuncDecl {
 				},
 			},
 		},
-	}
-	if s.project.Auth {
-		middlewares = append(
-			middlewares,
-			&ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "authMiddleware",
-				},
-				Sel: &ast.Ident{
-					Name: "UnaryServerInterceptor",
-				},
-			},
-		)
 	}
 	return &ast.FuncDecl{
 		Name: &ast.Ident{

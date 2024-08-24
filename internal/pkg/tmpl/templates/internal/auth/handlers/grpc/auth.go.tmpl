@@ -1,4 +1,4 @@
-package grpc
+package handlers
 
 import (
 	"context"
@@ -23,7 +23,7 @@ type AuthServiceServer struct {
 
 func NewAuthServiceServer(
 	authInterceptor AuthInterceptor,
-) {{ .ProtoPackage }}.AuthServiceServer {
+) *AuthServiceServer {
 	return &AuthServiceServer{authInterceptor: authInterceptor}
 }
 
@@ -37,7 +37,7 @@ func (s AuthServiceServer) CreateToken(
 	}
 	tokenPair, err := s.authInterceptor.CreateToken(ctx, login)
 	if err != nil {
-		return nil, grpc.DecodeError(err)
+		return nil, err
 	}
 	return decodeTokenPair(tokenPair), nil
 }
@@ -48,7 +48,7 @@ func (s AuthServiceServer) RefreshToken(
 ) (*{{ .ProtoPackage }}.TokenPair, error) {
 	tokenPair, err := s.authInterceptor.RefreshToken(ctx, models.Token(input.GetToken()))
 	if err != nil {
-		return nil, grpc.DecodeError(err)
+		return nil, err
 	}
 	return decodeTokenPair(tokenPair), nil
 }

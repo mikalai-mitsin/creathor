@@ -3,6 +3,7 @@ package containers
 import (
 	"bytes"
 	"fmt"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -10,9 +11,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
-
-	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type FxContainer struct {
@@ -61,20 +59,7 @@ func (f FxContainer) file() *ast.File {
 				Value: fmt.Sprintf(`"%s/internal/pkg/postgres"`, f.project.Module),
 			},
 		},
-		&ast.ImportSpec{
-			Name: ast.NewIdent("authRepositories"),
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/app/auth/repositories/jwt"`, f.project.Module),
-			},
-		},
-		&ast.ImportSpec{
-			Name: ast.NewIdent("authGrpcHandlers"),
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/app/auth/handlers/grpc"`, f.project.Module),
-			},
-		},
+
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
@@ -99,20 +84,7 @@ func (f FxContainer) file() *ast.File {
 				Value: `"go.uber.org/fx"`,
 			},
 		},
-		&ast.ImportSpec{
-			Name: ast.NewIdent("authInterceptors"),
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/app/auth/interceptors"`, f.project.Module),
-			},
-		},
-		&ast.ImportSpec{
-			Name: ast.NewIdent("authUseCases"),
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/app/auth/usecases"`, f.project.Module),
-			},
-		},
+
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
@@ -125,6 +97,20 @@ func (f FxContainer) file() *ast.File {
 				Value: fmt.Sprintf(`"%s/internal/pkg/configs"`, f.project.Module),
 			},
 		},
+	}
+	if f.project.Auth {
+		imports = append(
+			imports,
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind: token.STRING,
+					Value: fmt.Sprintf(
+						`"%s/internal/app/auth"`,
+						f.project.Module,
+					),
+				},
+			},
+		)
 	}
 	if f.project.GRPCEnabled {
 		imports = append(imports, &ast.ImportSpec{
@@ -244,25 +230,25 @@ func (f FxContainer) toProvide() []ast.Expr {
 			},
 		)
 		if f.project.Auth {
-			toProvide = append(
-				toProvide,
-				&ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "grpc",
-					},
-					Sel: &ast.Ident{
-						Name: "NewAuthMiddleware",
-					},
-				},
-				&ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "authGrpcHandlers",
-					},
-					Sel: &ast.Ident{
-						Name: "NewAuthServiceServer",
-					},
-				},
-			)
+			//toProvide = append(
+			//	toProvide,
+			//	&ast.SelectorExpr{
+			//		X: &ast.Ident{
+			//			Name: "grpc",
+			//		},
+			//		Sel: &ast.Ident{
+			//			Name: "NewAuthMiddleware",
+			//		},
+			//	},
+			//	&ast.SelectorExpr{
+			//		X: &ast.Ident{
+			//			Name: "authGrpcHandlers",
+			//		},
+			//		Sel: &ast.Ident{
+			//			Name: "NewAuthServiceServer",
+			//		},
+			//	},
+			//)
 		}
 	}
 	if f.project.UptraceEnabled {
@@ -289,31 +275,37 @@ func (f FxContainer) toProvide() []ast.Expr {
 		})
 	}
 	if f.project.Auth {
-		var ddd []string
-		for _, model := range f.project.Domains {
-			ddd = append(
-				ddd,
-				fmt.Sprintf("fx.As(new(%sInterceptors.AuthUseCase))", model.DomainAlias()),
-			)
-		}
-		toProvide = append(
-			toProvide,
-			ast.NewIdent(
-				"fx.Annotate(authInterceptors.NewAuthInterceptor, fx.As(new(authGrpcHandlers.AuthInterceptor)), fx.As(new(grpcInterface.AuthInterceptor)))",
-			),
-			ast.NewIdent(
-				fmt.Sprintf(
-					"fx.Annotate(authUseCases.NewAuthUseCase, fx.As(new(authInterceptors.AuthUseCase)), %s)",
-					strings.Join(ddd, ", "),
-				),
-			),
-			ast.NewIdent(
-				"fx.Annotate(authRepositories.NewAuthRepository, fx.As(new(authUseCases.AuthRepository)))",
-			),
-			ast.NewIdent(
-				"fx.Annotate(userPostgresRepositories.NewPermissionRepository, fx.As(new(authUseCases.PermissionRepository)))",
-			),
-		)
+		//var ddd []string
+		//for _, model := range f.project.Domains {
+		//	ddd = append(
+		//		ddd,
+		//		fmt.Sprintf("fx.As(new(%sInterceptors.AuthUseCase))", model.DomainAlias()),
+		//	)
+		//}
+		//toProvide = append(
+		//	toProvide,
+		//	ast.NewIdent(
+		//		"fx.Annotate(authInterceptors.NewAuthInterceptor, fx.As(new(authGrpcHandlers.AuthInterceptor)), fx.As(new(grpcInterface.AuthInterceptor)))",
+		//	),
+		//	ast.NewIdent(
+		//		fmt.Sprintf(
+		//			"fx.Annotate(authUseCases.NewAuthUseCase, fx.As(new(authInterceptors.AuthUseCase)), %s)",
+		//			strings.Join(ddd, ", "),
+		//		),
+		//	),
+		//	ast.NewIdent(
+		//		"fx.Annotate(authRepositories.NewAuthRepository, fx.As(new(authUseCases.AuthRepository)))",
+		//	),
+		//	ast.NewIdent(
+		//		"fx.Annotate(userPostgresRepositories.NewPermissionRepository, fx.As(new(authUseCases.PermissionRepository)))",
+		//	),
+		//)
+	}
+	if f.project.Auth {
+		toProvide = append(toProvide, &ast.SelectorExpr{
+			X:   ast.NewIdent("auth"),
+			Sel: ast.NewIdent("NewApp"),
+		})
 	}
 	for _, model := range f.project.Domains {
 		toProvide = append(

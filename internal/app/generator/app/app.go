@@ -133,20 +133,6 @@ func (a App) imports() *ast.GenDecl {
 			},
 		},
 	}
-	if a.domain.Auth {
-		imports.Specs = append(
-			imports.Specs,
-			&ast.ImportSpec{
-				Name: &ast.Ident{
-					Name: "authUseCases",
-				},
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/app/auth/usecases"`, a.domain.Module),
-				},
-			},
-		)
-	}
 	return imports
 }
 
@@ -234,28 +220,6 @@ func (a App) constructor() *ast.FuncDecl {
 			},
 		},
 	}
-	if a.domain.Auth {
-		args = append(
-			args,
-			&ast.Field{
-				Names: []*ast.Ident{
-					{
-						Name: "authUseCase",
-					},
-				},
-				Type: &ast.StarExpr{
-					X: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "authUseCases",
-						},
-						Sel: &ast.Ident{
-							Name: "AuthUseCase",
-						},
-					},
-				},
-			},
-		)
-	}
 	exprs := []ast.Expr{
 		&ast.KeyValueExpr{
 			Key: &ast.Ident{
@@ -297,19 +261,6 @@ func (a App) constructor() *ast.FuncDecl {
 			Key:   ast.NewIdent(fmt.Sprintf("%sHandler", a.domain.LowerCamelName())),
 			Value: ast.NewIdent(a.domain.GRPCHandler.Variable),
 		},
-	}
-	if a.domain.Auth {
-		exprs = append(
-			exprs,
-			&ast.KeyValueExpr{
-				Key: &ast.Ident{
-					Name: "authUseCase",
-				},
-				Value: &ast.Ident{
-					Name: "authUseCase",
-				},
-			},
-		)
 	}
 	body := &ast.BlockStmt{
 		List: []ast.Stmt{
@@ -367,56 +318,28 @@ func (a App) constructor() *ast.FuncDecl {
 			},
 		},
 	}
-	if a.domain.Auth {
-		body.List = append(body.List, &ast.AssignStmt{
-			Lhs: []ast.Expr{
-				ast.NewIdent(a.domain.Interceptor.Variable),
-			},
-			Tok: token.DEFINE,
-			Rhs: []ast.Expr{
-				&ast.CallExpr{
-					Fun: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "interceptors",
-						},
-						Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.Interceptor.Name)),
+	body.List = append(body.List, &ast.AssignStmt{
+		Lhs: []ast.Expr{
+			ast.NewIdent(a.domain.Interceptor.Variable),
+		},
+		Tok: token.DEFINE,
+		Rhs: []ast.Expr{
+			&ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "interceptors",
 					},
-					Args: []ast.Expr{
-						ast.NewIdent(a.domain.UseCase.Variable),
-						&ast.Ident{
-							Name: "logger",
-						},
-						&ast.Ident{
-							Name: "authUseCase",
-						},
+					Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.Interceptor.Name)),
+				},
+				Args: []ast.Expr{
+					ast.NewIdent(a.domain.UseCase.Variable),
+					&ast.Ident{
+						Name: "logger",
 					},
 				},
 			},
-		})
-	} else {
-		body.List = append(body.List, &ast.AssignStmt{
-			Lhs: []ast.Expr{
-				ast.NewIdent(a.domain.Interceptor.Variable),
-			},
-			Tok: token.DEFINE,
-			Rhs: []ast.Expr{
-				&ast.CallExpr{
-					Fun: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "interceptors",
-						},
-						Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.Interceptor.Name)),
-					},
-					Args: []ast.Expr{
-						ast.NewIdent(a.domain.UseCase.Variable),
-						&ast.Ident{
-							Name: "logger",
-						},
-					},
-				},
-			},
-		})
-	}
+		},
+	})
 	body.List = append(body.List, &ast.AssignStmt{
 		Lhs: []ast.Expr{
 			ast.NewIdent(a.domain.GRPCHandler.Variable),
@@ -571,28 +494,6 @@ func (a App) structure() *ast.GenDecl {
 				},
 			},
 		},
-	}
-	if a.domain.Auth {
-		structType.Fields.List = append(
-			structType.Fields.List,
-			&ast.Field{
-				Names: []*ast.Ident{
-					{
-						Name: "authUseCase",
-					},
-				},
-				Type: &ast.StarExpr{
-					X: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "authUseCases",
-						},
-						Sel: &ast.Ident{
-							Name: "AuthUseCase",
-						},
-					},
-				},
-			},
-		)
 	}
 	return &ast.GenDecl{
 		Tok: token.TYPE,

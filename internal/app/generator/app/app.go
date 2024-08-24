@@ -550,13 +550,23 @@ func (a App) start() *ast.FuncDecl {
 				&ast.ExprStmt{
 					X: &ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent(a.domain.ProtoModule),
-							Sel: ast.NewIdent(fmt.Sprintf("Register%sServiceServer", a.domain.CamelName())),
+							X: &ast.SelectorExpr{
+								X: ast.NewIdent("a"),
+								Sel: &ast.Ident{
+									Name: "grpcServer",
+								},
+							},
+							Sel: &ast.Ident{
+								Name: "AddHandler",
+							},
 						},
 						Args: []ast.Expr{
-							&ast.SelectorExpr{
-								X:   ast.NewIdent("a"),
-								Sel: ast.NewIdent("grpcServer"),
+							&ast.UnaryExpr{
+								Op: token.AND,
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent(a.domain.ProtoModule),
+									Sel: ast.NewIdent(fmt.Sprintf("%sService_ServiceDesc", a.domain.CamelName())),
+								},
 							},
 							&ast.SelectorExpr{
 								X:   ast.NewIdent("a"),

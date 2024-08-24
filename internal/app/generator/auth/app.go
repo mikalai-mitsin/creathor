@@ -640,29 +640,27 @@ func (i AppAuth) file() *ast.File {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "examplepb",
-									},
-									Sel: &ast.Ident{
-										Name: "RegisterAuthServiceServer",
-									},
-								},
-								Args: []ast.Expr{
-									&ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "a",
-										},
+									X: &ast.SelectorExpr{
+										X: ast.NewIdent("a"),
 										Sel: &ast.Ident{
 											Name: "grpcServer",
 										},
 									},
+									Sel: &ast.Ident{
+										Name: "AddHandler",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.UnaryExpr{
+										Op: token.AND,
+										X: &ast.SelectorExpr{
+											X:   ast.NewIdent(i.project.ProtoPackage()),
+											Sel: ast.NewIdent("AuthService_ServiceDesc"),
+										},
+									},
 									&ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "a",
-										},
-										Sel: &ast.Ident{
-											Name: "authHandler",
-										},
+										X:   ast.NewIdent("a"),
+										Sel: ast.NewIdent("authHandler"),
 									},
 								},
 							},

@@ -31,6 +31,7 @@ func (g *Generator) Sync() error {
 		cg.NewConfigGenerator(g.project),
 		containers.NewFxContainer(g.project),
 		errs.NewErrors(g.project),
+		grpc.NewMiddlewares(g.project),
 		grpc.NewServer(g.project),
 		log.NewGenerator(g.project),
 		pointer.NewGenerator(g.project),

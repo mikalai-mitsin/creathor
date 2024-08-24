@@ -229,27 +229,6 @@ func (f FxContainer) toProvide() []ast.Expr {
 				},
 			},
 		)
-		if f.project.Auth {
-			//toProvide = append(
-			//	toProvide,
-			//	&ast.SelectorExpr{
-			//		X: &ast.Ident{
-			//			Name: "grpc",
-			//		},
-			//		Sel: &ast.Ident{
-			//			Name: "NewAuthMiddleware",
-			//		},
-			//	},
-			//	&ast.SelectorExpr{
-			//		X: &ast.Ident{
-			//			Name: "authGrpcHandlers",
-			//		},
-			//		Sel: &ast.Ident{
-			//			Name: "NewAuthServiceServer",
-			//		},
-			//	},
-			//)
-		}
 	}
 	if f.project.UptraceEnabled {
 		toProvide = append(
@@ -273,33 +252,6 @@ func (f FxContainer) toProvide() []ast.Expr {
 				Name: "NewServer",
 			},
 		})
-	}
-	if f.project.Auth {
-		//var ddd []string
-		//for _, model := range f.project.Domains {
-		//	ddd = append(
-		//		ddd,
-		//		fmt.Sprintf("fx.As(new(%sInterceptors.AuthUseCase))", model.DomainAlias()),
-		//	)
-		//}
-		//toProvide = append(
-		//	toProvide,
-		//	ast.NewIdent(
-		//		"fx.Annotate(authInterceptors.NewAuthInterceptor, fx.As(new(authGrpcHandlers.AuthInterceptor)), fx.As(new(grpcInterface.AuthInterceptor)))",
-		//	),
-		//	ast.NewIdent(
-		//		fmt.Sprintf(
-		//			"fx.Annotate(authUseCases.NewAuthUseCase, fx.As(new(authInterceptors.AuthUseCase)), %s)",
-		//			strings.Join(ddd, ", "),
-		//		),
-		//	),
-		//	ast.NewIdent(
-		//		"fx.Annotate(authRepositories.NewAuthRepository, fx.As(new(authUseCases.AuthRepository)))",
-		//	),
-		//	ast.NewIdent(
-		//		"fx.Annotate(userPostgresRepositories.NewPermissionRepository, fx.As(new(authUseCases.PermissionRepository)))",
-		//	),
-		//)
 	}
 	if f.project.Auth {
 		toProvide = append(toProvide, &ast.SelectorExpr{
@@ -776,6 +728,104 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 											X: &ast.Ident{
 												Name: domain.DomainName(),
 											},
+											Sel: ast.NewIdent("App"),
+										},
+									},
+								},
+							},
+						},
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.ExprStmt{
+								X: &ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "lifecycle",
+										},
+										Sel: &ast.Ident{
+											Name: "Append",
+										},
+									},
+									Args: []ast.Expr{
+										&ast.CompositeLit{
+											Type: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "fx",
+												},
+												Sel: &ast.Ident{
+													Name: "Hook",
+												},
+											},
+											Elts: []ast.Expr{
+												&ast.KeyValueExpr{
+													Key: &ast.Ident{
+														Name: "OnStart",
+													},
+													Value: &ast.SelectorExpr{
+														X:   ast.NewIdent("app"),
+														Sel: ast.NewIdent("Start"),
+													},
+												},
+												&ast.KeyValueExpr{
+													Key: &ast.Ident{
+														Name: "OnStop",
+													},
+													Value: &ast.SelectorExpr{
+														X:   ast.NewIdent("app"),
+														Sel: ast.NewIdent("Stop"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		})
+	}
+	if f.project.Auth {
+		args = append(args, &ast.CallExpr{
+			Fun: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "fx",
+				},
+				Sel: &ast.Ident{
+					Name: "Invoke",
+				},
+			},
+			Args: []ast.Expr{
+				&ast.FuncLit{
+					Type: &ast.FuncType{
+						Params: &ast.FieldList{
+							List: []*ast.Field{
+								{
+									Names: []*ast.Ident{
+										{
+											Name: "lifecycle",
+										},
+									},
+									Type: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "fx",
+										},
+										Sel: &ast.Ident{
+											Name: "Lifecycle",
+										},
+									},
+								},
+								{
+									Names: []*ast.Ident{
+										{
+											Name: "app",
+										},
+									},
+									Type: &ast.StarExpr{
+										X: &ast.SelectorExpr{
+											X:   ast.NewIdent("auth"),
 											Sel: ast.NewIdent("App"),
 										},
 									},

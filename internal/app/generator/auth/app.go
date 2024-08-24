@@ -350,36 +350,6 @@ func (i AppAuth) file() *ast.File {
 									},
 								},
 							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "userRepository",
-									},
-								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "usecases",
-									},
-									Sel: &ast.Ident{
-										Name: "UserRepository",
-									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "permissionRepository",
-									},
-								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "usecases",
-									},
-									Sel: &ast.Ident{
-										Name: "PermissionRepository",
-									},
-								},
-							},
 						},
 					},
 					Results: &ast.FieldList{
@@ -396,6 +366,34 @@ func (i AppAuth) file() *ast.File {
 				},
 				Body: &ast.BlockStmt{
 					List: []ast.Stmt{
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
+								&ast.Ident{
+									Name: "userRepository",
+								},
+							},
+							Tok: token.DEFINE,
+							Rhs: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "postgres",
+										},
+										Sel: &ast.Ident{
+											Name: "NewUserRepository",
+										},
+									},
+									Args: []ast.Expr{
+										&ast.Ident{
+											Name: "db",
+										},
+										&ast.Ident{
+											Name: "logger",
+										},
+									},
+								},
+							},
+						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
 								&ast.Ident{
@@ -450,9 +448,6 @@ func (i AppAuth) file() *ast.File {
 										},
 										&ast.Ident{
 											Name: "userRepository",
-										},
-										&ast.Ident{
-											Name: "permissionRepository",
 										},
 										&ast.Ident{
 											Name: "logger",

@@ -20,19 +20,17 @@ type Domain struct {
 	Module      string
 	ProtoModule string
 	Entities    []*Model
-	Service     *Layer
-	Repository  *Layer
-	UseCase     *Layer
-	GRPCHandler *Layer
 	Auth        bool
 }
 
 func (m *Domain) SnakeName() string {
 	return strcase.ToSnake(m.Name)
 }
+
 func (m *Domain) FileName() string {
 	return fmt.Sprintf("%s.go", m.SnakeName())
 }
+
 func (m *Domain) TestFileName() string {
 	return fmt.Sprintf("%s_test.go", m.SnakeName())
 }
@@ -162,4 +160,72 @@ func (m *Domain) PermissionIDDetail() string {
 
 func (m *Domain) PermissionIDList() string {
 	return fmt.Sprintf("PermissionID%sList", m.CamelName())
+}
+
+func (m *Domain) GetGRPCHandlerPrivateVariableName() string {
+	return fmt.Sprintf("%sHandler", strcase.ToLowerCamel(m.Config.Model))
+}
+
+func (m *Domain) GetGRPCHandlerPublicVariableName() string {
+	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Config.Model))
+}
+
+func (m *Domain) GetGRPCHandlerTypeName() string {
+	return fmt.Sprintf("%sServiceServer", strcase.ToCamel(m.Config.Model))
+}
+
+func (m *Domain) GetGRPCHandlerConstructorName() string {
+	return fmt.Sprintf("New%s", m.GetGRPCHandlerTypeName())
+}
+
+func (m *Domain) GetGRPCServiceDescriptionName() string {
+	return fmt.Sprintf("%sService_ServiceDesc", strcase.ToCamel(m.Config.Model))
+}
+
+func (m *Domain) GetUseCasePrivateVariableName() string {
+	return fmt.Sprintf("%sUseCase", strcase.ToLowerCamel(m.Config.Model))
+}
+
+func (m *Domain) GetUseCasePublicVariableName() string {
+	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Config.Model))
+}
+
+func (m *Domain) GetUseCaseTypeName() string {
+	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Config.Model))
+}
+
+func (m *Domain) GetUseCaseConstructorName() string {
+	return fmt.Sprintf("New%s", m.GetUseCaseTypeName())
+}
+
+func (m *Domain) GetServicePrivateVariableName() string {
+	return fmt.Sprintf("%sService", strcase.ToLowerCamel(m.Config.Model))
+}
+
+func (m *Domain) GetServicePublicVariableName() string {
+	return fmt.Sprintf("%sService", strcase.ToCamel(m.Config.Model))
+}
+
+func (m *Domain) GetServiceTypeName() string {
+	return fmt.Sprintf("%sService", strcase.ToCamel(m.Config.Model))
+}
+
+func (m *Domain) GetServiceConstructorName() string {
+	return fmt.Sprintf("New%s", m.GetServiceTypeName())
+}
+
+func (m *Domain) GetRepositoryPrivateVariableName() string {
+	return fmt.Sprintf("%sRepository", strcase.ToLowerCamel(m.Config.Model))
+}
+
+func (m *Domain) GetRepositoryPublicVariableName() string {
+	return fmt.Sprintf("%sRepository", strcase.ToCamel(m.Config.Model))
+}
+
+func (m *Domain) GetRepositoryTypeName() string {
+	return fmt.Sprintf("%sRepository", strcase.ToCamel(m.Config.Model))
+}
+
+func (m *Domain) GetRepositoryConstructorName() string {
+	return fmt.Sprintf("New%s", m.GetRepositoryTypeName())
 }

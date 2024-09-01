@@ -43,7 +43,7 @@ func (i HandlerInterfaces) Sync() error {
 	var usecaseExists bool
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.TypeSpec); ok {
-			if t.Name.String() == i.domain.UseCase.Name {
+			if t.Name.String() == i.domain.GetUseCaseTypeName() {
 				usecaseExists = true
 			}
 			if t.Name.String() == "Logger" {
@@ -302,13 +302,13 @@ func (i HandlerInterfaces) usecaseInterface() *ast.GenDecl {
 				{
 					Text: fmt.Sprintf(
 						"//%s - domain layer usecase interface",
-						i.domain.UseCase.Name,
+						i.domain.GetUseCaseTypeName(),
 					),
 				},
 				{
 					Text: fmt.Sprintf(
 						"//go:generate mockgen -build_flags=-mod=mod -destination mock/usecase.go . %s",
-						i.domain.UseCase.Name,
+						i.domain.GetUseCaseTypeName(),
 					),
 				},
 			},
@@ -317,7 +317,7 @@ func (i HandlerInterfaces) usecaseInterface() *ast.GenDecl {
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
 				Name: &ast.Ident{
-					Name: i.domain.UseCase.Name,
+					Name: i.domain.GetUseCaseTypeName(),
 				},
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{

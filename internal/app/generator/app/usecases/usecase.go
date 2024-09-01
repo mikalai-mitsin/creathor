@@ -62,8 +62,8 @@ func (i UseCaseCrud) filename() string {
 func (i UseCaseCrud) structure() *ast.TypeSpec {
 	fields := []*ast.Field{
 		{
-			Names: []*ast.Ident{ast.NewIdent(i.domain.Service.Variable)},
-			Type:  ast.NewIdent(i.domain.Service.Name),
+			Names: []*ast.Ident{ast.NewIdent(i.domain.GetServicePrivateVariableName())},
+			Type:  ast.NewIdent(i.domain.GetServiceTypeName()),
 		},
 		{
 			Names: []*ast.Ident{ast.NewIdent("logger")},
@@ -71,7 +71,7 @@ func (i UseCaseCrud) structure() *ast.TypeSpec {
 		},
 	}
 	structure := &ast.TypeSpec{
-		Name: ast.NewIdent(i.domain.UseCase.Name),
+		Name: ast.NewIdent(i.domain.GetUseCaseTypeName()),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: fields,
@@ -90,7 +90,7 @@ func (i UseCaseCrud) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.domain.UseCase.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.domain.GetUseCaseTypeName() {
 			structure = t
 			structureExists = true
 			return false
@@ -120,8 +120,8 @@ func (i UseCaseCrud) syncStruct() error {
 func (i UseCaseCrud) constructor() *ast.FuncDecl {
 	fields := []*ast.Field{
 		{
-			Names: []*ast.Ident{ast.NewIdent(i.domain.Service.Variable)},
-			Type:  ast.NewIdent(i.domain.Service.Name),
+			Names: []*ast.Ident{ast.NewIdent(i.domain.GetServicePrivateVariableName())},
+			Type:  ast.NewIdent(i.domain.GetServiceTypeName()),
 		},
 		{
 			Names: []*ast.Ident{ast.NewIdent("logger")},
@@ -130,8 +130,8 @@ func (i UseCaseCrud) constructor() *ast.FuncDecl {
 	}
 	exprs := []ast.Expr{
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(i.domain.Service.Variable),
-			Value: ast.NewIdent(i.domain.Service.Variable),
+			Key:   ast.NewIdent(i.domain.GetServicePrivateVariableName()),
+			Value: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("logger"),
@@ -139,7 +139,7 @@ func (i UseCaseCrud) constructor() *ast.FuncDecl {
 		},
 	}
 	constructor := &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("New%s", i.domain.UseCase.Name)),
+		Name: ast.NewIdent(i.domain.GetUseCaseConstructorName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: fields,
@@ -148,7 +148,7 @@ func (i UseCaseCrud) constructor() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Type: ast.NewIdent(
-							fmt.Sprintf("*%s", i.domain.UseCase.Name),
+							fmt.Sprintf("*%s", i.domain.GetUseCaseTypeName()),
 						),
 					},
 				},
@@ -161,7 +161,7 @@ func (i UseCaseCrud) constructor() *ast.FuncDecl {
 						&ast.UnaryExpr{
 							Op: token.AND,
 							X: &ast.CompositeLit{
-								Type: ast.NewIdent(i.domain.UseCase.Name),
+								Type: ast.NewIdent(i.domain.GetUseCaseTypeName()),
 								Elts: exprs,
 							},
 						},
@@ -183,7 +183,7 @@ func (i UseCaseCrud) syncConstructor() error {
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", i.domain.UseCase.Name) {
+			t.Name.String() == i.domain.GetUseCaseConstructorName() {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -220,7 +220,7 @@ func (i UseCaseCrud) createMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.domain.Service.Variable),
+							Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("Create"),
 					},
@@ -267,7 +267,7 @@ func (i UseCaseCrud) createMethod() *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.domain.UseCase.Name),
+						X: ast.NewIdent(i.domain.GetUseCaseTypeName()),
 					},
 				},
 			},
@@ -365,7 +365,7 @@ func (i UseCaseCrud) astListMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.domain.Service.Variable),
+							Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("List"),
 					},
@@ -414,7 +414,7 @@ func (i UseCaseCrud) astListMethod() *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.domain.UseCase.Name),
+						X: ast.NewIdent(i.domain.GetUseCaseTypeName()),
 					},
 				},
 			},
@@ -516,7 +516,7 @@ func (i UseCaseCrud) astGetMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.domain.Service.Variable),
+							Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("Get"),
 					},
@@ -566,7 +566,7 @@ func (i UseCaseCrud) astGetMethod() *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.domain.UseCase.Name),
+						X: ast.NewIdent(i.domain.GetUseCaseTypeName()),
 					},
 				},
 			},
@@ -660,7 +660,7 @@ func (i UseCaseCrud) updateMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.domain.Service.Variable),
+							Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("Update"),
 					},
@@ -707,7 +707,7 @@ func (i UseCaseCrud) updateMethod() *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.domain.UseCase.Name),
+						X: ast.NewIdent(i.domain.GetUseCaseTypeName()),
 					},
 				},
 			},
@@ -803,7 +803,7 @@ func (i UseCaseCrud) deleteMethod() *ast.FuncDecl {
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("i"),
-								Sel: ast.NewIdent(i.domain.Service.Variable),
+								Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 							},
 							Sel: ast.NewIdent("Delete"),
 						},
@@ -844,7 +844,7 @@ func (i UseCaseCrud) deleteMethod() *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.domain.UseCase.Name),
+						X: ast.NewIdent(i.domain.GetUseCaseTypeName()),
 					},
 				},
 			},

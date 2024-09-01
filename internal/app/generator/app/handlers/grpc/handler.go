@@ -1901,7 +1901,7 @@ func (h Handler) syncDecodeUpdate() error {
 func (h Handler) structure() *ast.TypeSpec {
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
-			Name: h.domain.GRPCHandler.Name,
+			Name: h.domain.GetGRPCHandlerTypeName(),
 		},
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
@@ -1922,10 +1922,10 @@ func (h Handler) structure() *ast.TypeSpec {
 					{
 						Names: []*ast.Ident{
 							{
-								Name: h.domain.UseCase.Variable,
+								Name: h.domain.GetUseCasePrivateVariableName(),
 							},
 						},
-						Type: ast.NewIdent(h.domain.UseCase.Name),
+						Type: ast.NewIdent(h.domain.GetUseCaseTypeName()),
 					},
 					{
 						Names: []*ast.Ident{
@@ -1951,7 +1951,7 @@ func (h Handler) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == h.domain.GRPCHandler.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == h.domain.GetGRPCHandlerTypeName() {
 			structure = t
 			structureExists = true
 			return false
@@ -1981,7 +1981,7 @@ func (h Handler) syncStruct() error {
 func (h Handler) constructor() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
-			Name: fmt.Sprintf("New%s", h.domain.GRPCHandler.Name),
+			Name: fmt.Sprintf("New%s", h.domain.GetGRPCHandlerTypeName()),
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
@@ -1989,10 +1989,10 @@ func (h Handler) constructor() *ast.FuncDecl {
 					{
 						Names: []*ast.Ident{
 							{
-								Name: h.domain.UseCase.Variable,
+								Name: h.domain.GetUseCasePrivateVariableName(),
 							},
 						},
-						Type: ast.NewIdent(h.domain.UseCase.Name),
+						Type: ast.NewIdent(h.domain.GetUseCaseTypeName()),
 					},
 					{
 						Names: []*ast.Ident{
@@ -2008,7 +2008,7 @@ func (h Handler) constructor() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Type: &ast.StarExpr{
-							X: ast.NewIdent(h.domain.GRPCHandler.Name),
+							X: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
 						},
 					},
 				},
@@ -2030,10 +2030,10 @@ func (h Handler) constructor() *ast.FuncDecl {
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
 										Key: &ast.Ident{
-											Name: h.domain.UseCase.Variable,
+											Name: h.domain.GetUseCasePrivateVariableName(),
 										},
 										Value: &ast.Ident{
-											Name: h.domain.UseCase.Variable,
+											Name: h.domain.GetUseCasePrivateVariableName(),
 										},
 									},
 									&ast.KeyValueExpr{
@@ -2065,7 +2065,7 @@ func (h Handler) syncConstructor() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", h.domain.GRPCHandler.Name) {
+			t.Name.String() == fmt.Sprintf("New%s", h.domain.GetGRPCHandlerTypeName()) {
 			methodExist = true
 			method = t
 			return false
@@ -2115,7 +2115,7 @@ func (h Handler) create() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: h.domain.GRPCHandler.Name,
+							Name: h.domain.GetGRPCHandlerTypeName(),
 						},
 					},
 				},
@@ -2203,7 +2203,7 @@ func (h Handler) create() *ast.FuncDecl {
 										Name: "s",
 									},
 									Sel: &ast.Ident{
-										Name: h.domain.UseCase.Variable,
+										Name: h.domain.GetUseCasePrivateVariableName(),
 									},
 								},
 								Sel: &ast.Ident{
@@ -2330,7 +2330,7 @@ func (h Handler) get() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: h.domain.GRPCHandler.Name,
+							Name: h.domain.GetGRPCHandlerTypeName(),
 						},
 					},
 				},
@@ -2418,7 +2418,7 @@ func (h Handler) get() *ast.FuncDecl {
 										Name: "s",
 									},
 									Sel: &ast.Ident{
-										Name: h.domain.UseCase.Variable,
+										Name: h.domain.GetUseCasePrivateVariableName(),
 									},
 								},
 								Sel: &ast.Ident{
@@ -2534,7 +2534,7 @@ func (h Handler) list() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: h.domain.GRPCHandler.Name,
+							Name: h.domain.GetGRPCHandlerTypeName(),
 						},
 					},
 				},
@@ -2625,7 +2625,7 @@ func (h Handler) list() *ast.FuncDecl {
 										Name: "s",
 									},
 									Sel: &ast.Ident{
-										Name: h.domain.UseCase.Variable,
+										Name: h.domain.GetUseCasePrivateVariableName(),
 									},
 								},
 								Sel: &ast.Ident{
@@ -2744,7 +2744,7 @@ func (h Handler) update() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: h.domain.GRPCHandler.Name,
+							Name: h.domain.GetGRPCHandlerTypeName(),
 						},
 					},
 				},
@@ -2832,7 +2832,7 @@ func (h Handler) update() *ast.FuncDecl {
 										Name: "s",
 									},
 									Sel: &ast.Ident{
-										Name: h.domain.UseCase.Variable,
+										Name: h.domain.GetUseCasePrivateVariableName(),
 									},
 								},
 								Sel: &ast.Ident{
@@ -2960,7 +2960,7 @@ func (h Handler) delete() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: h.domain.GRPCHandler.Name,
+							Name: h.domain.GetGRPCHandlerTypeName(),
 						},
 					},
 				},
@@ -3046,7 +3046,7 @@ func (h Handler) delete() *ast.FuncDecl {
 											Name: "s",
 										},
 										Sel: &ast.Ident{
-											Name: h.domain.UseCase.Variable,
+											Name: h.domain.GetUseCasePrivateVariableName(),
 										},
 									},
 									Sel: &ast.Ident{

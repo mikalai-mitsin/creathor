@@ -35,7 +35,7 @@ func (i UseCaseInterfaces) Sync() error {
 	loggerExists := false
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.TypeSpec); ok {
-			if t.Name.String() == i.domain.Service.Name {
+			if t.Name.String() == i.domain.GetServiceTypeName() {
 				appServiceExists = true
 			}
 			if t.Name.String() == "Logger" {
@@ -100,15 +100,6 @@ func (i UseCaseInterfaces) imports() *ast.GenDecl {
 				},
 			},
 		},
-	}
-	if i.domain.Auth {
-		imports.Specs = append(imports.Specs, &ast.ImportSpec{
-			Name: ast.NewIdent("userEntities"),
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/app/user/entities"`, i.domain.Module),
-			},
-		})
 	}
 	return imports
 }
@@ -305,13 +296,13 @@ func (i UseCaseInterfaces) appServiceInterface() *ast.GenDecl {
 				{
 					Text: fmt.Sprintf(
 						"//%s - domain layer use case interface",
-						i.domain.Service.Name,
+						i.domain.GetServiceTypeName(),
 					),
 				},
 				{
 					Text: fmt.Sprintf(
 						"//go:generate mockgen -build_flags=-mod=mod -destination mock/service.go . %s",
-						i.domain.Service.Name,
+						i.domain.GetServiceTypeName(),
 					),
 				},
 			},
@@ -320,7 +311,7 @@ func (i UseCaseInterfaces) appServiceInterface() *ast.GenDecl {
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
 				Name: &ast.Ident{
-					Name: i.domain.Service.Name,
+					Name: i.domain.GetServiceTypeName(),
 				},
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{

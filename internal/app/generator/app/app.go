@@ -218,27 +218,27 @@ func (a App) constructor() *ast.FuncDecl {
 			},
 		},
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(fmt.Sprintf("%sRepository", a.domain.LowerCamelName())),
-			Value: ast.NewIdent(a.domain.Repository.Variable),
+			Key:   ast.NewIdent(a.domain.GetRepositoryPrivateVariableName()),
+			Value: ast.NewIdent(a.domain.GetRepositoryPrivateVariableName()),
 		},
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(fmt.Sprintf("%sService", a.domain.LowerCamelName())),
-			Value: ast.NewIdent(a.domain.Service.Variable),
+			Key:   ast.NewIdent(a.domain.GetServicePrivateVariableName()),
+			Value: ast.NewIdent(a.domain.GetServicePrivateVariableName()),
 		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent(fmt.Sprintf("%sUseCase", a.domain.LowerCamelName())),
-			Value: ast.NewIdent(a.domain.UseCase.Variable),
+			Value: ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
 		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent(fmt.Sprintf("%sHandler", a.domain.LowerCamelName())),
-			Value: ast.NewIdent(a.domain.GRPCHandler.Variable),
+			Value: ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
 		},
 	}
 	body := &ast.BlockStmt{
 		List: []ast.Stmt{
 			&ast.AssignStmt{
 				Lhs: []ast.Expr{
-					ast.NewIdent(a.domain.Repository.Variable),
+					ast.NewIdent(a.domain.GetRepositoryPrivateVariableName()),
 				},
 				Tok: token.DEFINE,
 				Rhs: []ast.Expr{
@@ -247,7 +247,7 @@ func (a App) constructor() *ast.FuncDecl {
 							X: &ast.Ident{
 								Name: "postgres",
 							},
-							Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.Repository.Name)),
+							Sel: ast.NewIdent(a.domain.GetRepositoryConstructorName()),
 						},
 						Args: []ast.Expr{
 							&ast.Ident{
@@ -262,7 +262,7 @@ func (a App) constructor() *ast.FuncDecl {
 			},
 			&ast.AssignStmt{
 				Lhs: []ast.Expr{
-					ast.NewIdent(a.domain.Service.Variable),
+					ast.NewIdent(a.domain.GetServicePrivateVariableName()),
 				},
 				Tok: token.DEFINE,
 				Rhs: []ast.Expr{
@@ -271,10 +271,10 @@ func (a App) constructor() *ast.FuncDecl {
 							X: &ast.Ident{
 								Name: "services",
 							},
-							Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.Service.Name)),
+							Sel: ast.NewIdent(a.domain.GetServiceConstructorName()),
 						},
 						Args: []ast.Expr{
-							ast.NewIdent(a.domain.Repository.Variable),
+							ast.NewIdent(a.domain.GetRepositoryPrivateVariableName()),
 							&ast.Ident{
 								Name: "clock",
 							},
@@ -292,7 +292,7 @@ func (a App) constructor() *ast.FuncDecl {
 	}
 	body.List = append(body.List, &ast.AssignStmt{
 		Lhs: []ast.Expr{
-			ast.NewIdent(a.domain.UseCase.Variable),
+			ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
 		},
 		Tok: token.DEFINE,
 		Rhs: []ast.Expr{
@@ -301,10 +301,10 @@ func (a App) constructor() *ast.FuncDecl {
 					X: &ast.Ident{
 						Name: "usecases",
 					},
-					Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.UseCase.Name)),
+					Sel: ast.NewIdent(a.domain.GetUseCaseConstructorName()),
 				},
 				Args: []ast.Expr{
-					ast.NewIdent(a.domain.Service.Variable),
+					ast.NewIdent(a.domain.GetServicePrivateVariableName()),
 					&ast.Ident{
 						Name: "logger",
 					},
@@ -314,17 +314,17 @@ func (a App) constructor() *ast.FuncDecl {
 	})
 	body.List = append(body.List, &ast.AssignStmt{
 		Lhs: []ast.Expr{
-			ast.NewIdent(a.domain.GRPCHandler.Variable),
+			ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
 		},
 		Tok: token.DEFINE,
 		Rhs: []ast.Expr{
 			&ast.CallExpr{
 				Fun: &ast.SelectorExpr{
 					X:   ast.NewIdent("handlers"),
-					Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.GRPCHandler.Name)),
+					Sel: ast.NewIdent(a.domain.GetGRPCHandlerConstructorName()),
 				},
 				Args: []ast.Expr{
-					ast.NewIdent(a.domain.UseCase.Variable),
+					ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
 					&ast.Ident{
 						Name: "logger",
 					},
@@ -405,51 +405,51 @@ func (a App) structure() *ast.GenDecl {
 				},
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent(fmt.Sprintf("%sRepository", a.domain.LowerCamelName())),
+						ast.NewIdent(a.domain.GetRepositoryPrivateVariableName()),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
 							X: &ast.Ident{
 								Name: "postgres",
 							},
-							Sel: ast.NewIdent(a.domain.Repository.Name),
+							Sel: ast.NewIdent(a.domain.GetRepositoryTypeName()),
 						},
 					},
 				},
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent(fmt.Sprintf("%sService", a.domain.LowerCamelName())),
+						ast.NewIdent(a.domain.GetServicePrivateVariableName()),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
 							X: &ast.Ident{
 								Name: "services",
 							},
-							Sel: ast.NewIdent(a.domain.Service.Name),
+							Sel: ast.NewIdent(a.domain.GetServiceTypeName()),
 						},
 					},
 				},
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent(fmt.Sprintf("%sUseCase", a.domain.LowerCamelName())),
+						ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
 							X: &ast.Ident{
 								Name: "usecases",
 							},
-							Sel: ast.NewIdent(a.domain.UseCase.Name),
+							Sel: ast.NewIdent(a.domain.GetUseCaseTypeName()),
 						},
 					},
 				},
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent(fmt.Sprintf("%sHandler", a.domain.LowerCamelName())),
+						ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("handlers"),
-							Sel: ast.NewIdent(a.domain.GRPCHandler.Name),
+							Sel: ast.NewIdent(a.domain.GetGRPCHandlerTypeName()),
 						},
 					},
 				},
@@ -525,12 +525,12 @@ func (a App) registerGRPC() *ast.FuncDecl {
 								Op: token.AND,
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent(a.domain.ProtoModule),
-									Sel: ast.NewIdent(fmt.Sprintf("%sService_ServiceDesc", a.domain.CamelName())),
+									Sel: ast.NewIdent(a.domain.GetGRPCServiceDescriptionName()),
 								},
 							},
 							&ast.SelectorExpr{
 								X:   ast.NewIdent("a"),
-								Sel: ast.NewIdent(fmt.Sprintf("%sHandler", a.domain.LowerCamelName())),
+								Sel: ast.NewIdent(a.domain.GetRepositoryPrivateVariableName()),
 							},
 						},
 					},

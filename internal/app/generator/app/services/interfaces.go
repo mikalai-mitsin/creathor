@@ -38,7 +38,7 @@ func (i ServiceInterfaces) Sync() error {
 	uuidGeneratorExists := false
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.TypeSpec); ok {
-			if t.Name.String() == i.domain.Repository.Name {
+			if t.Name.String() == i.domain.GetRepositoryTypeName() {
 				repositoryExists = true
 			}
 			if t.Name.String() == "Logger" {
@@ -364,13 +364,13 @@ func (i ServiceInterfaces) repositoryInterface() *ast.GenDecl {
 				{
 					Text: fmt.Sprintf(
 						"//%s - domain layer repository interface",
-						i.domain.Repository.Name,
+						i.domain.GetRepositoryTypeName(),
 					),
 				},
 				{
 					Text: fmt.Sprintf(
 						"//go:generate mockgen -build_flags=-mod=mod -destination mock/repository.go . %s",
-						i.domain.Repository.Name,
+						i.domain.GetRepositoryTypeName(),
 					),
 				},
 			},
@@ -378,7 +378,7 @@ func (i ServiceInterfaces) repositoryInterface() *ast.GenDecl {
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: ast.NewIdent(i.domain.Repository.Name),
+				Name: ast.NewIdent(i.domain.GetRepositoryTypeName()),
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: methods,

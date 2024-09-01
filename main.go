@@ -90,11 +90,7 @@ func initProject(ctx *cli.Context) error {
 				domain.NewCreateModel(m),
 				domain.NewUpdateModel(m),
 			},
-			Service:     domain.NewService(m),
-			Repository:  domain.NewRepository(m),
-			UseCase:     domain.NewUseCase(m),
-			GRPCHandler: domain.NewGRPCHandler(m),
-			Auth:        project.Auth,
+			Auth: project.Auth,
 		}
 		appGenerator := app.NewGenerator(d)
 		if err := appGenerator.Sync(); err != nil {

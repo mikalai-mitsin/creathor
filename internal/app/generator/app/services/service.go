@@ -91,13 +91,13 @@ func (u ServiceCrud) file() *ast.File {
 
 func (u ServiceCrud) structure() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
-		Name: ast.NewIdent(u.domain.Service.Name),
+		Name: ast.NewIdent(u.domain.GetServiceTypeName()),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Names: []*ast.Ident{ast.NewIdent(u.domain.Repository.Variable)},
-						Type:  ast.NewIdent(u.domain.Repository.Name),
+						Names: []*ast.Ident{ast.NewIdent(u.domain.GetRepositoryPrivateVariableName())},
+						Type:  ast.NewIdent(u.domain.GetRepositoryTypeName()),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("clock")},
@@ -127,7 +127,7 @@ func (u ServiceCrud) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == u.domain.Service.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == u.domain.GetServiceTypeName() {
 			structure = t
 			structureExists = true
 			return false
@@ -156,13 +156,13 @@ func (u ServiceCrud) syncStruct() error {
 
 func (u ServiceCrud) constructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("New%s", u.domain.Service.Name)),
+		Name: ast.NewIdent(u.domain.GetServiceConstructorName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Names: []*ast.Ident{ast.NewIdent(u.domain.Repository.Variable)},
-						Type:  ast.NewIdent(u.domain.Repository.Name),
+						Names: []*ast.Ident{ast.NewIdent(u.domain.GetRepositoryPrivateVariableName())},
+						Type:  ast.NewIdent(u.domain.GetRepositoryTypeName()),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("clock")},
@@ -181,7 +181,7 @@ func (u ServiceCrud) constructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: ast.NewIdent(fmt.Sprintf("*%s", u.domain.Service.Name)),
+						Type: ast.NewIdent(fmt.Sprintf("*%s", u.domain.GetServiceTypeName())),
 					},
 				},
 			},
@@ -193,11 +193,11 @@ func (u ServiceCrud) constructor() *ast.FuncDecl {
 						&ast.UnaryExpr{
 							Op: token.AND,
 							X: &ast.CompositeLit{
-								Type: ast.NewIdent(u.domain.Service.Name),
+								Type: ast.NewIdent(u.domain.GetServiceTypeName()),
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
-										Key:   ast.NewIdent(u.domain.Repository.Variable),
-										Value: ast.NewIdent(u.domain.Repository.Variable),
+										Key:   ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
+										Value: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
 									},
 									&ast.KeyValueExpr{
 										Key:   ast.NewIdent("clock"),
@@ -232,7 +232,7 @@ func (u ServiceCrud) syncConstructor() error {
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", u.domain.Service.Name) {
+			t.Name.String() == fmt.Sprintf("New%s", u.domain.GetServiceTypeName()) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -287,7 +287,7 @@ func (u ServiceCrud) create() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.Service.Name),
+						X: ast.NewIdent(u.domain.GetServiceTypeName()),
 					},
 				},
 			},
@@ -413,7 +413,7 @@ func (u ServiceCrud) create() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("u"),
-										Sel: ast.NewIdent(u.domain.Repository.Variable),
+										Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
 									},
 									Sel: ast.NewIdent("Create"),
 								},
@@ -525,7 +525,7 @@ func (u ServiceCrud) list() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.Service.Name),
+						X: ast.NewIdent(u.domain.GetServiceTypeName()),
 					},
 				},
 			},
@@ -586,7 +586,7 @@ func (u ServiceCrud) list() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("u"),
-									Sel: ast.NewIdent(u.domain.Repository.Variable),
+									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
 								},
 								Sel: ast.NewIdent("List"),
 							},
@@ -628,7 +628,7 @@ func (u ServiceCrud) list() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("u"),
-									Sel: ast.NewIdent(u.domain.Repository.Variable),
+									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
 								},
 								Sel: ast.NewIdent("Count"),
 							},
@@ -713,7 +713,7 @@ func (u ServiceCrud) get() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.Service.Name),
+						X: ast.NewIdent(u.domain.GetServiceTypeName()),
 					},
 				},
 			},
@@ -761,7 +761,7 @@ func (u ServiceCrud) get() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("u"),
-									Sel: ast.NewIdent(u.domain.Repository.Variable),
+									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
 								},
 								Sel: ast.NewIdent("Get"),
 							},
@@ -882,7 +882,7 @@ func (u ServiceCrud) update() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.Service.Name),
+						X: ast.NewIdent(u.domain.GetServiceTypeName()),
 					},
 				},
 			},
@@ -969,7 +969,7 @@ func (u ServiceCrud) update() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("u"),
-									Sel: ast.NewIdent(u.domain.Repository.Variable),
+									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
 								},
 								Sel: ast.NewIdent("Get"),
 							},
@@ -1038,7 +1038,7 @@ func (u ServiceCrud) update() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("u"),
-										Sel: ast.NewIdent(u.domain.Repository.Variable),
+										Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
 									},
 									Sel: ast.NewIdent("Update"),
 								},
@@ -1181,7 +1181,7 @@ func (u ServiceCrud) delete() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.Service.Name),
+						X: ast.NewIdent(u.domain.GetServiceTypeName()),
 					},
 				},
 			},
@@ -1224,7 +1224,7 @@ func (u ServiceCrud) delete() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("u"),
-										Sel: ast.NewIdent(u.domain.Repository.Variable),
+										Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
 									},
 									Sel: ast.NewIdent("Delete"),
 								},
@@ -1303,7 +1303,7 @@ func (u ServiceCrud) getByEmail() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.Service.Name),
+						X: ast.NewIdent(u.domain.GetServiceTypeName()),
 					},
 				},
 			},
@@ -1351,7 +1351,7 @@ func (u ServiceCrud) getByEmail() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("u"),
-									Sel: ast.NewIdent(u.domain.Repository.Variable),
+									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
 								},
 								Sel: ast.NewIdent("GetByEmail"),
 							},

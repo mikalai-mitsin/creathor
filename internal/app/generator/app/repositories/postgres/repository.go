@@ -773,7 +773,7 @@ func (r RepositoryCrud) syncDTOToModel() error {
 func (r RepositoryCrud) astStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Doc:        nil,
-		Name:       ast.NewIdent(r.domain.Repository.Name),
+		Name:       ast.NewIdent(r.domain.GetRepositoryTypeName()),
 		TypeParams: nil,
 		Assign:     0,
 		Type: &ast.StructType{
@@ -910,7 +910,7 @@ func (r RepositoryCrud) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.domain.Repository.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.domain.GetRepositoryTypeName() {
 			structure = t
 			structureExists = true
 			return false
@@ -945,7 +945,7 @@ func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
 		Doc:  nil,
 		Recv: nil,
-		Name: ast.NewIdent(fmt.Sprintf("New%s", r.domain.Repository.Name)),
+		Name: ast.NewIdent(fmt.Sprintf("New%s", r.domain.GetRepositoryTypeName())),
 		Type: &ast.FuncType{
 			Func:       0,
 			TypeParams: nil,
@@ -978,7 +978,7 @@ func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 					{
 						Doc:     nil,
 						Names:   nil,
-						Type:    ast.NewIdent(fmt.Sprintf("*%s", r.domain.Repository.Name)),
+						Type:    ast.NewIdent(fmt.Sprintf("*%s", r.domain.GetRepositoryTypeName())),
 						Tag:     nil,
 						Comment: nil,
 					},
@@ -996,7 +996,7 @@ func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 							OpPos: 0,
 							Op:    token.AND,
 							X: &ast.CompositeLit{
-								Type: ast.NewIdent(r.domain.Repository.Name),
+								Type: ast.NewIdent(r.domain.GetRepositoryTypeName()),
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
 										Key: &ast.Ident{
@@ -1036,7 +1036,7 @@ func (r RepositoryCrud) syncConstructor() error {
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", r.domain.Repository.Name) {
+			t.Name.String() == fmt.Sprintf("New%s", r.domain.GetRepositoryTypeName()) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -1083,7 +1083,7 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 						ast.NewIdent("r"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(r.domain.Repository.Name),
+						X: ast.NewIdent(r.domain.GetRepositoryTypeName()),
 					},
 				},
 			},
@@ -1548,7 +1548,7 @@ func (r RepositoryCrud) listMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.domain.Repository.Name,
+							Name: r.domain.GetRepositoryTypeName(),
 						},
 					},
 				},
@@ -2306,7 +2306,7 @@ func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.domain.Repository.Name,
+							Name: r.domain.GetRepositoryTypeName(),
 						},
 					},
 				},
@@ -2838,7 +2838,7 @@ func (r RepositoryCrud) getMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.domain.Repository.Name,
+							Name: r.domain.GetRepositoryTypeName(),
 						},
 					},
 				},
@@ -3245,7 +3245,7 @@ func (r RepositoryCrud) getByEmailMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.domain.Repository.Name,
+							Name: r.domain.GetRepositoryTypeName(),
 						},
 					},
 				},
@@ -3774,7 +3774,7 @@ func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.domain.Repository.Name,
+							Name: r.domain.GetRepositoryTypeName(),
 						},
 					},
 				},
@@ -4421,7 +4421,7 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.domain.Repository.Name,
+							Name: r.domain.GetRepositoryTypeName(),
 						},
 					},
 				},

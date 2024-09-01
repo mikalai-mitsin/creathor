@@ -104,7 +104,7 @@ func (i UseCaseInterfaces) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: i.domain.ModelsImportPath(),
+					Value: i.domain.EntitiesImportPath(),
 				},
 			},
 			&ast.ImportSpec{

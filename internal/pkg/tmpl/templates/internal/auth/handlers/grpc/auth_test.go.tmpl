@@ -5,8 +5,8 @@ import (
     "errors"
     "{{ .Module }}/internal/pkg/grpc"
     "{{ .Module }}/internal/pkg/errs"
-    "{{ .Module }}/internal/app/auth/models"
-    mock_models "{{ .Module }}/internal/app/auth/models/mock"
+    "{{ .Module }}/internal/app/auth/entities"
+    mock_entities "{{ .Module }}/internal/app/auth/entities/mock"
     mock_grpc "{{ .Module }}/internal/app/auth/handlers/grpc/mock"
 
     {{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
@@ -20,8 +20,8 @@ func TestAuthServiceServer_CreateToken(t *testing.T) {
     defer ctrl.Finish()
     authInterceptor := mock_grpc.NewMockAuthInterceptor(ctrl)
     ctx := context.Background()
-    login := mock_models.NewLogin(t)
-    pair := mock_models.NewTokenPair(t)
+    login := mock_entities.NewLogin(t)
+    pair := mock_entities.NewTokenPair(t)
     type fields struct {
         UnimplementedAuthServiceServer {{ .ProtoPackage }}.UnimplementedAuthServiceServer
         authInterceptor                AuthInterceptor
@@ -105,8 +105,8 @@ func TestAuthServiceServer_RefreshToken(t *testing.T) {
     defer ctrl.Finish()
     authInterceptor := mock_grpc.NewMockAuthInterceptor(ctrl)
     ctx := context.Background()
-    token := mock_models.NewToken(t)
-    pair := mock_models.NewTokenPair(t)
+    token := mock_entities.NewToken(t)
+    pair := mock_entities.NewTokenPair(t)
     type fields struct {
         UnimplementedAuthServiceServer {{ .ProtoPackage }}.UnimplementedAuthServiceServer
         authInterceptor                AuthInterceptor
@@ -217,7 +217,7 @@ func TestNewAuthServiceServer(t *testing.T) {
 
 func Test_decodeTokenPair(t *testing.T) {
     type args struct {
-        pair *models.TokenPair
+        pair *entities.TokenPair
     }
     tests := []struct {
         name string
@@ -227,7 +227,7 @@ func Test_decodeTokenPair(t *testing.T) {
         {
             name: "ok",
             args: args{
-                pair: &models.TokenPair{
+                pair: &entities.TokenPair{
                     Access:  "dasasdasd",
                     Refresh: "asdartge245",
                 },

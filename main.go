@@ -84,7 +84,7 @@ func initProject(ctx *cli.Context) error {
 			Name:        m.Model,
 			Module:      project.Module,
 			ProtoModule: project.ProtoPackage(),
-			Models: []*domain.Model{
+			Entities: []*domain.Model{
 				domain.NewMainModel(m),
 				domain.NewFilterModel(m),
 				domain.NewCreateModel(m),

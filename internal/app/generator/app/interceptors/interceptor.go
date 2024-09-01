@@ -804,7 +804,7 @@ func (i InterceptorCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: i.domain.ModelsImportPath(),
+							Value: i.domain.EntitiesImportPath(),
 						},
 					},
 					&ast.ImportSpec{
@@ -820,10 +820,10 @@ func (i InterceptorCrud) file() *ast.File {
 						},
 					},
 					&ast.ImportSpec{
-						Name: ast.NewIdent("userModels"),
+						Name: ast.NewIdent("userEntities"),
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/user/models"`, i.domain.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/user/entities"`, i.domain.Module),
 						},
 					},
 				},

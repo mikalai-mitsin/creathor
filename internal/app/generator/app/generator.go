@@ -11,9 +11,9 @@ import (
 	"path/filepath"
 
 	"github.com/mikalai-mitsin/creathor/internal/app/generator"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/entities"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/handlers/grpc"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/interceptors"
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/models"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/repositories/postgres"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/usecases"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
@@ -44,8 +44,8 @@ func (g *Generator) Sync() error {
 
 		NewApp(g.domain),
 	}
-	for _, model := range g.domain.Models {
-		domainGenerators = append(domainGenerators, models.NewModel(model, g.domain))
+	for _, model := range g.domain.Entities {
+		domainGenerators = append(domainGenerators, entities.NewModel(model, g.domain))
 	}
 	for _, domainGenerator := range domainGenerators {
 		if err := domainGenerator.Sync(); err != nil {
@@ -120,7 +120,7 @@ func addPermission(permission, check string) error {
 											}
 											lit.Elts = append(lit.Elts, &ast.KeyValueExpr{
 												Key: &ast.SelectorExpr{
-													X:   ast.NewIdent("models"),
+													X:   ast.NewIdent("entities"),
 													Sel: ast.NewIdent(permission),
 												},
 												Colon: 0,

@@ -19,7 +19,7 @@ type Domain struct {
 	Name        string
 	Module      string
 	ProtoModule string
-	Models      []*Model
+	Entities    []*Model
 	UseCase     *Layer
 	Repository  *Layer
 	Interceptor *Layer
@@ -85,17 +85,17 @@ func (m *Domain) DirName() string {
 	return m.SnakeName()
 }
 
-func (m *Domain) ModelsImportPath() string {
-	return fmt.Sprintf(`"%s/internal/app/%s/models"`, m.Module, m.DirName())
+func (m *Domain) EntitiesImportPath() string {
+	return fmt.Sprintf(`"%s/internal/app/%s/entities"`, m.Module, m.DirName())
 }
 
 func (m *Domain) GetMainModel() *Model {
 	index := slices.IndexFunc(
-		m.Models,
+		m.Entities,
 		func(model *Model) bool { return model.Type == ModelTypeMain },
 	)
 	if index >= 0 {
-		return m.Models[index]
+		return m.Entities[index]
 	}
 	return nil
 }
@@ -113,33 +113,33 @@ func (m *Domain) SearchEnabled() bool {
 
 func (m *Domain) GetCreateModel() *Model {
 	index := slices.IndexFunc(
-		m.Models,
+		m.Entities,
 		func(model *Model) bool { return model.Type == ModelTypeCreate },
 	)
 	if index >= 0 {
-		return m.Models[index]
+		return m.Entities[index]
 	}
 	return nil
 }
 
 func (m *Domain) GetUpdateModel() *Model {
 	index := slices.IndexFunc(
-		m.Models,
+		m.Entities,
 		func(model *Model) bool { return model.Type == ModelTypeUpdate },
 	)
 	if index > 0 {
-		return m.Models[index]
+		return m.Entities[index]
 	}
 	return nil
 }
 
 func (m *Domain) GetFilterModel() *Model {
 	index := slices.IndexFunc(
-		m.Models,
+		m.Entities,
 		func(model *Model) bool { return model.Type == ModelTypeFilter },
 	)
 	if index > 0 {
-		return m.Models[index]
+		return m.Entities[index]
 	}
 	return nil
 }

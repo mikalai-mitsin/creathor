@@ -59,7 +59,7 @@ func NewProject(configPath string) (*Project, error) {
 				{Name: "LastName", Type: "string", Search: true},
 				{Name: "Password", Type: "string", Search: false},
 				{Name: "Email", Type: "string", Search: true},
-				{Name: "GroupID", Type: "models.GroupID", Search: false},
+				{Name: "GroupID", Type: "entities.GroupID", Search: false},
 			},
 			GRPCEnabled:    project.GRPCEnabled,
 			GatewayEnabled: project.GatewayEnabled,

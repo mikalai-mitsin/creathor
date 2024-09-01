@@ -8,8 +8,8 @@ import (
     "time"
 
     "{{ .Module }}/internal/pkg/errs"
-    "{{ .Module }}/internal/app/{{ .DirName }}/models"
-    mock_models "{{ .Module }}/internal/app/{{ .DirName }}/models/mock"
+    "{{ .Module }}/internal/app/{{ .DirName }}/entities"
+    mock_entities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
     mock_usecases "{{ .Module }}/internal/app/{{ .DirName }}/usecases/mock"
     "{{ .Module }}/internal/pkg/clock"
     "{{ .Module }}/internal/pkg/uuid"
@@ -71,7 +71,7 @@ func Test{{ .Config.UseCaseTypeName }}_Get(t *testing.T) {
     {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
     logger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
         logger           Logger
@@ -85,7 +85,7 @@ func Test{{ .Config.UseCaseTypeName }}_Get(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    *models.{{ .Config.ModelName }}
+        want    *entities.{{ .Config.ModelName }}
         wantErr error
     }{
         {
@@ -146,26 +146,26 @@ func Test{{ .Config.UseCaseTypeName }}_List(t *testing.T) {
     {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
     logger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
-    var {{ .Config.ListVariable }} []*models.{{ .Config.ModelName }}
+    var {{ .Config.ListVariable }} []*entities.{{ .Config.ModelName }}
     count := faker.New().UInt64Between(2, 20)
     for i := uint64(0); i < count; i++ {
-        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mock_models.New{{ .Config.ModelName }}(t))
+        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mock_entities.New{{ .Config.ModelName }}(t))
     }
-    filter := mock_models.New{{ .Config.FilterTypeName }}(t)
+    filter := mock_entities.New{{ .Config.FilterTypeName }}(t)
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
         logger           Logger
     }
     type args struct {
         ctx    context.Context
-        filter *models.{{ .Config.FilterTypeName }}
+        filter *entities.{{ .Config.FilterTypeName }}
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    []*models.{{ .Config.ModelName }}
+        want    []*entities.{{ .Config.ModelName }}
         want1   uint64
         wantErr error
     }{
@@ -253,7 +253,7 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
     mockLogger := mock_usecases.NewMockLogger(ctrl)
     mockUUID := mock_usecases.NewMockUUIDGenerator(ctrl)
     ctx := context.Background()
-    create := mock_models.New{{ .Config.CreateTypeName }}(t)
+    create := mock_entities.New{{ .Config.CreateTypeName }}(t)
     now := time.Now().UTC()
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
@@ -263,14 +263,14 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
     }
     type args struct {
         ctx    context.Context
-        create *models.{{ .Config.CreateTypeName }}
+        create *entities.{{ .Config.CreateTypeName }}
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *models.{{ .Config.ModelName }}
+        want    *entities.{{ .Config.ModelName }}
         wantErr error
     }{
         {
@@ -281,7 +281,7 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
                 {{ .Config.RepositoryVariableName }}.EXPECT().
                     Create(
                         ctx,
-                        &models.{{ .Config.ModelName }}{
+                        &entities.{{ .Config.ModelName }}{
                             ID: uuid.UUID("test"),
 {{- range $key, $value := .Config.Params }}
                             {{ $value.GetName }}: create.{{ $value.GetName }},
@@ -302,7 +302,7 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
                 ctx: ctx,
                 create: create,
             },
-            want: &models.{{ .Config.ModelName }}{
+            want: &entities.{{ .Config.ModelName }}{
                 ID: uuid.UUID("test"),
 {{- range $key, $value := .Config.Params }}
                 {{ $value.GetName }}: create.{{ $value.GetName }},
@@ -320,7 +320,7 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
                 {{ .Config.RepositoryVariableName }}.EXPECT().
                     Create(
                         ctx,
-                        &models.{{ .Config.ModelName }}{
+                        &entities.{{ .Config.ModelName }}{
                             ID: uuid.UUID("test 2"),
 {{- range $key, $value := .Config.Params }}
                             {{ $value.GetName }}: create.{{ $value.GetName }},
@@ -356,7 +356,7 @@ func Test{{ .Config.UseCaseTypeName }}_Create(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
-                create: &models.{{ .Config.CreateTypeName }}{},
+                create: &entities.{{ .Config.CreateTypeName }}{},
             },
             want: nil,
             wantErr: errs.NewInvalidFormError().WithParams(
@@ -393,9 +393,9 @@ func Test{{ .Config.UseCaseTypeName }}_Update(t *testing.T) {
     {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
     logger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     mockClock := mock_usecases.NewMockClock(ctrl)
-    update := mock_models.New{{ .Config.UpdateTypeName }}(t)
+    update := mock_entities.New{{ .Config.UpdateTypeName }}(t)
     now := {{ .Config.Variable }}.UpdatedAt
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
@@ -404,14 +404,14 @@ func Test{{ .Config.UseCaseTypeName }}_Update(t *testing.T) {
     }
     type args struct {
         ctx    context.Context
-        update *models.{{ .Config.UpdateTypeName }}
+        update *entities.{{ .Config.UpdateTypeName }}
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *models.{{ .Config.ModelName }}
+        want    *entities.{{ .Config.ModelName }}
         wantErr error
     }{
         {
@@ -486,7 +486,7 @@ func Test{{ .Config.UseCaseTypeName }}_Update(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
-                update: &models.{{ .Config.UpdateTypeName }}{
+                update: &entities.{{ .Config.UpdateTypeName }}{
                     ID: uuid.UUID("baduuid"),
                 },
             },
@@ -520,7 +520,7 @@ func Test{{ .Config.UseCaseTypeName }}_Delete(t *testing.T) {
     {{ .Config.RepositoryVariableName }} := mock_usecases.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
     logger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
         logger           Logger

@@ -39,7 +39,7 @@ func (i *Interfaces) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/auth/models"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/auth/entities"`, i.project.Module),
 						},
 					},
 				},
@@ -317,7 +317,7 @@ func (i *Interfaces) file() *ast.File {
 														Type: &ast.StarExpr{
 															X: &ast.SelectorExpr{
 																X: &ast.Ident{
-																	Name: "models",
+																	Name: "entities",
 																},
 																Sel: &ast.Ident{
 																	Name: "Login",
@@ -333,7 +333,7 @@ func (i *Interfaces) file() *ast.File {
 														Type: &ast.StarExpr{
 															X: &ast.SelectorExpr{
 																X: &ast.Ident{
-																	Name: "models",
+																	Name: "entities",
 																},
 																Sel: &ast.Ident{
 																	Name: "TokenPair",
@@ -382,7 +382,7 @@ func (i *Interfaces) file() *ast.File {
 														},
 														Type: &ast.SelectorExpr{
 															X: &ast.Ident{
-																Name: "models",
+																Name: "entities",
 															},
 															Sel: &ast.Ident{
 																Name: "Token",
@@ -397,7 +397,7 @@ func (i *Interfaces) file() *ast.File {
 														Type: &ast.StarExpr{
 															X: &ast.SelectorExpr{
 																X: &ast.Ident{
-																	Name: "models",
+																	Name: "entities",
 																},
 																Sel: &ast.Ident{
 																	Name: "TokenPair",

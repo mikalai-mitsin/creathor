@@ -61,7 +61,7 @@ func (r RepositoryCrud) Sync() error {
 	if err := r.syncDTOListType(); err != nil {
 		return err
 	}
-	if err := r.syncDTOListToModels(); err != nil {
+	if err := r.syncDTOListToEntities(); err != nil {
 		return err
 	}
 	if err := r.syncDTOConstructor(); err != nil {
@@ -324,7 +324,7 @@ func (r RepositoryCrud) dtoConstructor() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: r.domain.GetMainModel().Name,
@@ -547,7 +547,7 @@ func (r RepositoryCrud) syncDTOConstructor() error {
 func (r RepositoryCrud) dtoToModel() *ast.FuncDecl {
 	model := &ast.CompositeLit{
 		Type: &ast.SelectorExpr{
-			X: ast.NewIdent("models"),
+			X: ast.NewIdent("entities"),
 			Sel: &ast.Ident{
 				Name: r.domain.GetMainModel().Name,
 			},
@@ -630,7 +630,7 @@ func (r RepositoryCrud) dtoToModel() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: r.domain.GetMainModel().Name,
@@ -851,7 +851,7 @@ func (r RepositoryCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: r.domain.ModelsImportPath(),
+							Value: r.domain.EntitiesImportPath(),
 						},
 					},
 					&ast.ImportSpec{
@@ -1111,7 +1111,7 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 						Names: []*ast.Ident{ast.NewIdent("model")},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(r.domain.GetMainModel().Name),
 							},
 						},
@@ -1593,7 +1593,7 @@ func (r RepositoryCrud) listMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: r.domain.GetFilterModel().Name,
@@ -1610,7 +1610,7 @@ func (r RepositoryCrud) listMethod() *ast.FuncDecl {
 							Elt: &ast.StarExpr{
 								X: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "models",
+										Name: "entities",
 									},
 									Sel: &ast.Ident{
 										Name: r.domain.GetMainModel().Name,
@@ -2211,7 +2211,7 @@ func (r RepositoryCrud) listMethod() *ast.FuncDecl {
 									Name: "dto",
 								},
 								Sel: &ast.Ident{
-									Name: "ToModels",
+									Name: "ToEntities",
 								},
 							},
 						},
@@ -2351,7 +2351,7 @@ func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: r.domain.GetFilterModel().Name,
@@ -2897,7 +2897,7 @@ func (r RepositoryCrud) getMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: r.domain.GetMainModel().Name,
@@ -3295,7 +3295,7 @@ func (r RepositoryCrud) getByEmailMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: r.domain.GetMainModel().Name,
@@ -3819,7 +3819,7 @@ func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: r.domain.GetMainModel().Name,
@@ -5017,7 +5017,7 @@ func (r RepositoryCrud) syncDTOListType() error {
 	return nil
 }
 
-func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
+func (r RepositoryCrud) astDTOToEntities() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -5034,7 +5034,7 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 			},
 		},
 		Name: &ast.Ident{
-			Name: "ToModels",
+			Name: "ToEntities",
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{},
@@ -5044,7 +5044,7 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 						Type: &ast.ArrayType{
 							Elt: &ast.StarExpr{
 								X: &ast.SelectorExpr{
-									X: ast.NewIdent("models"),
+									X: ast.NewIdent("entities"),
 									Sel: &ast.Ident{
 										Name: r.domain.GetMainModel().Name,
 									},
@@ -5074,7 +5074,7 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 									Elt: &ast.StarExpr{
 										X: &ast.SelectorExpr{
 											X: &ast.Ident{
-												Name: "models",
+												Name: "entities",
 											},
 											Sel: &ast.Ident{
 												Name: r.domain.GetMainModel().Name,
@@ -5151,7 +5151,7 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 	}
 }
 
-func (r RepositoryCrud) syncDTOListToModels() error {
+func (r RepositoryCrud) syncDTOListToEntities() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -5160,7 +5160,7 @@ func (r RepositoryCrud) syncDTOListToModels() error {
 	var methodExists bool
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "ToModels" {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "ToEntities" {
 			methodExists = true
 			method = t
 			return false
@@ -5168,7 +5168,7 @@ func (r RepositoryCrud) syncDTOListToModels() error {
 		return true
 	})
 	if method == nil {
-		method = r.astDTOToModels()
+		method = r.astDTOToEntities()
 	}
 	if !methodExists {
 		file.Decls = append(file.Decls, method)

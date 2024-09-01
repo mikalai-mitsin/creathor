@@ -48,7 +48,7 @@ func (m AuthMiddleware) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/auth/models"`, m.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/auth/entities"`, m.project.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -722,7 +722,7 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 								},
 								Type: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "models",
+										Name: "entities",
 									},
 									Sel: &ast.Ident{
 										Name: "Token",
@@ -787,7 +787,7 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 											},
 											&ast.SelectorExpr{
 												X: &ast.Ident{
-													Name: "models",
+													Name: "entities",
 												},
 												Sel: &ast.Ident{
 													Name: "Guest",
@@ -836,7 +836,7 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 											},
 											&ast.SelectorExpr{
 												X: &ast.Ident{
-													Name: "models",
+													Name: "entities",
 												},
 												Sel: &ast.Ident{
 													Name: "Guest",
@@ -863,7 +863,7 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: "Token",

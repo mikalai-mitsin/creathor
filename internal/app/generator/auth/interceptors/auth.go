@@ -60,14 +60,14 @@ func (i InterceptorAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/auth/models"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/auth/entities"`, i.project.Module),
 						},
 					},
 					&ast.ImportSpec{
-						Name: ast.NewIdent("userModels"),
+						Name: ast.NewIdent("userEntities"),
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/user/models"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/user/entities"`, i.project.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -249,7 +249,7 @@ func (i InterceptorAuth) file() *ast.File {
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: "models",
+											Name: "entities",
 										},
 										Sel: &ast.Ident{
 											Name: "Login",
@@ -265,7 +265,7 @@ func (i InterceptorAuth) file() *ast.File {
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: "models",
+											Name: "entities",
 										},
 										Sel: &ast.Ident{
 											Name: "TokenPair",
@@ -403,7 +403,7 @@ func (i InterceptorAuth) file() *ast.File {
 								},
 								Type: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "models",
+										Name: "entities",
 									},
 									Sel: &ast.Ident{
 										Name: "Token",
@@ -535,7 +535,7 @@ func (i InterceptorAuth) file() *ast.File {
 								},
 								Type: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "models",
+										Name: "entities",
 									},
 									Sel: &ast.Ident{
 										Name: "Token",
@@ -550,7 +550,7 @@ func (i InterceptorAuth) file() *ast.File {
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: "models",
+											Name: "entities",
 										},
 										Sel: &ast.Ident{
 											Name: "TokenPair",
@@ -688,7 +688,7 @@ func (i InterceptorAuth) file() *ast.File {
 								},
 								Type: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "models",
+										Name: "entities",
 									},
 									Sel: &ast.Ident{
 										Name: "Token",
@@ -702,7 +702,7 @@ func (i InterceptorAuth) file() *ast.File {
 							{
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
-										X: ast.NewIdent("userModels"),
+										X: ast.NewIdent("userEntities"),
 										Sel: &ast.Ident{
 											Name: "User",
 										},

@@ -8,9 +8,9 @@ import (
     "testing"
 
     "{{ .Module }}/internal/pkg/errs"
-    "{{ .Module }}/internal/app/auth/models"
-    mock_user_models "{{ .Module }}/internal/app/user/models/mock"
-    mock_models "{{ .Module }}/internal/app/auth/models/mock"
+    "{{ .Module }}/internal/app/auth/entities"
+    mock_user_entities "{{ .Module }}/internal/app/user/entities/mock"
+    mock_entities "{{ .Module }}/internal/app/auth/entities/mock"
     mock_grpc "{{ .Module }}/internal/pkg/grpc/mock"
 
     "go.uber.org/mock/gomock"
@@ -43,8 +43,8 @@ func TestAuthMiddleware_Auth(t *testing.T) {
     defer ctrl.Finish()
     authInterceptor := mock_grpc.NewMockAuthInterceptor(ctrl)
     ctx := context.Background()
-    token := mock_models.NewToken(t)
-    user := mock_user_models.NewUser(t)
+    token := mock_entities.NewToken(t)
+    user := mock_user_entities.NewUser(t)
     ctxWithToken := metadata.NewIncomingContext(ctx, metadata.New(map[string]string{
         "authorization": fmt.Sprintf("Bearer %s", token.String()),
     }))
@@ -83,7 +83,7 @@ func TestAuthMiddleware_Auth(t *testing.T) {
             name: "bad token",
             setup: func() {
                 authInterceptor.EXPECT().
-                    Auth(ctxWithBadToken, models.Token("token.String()")).
+                    Auth(ctxWithBadToken, entities.Token("token.String()")).
                     Return(nil, errs.NewBadTokenError()).
                     Times(1)
             },
@@ -105,7 +105,7 @@ func TestAuthMiddleware_Auth(t *testing.T) {
             args: args{
                 ctx: ctx,
             },
-            want:    context.WithValue(ctx, UserKey, models.Guest),
+            want:    context.WithValue(ctx, UserKey, entities.Guest),
             wantErr: nil,
         },
     }

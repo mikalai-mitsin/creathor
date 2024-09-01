@@ -1,4 +1,4 @@
-package models
+package entities
 
 import (
 	"bytes"
@@ -52,7 +52,7 @@ func (m *Mock) constructor() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: m.typeSpec.Name,
 							},
 						},
@@ -81,7 +81,7 @@ func (m *Mock) constructor() *ast.FuncDecl {
 func (m *Mock) model() *ast.UnaryExpr {
 	cl := &ast.CompositeLit{
 		Type: &ast.SelectorExpr{
-			X:   ast.NewIdent("models"),
+			X:   ast.NewIdent("entities"),
 			Sel: m.typeSpec.Name,
 		},
 		Elts: []ast.Expr{},
@@ -132,7 +132,7 @@ func (m *Mock) fill(cl *ast.CompositeLit) {
 func (m *Mock) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
-			Name: "mock_models",
+			Name: "mock_entities",
 		},
 		Decls: []ast.Decl{
 			&ast.GenDecl{
@@ -153,7 +153,7 @@ func (m *Mock) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: m.domain.ModelsImportPath(),
+							Value: m.domain.EntitiesImportPath(),
 						},
 					},
 					&ast.ImportSpec{
@@ -182,7 +182,7 @@ func (m *Mock) file() *ast.File {
 
 func (m *Mock) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", m.domain.DirName(), "models", "mock", m.fileName)
+	filename := path.Join("internal", "app", m.domain.DirName(), "entities", "mock", m.fileName)
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err

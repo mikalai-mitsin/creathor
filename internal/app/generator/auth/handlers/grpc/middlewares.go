@@ -45,16 +45,16 @@ func (m *Middlewares) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/auth/models"`, m.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/auth/entities"`, m.project.Module),
 						},
 					},
 					&ast.ImportSpec{
 						Name: &ast.Ident{
-							Name: "userModels",
+							Name: "userEntities",
 						},
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/user/models"`, m.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/user/entities"`, m.project.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -170,7 +170,7 @@ func (m *Middlewares) file() *ast.File {
 													{
 														Type: &ast.SelectorExpr{
 															X: &ast.Ident{
-																Name: "models",
+																Name: "entities",
 															},
 															Sel: &ast.Ident{
 																Name: "Token",
@@ -185,7 +185,7 @@ func (m *Middlewares) file() *ast.File {
 														Type: &ast.StarExpr{
 															X: &ast.SelectorExpr{
 																X: &ast.Ident{
-																	Name: "userModels",
+																	Name: "userEntities",
 																},
 																Sel: &ast.Ident{
 																	Name: "User",
@@ -622,7 +622,7 @@ func (m *Middlewares) file() *ast.File {
 										},
 										Type: &ast.SelectorExpr{
 											X: &ast.Ident{
-												Name: "models",
+												Name: "entities",
 											},
 											Sel: &ast.Ident{
 												Name: "Token",
@@ -715,7 +715,7 @@ func (m *Middlewares) file() *ast.File {
 													},
 													&ast.SelectorExpr{
 														X: &ast.Ident{
-															Name: "models",
+															Name: "entities",
 														},
 														Sel: &ast.Ident{
 															Name: "Guest",
@@ -878,7 +878,7 @@ func (m *Middlewares) file() *ast.File {
 							{
 								Type: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "models",
+										Name: "entities",
 									},
 									Sel: &ast.Ident{
 										Name: "Token",
@@ -1154,7 +1154,7 @@ func (m *Middlewares) file() *ast.File {
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: "models",
+											Name: "entities",
 										},
 										Sel: &ast.Ident{
 											Name: "Token",

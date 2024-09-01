@@ -1,4 +1,4 @@
-package models
+package entities
 
 import (
 	"bytes"
@@ -30,7 +30,7 @@ func NewPerm(modelName string, fileName string, domain *mods.Domain) *Perm {
 
 func (m *Perm) file() *ast.File {
 	file := &ast.File{
-		Name: ast.NewIdent("models"),
+		Name: ast.NewIdent("entities"),
 		Decls: []ast.Decl{
 			m.perms(),
 		},
@@ -138,7 +138,7 @@ func (m *Perm) filename() string {
 		"internal",
 		"app",
 		"user",
-		"models",
+		"entities",
 		fmt.Sprintf("permission_%s", m.fileName),
 	)
 }

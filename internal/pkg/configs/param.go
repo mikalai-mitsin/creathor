@@ -27,7 +27,7 @@ func (p *Param) Validate() error {
 			"[]string",
 			"time.Time",
 			"[]time.Time",
-			"GroupID", "models.GroupID", "*GroupID", "*models.GroupID",
+			"GroupID", "entities.GroupID", "*GroupID", "*entities.GroupID",
 		)),
 	)
 	if err != nil {
@@ -125,7 +125,7 @@ func (p *Param) SQLType() string {
 		return "varchar[]"
 	case "uuid", "UUID", "uuid.UUID":
 		return "uuid"
-	case "GroupID", "models.GroupID":
+	case "GroupID", "entities.GroupID":
 		return "varchar"
 	case "time.Time":
 		switch p.Name {
@@ -155,7 +155,7 @@ func (p *Param) GetGRPCWrapper() string {
 		return "wrapperspb.UInt32"
 	case "*uint64":
 		return "wrapperspb.UInt64"
-	case "*string", "*UUID", "*uuid.UUID", "*GroupID", "*models.GroupID":
+	case "*string", "*UUID", "*uuid.UUID", "*GroupID", "*entities.GroupID":
 		return "wrapperspb.String"
 	case "*bool", "*booleand":
 		return "wrapperspb.Bool"
@@ -165,7 +165,7 @@ func (p *Param) GetGRPCWrapper() string {
 		return "wrapperspb.Double"
 	case "*time.Time", "time.Time":
 		return "timestamppb.New"
-	case "UUID", "uuid.UUID", "GroupID", "models.GroupID":
+	case "UUID", "uuid.UUID", "GroupID", "entities.GroupID":
 		return "string"
 	default:
 		return "/* FIXME */"
@@ -192,7 +192,7 @@ func (p *Param) GetGRPCWrapperArgumentType() string {
 		return "float64"
 	case "time.Time":
 		return "time.Time"
-	case "UUID", "uuid.UUID", "GroupID", "models.GroupID":
+	case "UUID", "uuid.UUID", "GroupID", "entities.GroupID":
 		return "string"
 	default:
 		return "/* FIXME */"
@@ -229,7 +229,7 @@ func (p *Param) GRPCType() string {
 		return "timestamppb.New"
 	case "bool":
 		return "bool"
-	case "UUID", "uuid.UUID", "GroupID", "models.GroupID":
+	case "UUID", "uuid.UUID", "GroupID", "entities.GroupID":
 		return "string"
 	default:
 		return "/* FIXME */"
@@ -262,7 +262,7 @@ func (p *Param) ProtoType() string {
 		return "repeated uint32"
 	case "[]uint64":
 		return "repeated uint64"
-	case "string", "uuid", "UUID", "uuid.UUID", "GroupID", "models.GroupID":
+	case "string", "uuid", "UUID", "uuid.UUID", "GroupID", "entities.GroupID":
 		return "string"
 	case "[]string":
 		return "repeated string"
@@ -301,7 +301,7 @@ func (p *Param) PostgresDTOType() string {
 		return "string"
 	case "[]string":
 		return "pq.StringArray"
-	case "uuid", "uuid.UUID", "UUID", "models.GroupID", "GroupID":
+	case "uuid", "uuid.UUID", "UUID", "entities.GroupID", "GroupID":
 		return "string"
 	case "time.Time":
 		return "time.Time"
@@ -366,7 +366,7 @@ func (p *Param) ProtoWrapType() string {
 		return "google.protobuf.ListValue"
 	case "[]uint64":
 		return "google.protobuf.ListValue"
-	case "string", "UUID", "uuid", "GroupID", "models.GroupID":
+	case "string", "UUID", "uuid", "GroupID", "entities.GroupID":
 		return "google.protobuf.StringValue"
 	case "[]string":
 		return "google.protobuf.ListValue"
@@ -396,7 +396,7 @@ func (p *Param) ProtoWrapType() string {
 		return "google.protobuf.ListValue"
 	case "*[]uint64":
 		return "google.protobuf.ListValue"
-	case "*string", "*uuid", "*UUID", "*uuid.UUID", "*GroupID", "*models.GroupID":
+	case "*string", "*uuid", "*UUID", "*uuid.UUID", "*GroupID", "*entities.GroupID":
 		return "google.protobuf.StringValue"
 	case "*[]string":
 		return "google.protobuf.ListValue"

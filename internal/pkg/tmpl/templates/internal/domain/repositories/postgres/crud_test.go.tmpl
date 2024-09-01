@@ -14,7 +14,7 @@ import (
     "testing"
 
     "{{ .Module }}/internal/pkg/errs"
-    mock_models "{{ .Module }}/internal/app/{{ .DirName }}/models/mock"
+    mock_entities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
     mock_postgres "{{ .Module }}/internal/app/{{ .DirName }}/repositories/postgres/mock"
     "{{ .Module }}/internal/pkg/postgres"
     "{{ .Module }}/internal/pkg/log"
@@ -22,7 +22,7 @@ import (
     "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
 
-    "{{ .Module }}/internal/app/{{ .DirName }}/models"
+    "{{ .Module }}/internal/app/{{ .DirName }}/entities"
     "{{ .Module }}/internal/pkg/clock"
     "{{ .Module }}/internal/pkg/pointer"
     "{{ .Module }}/internal/pkg/uuid"
@@ -78,7 +78,7 @@ func Test{{ .Config.RepositoryTypeName }}_Create(t *testing.T) {
     defer ctrl.Finish()
     logger := mock_postgres.NewMockLogger(ctrl)
     query := "INSERT INTO public.{{ .TableName }} (created_at,updated_at,{{- range $i, $value := .Config.Params }}{{if $i}},{{end}}{{ $value.Tag }}{{- end }}) VALUES ($1,$2,{{ range $i, $value := .Config.Params }}{{if $i}},{{end}}${{ add $i 3}}{{- end }}) RETURNING id"
-    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     ctx := context.Background()
     type fields struct {
         database *sqlx.DB
@@ -86,7 +86,7 @@ func Test{{ .Config.RepositoryTypeName }}_Create(t *testing.T) {
     }
     type args struct {
         ctx  context.Context
-        card *models.{{ .Config.ModelName }}
+        card *entities.{{ .Config.ModelName }}
     }
     tests := []struct {
         name    string
@@ -176,7 +176,7 @@ func Test{{ .Config.RepositoryTypeName }}_Get(t *testing.T) {
     defer ctrl.Finish()
     logger := mock_postgres.NewMockLogger(ctrl)
     query := "SELECT {{ .TableName }}.id, {{ .TableName }}.created_at, {{ .TableName }}.updated_at{{ range $key, $value := .Config.Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }} WHERE id = $1 LIMIT 1"
-    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     ctx := context.Background()
     type fields struct {
         database *sqlx.DB
@@ -191,13 +191,13 @@ func Test{{ .Config.RepositoryTypeName }}_Get(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    *models.{{ .Config.ModelName }}
+        want    *entities.{{ .Config.ModelName }}
         wantErr error
     }{
         {
             name: "ok",
             setup: func() {
-                rows := new{{ .Config.ModelName }}Rows(t, []*models.{{ .Config.ModelName }}{ {{- .Config.Variable -}} })
+                rows := new{{ .Config.ModelName }}Rows(t, []*entities.{{ .Config.ModelName }}{ {{- .Config.Variable -}} })
                 mock.ExpectQuery(query).WithArgs({{ .Config.Variable }}.ID).WillReturnRows(rows)
             },
             fields: fields{
@@ -275,11 +275,11 @@ func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
     defer ctrl.Finish()
     logger := mock_postgres.NewMockLogger(ctrl)
     ctx := context.Background()
-    var {{ .Config.ListVariable }} []*models.{{ .Config.ModelName }}
+    var {{ .Config.ListVariable }} []*entities.{{ .Config.ModelName }}
     for i := 0; i < faker.New().IntBetween(2, 20); i++ {
-        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mock_models.New{{ .Config.ModelName }}(t))
+        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mock_entities.New{{ .Config.ModelName }}(t))
     }
-    filter := &models.{{ .Config.FilterTypeName }}{
+    filter := &entities.{{ .Config.FilterTypeName }}{
 		PageSize:   pointer.Pointer(uint64(10)),
 		PageNumber: pointer.Pointer(uint64(2)),
 		Search:     nil,
@@ -293,14 +293,14 @@ func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
     }
     type args struct {
         ctx    context.Context
-        filter *models.{{ .Config.FilterTypeName }}
+        filter *entities.{{ .Config.FilterTypeName }}
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    []*models.{{ .Config.ModelName }}
+        want    []*entities.{{ .Config.ModelName }}
         wantErr error
     }{
         {
@@ -387,7 +387,7 @@ func Test{{ .Config.RepositoryTypeName }}_Update(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     logger := mock_postgres.NewMockLogger(ctrl)
-    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     query := `UPDATE public.{{ .TableName }} SET {{ .TableName }}.created_at = $1, {{ .TableName }}.updated_at = $2, {{ range $i, $value := .Config.Params }}{{if $i}}, {{end}}{{ $.TableName }}.{{ $value.Tag }} = ${{ add $i 3}}{{- end }} WHERE id = ${{ add (len $.Config.Params) 3 }}`
     ctx := context.Background()
     type fields struct {
@@ -396,7 +396,7 @@ func Test{{ .Config.RepositoryTypeName }}_Update(t *testing.T) {
     }
     type args struct {
         ctx  context.Context
-        card *models.{{ .Config.ModelName }}
+        card *entities.{{ .Config.ModelName }}
     }
     tests := []struct {
         name    string
@@ -570,7 +570,7 @@ func Test{{ .Config.RepositoryTypeName }}_Delete(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     logger := mock_postgres.NewMockLogger(ctrl)
-    {{ .Config.Variable }} := mock_models.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
         database *sqlx.DB
         logger   Logger
@@ -678,14 +678,14 @@ func Test{{ .Config.RepositoryTypeName }}_Count(t *testing.T) {
     defer db.Close()
     query := "SELECT count(id) FROM public.{{ .TableName }}"
     ctx := context.Background()
-    filter := &models.{{ .Config.FilterTypeName }}{}
+    filter := &entities.{{ .Config.FilterTypeName }}{}
     type fields struct {
         database *sqlx.DB
         logger   Logger
     }
     type args struct {
         ctx    context.Context
-        filter *models.{{ .Config.FilterTypeName }}
+        filter *entities.{{ .Config.FilterTypeName }}
     }
     tests := []struct {
         name    string
@@ -769,7 +769,7 @@ func Test{{ .Config.RepositoryTypeName }}_Count(t *testing.T) {
     }
 }
 
-func new{{ .Config.ModelName }}Rows(t *testing.T, {{ .Config.ListVariable }} []*models.{{ .Config.ModelName }}) *sqlmock.Rows {
+func new{{ .Config.ModelName }}Rows(t *testing.T, {{ .Config.ListVariable }} []*entities.{{ .Config.ModelName }}) *sqlmock.Rows {
     t.Helper()
     rows := sqlmock.NewRows([]string{
         "id",

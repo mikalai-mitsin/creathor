@@ -1,4 +1,4 @@
-package models
+package entities
 
 import (
 	"bytes"
@@ -23,7 +23,7 @@ func NewModelEvent(project *configs.Project) *ModelEvent {
 func (m ModelEvent) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
-			Name: "models",
+			Name: "entities",
 		},
 		Decls: []ast.Decl{
 			&ast.GenDecl{
@@ -140,7 +140,7 @@ func (m ModelEvent) file() *ast.File {
 
 func (m ModelEvent) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "domain", "models", "event.go")
+	filename := path.Join("internal", "domain", "entities", "event.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		file = m.file()

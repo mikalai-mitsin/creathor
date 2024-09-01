@@ -11,10 +11,10 @@ import (
 
     "{{ .Module }}/internal/pkg/configs"
     "{{ .Module }}/internal/pkg/errs"
-    "{{ .Module }}/internal/app/auth/models"
-    userModels "{{ .Module }}/internal/app/user/models"
+    "{{ .Module }}/internal/app/auth/entities"
+    userEntities "{{ .Module }}/internal/app/user/entities"
     mock_jwt "{{ .Module }}/internal/app/auth/repositories/jwt/mock"
-    mockUserModels "{{ .Module }}/internal/app/user/models/mock"
+    mockUserEntities "{{ .Module }}/internal/app/user/entities/mock"
 
     "github.com/golang-jwt/jwt/v4"
     "go.uber.org/mock/gomock"
@@ -39,7 +39,7 @@ func TestAuthRepository_Create(t *testing.T) {
     }
     type args struct {
         in0  context.Context
-        user *userModels.User
+        user *userEntities.User
     }
     tests := []struct {
         name    string
@@ -59,7 +59,7 @@ func TestAuthRepository_Create(t *testing.T) {
             },
             args: args{
                 in0:  nil,
-                user: mockUserModels.NewUser(t),
+                user: mockUserEntities.NewUser(t),
             },
             wantErr: nil,
         },
@@ -101,7 +101,7 @@ func TestAuthRepository_GetSubject(t *testing.T) {
     }
     type args struct {
         in0   context.Context
-        token models.Token
+        token entities.Token
     }
     tests := []struct {
         name    string
@@ -191,7 +191,7 @@ func TestAuthRepository_RefreshToken(t *testing.T) {
     }
     type args struct {
         in0   context.Context
-        token models.Token
+        token entities.Token
     }
     tests := []struct {
         name    string
@@ -282,7 +282,7 @@ func TestAuthRepository_Validate(t *testing.T) {
     }
     type args struct {
         in0   context.Context
-        token models.Token
+        token entities.Token
     }
     tests := []struct {
         name    string
@@ -499,7 +499,7 @@ func TestAuthRepository_validate(t *testing.T) {
         logger     Logger
     }
     type args struct {
-        token models.Token
+        token entities.Token
     }
     tests := []struct {
         name    string

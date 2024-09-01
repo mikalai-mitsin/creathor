@@ -8,11 +8,11 @@ import (
 
     "{{ .Module }}/internal/pkg/errs"
     "{{ .Module }}/internal/pkg/log"
-    "{{ .Module }}/internal/app/auth/models"
+    "{{ .Module }}/internal/app/auth/entities"
     mockUseCases "{{ .Module }}/internal/app/auth/usecases/mock"
-    userModels "{{ .Module }}/internal/app/user/models"
-    mockModels "{{ .Module }}/internal/app/auth/models/mock"
-    mockUserModels "{{ .Module }}/internal/app/user/models/mock"
+    userEntities "{{ .Module }}/internal/app/user/entities"
+    mockEntities "{{ .Module }}/internal/app/auth/entities/mock"
+    mockUserEntities "{{ .Module }}/internal/app/user/entities/mock"
 
     "go.uber.org/mock/gomock"
 )
@@ -24,7 +24,7 @@ func TestAuthUseCase_Auth(t *testing.T) {
     authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
     logger := mockUseCases.NewMockLogger(ctrl)
     ctx := context.Background()
-    user := mockUserModels.NewUser(t)
+    user := mockUserEntities.NewUser(t)
     type fields struct {
         authRepository AuthRepository
         userRepository UserRepository
@@ -32,20 +32,20 @@ func TestAuthUseCase_Auth(t *testing.T) {
     }
     type args struct {
         ctx    context.Context
-        access models.Token
+        access entities.Token
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *userModels.User
+        want    *userEntities.User
         wantErr error
     }{
         {
             name: "ok",
             setup: func() {
-                authRepository.EXPECT().GetSubject(ctx, models.Token("mytoken")).Return(string(user.ID), nil).Times(1)
+                authRepository.EXPECT().GetSubject(ctx, entities.Token("mytoken")).Return(string(user.ID), nil).Times(1)
                 userRepository.EXPECT().Get(ctx, user.ID).Return(user, nil).Times(1)
             },
             fields: fields{
@@ -64,7 +64,7 @@ func TestAuthUseCase_Auth(t *testing.T) {
             name: "bad user",
             setup: func() {
                 authRepository.EXPECT().
-                    GetSubject(ctx, models.Token("mytoken")).
+                    GetSubject(ctx, entities.Token("mytoken")).
                     Return("", errs.NewBadTokenError()).
                     Times(1)
             },
@@ -83,7 +83,7 @@ func TestAuthUseCase_Auth(t *testing.T) {
         {
             name: "user not found",
             setup: func() {
-                authRepository.EXPECT().GetSubject(ctx, models.Token("mytoken")).Return(string(user.ID), nil).Times(1)
+                authRepository.EXPECT().GetSubject(ctx, entities.Token("mytoken")).Return(string(user.ID), nil).Times(1)
                 userRepository.EXPECT().Get(ctx, user.ID).Return(nil, errs.NewEntityNotFoundError()).Times(1)
             },
             fields: fields{
@@ -126,10 +126,10 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
     authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
     logger := mockUseCases.NewMockLogger(ctrl)
     ctx := context.Background()
-    user := mockUserModels.NewUser(t)
-    login := mockModels.NewLogin(t)
+    user := mockUserEntities.NewUser(t)
+    login := mockEntities.NewLogin(t)
     user.Email = login.Email
-    pair := mockModels.NewTokenPair(t)
+    pair := mockEntities.NewTokenPair(t)
     user.SetPassword(login.Password)
     type fields struct {
         authRepository AuthRepository
@@ -138,14 +138,14 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
     }
     type args struct {
         ctx   context.Context
-        login *models.Login
+        login *entities.Login
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *models.TokenPair
+        want    *entities.TokenPair
         wantErr error
     }{
         {
@@ -199,7 +199,7 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
-                login: &models.Login{
+                login: &entities.Login{
                     Email:    login.Email,
                     Password: "mojParol'",
                 },
@@ -257,7 +257,7 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
     authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
     logger := mockUseCases.NewMockLogger(ctrl)
     ctx := context.Background()
-    pair := mockModels.NewTokenPair(t)
+    pair := mockEntities.NewTokenPair(t)
     type fields struct {
         authRepository AuthRepository
         userRepository UserRepository
@@ -265,20 +265,20 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
     }
     type args struct {
         ctx     context.Context
-        refresh models.Token
+        refresh entities.Token
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *models.TokenPair
+        want    *entities.TokenPair
         wantErr error
     }{
         {
             name: "ok",
             setup: func() {
-                authRepository.EXPECT().RefreshToken(ctx, models.Token("my_r_token")).Return(pair, nil).Times(1)
+                authRepository.EXPECT().RefreshToken(ctx, entities.Token("my_r_token")).Return(pair, nil).Times(1)
             },
             fields: fields{
                 authRepository: authRepository,
@@ -296,7 +296,7 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
             name: "repository error",
             setup: func() {
                 authRepository.EXPECT().
-                    RefreshToken(ctx, models.Token("my_r_token")).
+                    RefreshToken(ctx, entities.Token("my_r_token")).
                     Return(nil, errs.NewBadTokenError()).
                     Times(1)
             },
@@ -347,7 +347,7 @@ func TestAuthUseCase_ValidateToken(t *testing.T) {
     }
     type args struct {
         ctx    context.Context
-        access models.Token
+        access entities.Token
     }
     tests := []struct {
         name    string
@@ -359,7 +359,7 @@ func TestAuthUseCase_ValidateToken(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                authRepository.EXPECT().Validate(ctx, models.Token("my_token")).Return(nil).Times(1)
+                authRepository.EXPECT().Validate(ctx, entities.Token("my_token")).Return(nil).Times(1)
             },
             fields: fields{
                 authRepository: authRepository,
@@ -376,7 +376,7 @@ func TestAuthUseCase_ValidateToken(t *testing.T) {
             name: "repository error",
             setup: func() {
                 authRepository.EXPECT().
-                    Validate(ctx, models.Token("my_token")).
+                    Validate(ctx, entities.Token("my_token")).
                     Return(errs.NewUnexpectedBehaviorError("error 345")).
                     Times(1)
             },
@@ -457,8 +457,8 @@ func TestAuthUseCase_CreateTokenByUser(t *testing.T) {
     authRepository :=  mockUseCases.NewMockAuthRepository(ctrl)
     logger := mockUseCases.NewMockLogger(ctrl)
     ctx := context.Background()
-    user := mockUserModels.NewUser(t)
-    tokenPair := mockModels.NewTokenPair(t)
+    user := mockUserEntities.NewUser(t)
+    tokenPair := mockEntities.NewTokenPair(t)
     type fields struct {
         authRepository AuthRepository
         userRepository UserRepository
@@ -466,14 +466,14 @@ func TestAuthUseCase_CreateTokenByUser(t *testing.T) {
     }
     type args struct {
         ctx  context.Context
-        user *userModels.User
+        user *userEntities.User
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *models.TokenPair
+        want    *entities.TokenPair
         wantErr error
     }{
         {

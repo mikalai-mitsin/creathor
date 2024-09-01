@@ -1,4 +1,4 @@
-package models
+package entities
 
 import (
 	"bytes"
@@ -81,7 +81,7 @@ func (m *Structure) file() *ast.File {
 		})
 	}
 	return &ast.File{
-		Name: ast.NewIdent("models"),
+		Name: ast.NewIdent("entities"),
 		Decls: []ast.Decl{
 			imports,
 		},
@@ -89,7 +89,7 @@ func (m *Structure) file() *ast.File {
 }
 
 func (m *Structure) filename() string {
-	return filepath.Join("internal", "app", m.domain.DirName(), "models", m.fileName)
+	return filepath.Join("internal", "app", m.domain.DirName(), "entities", m.fileName)
 }
 
 func (m *Structure) fill(structure *ast.TypeSpec) {

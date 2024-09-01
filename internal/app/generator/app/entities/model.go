@@ -1,4 +1,4 @@
-package models
+package entities
 
 import (
 	"fmt"
@@ -22,8 +22,8 @@ func astType(t string) ast.Expr {
 			Elt: astType(strings.TrimPrefix(t, "[]")),
 		}
 	}
-	if strings.HasPrefix(t, "models.") {
-		return ast.NewIdent(strings.TrimPrefix(t, "models."))
+	if strings.HasPrefix(t, "entities.") {
+		return ast.NewIdent(strings.TrimPrefix(t, "entities."))
 	}
 	return ast.NewIdent(t)
 }

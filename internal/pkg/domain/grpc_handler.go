@@ -32,7 +32,7 @@ func NewGRPCHandler(m *configs.DomainConfig) *Layer {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(m.CreateTypeName()),
 							},
 						},
@@ -42,7 +42,7 @@ func NewGRPCHandler(m *configs.DomainConfig) *Layer {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(m.ModelName()),
 							},
 						},
@@ -70,7 +70,7 @@ func NewGRPCHandler(m *configs.DomainConfig) *Layer {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(m.FilterTypeName()),
 							},
 						},
@@ -78,7 +78,7 @@ func NewGRPCHandler(m *configs.DomainConfig) *Layer {
 				},
 				Return: []*ast.Field{
 					{
-						Type: ast.NewIdent(fmt.Sprintf("[]*models.%s", m.ModelName())),
+						Type: ast.NewIdent(fmt.Sprintf("[]*entities.%s", m.ModelName())),
 					},
 					{
 						Type: ast.NewIdent("uint64"),
@@ -114,7 +114,7 @@ func NewGRPCHandler(m *configs.DomainConfig) *Layer {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(m.ModelName()),
 							},
 						},
@@ -142,7 +142,7 @@ func NewGRPCHandler(m *configs.DomainConfig) *Layer {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(m.UpdateTypeName()),
 							},
 						},
@@ -152,7 +152,7 @@ func NewGRPCHandler(m *configs.DomainConfig) *Layer {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(m.ModelName()),
 							},
 						},

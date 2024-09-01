@@ -84,7 +84,7 @@ func (i InterceptorInterfaces) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: i.domain.ModelsImportPath(),
+					Value: i.domain.EntitiesImportPath(),
 				},
 			},
 			&ast.ImportSpec{
@@ -103,10 +103,10 @@ func (i InterceptorInterfaces) imports() *ast.GenDecl {
 	}
 	if i.domain.Auth {
 		imports.Specs = append(imports.Specs, &ast.ImportSpec{
-			Name: ast.NewIdent("userModels"),
+			Name: ast.NewIdent("userEntities"),
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/app/user/models"`, i.domain.Module),
+				Value: fmt.Sprintf(`"%s/internal/app/user/entities"`, i.domain.Module),
 			},
 		})
 	}

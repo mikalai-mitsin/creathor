@@ -1,4 +1,4 @@
-package models
+package entities
 
 import (
 	"bytes"
@@ -26,7 +26,7 @@ func NewModelAuth(project *configs.Project) *ModelAuth {
 func (m ModelAuth) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
-			Name: "models",
+			Name: "entities",
 		},
 		Decls: []ast.Decl{
 			&ast.GenDecl{
@@ -45,10 +45,10 @@ func (m ModelAuth) file() *ast.File {
 						},
 					},
 					&ast.ImportSpec{
-						Name: ast.NewIdent("userModels"),
+						Name: ast.NewIdent("userEntities"),
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/user/models"`, m.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/user/entities"`, m.project.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -537,7 +537,7 @@ func (m ModelAuth) file() *ast.File {
 							&ast.UnaryExpr{
 								Op: token.AND,
 								X: &ast.CompositeLit{
-									Type: ast.NewIdent("userModels.User"),
+									Type: ast.NewIdent("userEntities.User"),
 									Elts: []ast.Expr{
 										&ast.KeyValueExpr{
 											Key: &ast.Ident{
@@ -618,7 +618,7 @@ func (m ModelAuth) file() *ast.File {
 											Key: &ast.Ident{
 												Name: "GroupID",
 											},
-											Value: ast.NewIdent("userModels.GroupIDGuest"),
+											Value: ast.NewIdent("userEntities.GroupIDGuest"),
 										},
 									},
 								},
@@ -635,7 +635,7 @@ var destinationPath = "."
 
 func (m ModelAuth) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", "auth", "models", "auth.go")
+	filename := path.Join("internal", "app", "auth", "entities", "auth.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}
@@ -651,17 +651,17 @@ func (m ModelAuth) Sync() error {
 		return err
 	}
 	mock := &tmpl.Template{
-		SourcePath: "templates/internal/auth/models/auth_mock.go.tmpl",
+		SourcePath: "templates/internal/auth/entities/auth_mock.go.tmpl",
 		DestinationPath: path.Join(
 			destinationPath,
 			"internal",
 			"app",
 			"auth",
-			"models",
+			"entities",
 			"mock",
 			"auth.go",
 		),
-		Name: "auth mock models",
+		Name: "auth mock entities",
 	}
 	if err := mock.RenderToFile(m.project); err != nil {
 		return err

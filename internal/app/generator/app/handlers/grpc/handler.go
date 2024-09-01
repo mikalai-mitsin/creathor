@@ -35,7 +35,7 @@ func (h Handler) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: h.domain.ModelsImportPath(),
+				Value: h.domain.EntitiesImportPath(),
 			},
 		},
 		&ast.ImportSpec{
@@ -208,7 +208,7 @@ func (h Handler) encodeCreate() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
 							},
@@ -232,7 +232,7 @@ func (h Handler) encodeCreate() *ast.FuncDecl {
 							X: &ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "models",
+										Name: "entities",
 									},
 									Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
 								},
@@ -632,7 +632,7 @@ func (h Handler) encodeUpdate() *ast.FuncDecl {
 					X: &ast.CompositeLit{
 						Type: &ast.SelectorExpr{
 							X: &ast.Ident{
-								Name: "models",
+								Name: "entities",
 							},
 							Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
 						},
@@ -710,7 +710,7 @@ func (h Handler) encodeUpdate() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
 							},
@@ -773,7 +773,7 @@ func (h Handler) encodeFilter() *ast.FuncDecl {
 					X: &ast.CompositeLit{
 						Type: &ast.SelectorExpr{
 							X: &ast.Ident{
-								Name: "models",
+								Name: "entities",
 							},
 							Sel: &ast.Ident{
 								Name: h.domain.GetFilterModel().Name,
@@ -1140,7 +1140,7 @@ func (h Handler) encodeFilter() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: h.domain.GetFilterModel().Name,
@@ -1207,7 +1207,7 @@ func (h Handler) decode() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: h.domain.GetMainModel().Name,
@@ -1411,7 +1411,7 @@ func (h Handler) decodeList() *ast.FuncDecl {
 							Elt: &ast.StarExpr{
 								X: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "models",
+										Name: "entities",
 									},
 									Sel: &ast.Ident{
 										Name: h.domain.GetMainModel().Name,
@@ -1788,7 +1788,7 @@ func (h Handler) decodeUpdate() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: h.domain.GetUpdateModel().Name,

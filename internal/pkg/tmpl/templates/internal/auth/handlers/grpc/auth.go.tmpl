@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"{{ .Module }}/internal/pkg/grpc"
-	"{{ .Module }}/internal/app/auth/models"
+	"{{ .Module }}/internal/app/auth/entities"
 	{{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
 	"strings"
 )
@@ -23,7 +23,7 @@ func (s AuthServiceServer) CreateToken(
 	ctx context.Context,
 	input *{{ .ProtoPackage }}.CreateToken,
 ) (*{{ .ProtoPackage }}.TokenPair, error) {
-	login := &models.Login{
+	login := &entities.Login{
 		Email:    strings.ToLower(input.GetEmail()),
 		Password: input.GetPassword(),
 	}
@@ -38,14 +38,14 @@ func (s AuthServiceServer) RefreshToken(
 	ctx context.Context,
 	input *{{ .ProtoPackage }}.RefreshToken,
 ) (*{{ .ProtoPackage }}.TokenPair, error) {
-	tokenPair, err := s.authInterceptor.RefreshToken(ctx, models.Token(input.GetToken()))
+	tokenPair, err := s.authInterceptor.RefreshToken(ctx, entities.Token(input.GetToken()))
 	if err != nil {
 		return nil, err
 	}
 	return decodeTokenPair(tokenPair), nil
 }
 
-func decodeTokenPair(pair *models.TokenPair) *{{ .ProtoPackage }}.TokenPair {
+func decodeTokenPair(pair *entities.TokenPair) *{{ .ProtoPackage }}.TokenPair {
 	return &{{ .ProtoPackage }}.TokenPair{
 		Access:  pair.Access.String(),
 		Refresh: pair.Refresh.String(),

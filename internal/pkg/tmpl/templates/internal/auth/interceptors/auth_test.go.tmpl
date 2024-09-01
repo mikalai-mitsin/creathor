@@ -7,11 +7,11 @@ import (
     "testing"
 
     "{{ .Module }}/internal/pkg/errs"
-    "{{ .Module }}/internal/app/auth/models"
+    "{{ .Module }}/internal/app/auth/entities"
     mock_interceptors "{{ .Module }}/internal/app/auth/interceptors/mock"
-    mock_models "{{ .Module }}/internal/app/auth/models/mock"
-    mock_user_models "{{ .Module }}/internal/app/user/models/mock"
-    user_models "{{ .Module }}/internal/app/user/models"
+    mock_entities "{{ .Module }}/internal/app/auth/entities/mock"
+    mock_user_entities "{{ .Module }}/internal/app/user/entities/mock"
+    user_entities "{{ .Module }}/internal/app/user/entities"
     "{{ .Module }}/internal/pkg/clock"
     "{{ .Module }}/internal/pkg/log"
     mock_log "{{ .Module }}/internal/pkg/log/mock"
@@ -24,22 +24,22 @@ func TestAuthInterceptor_Auth(t *testing.T) {
     authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
     logger := mock_interceptors.NewMockLogger(ctrl)
     ctx := context.Background()
-    token := mock_models.NewToken(t)
-    user := mock_user_models.NewUser(t)
+    token := mock_entities.NewToken(t)
+    user := mock_user_entities.NewUser(t)
     type fields struct {
         authUseCase AuthUseCase
         logger      Logger
     }
     type args struct {
         ctx    context.Context
-        access models.Token
+        access entities.Token
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *user_models.User
+        want    *user_entities.User
         wantErr error
     }{
         {
@@ -103,8 +103,8 @@ func TestAuthInterceptor_CreateToken(t *testing.T) {
     authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
     logger := mock_interceptors.NewMockLogger(ctrl)
     ctx := context.Background()
-    login := mock_models.NewLogin(t)
-    pair := mock_models.NewTokenPair(t)
+    login := mock_entities.NewLogin(t)
+    pair := mock_entities.NewTokenPair(t)
     clockmock := mock_interceptors.NewMockClock(ctrl)
     type fields struct {
         authUseCase AuthUseCase
@@ -113,14 +113,14 @@ func TestAuthInterceptor_CreateToken(t *testing.T) {
     }
     type args struct {
         ctx   context.Context
-        login *models.Login
+        login *entities.Login
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *models.TokenPair
+        want    *entities.TokenPair
         wantErr error
     }{
         {
@@ -187,8 +187,8 @@ func TestAuthInterceptor_RefreshToken(t *testing.T) {
     authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
     logger := mock_interceptors.NewMockLogger(ctrl)
     ctx := context.Background()
-    pair := mock_models.NewTokenPair(t)
-    refresh := mock_models.NewToken(t)
+    pair := mock_entities.NewTokenPair(t)
+    refresh := mock_entities.NewToken(t)
     clockmock := mock_interceptors.NewMockClock(ctrl)
     type fields struct {
         authUseCase AuthUseCase
@@ -197,14 +197,14 @@ func TestAuthInterceptor_RefreshToken(t *testing.T) {
     }
     type args struct {
         ctx     context.Context
-        refresh models.Token
+        refresh entities.Token
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *models.TokenPair
+        want    *entities.TokenPair
         wantErr error
     }{
         {
@@ -310,14 +310,14 @@ func TestAuthInterceptor_ValidateToken(t *testing.T) {
     authUseCase := mock_interceptors.NewMockAuthUseCase(ctrl)
     logger := mock_interceptors.NewMockLogger(ctrl)
     ctx := context.Background()
-    token := models.Token("this_is_valid_token")
+    token := entities.Token("this_is_valid_token")
     type fields struct {
         authUseCase AuthUseCase
         logger      Logger
     }
     type args struct {
         ctx   context.Context
-        token models.Token
+        token entities.Token
     }
     tests := []struct {
         name    string

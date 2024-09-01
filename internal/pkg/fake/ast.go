@@ -94,9 +94,9 @@ func baseValue(t ast.Expr) ast.Expr {
 				},
 			},
 		}
-	case "models.GroupID", "GroupID":
+	case "entities.GroupID", "GroupID":
 		fake = &ast.SelectorExpr{
-			X:   ast.NewIdent("models"),
+			X:   ast.NewIdent("entities"),
 			Sel: ast.NewIdent("GroupIDUser"),
 		}
 	default:

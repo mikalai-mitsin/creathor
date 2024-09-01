@@ -32,7 +32,7 @@ func NewRepository(m *configs.DomainConfig) *Layer {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(m.ModelName()),
 							},
 						},
@@ -62,7 +62,7 @@ func NewRepository(m *configs.DomainConfig) *Layer {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(m.FilterTypeName()),
 							},
 						},
@@ -70,7 +70,7 @@ func NewRepository(m *configs.DomainConfig) *Layer {
 				},
 				Return: []*ast.Field{
 					{
-						Type: ast.NewIdent(fmt.Sprintf("[]*models.%s", m.ModelName())),
+						Type: ast.NewIdent(fmt.Sprintf("[]*entities.%s", m.ModelName())),
 					},
 					{
 						Type: ast.NewIdent("error"),
@@ -95,7 +95,7 @@ func NewRepository(m *configs.DomainConfig) *Layer {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(m.FilterTypeName()),
 							},
 						},
@@ -136,7 +136,7 @@ func NewRepository(m *configs.DomainConfig) *Layer {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(m.ModelName()),
 							},
 						},
@@ -164,7 +164,7 @@ func NewRepository(m *configs.DomainConfig) *Layer {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(m.ModelName()),
 							},
 						},
@@ -230,7 +230,7 @@ func NewRepository(m *configs.DomainConfig) *Layer {
 				{
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
-							X:   ast.NewIdent("models"),
+							X:   ast.NewIdent("entities"),
 							Sel: ast.NewIdent(m.ModelName()),
 						},
 					},

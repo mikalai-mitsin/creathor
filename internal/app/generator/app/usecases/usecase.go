@@ -88,7 +88,7 @@ func (u UseCaseCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: u.domain.ModelsImportPath(),
+							Value: u.domain.EntitiesImportPath(),
 						},
 					},
 				},
@@ -312,7 +312,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 						Names: []*ast.Ident{ast.NewIdent("create")},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(u.domain.GetCreateModel().Name),
 							},
 						},
@@ -324,7 +324,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 							},
 						},
@@ -401,7 +401,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 							Op: token.AND,
 							X: &ast.CompositeLit{
 								Type: &ast.SelectorExpr{
-									X:   ast.NewIdent("models"),
+									X:   ast.NewIdent("entities"),
 									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 								},
 								Elts: params,
@@ -553,7 +553,7 @@ func (u UseCaseCrud) list() *ast.FuncDecl {
 						Names: []*ast.Ident{ast.NewIdent(u.domain.GetFilterModel().Variable)},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(u.domain.GetFilterModel().Name),
 							},
 						},
@@ -566,7 +566,7 @@ func (u UseCaseCrud) list() *ast.FuncDecl {
 						Type: &ast.ArrayType{
 							Elt: &ast.StarExpr{
 								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("models"),
+									X:   ast.NewIdent("entities"),
 									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 								},
 							},
@@ -745,7 +745,7 @@ func (u UseCaseCrud) get() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 							},
 						},
@@ -907,7 +907,7 @@ func (u UseCaseCrud) update() *ast.FuncDecl {
 						Names: []*ast.Ident{ast.NewIdent("update")},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(u.domain.GetUpdateModel().Name),
 							},
 						},
@@ -919,7 +919,7 @@ func (u UseCaseCrud) update() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 							},
 						},
@@ -1335,7 +1335,7 @@ func (u UseCaseCrud) getByEmail() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 							},
 						},

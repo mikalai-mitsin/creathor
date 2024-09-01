@@ -90,7 +90,7 @@ func initProject(ctx *cli.Context) error {
 				domain.NewCreateModel(m),
 				domain.NewUpdateModel(m),
 			},
-			UseCase:     domain.NewUseCase(m),
+			Service:     domain.NewService(m),
 			Repository:  domain.NewRepository(m),
 			Interceptor: domain.NewInterceptor(m),
 			GRPCHandler: domain.NewGRPCHandler(m),

@@ -80,8 +80,8 @@ func (m *DomainConfig) CamelCase() string {
 	return strcase.ToCamel(m.Model)
 }
 
-func (m *DomainConfig) UseCaseTypeName() string {
-	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Model))
+func (m *DomainConfig) ServiceTypeName() string {
+	return fmt.Sprintf("%sService", strcase.ToCamel(m.Model))
 }
 
 func (m *DomainConfig) GRPCHandlerTypeName() string {
@@ -108,8 +108,8 @@ func (m *DomainConfig) GRPCHandlerVariableName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToLowerCamel(m.Model))
 }
 
-func (m *DomainConfig) UseCaseVariableName() string {
-	return fmt.Sprintf("%sUseCase", strcase.ToLowerCamel(m.Model))
+func (m *DomainConfig) ServiceVariableName() string {
+	return fmt.Sprintf("%sService", strcase.ToLowerCamel(m.Model))
 }
 
 func (m *DomainConfig) InterceptorTypeName() string {

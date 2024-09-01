@@ -1,4 +1,4 @@
-package usecases
+package services
 
 import (
 	"bytes"
@@ -13,17 +13,17 @@ import (
 	"path/filepath"
 )
 
-type UseCaseInterfaces struct {
+type ServiceInterfaces struct {
 	domain *domain.Domain
 }
 
-func NewRepositoryInterfaceCrud(domain *domain.Domain) *UseCaseInterfaces {
-	return &UseCaseInterfaces{domain: domain}
+func NewRepositoryInterfaceCrud(domain *domain.Domain) *ServiceInterfaces {
+	return &ServiceInterfaces{domain: domain}
 }
 
-func (i UseCaseInterfaces) Sync() error {
+func (i ServiceInterfaces) Sync() error {
 	fileset := token.NewFileSet()
-	filename := filepath.Join("internal", "app", i.domain.DirName(), "usecases", "interfaces.go")
+	filename := filepath.Join("internal", "app", i.domain.DirName(), "services", "interfaces.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err
@@ -76,16 +76,16 @@ func (i UseCaseInterfaces) Sync() error {
 	return nil
 }
 
-func (i UseCaseInterfaces) file() *ast.File {
+func (i ServiceInterfaces) file() *ast.File {
 	return &ast.File{
-		Name: ast.NewIdent("usecases"),
+		Name: ast.NewIdent("services"),
 		Decls: []ast.Decl{
 			i.imports(),
 		},
 	}
 }
 
-func (i UseCaseInterfaces) imports() *ast.GenDecl {
+func (i ServiceInterfaces) imports() *ast.GenDecl {
 	return &ast.GenDecl{
 		Tok: token.IMPORT,
 		Specs: []ast.Spec{
@@ -123,7 +123,7 @@ func (i UseCaseInterfaces) imports() *ast.GenDecl {
 	}
 }
 
-func (i UseCaseInterfaces) repositoryInterface() *ast.GenDecl {
+func (i ServiceInterfaces) repositoryInterface() *ast.GenDecl {
 	methods := make([]*ast.Field, len(i.domain.Repository.Methods))
 	for i, method := range i.domain.Repository.Methods {
 		methods[i] = &ast.Field{
@@ -173,7 +173,7 @@ func (i UseCaseInterfaces) repositoryInterface() *ast.GenDecl {
 	}
 }
 
-func (i UseCaseInterfaces) loggerInterface() *ast.GenDecl {
+func (i ServiceInterfaces) loggerInterface() *ast.GenDecl {
 	return &ast.GenDecl{
 		Doc: &ast.CommentGroup{
 			List: []*ast.Comment{
@@ -396,7 +396,7 @@ func (i UseCaseInterfaces) loggerInterface() *ast.GenDecl {
 	}
 }
 
-func (i UseCaseInterfaces) clockInterface() *ast.GenDecl {
+func (i ServiceInterfaces) clockInterface() *ast.GenDecl {
 	return &ast.GenDecl{
 		Doc: &ast.CommentGroup{
 			List: []*ast.Comment{
@@ -437,7 +437,7 @@ func (i UseCaseInterfaces) clockInterface() *ast.GenDecl {
 	}
 }
 
-func (i UseCaseInterfaces) uuidGeneratorInterface() *ast.GenDecl {
+func (i ServiceInterfaces) uuidGeneratorInterface() *ast.GenDecl {
 	return &ast.GenDecl{
 		Doc: &ast.CommentGroup{
 			List: []*ast.Comment{

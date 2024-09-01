@@ -13,15 +13,15 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
-type UseCaseInterfaceAuth struct {
+type ServiceInterfaceAuth struct {
 	project *configs.Project
 }
 
-func NewUseCaseInterfaceAuth(project *configs.Project) *UseCaseInterfaceAuth {
-	return &UseCaseInterfaceAuth{project: project}
+func NewServiceInterfaceAuth(project *configs.Project) *ServiceInterfaceAuth {
+	return &ServiceInterfaceAuth{project: project}
 }
 
-func (i UseCaseInterfaceAuth) file() *ast.File {
+func (i ServiceInterfaceAuth) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
 			Name: "interceptors",
@@ -313,10 +313,10 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 				Doc: &ast.CommentGroup{
 					List: []*ast.Comment{
 						{
-							Text: "//AuthUseCase - domain layer interceptor interface",
+							Text: "//AuthService - domain layer interceptor interface",
 						},
 						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth_usecase.go . AuthUseCase",
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth_service.go . AuthService",
 						},
 					},
 				},
@@ -324,7 +324,7 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: "AuthUseCase",
+							Name: "AuthService",
 						},
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{
@@ -645,7 +645,7 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 	}
 }
 
-func (i UseCaseInterfaceAuth) Sync() error {
+func (i ServiceInterfaceAuth) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "app", "auth", "interceptors", "interfaces.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {

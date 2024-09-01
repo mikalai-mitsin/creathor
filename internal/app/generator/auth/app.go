@@ -78,7 +78,7 @@ func (i AppAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/auth/usecases"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/auth/services"`, i.project.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -203,16 +203,16 @@ func (i AppAuth) file() *ast.File {
 									{
 										Names: []*ast.Ident{
 											{
-												Name: "authUseCase",
+												Name: "authService",
 											},
 										},
 										Type: &ast.StarExpr{
 											X: &ast.SelectorExpr{
 												X: &ast.Ident{
-													Name: "usecases",
+													Name: "services",
 												},
 												Sel: &ast.Ident{
-													Name: "AuthUseCase",
+													Name: "AuthService",
 												},
 											},
 										},
@@ -443,7 +443,7 @@ func (i AppAuth) file() *ast.File {
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
 								&ast.Ident{
-									Name: "authUseCase",
+									Name: "authService",
 								},
 							},
 							Tok: token.DEFINE,
@@ -451,10 +451,10 @@ func (i AppAuth) file() *ast.File {
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: "usecases",
+											Name: "services",
 										},
 										Sel: &ast.Ident{
-											Name: "NewAuthUseCase",
+											Name: "NewAuthService",
 										},
 									},
 									Args: []ast.Expr{
@@ -490,7 +490,7 @@ func (i AppAuth) file() *ast.File {
 									},
 									Args: []ast.Expr{
 										&ast.Ident{
-											Name: "authUseCase",
+											Name: "authService",
 										},
 										&ast.Ident{
 											Name: "clock",
@@ -546,7 +546,7 @@ func (i AppAuth) file() *ast.File {
 									},
 									Args: []ast.Expr{
 										&ast.Ident{
-											Name: "authUseCase",
+											Name: "authService",
 										},
 										&ast.Ident{
 											Name: "logger",
@@ -601,10 +601,10 @@ func (i AppAuth) file() *ast.File {
 											},
 											&ast.KeyValueExpr{
 												Key: &ast.Ident{
-													Name: "authUseCase",
+													Name: "authService",
 												},
 												Value: &ast.Ident{
-													Name: "authUseCase",
+													Name: "authService",
 												},
 											},
 											&ast.KeyValueExpr{

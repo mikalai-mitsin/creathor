@@ -71,8 +71,8 @@ func (i InterceptorCrud) filename() string {
 func (i InterceptorCrud) structure() *ast.TypeSpec {
 	fields := []*ast.Field{
 		{
-			Names: []*ast.Ident{ast.NewIdent(i.domain.UseCase.Variable)},
-			Type:  ast.NewIdent(i.domain.UseCase.Name),
+			Names: []*ast.Ident{ast.NewIdent(i.domain.Service.Variable)},
+			Type:  ast.NewIdent(i.domain.Service.Name),
 		},
 		{
 			Names: []*ast.Ident{ast.NewIdent("logger")},
@@ -129,8 +129,8 @@ func (i InterceptorCrud) syncStruct() error {
 func (i InterceptorCrud) constructor() *ast.FuncDecl {
 	fields := []*ast.Field{
 		{
-			Names: []*ast.Ident{ast.NewIdent(i.domain.UseCase.Variable)},
-			Type:  ast.NewIdent(i.domain.UseCase.Name),
+			Names: []*ast.Ident{ast.NewIdent(i.domain.Service.Variable)},
+			Type:  ast.NewIdent(i.domain.Service.Name),
 		},
 		{
 			Names: []*ast.Ident{ast.NewIdent("logger")},
@@ -139,8 +139,8 @@ func (i InterceptorCrud) constructor() *ast.FuncDecl {
 	}
 	exprs := []ast.Expr{
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(i.domain.UseCase.Variable),
-			Value: ast.NewIdent(i.domain.UseCase.Variable),
+			Key:   ast.NewIdent(i.domain.Service.Variable),
+			Value: ast.NewIdent(i.domain.Service.Variable),
 		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("logger"),
@@ -229,7 +229,7 @@ func (i InterceptorCrud) createMethod(method *domain.Method) *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.domain.UseCase.Variable),
+							Sel: ast.NewIdent(i.domain.Service.Variable),
 						},
 						Sel: ast.NewIdent("Create"),
 					},
@@ -345,7 +345,7 @@ func (i InterceptorCrud) astListMethod(m *domain.Method) *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.domain.UseCase.Variable),
+							Sel: ast.NewIdent(i.domain.Service.Variable),
 						},
 						Sel: ast.NewIdent("List"),
 					},
@@ -463,7 +463,7 @@ func (i InterceptorCrud) astGetMethod(m *domain.Method) *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.domain.UseCase.Variable),
+							Sel: ast.NewIdent(i.domain.Service.Variable),
 						},
 						Sel: ast.NewIdent("Get"),
 					},
@@ -580,7 +580,7 @@ func (i InterceptorCrud) updateMethod(m *domain.Method) *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("i"),
-							Sel: ast.NewIdent(i.domain.UseCase.Variable),
+							Sel: ast.NewIdent(i.domain.Service.Variable),
 						},
 						Sel: ast.NewIdent("Update"),
 					},
@@ -694,7 +694,7 @@ func (i InterceptorCrud) deleteMethod(m *domain.Method) *ast.FuncDecl {
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("i"),
-								Sel: ast.NewIdent(i.domain.UseCase.Variable),
+								Sel: ast.NewIdent(i.domain.Service.Variable),
 							},
 							Sel: ast.NewIdent("Delete"),
 						},

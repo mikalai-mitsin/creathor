@@ -91,10 +91,10 @@ func (i InterceptorAuth) file() *ast.File {
 									{
 										Names: []*ast.Ident{
 											{
-												Name: "authUseCase",
+												Name: "authService",
 											},
 										},
-										Type: ast.NewIdent("AuthUseCase"),
+										Type: ast.NewIdent("AuthService"),
 									},
 									{
 										Names: []*ast.Ident{
@@ -128,10 +128,10 @@ func (i InterceptorAuth) file() *ast.File {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: "authUseCase",
+										Name: "authService",
 									},
 								},
-								Type: ast.NewIdent("AuthUseCase"),
+								Type: ast.NewIdent("AuthService"),
 							},
 							{
 								Names: []*ast.Ident{
@@ -172,10 +172,10 @@ func (i InterceptorAuth) file() *ast.File {
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
 												Key: &ast.Ident{
-													Name: "authUseCase",
+													Name: "authService",
 												},
 												Value: &ast.Ident{
-													Name: "authUseCase",
+													Name: "authService",
 												},
 											},
 											&ast.KeyValueExpr{
@@ -301,7 +301,7 @@ func (i InterceptorAuth) file() *ast.File {
 												Name: "i",
 											},
 											Sel: &ast.Ident{
-												Name: "authUseCase",
+												Name: "authService",
 											},
 										},
 										Sel: &ast.Ident{
@@ -440,7 +440,7 @@ func (i InterceptorAuth) file() *ast.File {
 													Name: "i",
 												},
 												Sel: &ast.Ident{
-													Name: "authUseCase",
+													Name: "authService",
 												},
 											},
 											Sel: &ast.Ident{
@@ -586,7 +586,7 @@ func (i InterceptorAuth) file() *ast.File {
 												Name: "i",
 											},
 											Sel: &ast.Ident{
-												Name: "authUseCase",
+												Name: "authService",
 											},
 										},
 										Sel: &ast.Ident{
@@ -737,7 +737,7 @@ func (i InterceptorAuth) file() *ast.File {
 												Name: "i",
 											},
 											Sel: &ast.Ident{
-												Name: "authUseCase",
+												Name: "authService",
 											},
 										},
 										Sel: &ast.Ident{

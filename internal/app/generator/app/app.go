@@ -80,7 +80,7 @@ func (a App) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/app/%s/usecases"`, a.domain.Module, a.domain.DirName()),
+					Value: fmt.Sprintf(`"%s/internal/app/%s/services"`, a.domain.Module, a.domain.DirName()),
 				},
 			},
 			&ast.ImportSpec{
@@ -222,8 +222,8 @@ func (a App) constructor() *ast.FuncDecl {
 			Value: ast.NewIdent(a.domain.Repository.Variable),
 		},
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(fmt.Sprintf("%sUseCase", a.domain.LowerCamelName())),
-			Value: ast.NewIdent(a.domain.UseCase.Variable),
+			Key:   ast.NewIdent(fmt.Sprintf("%sService", a.domain.LowerCamelName())),
+			Value: ast.NewIdent(a.domain.Service.Variable),
 		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent(fmt.Sprintf("%sInterceptor", a.domain.LowerCamelName())),
@@ -262,16 +262,16 @@ func (a App) constructor() *ast.FuncDecl {
 			},
 			&ast.AssignStmt{
 				Lhs: []ast.Expr{
-					ast.NewIdent(a.domain.UseCase.Variable),
+					ast.NewIdent(a.domain.Service.Variable),
 				},
 				Tok: token.DEFINE,
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
 							X: &ast.Ident{
-								Name: "usecases",
+								Name: "services",
 							},
-							Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.UseCase.Name)),
+							Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.Service.Name)),
 						},
 						Args: []ast.Expr{
 							ast.NewIdent(a.domain.Repository.Variable),
@@ -304,7 +304,7 @@ func (a App) constructor() *ast.FuncDecl {
 					Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.Interceptor.Name)),
 				},
 				Args: []ast.Expr{
-					ast.NewIdent(a.domain.UseCase.Variable),
+					ast.NewIdent(a.domain.Service.Variable),
 					&ast.Ident{
 						Name: "logger",
 					},
@@ -418,14 +418,14 @@ func (a App) structure() *ast.GenDecl {
 				},
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent(fmt.Sprintf("%sUseCase", a.domain.LowerCamelName())),
+						ast.NewIdent(fmt.Sprintf("%sService", a.domain.LowerCamelName())),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
 							X: &ast.Ident{
-								Name: "usecases",
+								Name: "services",
 							},
-							Sel: ast.NewIdent(a.domain.UseCase.Name),
+							Sel: ast.NewIdent(a.domain.Service.Name),
 						},
 					},
 				},

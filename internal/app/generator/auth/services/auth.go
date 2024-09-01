@@ -1,4 +1,4 @@
-package usecases
+package services
 
 import (
 	"bytes"
@@ -14,17 +14,17 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
-type UseCaseAuth struct {
+type ServiceAuth struct {
 	project *configs.Project
 }
 
-func NewUseCaseAuth(project *configs.Project) *UseCaseAuth {
-	return &UseCaseAuth{project: project}
+func NewServiceAuth(project *configs.Project) *ServiceAuth {
+	return &ServiceAuth{project: project}
 }
 
-func (u UseCaseAuth) Sync() error {
+func (u ServiceAuth) Sync() error {
 	fileset := token.NewFileSet()
-	filename := filepath.Join("internal", "app", "auth", "usecases", "auth.go")
+	filename := filepath.Join("internal", "app", "auth", "services", "auth.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}
@@ -42,10 +42,10 @@ func (u UseCaseAuth) Sync() error {
 	return nil
 }
 
-func (u UseCaseAuth) file() *ast.File {
+func (u ServiceAuth) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
-			Name: "usecases",
+			Name: "services",
 		},
 		Decls: []ast.Decl{
 			&ast.GenDecl{
@@ -89,7 +89,7 @@ func (u UseCaseAuth) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: "AuthUseCase",
+							Name: "AuthService",
 						},
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
@@ -126,7 +126,7 @@ func (u UseCaseAuth) file() *ast.File {
 			},
 			&ast.FuncDecl{
 				Name: &ast.Ident{
-					Name: "NewAuthUseCase",
+					Name: "NewAuthService",
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -160,7 +160,7 @@ func (u UseCaseAuth) file() *ast.File {
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: ast.NewIdent("*AuthUseCase"),
+								Type: ast.NewIdent("*AuthService"),
 							},
 						},
 					},
@@ -173,7 +173,7 @@ func (u UseCaseAuth) file() *ast.File {
 									Op: token.AND,
 									X: &ast.CompositeLit{
 										Type: &ast.Ident{
-											Name: "AuthUseCase",
+											Name: "AuthService",
 										},
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
@@ -218,7 +218,7 @@ func (u UseCaseAuth) file() *ast.File {
 								},
 							},
 							Type: &ast.Ident{
-								Name: "AuthUseCase",
+								Name: "AuthService",
 							},
 						},
 					},
@@ -492,7 +492,7 @@ func (u UseCaseAuth) file() *ast.File {
 								},
 							},
 							Type: &ast.Ident{
-								Name: "AuthUseCase",
+								Name: "AuthService",
 							},
 						},
 					},
@@ -645,7 +645,7 @@ func (u UseCaseAuth) file() *ast.File {
 								},
 							},
 							Type: &ast.Ident{
-								Name: "AuthUseCase",
+								Name: "AuthService",
 							},
 						},
 					},
@@ -796,7 +796,7 @@ func (u UseCaseAuth) file() *ast.File {
 								},
 							},
 							Type: &ast.Ident{
-								Name: "AuthUseCase",
+								Name: "AuthService",
 							},
 						},
 					},
@@ -926,7 +926,7 @@ func (u UseCaseAuth) file() *ast.File {
 								},
 							},
 							Type: &ast.Ident{
-								Name: "AuthUseCase",
+								Name: "AuthService",
 							},
 						},
 					},

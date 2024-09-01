@@ -31,12 +31,12 @@ func (i InterceptorInterfaces) Sync() error {
 	if err != nil {
 		file = i.file()
 	}
-	appUseCaseExists := false
+	appServiceExists := false
 	loggerExists := false
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.TypeSpec); ok {
-			if t.Name.String() == i.domain.UseCase.Name {
-				appUseCaseExists = true
+			if t.Name.String() == i.domain.Service.Name {
+				appServiceExists = true
 			}
 			if t.Name.String() == "Logger" {
 				loggerExists = true
@@ -45,8 +45,8 @@ func (i InterceptorInterfaces) Sync() error {
 		}
 		return true
 	})
-	if !appUseCaseExists {
-		file.Decls = append(file.Decls, i.appUseCaseInterface())
+	if !appServiceExists {
+		file.Decls = append(file.Decls, i.appServiceInterface())
 	}
 	if !loggerExists {
 		file.Decls = append(file.Decls, i.loggerInterface())
@@ -113,9 +113,9 @@ func (i InterceptorInterfaces) imports() *ast.GenDecl {
 	return imports
 }
 
-func (i InterceptorInterfaces) appUseCaseInterface() *ast.GenDecl {
-	methods := make([]*ast.Field, len(i.domain.UseCase.Methods))
-	for i, method := range i.domain.UseCase.Methods {
+func (i InterceptorInterfaces) appServiceInterface() *ast.GenDecl {
+	methods := make([]*ast.Field, len(i.domain.Service.Methods))
+	for i, method := range i.domain.Service.Methods {
 		methods[i] = &ast.Field{
 			Names: []*ast.Ident{
 				{
@@ -138,13 +138,13 @@ func (i InterceptorInterfaces) appUseCaseInterface() *ast.GenDecl {
 				{
 					Text: fmt.Sprintf(
 						"//%s - domain layer use case interface",
-						i.domain.UseCase.Name,
+						i.domain.Service.Name,
 					),
 				},
 				{
 					Text: fmt.Sprintf(
-						"//go:generate mockgen -build_flags=-mod=mod -destination mock/usecase.go . %s",
-						i.domain.UseCase.Name,
+						"//go:generate mockgen -build_flags=-mod=mod -destination mock/service.go . %s",
+						i.domain.Service.Name,
 					),
 				},
 			},
@@ -153,7 +153,7 @@ func (i InterceptorInterfaces) appUseCaseInterface() *ast.GenDecl {
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
 				Name: &ast.Ident{
-					Name: i.domain.UseCase.Name,
+					Name: i.domain.Service.Name,
 				},
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{

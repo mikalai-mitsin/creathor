@@ -15,7 +15,7 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/handlers/grpc"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/interceptors"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/repositories/postgres"
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/usecases"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/services"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
@@ -32,8 +32,8 @@ func (g *Generator) Sync() error {
 		interceptors.NewInterceptorCrud(g.domain),
 		interceptors.NewInterceptorInterfaces(g.domain),
 
-		usecases.NewUseCaseCrud(g.domain),
-		usecases.NewRepositoryInterfaceCrud(g.domain),
+		services.NewServiceCrud(g.domain),
+		services.NewRepositoryInterfaceCrud(g.domain),
 
 		postgres.NewRepositoryInterfaces(g.domain),
 		postgres.NewRepositoryCrud(g.domain),

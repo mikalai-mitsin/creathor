@@ -1,4 +1,4 @@
-package usecases
+package services
 
 import (
 	"bytes"
@@ -15,15 +15,15 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
-type UseCaseCrud struct {
+type ServiceCrud struct {
 	domain *domain.Domain
 }
 
-func NewUseCaseCrud(domain *domain.Domain) *UseCaseCrud {
-	return &UseCaseCrud{domain: domain}
+func NewServiceCrud(domain *domain.Domain) *ServiceCrud {
+	return &ServiceCrud{domain: domain}
 }
 
-func (u UseCaseCrud) Sync() error {
+func (u ServiceCrud) Sync() error {
 	err := os.MkdirAll(path.Dir(u.filename()), 0777)
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func (u UseCaseCrud) Sync() error {
 	if err := u.syncConstructor(); err != nil {
 		return err
 	}
-	for _, method := range u.domain.UseCase.Methods {
+	for _, method := range u.domain.Service.Methods {
 		switch method.Name {
 		case "Create":
 			if err := u.syncCreateMethod(); err != nil {
@@ -68,13 +68,13 @@ func (u UseCaseCrud) Sync() error {
 	return nil
 }
 
-func (u UseCaseCrud) filename() string {
-	return filepath.Join("internal", "app", u.domain.DirName(), "usecases", "usecase.go")
+func (u ServiceCrud) filename() string {
+	return filepath.Join("internal", "app", u.domain.DirName(), "services", "service.go")
 }
 
-func (u UseCaseCrud) file() *ast.File {
+func (u ServiceCrud) file() *ast.File {
 	return &ast.File{
-		Name: ast.NewIdent("usecases"),
+		Name: ast.NewIdent("services"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -97,9 +97,9 @@ func (u UseCaseCrud) file() *ast.File {
 	}
 }
 
-func (u UseCaseCrud) structure() *ast.TypeSpec {
+func (u ServiceCrud) structure() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
-		Name: ast.NewIdent(u.domain.UseCase.Name),
+		Name: ast.NewIdent(u.domain.Service.Name),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: []*ast.Field{
@@ -126,7 +126,7 @@ func (u UseCaseCrud) structure() *ast.TypeSpec {
 	return structure
 }
 
-func (u UseCaseCrud) syncStruct() error {
+func (u ServiceCrud) syncStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -135,7 +135,7 @@ func (u UseCaseCrud) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == u.domain.UseCase.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == u.domain.Service.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -162,9 +162,9 @@ func (u UseCaseCrud) syncStruct() error {
 	return nil
 }
 
-func (u UseCaseCrud) constructor() *ast.FuncDecl {
+func (u ServiceCrud) constructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("New%s", u.domain.UseCase.Name)),
+		Name: ast.NewIdent(fmt.Sprintf("New%s", u.domain.Service.Name)),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -189,7 +189,7 @@ func (u UseCaseCrud) constructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: ast.NewIdent(fmt.Sprintf("*%s", u.domain.UseCase.Name)),
+						Type: ast.NewIdent(fmt.Sprintf("*%s", u.domain.Service.Name)),
 					},
 				},
 			},
@@ -201,7 +201,7 @@ func (u UseCaseCrud) constructor() *ast.FuncDecl {
 						&ast.UnaryExpr{
 							Op: token.AND,
 							X: &ast.CompositeLit{
-								Type: ast.NewIdent(u.domain.UseCase.Name),
+								Type: ast.NewIdent(u.domain.Service.Name),
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
 										Key:   ast.NewIdent(u.domain.Repository.Variable),
@@ -230,7 +230,7 @@ func (u UseCaseCrud) constructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (u UseCaseCrud) syncConstructor() error {
+func (u ServiceCrud) syncConstructor() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -240,7 +240,7 @@ func (u UseCaseCrud) syncConstructor() error {
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", u.domain.UseCase.Name) {
+			t.Name.String() == fmt.Sprintf("New%s", u.domain.Service.Name) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -263,7 +263,7 @@ func (u UseCaseCrud) syncConstructor() error {
 	return nil
 }
 
-func (u UseCaseCrud) create() *ast.FuncDecl {
+func (u ServiceCrud) create() *ast.FuncDecl {
 	params := []ast.Expr{
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("ID"),
@@ -295,7 +295,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.UseCase.Name),
+						X: ast.NewIdent(u.domain.Service.Name),
 					},
 				},
 			},
@@ -462,7 +462,7 @@ func (u UseCaseCrud) create() *ast.FuncDecl {
 	return fun
 }
 
-func (u UseCaseCrud) syncCreateMethod() error {
+func (u ServiceCrud) syncCreateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -523,7 +523,7 @@ func (u UseCaseCrud) syncCreateMethod() error {
 	return nil
 }
 
-func (u UseCaseCrud) list() *ast.FuncDecl {
+func (u ServiceCrud) list() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			Opening: 0,
@@ -533,7 +533,7 @@ func (u UseCaseCrud) list() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.UseCase.Name),
+						X: ast.NewIdent(u.domain.Service.Name),
 					},
 				},
 			},
@@ -679,7 +679,7 @@ func (u UseCaseCrud) list() *ast.FuncDecl {
 	}
 }
 
-func (u UseCaseCrud) syncListMethod() error {
+func (u ServiceCrud) syncListMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -711,7 +711,7 @@ func (u UseCaseCrud) syncListMethod() error {
 	return nil
 }
 
-func (u UseCaseCrud) get() *ast.FuncDecl {
+func (u ServiceCrud) get() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			Opening: 0,
@@ -721,7 +721,7 @@ func (u UseCaseCrud) get() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.UseCase.Name),
+						X: ast.NewIdent(u.domain.Service.Name),
 					},
 				},
 			},
@@ -810,7 +810,7 @@ func (u UseCaseCrud) get() *ast.FuncDecl {
 	}
 }
 
-func (u UseCaseCrud) syncGetMethod() error {
+func (u ServiceCrud) syncGetMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -842,7 +842,7 @@ func (u UseCaseCrud) syncGetMethod() error {
 	return nil
 }
 
-func (u UseCaseCrud) update() *ast.FuncDecl {
+func (u ServiceCrud) update() *ast.FuncDecl {
 	block := &ast.BlockStmt{
 		List: []ast.Stmt{},
 	}
@@ -890,7 +890,7 @@ func (u UseCaseCrud) update() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.UseCase.Name),
+						X: ast.NewIdent(u.domain.Service.Name),
 					},
 				},
 			},
@@ -1087,7 +1087,7 @@ func (u UseCaseCrud) update() *ast.FuncDecl {
 	return fun
 }
 
-func (u UseCaseCrud) syncUpdateMethod() error {
+func (u ServiceCrud) syncUpdateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1178,7 +1178,7 @@ func (u UseCaseCrud) syncUpdateMethod() error {
 	return nil
 }
 
-func (u UseCaseCrud) delete() *ast.FuncDecl {
+func (u ServiceCrud) delete() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Doc: nil,
 		Recv: &ast.FieldList{
@@ -1189,7 +1189,7 @@ func (u UseCaseCrud) delete() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.UseCase.Name),
+						X: ast.NewIdent(u.domain.Service.Name),
 					},
 				},
 			},
@@ -1269,7 +1269,7 @@ func (u UseCaseCrud) delete() *ast.FuncDecl {
 	}
 }
 
-func (u UseCaseCrud) syncDeleteMethod() error {
+func (u ServiceCrud) syncDeleteMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1301,7 +1301,7 @@ func (u UseCaseCrud) syncDeleteMethod() error {
 	return nil
 }
 
-func (u UseCaseCrud) getByEmail() *ast.FuncDecl {
+func (u ServiceCrud) getByEmail() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			Opening: 0,
@@ -1311,7 +1311,7 @@ func (u UseCaseCrud) getByEmail() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.UseCase.Name),
+						X: ast.NewIdent(u.domain.Service.Name),
 					},
 				},
 			},
@@ -1400,7 +1400,7 @@ func (u UseCaseCrud) getByEmail() *ast.FuncDecl {
 	}
 }
 
-func (u UseCaseCrud) syncGetByEmailMethod() error {
+func (u ServiceCrud) syncGetByEmailMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1434,18 +1434,18 @@ func (u UseCaseCrud) syncGetByEmailMethod() error {
 
 var destinationPath = "."
 
-func (u UseCaseCrud) syncTest() error {
+func (u ServiceCrud) syncTest() error {
 	test := tmpl.Template{
-		SourcePath: "templates/internal/domain/usecases/crud_test.go.tmpl",
+		SourcePath: "templates/internal/domain/services/crud_test.go.tmpl",
 		DestinationPath: filepath.Join(
 			destinationPath,
 			"internal",
 			"app",
 			u.domain.DirName(),
-			"usecases",
+			"services",
 			u.domain.TestFileName(),
 		),
-		Name: "usecase test",
+		Name: "service test",
 	}
 	if err := test.RenderToFile(u.domain); err != nil {
 		return err

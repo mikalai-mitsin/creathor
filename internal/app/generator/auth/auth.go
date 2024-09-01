@@ -6,7 +6,7 @@ import (
 	authInterceptors "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/interceptors"
 	authRepositoriesJwt "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/repositories/jwt"
 	authRepositoriesPosgres "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/repositories/postgres"
-	authUseCases "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/usecases"
+	authServices "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/services"
 	"path"
 
 	"github.com/mikalai-mitsin/creathor/internal/app/generator"
@@ -32,11 +32,11 @@ func (g *Generator) Sync() error {
 		authRepositoriesJwt.NewRepository(g.project),
 		authRepositoriesPosgres.NewRepository(g.project),
 		//Use case and interfaces
-		authUseCases.NewUseCaseAuth(g.project),
-		authUseCases.NewRepositoryInterfaceAuth(g.project),
+		authServices.NewServiceAuth(g.project),
+		authServices.NewRepositoryInterfaceAuth(g.project),
 		//Interceptor and interfaces
 		authInterceptors.NewInterceptorAuth(g.project),
-		authInterceptors.NewUseCaseInterfaceAuth(g.project),
+		authInterceptors.NewServiceInterfaceAuth(g.project),
 		//Handlers and interfaces
 		authGrpcHandlers.NewInterfaces(g.project),
 		authGrpcHandlers.NewHandler(g.project),
@@ -55,16 +55,16 @@ func (g *Generator) Sync() error {
 	}
 	tests := []*tmpl.Template{
 		{
-			SourcePath: "templates/internal/auth/usecases/auth_test.go.tmpl",
+			SourcePath: "templates/internal/auth/services/auth_test.go.tmpl",
 			DestinationPath: path.Join(
 				destinationPath,
 				"internal",
 				"app",
 				"auth",
-				"usecases",
+				"services",
 				"auth_test.go",
 			),
-			Name: "test auth usecase implementation",
+			Name: "test auth service implementation",
 		},
 		{
 			SourcePath: "templates/internal/auth/interceptors/auth_test.go.tmpl",

@@ -20,7 +20,7 @@ type Domain struct {
 	Module      string
 	ProtoModule string
 	Entities    []*Model
-	UseCase     *Layer
+	Service     *Layer
 	Repository  *Layer
 	Interceptor *Layer
 	GRPCHandler *Layer

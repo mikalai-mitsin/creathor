@@ -143,7 +143,7 @@ func (m *Middlewares) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: "AuthUseCase",
+							Name: "AuthService",
 						},
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{
@@ -255,11 +255,11 @@ func (m *Middlewares) file() *ast.File {
 									{
 										Names: []*ast.Ident{
 											{
-												Name: "authUseCase",
+												Name: "authService",
 											},
 										},
 										Type: &ast.Ident{
-											Name: "AuthUseCase",
+											Name: "AuthService",
 										},
 									},
 								},
@@ -278,11 +278,11 @@ func (m *Middlewares) file() *ast.File {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: "authUseCase",
+										Name: "authService",
 									},
 								},
 								Type: &ast.Ident{
-									Name: "AuthUseCase",
+									Name: "AuthService",
 								},
 							},
 							{
@@ -346,10 +346,10 @@ func (m *Middlewares) file() *ast.File {
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
 												Key: &ast.Ident{
-													Name: "authUseCase",
+													Name: "authService",
 												},
 												Value: &ast.Ident{
-													Name: "authUseCase",
+													Name: "authService",
 												},
 											},
 											&ast.KeyValueExpr{
@@ -749,7 +749,7 @@ func (m *Middlewares) file() *ast.File {
 												Name: "m",
 											},
 											Sel: &ast.Ident{
-												Name: "authUseCase",
+												Name: "authService",
 											},
 										},
 										Sel: &ast.Ident{

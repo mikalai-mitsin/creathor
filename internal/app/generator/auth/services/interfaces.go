@@ -1,4 +1,4 @@
-package usecases
+package services
 
 import (
 	"bytes"
@@ -24,7 +24,7 @@ func NewRepositoryInterfaceAuth(project *configs.Project) *RepositoryInterfaceAu
 func (i RepositoryInterfaceAuth) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
-			Name: "usecases",
+			Name: "services",
 		},
 		Decls: []ast.Decl{
 			&ast.GenDecl{
@@ -688,7 +688,7 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 
 func (i RepositoryInterfaceAuth) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", "auth", "usecases", "interfaces.go")
+	filename := path.Join("internal", "app", "auth", "services", "interfaces.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}

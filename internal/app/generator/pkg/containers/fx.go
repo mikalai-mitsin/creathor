@@ -730,6 +730,23 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 										},
 									},
 								},
+								{
+									Names: []*ast.Ident{
+										{
+											Name: "server",
+										},
+									},
+									Type: &ast.StarExpr{
+										X: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "grpc",
+											},
+											Sel: &ast.Ident{
+												Name: "Server",
+											},
+										},
+									},
+								},
 							},
 						},
 					},
@@ -760,18 +777,95 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 													Key: &ast.Ident{
 														Name: "OnStart",
 													},
-													Value: &ast.SelectorExpr{
-														X:   ast.NewIdent("app"),
-														Sel: ast.NewIdent("Start"),
-													},
-												},
-												&ast.KeyValueExpr{
-													Key: &ast.Ident{
-														Name: "OnStop",
-													},
-													Value: &ast.SelectorExpr{
-														X:   ast.NewIdent("app"),
-														Sel: ast.NewIdent("Stop"),
+													Value: &ast.FuncLit{
+														Type: &ast.FuncType{
+															Params: &ast.FieldList{
+																List: []*ast.Field{
+																	&ast.Field{
+																		Names: []*ast.Ident{
+																			&ast.Ident{
+																				Name: "_",
+																			},
+																		},
+																		Type: &ast.SelectorExpr{
+																			X: &ast.Ident{
+																				Name: "context",
+																			},
+																			Sel: &ast.Ident{
+																				Name: "Context",
+																			},
+																		},
+																	},
+																},
+															},
+															Results: &ast.FieldList{
+																List: []*ast.Field{
+																	&ast.Field{
+																		Type: &ast.Ident{
+																			Name: "error",
+																		},
+																	},
+																},
+															},
+														},
+														Body: &ast.BlockStmt{
+															List: []ast.Stmt{
+																&ast.IfStmt{
+																	Init: &ast.AssignStmt{
+																		Lhs: []ast.Expr{
+																			&ast.Ident{
+																				Name: "err",
+																			},
+																		},
+																		Tok: token.DEFINE,
+																		Rhs: []ast.Expr{
+																			&ast.CallExpr{
+																				Fun: &ast.SelectorExpr{
+																					X: &ast.Ident{
+																						Name: "app",
+																					},
+																					Sel: &ast.Ident{
+																						Name: "RegisterGRPC",
+																					},
+																				},
+																				Args: []ast.Expr{
+																					&ast.Ident{
+																						Name: "server",
+																					},
+																				},
+																			},
+																		},
+																	},
+																	Cond: &ast.BinaryExpr{
+																		X: &ast.Ident{
+																			Name: "err",
+																		},
+																		Op: token.NEQ,
+																		Y: &ast.Ident{
+																			Name: "nil",
+																		},
+																	},
+																	Body: &ast.BlockStmt{
+																		List: []ast.Stmt{
+																			&ast.ReturnStmt{
+																				Results: []ast.Expr{
+																					&ast.Ident{
+																						Name: "err",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+																&ast.ReturnStmt{
+																	Results: []ast.Expr{
+																		&ast.Ident{
+																			Name: "nil",
+																		},
+																	},
+																},
+															},
+														},
 													},
 												},
 											},
@@ -830,6 +924,23 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 										},
 									},
 								},
+								{
+									Names: []*ast.Ident{
+										{
+											Name: "server",
+										},
+									},
+									Type: &ast.StarExpr{
+										X: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "grpc",
+											},
+											Sel: &ast.Ident{
+												Name: "Server",
+											},
+										},
+									},
+								},
 							},
 						},
 					},
@@ -860,18 +971,95 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 													Key: &ast.Ident{
 														Name: "OnStart",
 													},
-													Value: &ast.SelectorExpr{
-														X:   ast.NewIdent("app"),
-														Sel: ast.NewIdent("Start"),
-													},
-												},
-												&ast.KeyValueExpr{
-													Key: &ast.Ident{
-														Name: "OnStop",
-													},
-													Value: &ast.SelectorExpr{
-														X:   ast.NewIdent("app"),
-														Sel: ast.NewIdent("Stop"),
+													Value: &ast.FuncLit{
+														Type: &ast.FuncType{
+															Params: &ast.FieldList{
+																List: []*ast.Field{
+																	{
+																		Names: []*ast.Ident{
+																			{
+																				Name: "_",
+																			},
+																		},
+																		Type: &ast.SelectorExpr{
+																			X: &ast.Ident{
+																				Name: "context",
+																			},
+																			Sel: &ast.Ident{
+																				Name: "Context",
+																			},
+																		},
+																	},
+																},
+															},
+															Results: &ast.FieldList{
+																List: []*ast.Field{
+																	{
+																		Type: &ast.Ident{
+																			Name: "error",
+																		},
+																	},
+																},
+															},
+														},
+														Body: &ast.BlockStmt{
+															List: []ast.Stmt{
+																&ast.IfStmt{
+																	Init: &ast.AssignStmt{
+																		Lhs: []ast.Expr{
+																			&ast.Ident{
+																				Name: "err",
+																			},
+																		},
+																		Tok: token.DEFINE,
+																		Rhs: []ast.Expr{
+																			&ast.CallExpr{
+																				Fun: &ast.SelectorExpr{
+																					X: &ast.Ident{
+																						Name: "app",
+																					},
+																					Sel: &ast.Ident{
+																						Name: "RegisterGRPC",
+																					},
+																				},
+																				Args: []ast.Expr{
+																					&ast.Ident{
+																						Name: "server",
+																					},
+																				},
+																			},
+																		},
+																	},
+																	Cond: &ast.BinaryExpr{
+																		X: &ast.Ident{
+																			Name: "err",
+																		},
+																		Op: token.NEQ,
+																		Y: &ast.Ident{
+																			Name: "nil",
+																		},
+																	},
+																	Body: &ast.BlockStmt{
+																		List: []ast.Stmt{
+																			&ast.ReturnStmt{
+																				Results: []ast.Expr{
+																					&ast.Ident{
+																						Name: "err",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+																&ast.ReturnStmt{
+																	Results: []ast.Expr{
+																		&ast.Ident{
+																			Name: "nil",
+																		},
+																	},
+																},
+															},
+														},
 													},
 												},
 											},

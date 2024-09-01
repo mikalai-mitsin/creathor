@@ -50,8 +50,7 @@ func (a App) file() *ast.File {
 			a.imports(),
 			a.structure(),
 			a.constructor(),
-			a.start(),
-			a.stop(),
+			a.registerGRPC(),
 		},
 	}
 }
@@ -60,12 +59,6 @@ func (a App) imports() *ast.GenDecl {
 	imports := &ast.GenDecl{
 		Tok: token.IMPORT,
 		Specs: []ast.Spec{
-			&ast.ImportSpec{
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: `"context"`,
-				},
-			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
@@ -158,19 +151,6 @@ func (a App) constructor() *ast.FuncDecl {
 		{
 			Names: []*ast.Ident{
 				{
-					Name: "grpcServer",
-				},
-			},
-			Type: &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X:   ast.NewIdent("grpc"),
-					Sel: ast.NewIdent("Server"),
-				},
-			},
-		},
-		{
-			Names: []*ast.Ident{
-				{
 					Name: "logger",
 				},
 			},
@@ -227,14 +207,6 @@ func (a App) constructor() *ast.FuncDecl {
 			},
 			Value: &ast.Ident{
 				Name: "db",
-			},
-		},
-		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "grpcServer",
-			},
-			Value: &ast.Ident{
-				Name: "grpcServer",
 			},
 		},
 		&ast.KeyValueExpr{
@@ -416,17 +388,6 @@ func (a App) structure() *ast.GenDecl {
 				},
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent("grpcServer"),
-					},
-					Type: &ast.StarExpr{
-						X: &ast.SelectorExpr{
-							X:   ast.NewIdent("grpc"),
-							Sel: ast.NewIdent("Server"),
-						},
-					},
-				},
-				{
-					Names: []*ast.Ident{
 						{
 							Name: "logger",
 						},
@@ -508,7 +469,7 @@ func (a App) structure() *ast.GenDecl {
 	}
 }
 
-func (a App) start() *ast.FuncDecl {
+func (a App) registerGRPC() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -522,17 +483,21 @@ func (a App) start() *ast.FuncDecl {
 				},
 			},
 		},
-		Name: ast.NewIdent("Start"),
+		Name: ast.NewIdent("RegisterGRPC"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							ast.NewIdent("ctx"),
+							{
+								Name: "grpcServer",
+							},
 						},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("context"),
-							Sel: ast.NewIdent("Context"),
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("grpc"),
+								Sel: ast.NewIdent("Server"),
+							},
 						},
 					},
 				},
@@ -550,12 +515,7 @@ func (a App) start() *ast.FuncDecl {
 				&ast.ExprStmt{
 					X: &ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X: &ast.SelectorExpr{
-								X: ast.NewIdent("a"),
-								Sel: &ast.Ident{
-									Name: "grpcServer",
-								},
-							},
+							X: ast.NewIdent("grpcServer"),
 							Sel: &ast.Ident{
 								Name: "AddHandler",
 							},
@@ -575,55 +535,6 @@ func (a App) start() *ast.FuncDecl {
 						},
 					},
 				},
-				&ast.ReturnStmt{
-					Results: []ast.Expr{
-						ast.NewIdent("nil"),
-					},
-				},
-			},
-		},
-	}
-}
-
-func (a App) stop() *ast.FuncDecl {
-	return &ast.FuncDecl{
-		Recv: &ast.FieldList{
-			List: []*ast.Field{
-				{
-					Names: []*ast.Ident{
-						ast.NewIdent("a"),
-					},
-					Type: &ast.StarExpr{
-						X: ast.NewIdent("App"),
-					},
-				},
-			},
-		},
-		Name: ast.NewIdent("Stop"),
-		Type: &ast.FuncType{
-			Params: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Names: []*ast.Ident{
-							ast.NewIdent("ctx"),
-						},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("context"),
-							Sel: ast.NewIdent("Context"),
-						},
-					},
-				},
-			},
-			Results: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Type: ast.NewIdent("error"),
-					},
-				},
-			},
-		},
-		Body: &ast.BlockStmt{
-			List: []ast.Stmt{
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
 						ast.NewIdent("nil"),

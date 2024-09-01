@@ -657,7 +657,7 @@ func (i AppAuth) file() *ast.File {
 					},
 				},
 				Name: &ast.Ident{
-					Name: "Start",
+					Name: "RegisterGRPC",
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -665,15 +665,13 @@ func (i AppAuth) file() *ast.File {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: "ctx",
+										Name: "grpcServer",
 									},
 								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
+								Type: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X:   ast.NewIdent("grpc"),
+										Sel: ast.NewIdent("Server"),
 									},
 								},
 							},
@@ -694,12 +692,7 @@ func (i AppAuth) file() *ast.File {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X: ast.NewIdent("a"),
-										Sel: &ast.Ident{
-											Name: "grpcServer",
-										},
-									},
+									X: ast.NewIdent("grpcServer"),
 									Sel: &ast.Ident{
 										Name: "AddHandler",
 									},
@@ -722,10 +715,7 @@ func (i AppAuth) file() *ast.File {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("a"),
-										Sel: ast.NewIdent("grpcServer"),
-									},
+									X:   ast.NewIdent("grpcServer"),
 									Sel: ast.NewIdent("AddInterceptor"),
 								},
 								Args: []ast.Expr{
@@ -742,68 +732,6 @@ func (i AppAuth) file() *ast.File {
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
 								ast.NewIdent("nil"),
-							},
-						},
-					},
-				},
-			},
-			&ast.FuncDecl{
-				Recv: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Names: []*ast.Ident{
-								{
-									Name: "a",
-								},
-							},
-							Type: &ast.StarExpr{
-								X: &ast.Ident{
-									Name: "App",
-								},
-							},
-						},
-					},
-				},
-				Name: &ast.Ident{
-					Name: "Stop",
-				},
-				Type: &ast.FuncType{
-					Params: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "ctx",
-									},
-								},
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
-								},
-							},
-						},
-					},
-					Results: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
-							},
-						},
-					},
-				},
-				Body: &ast.BlockStmt{
-					List: []ast.Stmt{
-						&ast.ReturnStmt{
-							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "nil",
-								},
 							},
 						},
 					},

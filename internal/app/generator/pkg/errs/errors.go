@@ -36,25 +36,25 @@ func (i Errors) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"encoding/json\"",
+							Value: `"encoding/json"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"errors\"",
+							Value: `"errors"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"reflect\"",
+							Value: `"slices"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"go.uber.org/zap/zapcore\"",
+							Value: `"go.uber.org/zap/zapcore"`,
 						},
 					},
 				},
@@ -77,7 +77,7 @@ func (i Errors) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeOK",
 							},
 						},
@@ -92,119 +92,119 @@ func (i Errors) file() *ast.File {
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeCanceled",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeUnknown",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeInvalidArgument",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeDeadlineExceeded",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeNotFound",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeAlreadyExists",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodePermissionDenied",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeResourceExhausted",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeFailedPrecondition",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeAborted",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeOutOfRange",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeUnimplemented",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeInternal",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeUnavailable",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeDataLoss",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeUnauthenticated",
 							},
 						},
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							&ast.Ident{
+							{
 								Name: "ErrorCodeClosedRequest",
 							},
 						},
@@ -221,9 +221,9 @@ func (i Errors) file() *ast.File {
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
+											{
 												Name: "Key",
 											},
 										},
@@ -235,9 +235,9 @@ func (i Errors) file() *ast.File {
 											Value: "`json:\"key\"`",
 										},
 									},
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
+											{
 												Name: "Value",
 											},
 										},
@@ -258,9 +258,9 @@ func (i Errors) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "p",
 								},
 							},
@@ -276,9 +276,9 @@ func (i Errors) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "encoder",
 									},
 								},
@@ -295,7 +295,7 @@ func (i Errors) file() *ast.File {
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.Ident{
 									Name: "error",
 								},
@@ -363,9 +363,9 @@ func (i Errors) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "p",
 								},
 							},
@@ -381,9 +381,9 @@ func (i Errors) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "encoder",
 									},
 								},
@@ -400,7 +400,7 @@ func (i Errors) file() *ast.File {
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.Ident{
 									Name: "error",
 								},
@@ -476,9 +476,9 @@ func (i Errors) file() *ast.File {
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
+											{
 												Name: "Code",
 											},
 										},
@@ -490,9 +490,9 @@ func (i Errors) file() *ast.File {
 											Value: "`json:\"code\"`",
 										},
 									},
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
+											{
 												Name: "Message",
 											},
 										},
@@ -504,9 +504,9 @@ func (i Errors) file() *ast.File {
 											Value: "`json:\"message\"`",
 										},
 									},
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
+											{
 												Name: "Params",
 											},
 										},
@@ -518,9 +518,9 @@ func (i Errors) file() *ast.File {
 											Value: "`json:\"params\"`",
 										},
 									},
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
+											{
 												Name: "Err",
 											},
 										},
@@ -545,9 +545,9 @@ func (i Errors) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "code",
 									},
 								},
@@ -555,9 +555,9 @@ func (i Errors) file() *ast.File {
 									Name: "ErrorCode",
 								},
 							},
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "message",
 									},
 								},
@@ -569,7 +569,7 @@ func (i Errors) file() *ast.File {
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.StarExpr{
 									X: &ast.Ident{
 										Name: "Error",
@@ -637,9 +637,9 @@ func (i Errors) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "details",
 									},
 								},
@@ -651,7 +651,7 @@ func (i Errors) file() *ast.File {
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.StarExpr{
 									X: &ast.Ident{
 										Name: "Error",
@@ -681,7 +681,7 @@ func (i Errors) file() *ast.File {
 										},
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: "\"Unexpected behavior.\"",
+											Value: `"Unexpected behavior."`,
 										},
 									},
 								},
@@ -700,7 +700,7 @@ func (i Errors) file() *ast.File {
 								Args: []ast.Expr{
 									&ast.BasicLit{
 										Kind:  token.STRING,
-										Value: "\"details\"",
+										Value: `"details"`,
 									},
 									&ast.Ident{
 										Name: "details",
@@ -726,7 +726,7 @@ func (i Errors) file() *ast.File {
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.StarExpr{
 									X: &ast.Ident{
 										Name: "Error",
@@ -750,7 +750,7 @@ func (i Errors) file() *ast.File {
 										},
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: "\"The form sent is not valid, please correct the errors below.\"",
+											Value: `"The form sent is not valid, please correct the errors below."`,
 										},
 									},
 								},
@@ -766,9 +766,9 @@ func (i Errors) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "message",
 									},
 								},
@@ -780,7 +780,7 @@ func (i Errors) file() *ast.File {
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.StarExpr{
 									X: &ast.Ident{
 										Name: "Error",
@@ -820,7 +820,7 @@ func (i Errors) file() *ast.File {
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.StarExpr{
 									X: &ast.Ident{
 										Name: "Error",
@@ -844,7 +844,7 @@ func (i Errors) file() *ast.File {
 										},
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: "\"Entity not found.\"",
+											Value: `"Entity not found."`,
 										},
 									},
 								},
@@ -861,7 +861,7 @@ func (i Errors) file() *ast.File {
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.StarExpr{
 									X: &ast.Ident{
 										Name: "Error",
@@ -885,7 +885,7 @@ func (i Errors) file() *ast.File {
 										},
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: "\"Bad token.\"",
+											Value: `"Bad token."`,
 										},
 									},
 								},
@@ -902,7 +902,7 @@ func (i Errors) file() *ast.File {
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.StarExpr{
 									X: &ast.Ident{
 										Name: "Error",
@@ -926,7 +926,7 @@ func (i Errors) file() *ast.File {
 										},
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: "\"Permission denied.\"",
+											Value: `"Permission denied."`,
 										},
 									},
 								},
@@ -937,13 +937,13 @@ func (i Errors) file() *ast.File {
 			},
 			&ast.FuncDecl{
 				Name: &ast.Ident{
-					Name: "NewSubscriptionAlreadyCancelledError",
+					Name: "NewUnauthenticatedError",
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.StarExpr{
 									X: &ast.Ident{
 										Name: "Error",
@@ -967,48 +967,7 @@ func (i Errors) file() *ast.File {
 										},
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: "\"Subscription is already cancelled.\"",
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			&ast.FuncDecl{
-				Name: &ast.Ident{
-					Name: "NewInactivePlanError",
-				},
-				Type: &ast.FuncType{
-					Params: &ast.FieldList{},
-					Results: &ast.FieldList{
-						List: []*ast.Field{
-							&ast.Field{
-								Type: &ast.StarExpr{
-									X: &ast.Ident{
-										Name: "Error",
-									},
-								},
-							},
-						},
-					},
-				},
-				Body: &ast.BlockStmt{
-					List: []ast.Stmt{
-						&ast.ReturnStmt{
-							Results: []ast.Expr{
-								&ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: "NewError",
-									},
-									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "ErrorCodeFailedPrecondition",
-										},
-										&ast.BasicLit{
-											Kind:  token.STRING,
-											Value: "\"This plan is inactive.\"",
+											Value: `"Unauthenticated error."`,
 										},
 									},
 								},
@@ -1020,9 +979,9 @@ func (i Errors) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "e",
 								},
 							},
@@ -1041,7 +1000,7 @@ func (i Errors) file() *ast.File {
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.Ident{
 									Name: "error",
 								},
@@ -1069,9 +1028,9 @@ func (i Errors) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "e",
 								},
 							},
@@ -1087,9 +1046,9 @@ func (i Errors) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "encoder",
 									},
 								},
@@ -1106,7 +1065,7 @@ func (i Errors) file() *ast.File {
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.Ident{
 									Name: "error",
 								},
@@ -1129,7 +1088,7 @@ func (i Errors) file() *ast.File {
 								Args: []ast.Expr{
 									&ast.BasicLit{
 										Kind:  token.STRING,
-										Value: "\"message\"",
+										Value: `"message"`,
 									},
 									&ast.SelectorExpr{
 										X: &ast.Ident{
@@ -1155,7 +1114,7 @@ func (i Errors) file() *ast.File {
 								Args: []ast.Expr{
 									&ast.BasicLit{
 										Kind:  token.STRING,
-										Value: "\"code\"",
+										Value: `"code"`,
 									},
 									&ast.CallExpr{
 										Fun: &ast.Ident{
@@ -1196,7 +1155,7 @@ func (i Errors) file() *ast.File {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: "\"params\"",
+												Value: `"params"`,
 											},
 											&ast.SelectorExpr{
 												X: &ast.Ident{
@@ -1244,9 +1203,9 @@ func (i Errors) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "e",
 								},
 							},
@@ -1264,12 +1223,12 @@ func (i Errors) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "key",
 									},
-									&ast.Ident{
+									{
 										Name: "value",
 									},
 								},
@@ -1281,7 +1240,7 @@ func (i Errors) file() *ast.File {
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.StarExpr{
 									X: &ast.Ident{
 										Name: "Error",
@@ -1326,9 +1285,9 @@ func (i Errors) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "e",
 								},
 							},
@@ -1346,9 +1305,9 @@ func (i Errors) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "err",
 									},
 								},
@@ -1360,7 +1319,7 @@ func (i Errors) file() *ast.File {
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.StarExpr{
 									X: &ast.Ident{
 										Name: "Error",
@@ -1403,9 +1362,9 @@ func (i Errors) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "e",
 								},
 							},
@@ -1423,14 +1382,14 @@ func (i Errors) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "params",
 									},
 								},
 								Type: &ast.Ellipsis{
-									Ellipsis: 2682,
+									Ellipsis: 2531,
 									Elt: &ast.Ident{
 										Name: "Param",
 									},
@@ -1440,7 +1399,7 @@ func (i Errors) file() *ast.File {
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.StarExpr{
 									X: &ast.Ident{
 										Name: "Error",
@@ -1529,7 +1488,7 @@ func (i Errors) file() *ast.File {
 														Name: "params",
 													},
 												},
-												Ellipsis: 2792,
+												Ellipsis: 2641,
 											},
 										},
 									},
@@ -1549,9 +1508,9 @@ func (i Errors) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "e",
 								},
 							},
@@ -1568,7 +1527,7 @@ func (i Errors) file() *ast.File {
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.Ident{
 									Name: "string",
 								},
@@ -1626,9 +1585,9 @@ func (i Errors) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "e",
 								},
 							},
@@ -1646,9 +1605,9 @@ func (i Errors) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "tgt",
 									},
 								},
@@ -1660,7 +1619,7 @@ func (i Errors) file() *ast.File {
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.Ident{
 									Name: "bool",
 								},
@@ -1676,7 +1635,7 @@ func (i Errors) file() *ast.File {
 								Specs: []ast.Spec{
 									&ast.ValueSpec{
 										Names: []*ast.Ident{
-											&ast.Ident{
+											{
 												Name: "target",
 											},
 										},
@@ -1936,9 +1895,9 @@ func (i Errors) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "e",
 								},
 							},
@@ -1956,9 +1915,9 @@ func (i Errors) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "code",
 									},
 								},
@@ -1995,9 +1954,9 @@ func (i Errors) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "e",
 								},
 							},
@@ -2015,9 +1974,9 @@ func (i Errors) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "err",
 									},
 								},
@@ -2054,9 +2013,9 @@ func (i Errors) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "e",
 								},
 							},
@@ -2074,9 +2033,9 @@ func (i Errors) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "message",
 									},
 								},
@@ -2113,9 +2072,9 @@ func (i Errors) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "e",
 								},
 							},
@@ -2133,9 +2092,9 @@ func (i Errors) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "params",
 									},
 								},
@@ -2172,9 +2131,9 @@ func (i Errors) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "e",
 								},
 							},
@@ -2192,12 +2151,12 @@ func (i Errors) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "key",
 									},
-									&ast.Ident{
+									{
 										Name: "value",
 									},
 								},
@@ -2268,28 +2227,28 @@ func (i Errors) file() *ast.File {
 			},
 		},
 		Imports: []*ast.ImportSpec{
-			&ast.ImportSpec{
+			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: "\"encoding/json\"",
+					Value: `"encoding/json"`,
 				},
 			},
-			&ast.ImportSpec{
+			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: "\"errors\"",
+					Value: `"errors"`,
 				},
 			},
-			&ast.ImportSpec{
+			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: "\"reflect\"",
+					Value: `"reflect"`,
 				},
 			},
-			&ast.ImportSpec{
+			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: "\"go.uber.org/zap/zapcore\"",
+					Value: `"go.uber.org/zap/zapcore"`,
 				},
 			},
 		},
@@ -2309,13 +2268,13 @@ func (i Errors) fileHttp() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"encoding/json\"",
+							Value: `"encoding/json"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"net/http\"",
+							Value: `"net/http"`,
 						},
 					},
 				},
@@ -2867,13 +2826,13 @@ func (i Errors) fileHttp() *ast.File {
 			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: "\"encoding/json\"",
+					Value: `"encoding/json"`,
 				},
 			},
 			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: "\"net/http\"",
+					Value: `"net/http"`,
 				},
 			},
 		},
@@ -2902,25 +2861,25 @@ func (i Errors) filePostgres() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"database/sql\"",
+							Value: `"database/sql"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"errors\"",
+							Value: `"errors"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"fmt\"",
+							Value: `"fmt"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/lib/pq\"",
+							Value: `"github.com/lib/pq"`,
 						},
 					},
 				},
@@ -2937,7 +2896,7 @@ func (i Errors) filePostgres() *ast.File {
 						Values: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
-								Value: "\"23505\"",
+								Value: `"23505"`,
 							},
 						},
 					},
@@ -3005,7 +2964,7 @@ func (i Errors) filePostgres() *ast.File {
 												},
 												Value: &ast.BasicLit{
 													Kind:  token.STRING,
-													Value: "\"Unexpected behavior.\"",
+													Value: `"Unexpected behavior."`,
 												},
 											},
 											&ast.KeyValueExpr{
@@ -3090,7 +3049,7 @@ func (i Errors) filePostgres() *ast.File {
 											Args: []ast.Expr{
 												&ast.BasicLit{
 													Kind:  token.STRING,
-													Value: "\"details\"",
+													Value: `"details"`,
 												},
 												&ast.SelectorExpr{
 													X: &ast.Ident{
@@ -3116,7 +3075,7 @@ func (i Errors) filePostgres() *ast.File {
 											Args: []ast.Expr{
 												&ast.BasicLit{
 													Kind:  token.STRING,
-													Value: "\"message\"",
+													Value: `"message"`,
 												},
 												&ast.SelectorExpr{
 													X: &ast.Ident{
@@ -3142,7 +3101,7 @@ func (i Errors) filePostgres() *ast.File {
 											Args: []ast.Expr{
 												&ast.BasicLit{
 													Kind:  token.STRING,
-													Value: "\"postgres_code\"",
+													Value: `"postgres_code"`,
 												},
 												&ast.CallExpr{
 													Fun: &ast.SelectorExpr{
@@ -3230,7 +3189,7 @@ func (i Errors) filePostgres() *ast.File {
 								Args: []ast.Expr{
 									&ast.BasicLit{
 										Kind:  token.STRING,
-										Value: "\"error\"",
+										Value: `"error"`,
 									},
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
@@ -3304,25 +3263,25 @@ func (i Errors) filePostgres() *ast.File {
 			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: "\"database/sql\"",
+					Value: `"database/sql"`,
 				},
 			},
 			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: "\"errors\"",
+					Value: `"errors"`,
 				},
 			},
 			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: "\"fmt\"",
+					Value: `"fmt"`,
 				},
 			},
 			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: "\"github.com/lib/pq\"",
+					Value: `"github.com/lib/pq"`,
 				},
 			},
 		},
@@ -3342,13 +3301,13 @@ func (i Errors) fileValidation() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"bytes\"",
+							Value: `"bytes"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"errors\"",
+							Value: `"errors"`,
 						},
 					},
 					&ast.ImportSpec{
@@ -3357,13 +3316,13 @@ func (i Errors) fileValidation() *ast.File {
 						},
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"github.com/go-ozzo/ozzo-validation/v4\"",
+							Value: `"github.com/go-ozzo/ozzo-validation/v4"`,
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: "\"text/template\"",
+							Value: `"text/template"`,
 						},
 					},
 				},
@@ -3487,7 +3446,7 @@ func (i Errors) fileValidation() *ast.File {
 													},
 													&ast.BasicLit{
 														Kind:  token.STRING,
-														Value: "\"The form sent is not valid, please correct the errors below.\"",
+														Value: `"The form sent is not valid, please correct the errors below."`,
 													},
 												},
 											},
@@ -3791,7 +3750,7 @@ func (i Errors) fileValidation() *ast.File {
 											Args: []ast.Expr{
 												&ast.BasicLit{
 													Kind:  token.STRING,
-													Value: "\"message\"",
+													Value: `"message"`,
 												},
 											},
 										},
@@ -3830,7 +3789,7 @@ func (i Errors) fileValidation() *ast.File {
 										Results: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: "\"\"",
+												Value: `""`,
 											},
 										},
 									},
@@ -3919,13 +3878,13 @@ func (i Errors) fileValidation() *ast.File {
 			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: "\"bytes\"",
+					Value: `"bytes"`,
 				},
 			},
 			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: "\"errors\"",
+					Value: `"errors"`,
 				},
 			},
 			{
@@ -3934,13 +3893,13 @@ func (i Errors) fileValidation() *ast.File {
 				},
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: "\"github.com/go-ozzo/ozzo-validation/v4\"",
+					Value: `"github.com/go-ozzo/ozzo-validation/v4"`,
 				},
 			},
 			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: "\"text/template\"",
+					Value: `"text/template"`,
 				},
 			},
 		},

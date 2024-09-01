@@ -66,6 +66,12 @@ func (m *Middlewares) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/pkg/errs"`, m.project.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
 							Value: fmt.Sprintf(`"%s/internal/pkg/configs"`, m.project.Module),
 						},
 					},
@@ -1015,24 +1021,10 @@ func (m *Middlewares) file() *ast.File {
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
 													X: &ast.Ident{
-														Name: "status",
+														Name: "errs",
 													},
 													Sel: &ast.Ident{
-														Name: "Errorf",
-													},
-												},
-												Args: []ast.Expr{
-													&ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "codes",
-														},
-														Sel: &ast.Ident{
-															Name: "Unauthenticated",
-														},
-													},
-													&ast.BasicLit{
-														Kind:  token.STRING,
-														Value: `"Bad authorization string"`,
+														Name: "NewUnauthenticatedError",
 													},
 												},
 											},
@@ -1080,30 +1072,10 @@ func (m *Middlewares) file() *ast.File {
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
 													X: &ast.Ident{
-														Name: "status",
+														Name: "errs",
 													},
 													Sel: &ast.Ident{
-														Name: "Errorf",
-													},
-												},
-												Args: []ast.Expr{
-													&ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "codes",
-														},
-														Sel: &ast.Ident{
-															Name: "Unauthenticated",
-														},
-													},
-													&ast.BinaryExpr{
-														X: &ast.BasicLit{
-															Kind:  token.STRING,
-															Value: `"Request unauthenticated with "`,
-														},
-														Op: token.ADD,
-														Y: &ast.Ident{
-															Name: "expectedScheme",
-														},
+														Name: "NewUnauthenticatedError",
 													},
 												},
 											},
@@ -1165,30 +1137,10 @@ func (m *Middlewares) file() *ast.File {
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
 													X: &ast.Ident{
-														Name: "status",
+														Name: "errs",
 													},
 													Sel: &ast.Ident{
-														Name: "Errorf",
-													},
-												},
-												Args: []ast.Expr{
-													&ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "codes",
-														},
-														Sel: &ast.Ident{
-															Name: "Unauthenticated",
-														},
-													},
-													&ast.BinaryExpr{
-														X: &ast.BasicLit{
-															Kind:  token.STRING,
-															Value: `"Request unauthenticated with "`,
-														},
-														Op: token.ADD,
-														Y: &ast.Ident{
-															Name: "expectedScheme",
-														},
+														Name: "NewUnauthenticatedError",
 													},
 												},
 											},

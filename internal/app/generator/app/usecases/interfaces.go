@@ -1,4 +1,4 @@
-package interceptors
+package usecases
 
 import (
 	"bytes"
@@ -12,17 +12,17 @@ import (
 	"path"
 )
 
-type InterceptorInterfaces struct {
+type UseCaseInterfaces struct {
 	domain *domain.Domain
 }
 
-func NewInterceptorInterfaces(domain *domain.Domain) *InterceptorInterfaces {
-	return &InterceptorInterfaces{domain: domain}
+func NewUseCaseInterfaces(domain *domain.Domain) *UseCaseInterfaces {
+	return &UseCaseInterfaces{domain: domain}
 }
 
-func (i InterceptorInterfaces) Sync() error {
+func (i UseCaseInterfaces) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", i.domain.DirName(), "interceptors", "interfaces.go")
+	filename := path.Join("internal", "app", i.domain.DirName(), "usecases", "interfaces.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err
@@ -61,9 +61,9 @@ func (i InterceptorInterfaces) Sync() error {
 	return nil
 }
 
-func (i InterceptorInterfaces) file() *ast.File {
+func (i UseCaseInterfaces) file() *ast.File {
 	file := &ast.File{
-		Name: ast.NewIdent("interceptors"),
+		Name: ast.NewIdent("usecases"),
 		Decls: []ast.Decl{
 			i.imports(),
 		},
@@ -71,7 +71,7 @@ func (i InterceptorInterfaces) file() *ast.File {
 	return file
 }
 
-func (i InterceptorInterfaces) imports() *ast.GenDecl {
+func (i UseCaseInterfaces) imports() *ast.GenDecl {
 	imports := &ast.GenDecl{
 		Tok: token.IMPORT,
 		Specs: []ast.Spec{
@@ -113,7 +113,7 @@ func (i InterceptorInterfaces) imports() *ast.GenDecl {
 	return imports
 }
 
-func (i InterceptorInterfaces) appServiceInterface() *ast.GenDecl {
+func (i UseCaseInterfaces) appServiceInterface() *ast.GenDecl {
 	methods := make([]*ast.Field, len(i.domain.Service.Methods))
 	for i, method := range i.domain.Service.Methods {
 		methods[i] = &ast.Field{
@@ -165,7 +165,7 @@ func (i InterceptorInterfaces) appServiceInterface() *ast.GenDecl {
 	}
 }
 
-func (i InterceptorInterfaces) loggerInterface() *ast.GenDecl {
+func (i UseCaseInterfaces) loggerInterface() *ast.GenDecl {
 	return &ast.GenDecl{
 		Doc: &ast.CommentGroup{
 			List: []*ast.Comment{

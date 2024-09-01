@@ -1,4 +1,4 @@
-package interceptors
+package usecases
 
 import (
 	"bytes"
@@ -24,7 +24,7 @@ func NewServiceInterfaceAuth(project *configs.Project) *ServiceInterfaceAuth {
 func (i ServiceInterfaceAuth) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
-			Name: "interceptors",
+			Name: "usecases",
 		},
 		Decls: []ast.Decl{
 			&ast.GenDecl{
@@ -313,7 +313,7 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 				Doc: &ast.CommentGroup{
 					List: []*ast.Comment{
 						{
-							Text: "//AuthService - domain layer interceptor interface",
+							Text: "//AuthService - domain layer usecase interface",
 						},
 						{
 							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth_service.go . AuthService",
@@ -647,7 +647,7 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 
 func (i ServiceInterfaceAuth) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", "auth", "interceptors", "interfaces.go")
+	filename := path.Join("internal", "app", "auth", "usecases", "interfaces.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}

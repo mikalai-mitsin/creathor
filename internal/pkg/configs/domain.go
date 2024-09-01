@@ -112,12 +112,12 @@ func (m *DomainConfig) ServiceVariableName() string {
 	return fmt.Sprintf("%sService", strcase.ToLowerCamel(m.Model))
 }
 
-func (m *DomainConfig) InterceptorTypeName() string {
-	return fmt.Sprintf("%sInterceptor", strcase.ToCamel(m.Model))
+func (m *DomainConfig) UseCaseTypeName() string {
+	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Model))
 }
 
-func (m *DomainConfig) InterceptorVariableName() string {
-	return fmt.Sprintf("%sInterceptor", strcase.ToLowerCamel(m.Model))
+func (m *DomainConfig) UseCaseVariableName() string {
+	return fmt.Sprintf("%sUseCase", strcase.ToLowerCamel(m.Model))
 }
 
 func (m *DomainConfig) RepositoryTypeName() string {

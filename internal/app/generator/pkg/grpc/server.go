@@ -179,7 +179,7 @@ func (u Server) file() *ast.File {
 									{
 										Names: []*ast.Ident{
 											{
-												Name: "unaryInterceptors",
+												Name: "unaryUseCases",
 											},
 										},
 										Type: &ast.ArrayType{
@@ -188,7 +188,7 @@ func (u Server) file() *ast.File {
 													Name: "grpc",
 												},
 												Sel: &ast.Ident{
-													Name: "UnaryServerInterceptor",
+													Name: "UnaryServerUseCase",
 												},
 											},
 										},
@@ -313,7 +313,7 @@ func (u Server) file() *ast.File {
 											},
 											&ast.KeyValueExpr{
 												Key: &ast.Ident{
-													Name: "unaryInterceptors",
+													Name: "unaryUseCases",
 												},
 												Value: &ast.CompositeLit{
 													Type: &ast.ArrayType{
@@ -322,13 +322,13 @@ func (u Server) file() *ast.File {
 																Name: "grpc",
 															},
 															Sel: &ast.Ident{
-																Name: "UnaryServerInterceptor",
+																Name: "UnaryServerUseCase",
 															},
 														},
 													},
 													Elts: []ast.Expr{
 														&ast.Ident{
-															Name: "unaryErrorServerInterceptor",
+															Name: "unaryErrorServerUseCase",
 														},
 														&ast.CallExpr{
 															Fun: &ast.SelectorExpr{
@@ -336,7 +336,7 @@ func (u Server) file() *ast.File {
 																	Name: "otelgrpc",
 																},
 																Sel: &ast.Ident{
-																	Name: "UnaryServerInterceptor",
+																	Name: "UnaryServerUseCase",
 																},
 															},
 														},
@@ -346,7 +346,7 @@ func (u Server) file() *ast.File {
 																	Name: "grpc_zap",
 																},
 																Sel: &ast.Ident{
-																	Name: "UnaryServerInterceptor",
+																	Name: "UnaryServerUseCase",
 																},
 															},
 															Args: []ast.Expr{
@@ -469,7 +469,7 @@ func (u Server) file() *ast.File {
 													Name: "grpc",
 												},
 												Sel: &ast.Ident{
-													Name: "ChainUnaryInterceptor",
+													Name: "ChainUnaryUseCase",
 												},
 											},
 											Args: []ast.Expr{
@@ -478,7 +478,7 @@ func (u Server) file() *ast.File {
 														Name: "s",
 													},
 													Sel: &ast.Ident{
-														Name: "unaryInterceptors",
+														Name: "unaryUseCases",
 													},
 												},
 											},
@@ -920,7 +920,7 @@ func (u Server) file() *ast.File {
 					},
 				},
 				Name: &ast.Ident{
-					Name: "AddInterceptor",
+					Name: "AddUseCase",
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -928,7 +928,7 @@ func (u Server) file() *ast.File {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: "interceptor",
+										Name: "usecase",
 									},
 								},
 								Type: &ast.SelectorExpr{
@@ -936,7 +936,7 @@ func (u Server) file() *ast.File {
 										Name: "grpc",
 									},
 									Sel: &ast.Ident{
-										Name: "UnaryServerInterceptor",
+										Name: "UnaryServerUseCase",
 									},
 								},
 							},
@@ -952,7 +952,7 @@ func (u Server) file() *ast.File {
 										Name: "s",
 									},
 									Sel: &ast.Ident{
-										Name: "unaryInterceptors",
+										Name: "unaryUseCases",
 									},
 								},
 							},
@@ -968,11 +968,11 @@ func (u Server) file() *ast.File {
 												Name: "s",
 											},
 											Sel: &ast.Ident{
-												Name: "unaryInterceptors",
+												Name: "unaryUseCases",
 											},
 										},
 										&ast.Ident{
-											Name: "interceptor",
+											Name: "usecase",
 										},
 									},
 								},

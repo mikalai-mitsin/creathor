@@ -66,7 +66,7 @@ func (i AppAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/auth/interceptors"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/auth/usecases"`, i.project.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -220,16 +220,16 @@ func (i AppAuth) file() *ast.File {
 									{
 										Names: []*ast.Ident{
 											{
-												Name: "authInterceptor",
+												Name: "authUseCase",
 											},
 										},
 										Type: &ast.StarExpr{
 											X: &ast.SelectorExpr{
 												X: &ast.Ident{
-													Name: "interceptors",
+													Name: "usecases",
 												},
 												Sel: &ast.Ident{
-													Name: "AuthInterceptor",
+													Name: "AuthUseCase",
 												},
 											},
 										},
@@ -474,7 +474,7 @@ func (i AppAuth) file() *ast.File {
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
 								&ast.Ident{
-									Name: "authInterceptor",
+									Name: "authUseCase",
 								},
 							},
 							Tok: token.DEFINE,
@@ -482,10 +482,10 @@ func (i AppAuth) file() *ast.File {
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: "interceptors",
+											Name: "usecases",
 										},
 										Sel: &ast.Ident{
-											Name: "NewAuthInterceptor",
+											Name: "NewAuthUseCase",
 										},
 									},
 									Args: []ast.Expr{
@@ -521,7 +521,7 @@ func (i AppAuth) file() *ast.File {
 									},
 									Args: []ast.Expr{
 										&ast.Ident{
-											Name: "authInterceptor",
+											Name: "authUseCase",
 										},
 									},
 								},
@@ -609,10 +609,10 @@ func (i AppAuth) file() *ast.File {
 											},
 											&ast.KeyValueExpr{
 												Key: &ast.Ident{
-													Name: "authInterceptor",
+													Name: "authUseCase",
 												},
 												Value: &ast.Ident{
-													Name: "authInterceptor",
+													Name: "authUseCase",
 												},
 											},
 											&ast.KeyValueExpr{
@@ -716,7 +716,7 @@ func (i AppAuth) file() *ast.File {
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X:   ast.NewIdent("grpcServer"),
-									Sel: ast.NewIdent("AddInterceptor"),
+									Sel: ast.NewIdent("AddUseCase"),
 								},
 								Args: []ast.Expr{
 									&ast.SelectorExpr{
@@ -724,7 +724,7 @@ func (i AppAuth) file() *ast.File {
 											X:   ast.NewIdent("a"),
 											Sel: ast.NewIdent("authMiddleware"),
 										},
-										Sel: ast.NewIdent("UnaryServerInterceptor"),
+										Sel: ast.NewIdent("UnaryServerUseCase"),
 									},
 								},
 							},

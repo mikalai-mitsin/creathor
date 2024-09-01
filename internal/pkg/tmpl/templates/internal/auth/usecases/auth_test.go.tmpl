@@ -1,4 +1,4 @@
-package interceptors
+package usecases
 
 import (
     "context"
@@ -8,7 +8,7 @@ import (
 
     "{{ .Module }}/internal/pkg/errs"
     "{{ .Module }}/internal/app/auth/entities"
-    mock_interceptors "{{ .Module }}/internal/app/auth/interceptors/mock"
+    mock_usecases "{{ .Module }}/internal/app/auth/usecases/mock"
     mock_entities "{{ .Module }}/internal/app/auth/entities/mock"
     mock_user_entities "{{ .Module }}/internal/app/user/entities/mock"
     user_entities "{{ .Module }}/internal/app/user/entities"
@@ -18,11 +18,11 @@ import (
     "go.uber.org/mock/gomock"
 )
 
-func TestAuthInterceptor_Auth(t *testing.T) {
+func TestAuthUseCase_Auth(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authService := mock_interceptors.NewMockAuthService(ctrl)
-    logger := mock_interceptors.NewMockLogger(ctrl)
+    authService := mock_usecases.NewMockAuthService(ctrl)
+    logger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
     token := mock_entities.NewToken(t)
     user := mock_user_entities.NewUser(t)
@@ -81,7 +81,7 @@ func TestAuthInterceptor_Auth(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
-            i := AuthInterceptor{
+            i := AuthUseCase{
                 authService: tt.fields.authService,
                 logger:      tt.fields.logger,
             }
@@ -97,15 +97,15 @@ func TestAuthInterceptor_Auth(t *testing.T) {
     }
 }
 
-func TestAuthInterceptor_CreateToken(t *testing.T) {
+func TestAuthUseCase_CreateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authService := mock_interceptors.NewMockAuthService(ctrl)
-    logger := mock_interceptors.NewMockLogger(ctrl)
+    authService := mock_usecases.NewMockAuthService(ctrl)
+    logger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
     login := mock_entities.NewLogin(t)
     pair := mock_entities.NewTokenPair(t)
-    clockmock := mock_interceptors.NewMockClock(ctrl)
+    clockmock := mock_usecases.NewMockClock(ctrl)
     type fields struct {
         authService AuthService
         logger      Logger
@@ -164,7 +164,7 @@ func TestAuthInterceptor_CreateToken(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
-            i := AuthInterceptor{
+            i := AuthUseCase{
                 authService: tt.fields.authService,
                 clock:       tt.fields.clock,
                 logger:      tt.fields.logger,
@@ -181,15 +181,15 @@ func TestAuthInterceptor_CreateToken(t *testing.T) {
     }
 }
 
-func TestAuthInterceptor_RefreshToken(t *testing.T) {
+func TestAuthUseCase_RefreshToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authService := mock_interceptors.NewMockAuthService(ctrl)
-    logger := mock_interceptors.NewMockLogger(ctrl)
+    authService := mock_usecases.NewMockAuthService(ctrl)
+    logger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
     pair := mock_entities.NewTokenPair(t)
     refresh := mock_entities.NewToken(t)
-    clockmock := mock_interceptors.NewMockClock(ctrl)
+    clockmock := mock_usecases.NewMockClock(ctrl)
     type fields struct {
         authService AuthService
         logger      Logger
@@ -247,7 +247,7 @@ func TestAuthInterceptor_RefreshToken(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
-            i := AuthInterceptor{
+            i := AuthUseCase{
                 authService: tt.fields.authService,
                 clock:       tt.fields.clock,
                 logger:      tt.fields.logger,
@@ -264,12 +264,12 @@ func TestAuthInterceptor_RefreshToken(t *testing.T) {
     }
 }
 
-func TestNewAuthInterceptor(t *testing.T) {
+func TestNewAuthUseCase(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authService := mock_interceptors.NewMockAuthService(ctrl)
-    clockmock := mock_interceptors.NewMockClock(ctrl)
-    logger := mock_interceptors.NewMockLogger(ctrl)
+    authService := mock_usecases.NewMockAuthService(ctrl)
+    clockmock := mock_usecases.NewMockClock(ctrl)
+    logger := mock_usecases.NewMockLogger(ctrl)
     type args struct {
         authService AuthService
         logger      Logger
@@ -278,7 +278,7 @@ func TestNewAuthInterceptor(t *testing.T) {
     tests := []struct {
         name string
         args args
-        want *AuthInterceptor
+        want *AuthUseCase
     }{
         {
             name: "ok",
@@ -287,7 +287,7 @@ func TestNewAuthInterceptor(t *testing.T) {
                 logger:      logger,
                 clock:       clockmock,
             },
-            want: &AuthInterceptor{
+            want: &AuthUseCase{
                 authService: authService,
                 clock:       clockmock,
                 logger:      logger,
@@ -296,19 +296,19 @@ func TestNewAuthInterceptor(t *testing.T) {
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            got := NewAuthInterceptor(tt.args.authService, tt.args.clock, tt.args.logger)
+            got := NewAuthUseCase(tt.args.authService, tt.args.clock, tt.args.logger)
             if !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("NewAuthInterceptor() = %v, want %v", got, tt.want)
+                t.Errorf("NewAuthUseCase() = %v, want %v", got, tt.want)
             }
         })
     }
 }
 
-func TestAuthInterceptor_ValidateToken(t *testing.T) {
+func TestAuthUseCase_ValidateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authService := mock_interceptors.NewMockAuthService(ctrl)
-    logger := mock_interceptors.NewMockLogger(ctrl)
+    authService := mock_usecases.NewMockAuthService(ctrl)
+    logger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
     token := entities.Token("this_is_valid_token")
     type fields struct {
@@ -367,7 +367,7 @@ func TestAuthInterceptor_ValidateToken(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
-            i := AuthInterceptor{
+            i := AuthUseCase{
                 authService: tt.fields.authService,
                 logger:      tt.fields.logger,
             }

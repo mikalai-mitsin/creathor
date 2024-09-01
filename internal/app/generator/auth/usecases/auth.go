@@ -1,4 +1,4 @@
-package interceptors
+package usecases
 
 import (
 	"bytes"
@@ -14,17 +14,17 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
-type InterceptorAuth struct {
+type UseCaseAuth struct {
 	project *configs.Project
 }
 
-func NewInterceptorAuth(project *configs.Project) *InterceptorAuth {
-	return &InterceptorAuth{project: project}
+func NewUseCaseAuth(project *configs.Project) *UseCaseAuth {
+	return &UseCaseAuth{project: project}
 }
 
-func (i InterceptorAuth) Sync() error {
+func (i UseCaseAuth) Sync() error {
 	fileset := token.NewFileSet()
-	filename := filepath.Join("internal", "app", "auth", "interceptors", "auth.go")
+	filename := filepath.Join("internal", "app", "auth", "usecases", "auth.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}
@@ -42,10 +42,10 @@ func (i InterceptorAuth) Sync() error {
 	return nil
 }
 
-func (i InterceptorAuth) file() *ast.File {
+func (i UseCaseAuth) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
-			Name: "interceptors",
+			Name: "usecases",
 		},
 		Decls: []ast.Decl{
 			&ast.GenDecl{
@@ -83,7 +83,7 @@ func (i InterceptorAuth) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: "AuthInterceptor",
+							Name: "AuthUseCase",
 						},
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
@@ -120,7 +120,7 @@ func (i InterceptorAuth) file() *ast.File {
 			},
 			&ast.FuncDecl{
 				Name: &ast.Ident{
-					Name: "NewAuthInterceptor",
+					Name: "NewAuthUseCase",
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -154,7 +154,7 @@ func (i InterceptorAuth) file() *ast.File {
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: ast.NewIdent("*AuthInterceptor"),
+								Type: ast.NewIdent("*AuthUseCase"),
 							},
 						},
 					},
@@ -167,7 +167,7 @@ func (i InterceptorAuth) file() *ast.File {
 									Op: token.AND,
 									X: &ast.CompositeLit{
 										Type: &ast.Ident{
-											Name: "AuthInterceptor",
+											Name: "AuthUseCase",
 										},
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
@@ -213,7 +213,7 @@ func (i InterceptorAuth) file() *ast.File {
 							},
 							Type: &ast.StarExpr{
 								X: &ast.Ident{
-									Name: "AuthInterceptor",
+									Name: "AuthUseCase",
 								},
 							},
 						},
@@ -368,7 +368,7 @@ func (i InterceptorAuth) file() *ast.File {
 							},
 							Type: &ast.StarExpr{
 								X: &ast.Ident{
-									Name: "AuthInterceptor",
+									Name: "AuthUseCase",
 								},
 							},
 						},
@@ -500,7 +500,7 @@ func (i InterceptorAuth) file() *ast.File {
 							},
 							Type: &ast.StarExpr{
 								X: &ast.Ident{
-									Name: "AuthInterceptor",
+									Name: "AuthUseCase",
 								},
 							},
 						},
@@ -653,7 +653,7 @@ func (i InterceptorAuth) file() *ast.File {
 							},
 							Type: &ast.StarExpr{
 								X: &ast.Ident{
-									Name: "AuthInterceptor",
+									Name: "AuthUseCase",
 								},
 							},
 						},

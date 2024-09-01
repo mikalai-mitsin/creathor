@@ -268,10 +268,10 @@ func (i *Interfaces) file() *ast.File {
 				Doc: &ast.CommentGroup{
 					List: []*ast.Comment{
 						{
-							Text: "//AuthInterceptor - domain layer interceptor interface",
+							Text: "//AuthUseCase - domain layer usecase interface",
 						},
 						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . AuthInterceptor",
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . AuthUseCase",
 						},
 					},
 				},
@@ -279,7 +279,7 @@ func (i *Interfaces) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: "AuthInterceptor",
+							Name: "AuthUseCase",
 						},
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{

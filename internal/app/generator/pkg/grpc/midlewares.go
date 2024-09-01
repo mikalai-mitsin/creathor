@@ -715,7 +715,7 @@ func (u Middlewares) file() *ast.File {
 			},
 			&ast.FuncDecl{
 				Name: &ast.Ident{
-					Name: "unaryErrorServerInterceptor",
+					Name: "unaryErrorServerUseCase",
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{

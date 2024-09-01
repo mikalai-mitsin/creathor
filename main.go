@@ -92,7 +92,7 @@ func initProject(ctx *cli.Context) error {
 			},
 			Service:     domain.NewService(m),
 			Repository:  domain.NewRepository(m),
-			Interceptor: domain.NewInterceptor(m),
+			UseCase:     domain.NewUseCase(m),
 			GRPCHandler: domain.NewGRPCHandler(m),
 			Auth:        project.Auth,
 		}

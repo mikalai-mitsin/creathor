@@ -22,7 +22,7 @@ type Domain struct {
 	Entities    []*Model
 	Service     *Layer
 	Repository  *Layer
-	Interceptor *Layer
+	UseCase     *Layer
 	GRPCHandler *Layer
 	Auth        bool
 }

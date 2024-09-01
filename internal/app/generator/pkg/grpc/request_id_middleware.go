@@ -109,7 +109,7 @@ func (m RequestIDMiddleware) file() *ast.File {
 					},
 				},
 			},
-			// unary server interceptor
+			// unary server usecase
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
@@ -128,7 +128,7 @@ func (m RequestIDMiddleware) file() *ast.File {
 					},
 				},
 				Name: &ast.Ident{
-					Name: "UnaryServerInterceptor",
+					Name: "UnaryServerUseCase",
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -402,7 +402,7 @@ func (m RequestIDMiddleware) syncConstructor() error {
 	return nil
 }
 
-func (m RequestIDMiddleware) astUnaryServerInterceptorMethod() *ast.FuncDecl {
+func (m RequestIDMiddleware) astUnaryServerUseCaseMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -421,7 +421,7 @@ func (m RequestIDMiddleware) astUnaryServerInterceptorMethod() *ast.FuncDecl {
 			},
 		},
 		Name: &ast.Ident{
-			Name: "UnaryServerInterceptor",
+			Name: "UnaryServerUseCase",
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
@@ -574,7 +574,7 @@ func (m RequestIDMiddleware) astUnaryServerInterceptorMethod() *ast.FuncDecl {
 	}
 }
 
-func (m RequestIDMiddleware) syncUnaryServerInterceptorMethod() error {
+func (m RequestIDMiddleware) syncUnaryServerUseCaseMethod() error {
 	fileset := token.NewFileSet()
 	filename := m.filename()
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -584,7 +584,7 @@ func (m RequestIDMiddleware) syncUnaryServerInterceptorMethod() error {
 	var methodExist bool
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "UnaryServerInterceptor" {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "UnaryServerUseCase" {
 			methodExist = true
 			method = t
 			return false
@@ -592,7 +592,7 @@ func (m RequestIDMiddleware) syncUnaryServerInterceptorMethod() error {
 		return true
 	})
 	if method == nil {
-		method = m.astUnaryServerInterceptorMethod()
+		method = m.astUnaryServerUseCaseMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -614,7 +614,7 @@ func (m RequestIDMiddleware) Sync() error {
 	if err := m.syncConstructor(); err != nil {
 		return err
 	}
-	if err := m.syncUnaryServerInterceptorMethod(); err != nil {
+	if err := m.syncUnaryServerUseCaseMethod(); err != nil {
 		return err
 	}
 	return nil

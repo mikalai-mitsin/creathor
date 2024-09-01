@@ -68,7 +68,7 @@ func (a App) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/app/%s/interceptors"`, a.domain.Module, a.domain.DirName()),
+					Value: fmt.Sprintf(`"%s/internal/app/%s/usecases"`, a.domain.Module, a.domain.DirName()),
 				},
 			},
 			&ast.ImportSpec{
@@ -226,8 +226,8 @@ func (a App) constructor() *ast.FuncDecl {
 			Value: ast.NewIdent(a.domain.Service.Variable),
 		},
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(fmt.Sprintf("%sInterceptor", a.domain.LowerCamelName())),
-			Value: ast.NewIdent(a.domain.Interceptor.Variable),
+			Key:   ast.NewIdent(fmt.Sprintf("%sUseCase", a.domain.LowerCamelName())),
+			Value: ast.NewIdent(a.domain.UseCase.Variable),
 		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent(fmt.Sprintf("%sHandler", a.domain.LowerCamelName())),
@@ -292,16 +292,16 @@ func (a App) constructor() *ast.FuncDecl {
 	}
 	body.List = append(body.List, &ast.AssignStmt{
 		Lhs: []ast.Expr{
-			ast.NewIdent(a.domain.Interceptor.Variable),
+			ast.NewIdent(a.domain.UseCase.Variable),
 		},
 		Tok: token.DEFINE,
 		Rhs: []ast.Expr{
 			&ast.CallExpr{
 				Fun: &ast.SelectorExpr{
 					X: &ast.Ident{
-						Name: "interceptors",
+						Name: "usecases",
 					},
-					Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.Interceptor.Name)),
+					Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.UseCase.Name)),
 				},
 				Args: []ast.Expr{
 					ast.NewIdent(a.domain.Service.Variable),
@@ -324,7 +324,7 @@ func (a App) constructor() *ast.FuncDecl {
 					Sel: ast.NewIdent(fmt.Sprintf("New%s", a.domain.GRPCHandler.Name)),
 				},
 				Args: []ast.Expr{
-					ast.NewIdent(a.domain.Interceptor.Variable),
+					ast.NewIdent(a.domain.UseCase.Variable),
 					&ast.Ident{
 						Name: "logger",
 					},
@@ -431,14 +431,14 @@ func (a App) structure() *ast.GenDecl {
 				},
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent(fmt.Sprintf("%sInterceptor", a.domain.LowerCamelName())),
+						ast.NewIdent(fmt.Sprintf("%sUseCase", a.domain.LowerCamelName())),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
 							X: &ast.Ident{
-								Name: "interceptors",
+								Name: "usecases",
 							},
-							Sel: ast.NewIdent(a.domain.Interceptor.Name),
+							Sel: ast.NewIdent(a.domain.UseCase.Name),
 						},
 					},
 				},

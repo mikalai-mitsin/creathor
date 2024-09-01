@@ -3,10 +3,10 @@ package auth
 import (
 	authModel "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/entities"
 	authGrpcHandlers "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/handlers/grpc"
-	authInterceptors "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/interceptors"
 	authRepositoriesJwt "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/repositories/jwt"
 	authRepositoriesPosgres "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/repositories/postgres"
 	authServices "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/services"
+	authUseCases "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/usecases"
 	"path"
 
 	"github.com/mikalai-mitsin/creathor/internal/app/generator"
@@ -34,9 +34,9 @@ func (g *Generator) Sync() error {
 		//Use case and interfaces
 		authServices.NewServiceAuth(g.project),
 		authServices.NewRepositoryInterfaceAuth(g.project),
-		//Interceptor and interfaces
-		authInterceptors.NewInterceptorAuth(g.project),
-		authInterceptors.NewServiceInterfaceAuth(g.project),
+		//UseCase and interfaces
+		authUseCases.NewUseCaseAuth(g.project),
+		authUseCases.NewServiceInterfaceAuth(g.project),
 		//Handlers and interfaces
 		authGrpcHandlers.NewInterfaces(g.project),
 		authGrpcHandlers.NewHandler(g.project),
@@ -67,16 +67,16 @@ func (g *Generator) Sync() error {
 			Name: "test auth service implementation",
 		},
 		{
-			SourcePath: "templates/internal/auth/interceptors/auth_test.go.tmpl",
+			SourcePath: "templates/internal/auth/usecases/auth_test.go.tmpl",
 			DestinationPath: path.Join(
 				destinationPath,
 				"internal",
 				"app",
 				"auth",
-				"interceptors",
+				"usecases",
 				"auth_test.go",
 			),
-			Name: "test auth interceptor implementation",
+			Name: "test auth usecase implementation",
 		},
 		{
 			SourcePath: "templates/internal/auth/handlers/grpc/auth_test.go.tmpl",

@@ -394,7 +394,7 @@ func (m *Middlewares) file() *ast.File {
 					},
 				},
 				Name: &ast.Ident{
-					Name: "UnaryServerInterceptor",
+					Name: "UnaryServerUseCase",
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{

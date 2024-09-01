@@ -40,11 +40,11 @@ func (i HandlerInterfaces) Sync() error {
 		file = i.file()
 	}
 	var loggerExists bool
-	var interceptorExists bool
+	var usecaseExists bool
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.TypeSpec); ok {
-			if t.Name.String() == i.domain.Interceptor.Name {
-				interceptorExists = true
+			if t.Name.String() == i.domain.UseCase.Name {
+				usecaseExists = true
 			}
 			if t.Name.String() == "Logger" {
 				loggerExists = true
@@ -53,8 +53,8 @@ func (i HandlerInterfaces) Sync() error {
 		}
 		return true
 	})
-	if !interceptorExists {
-		file.Decls = append(file.Decls, i.interceptorInterface())
+	if !usecaseExists {
+		file.Decls = append(file.Decls, i.usecaseInterface())
 	}
 	if !loggerExists {
 		file.Decls = append(file.Decls, i.loggerInterface())
@@ -110,9 +110,9 @@ func (i HandlerInterfaces) imports() *ast.GenDecl {
 	}
 }
 
-func (i HandlerInterfaces) interceptorInterface() *ast.GenDecl {
-	methods := make([]*ast.Field, len(i.domain.Interceptor.Methods))
-	for i, method := range i.domain.Interceptor.Methods {
+func (i HandlerInterfaces) usecaseInterface() *ast.GenDecl {
+	methods := make([]*ast.Field, len(i.domain.UseCase.Methods))
+	for i, method := range i.domain.UseCase.Methods {
 		methods[i] = &ast.Field{
 			Names: []*ast.Ident{
 				{
@@ -134,14 +134,14 @@ func (i HandlerInterfaces) interceptorInterface() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Text: fmt.Sprintf(
-						"//%s - domain layer interceptor interface",
-						i.domain.Interceptor.Name,
+						"//%s - domain layer usecase interface",
+						i.domain.UseCase.Name,
 					),
 				},
 				{
 					Text: fmt.Sprintf(
-						"//go:generate mockgen -build_flags=-mod=mod -destination mock/interceptor.go . %s",
-						i.domain.Interceptor.Name,
+						"//go:generate mockgen -build_flags=-mod=mod -destination mock/usecase.go . %s",
+						i.domain.UseCase.Name,
 					),
 				},
 			},
@@ -150,7 +150,7 @@ func (i HandlerInterfaces) interceptorInterface() *ast.GenDecl {
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
 				Name: &ast.Ident{
-					Name: i.domain.Interceptor.Name,
+					Name: i.domain.UseCase.Name,
 				},
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{

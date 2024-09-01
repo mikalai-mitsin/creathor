@@ -1922,10 +1922,10 @@ func (h Handler) structure() *ast.TypeSpec {
 					{
 						Names: []*ast.Ident{
 							{
-								Name: h.domain.Interceptor.Variable,
+								Name: h.domain.UseCase.Variable,
 							},
 						},
-						Type: ast.NewIdent(h.domain.Interceptor.Name),
+						Type: ast.NewIdent(h.domain.UseCase.Name),
 					},
 					{
 						Names: []*ast.Ident{
@@ -1989,10 +1989,10 @@ func (h Handler) constructor() *ast.FuncDecl {
 					{
 						Names: []*ast.Ident{
 							{
-								Name: h.domain.Interceptor.Variable,
+								Name: h.domain.UseCase.Variable,
 							},
 						},
-						Type: ast.NewIdent(h.domain.Interceptor.Name),
+						Type: ast.NewIdent(h.domain.UseCase.Name),
 					},
 					{
 						Names: []*ast.Ident{
@@ -2030,10 +2030,10 @@ func (h Handler) constructor() *ast.FuncDecl {
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
 										Key: &ast.Ident{
-											Name: h.domain.Interceptor.Variable,
+											Name: h.domain.UseCase.Variable,
 										},
 										Value: &ast.Ident{
-											Name: h.domain.Interceptor.Variable,
+											Name: h.domain.UseCase.Variable,
 										},
 									},
 									&ast.KeyValueExpr{
@@ -2203,7 +2203,7 @@ func (h Handler) create() *ast.FuncDecl {
 										Name: "s",
 									},
 									Sel: &ast.Ident{
-										Name: h.domain.Interceptor.Variable,
+										Name: h.domain.UseCase.Variable,
 									},
 								},
 								Sel: &ast.Ident{
@@ -2418,7 +2418,7 @@ func (h Handler) get() *ast.FuncDecl {
 										Name: "s",
 									},
 									Sel: &ast.Ident{
-										Name: h.domain.Interceptor.Variable,
+										Name: h.domain.UseCase.Variable,
 									},
 								},
 								Sel: &ast.Ident{
@@ -2625,7 +2625,7 @@ func (h Handler) list() *ast.FuncDecl {
 										Name: "s",
 									},
 									Sel: &ast.Ident{
-										Name: h.domain.Interceptor.Variable,
+										Name: h.domain.UseCase.Variable,
 									},
 								},
 								Sel: &ast.Ident{
@@ -2832,7 +2832,7 @@ func (h Handler) update() *ast.FuncDecl {
 										Name: "s",
 									},
 									Sel: &ast.Ident{
-										Name: h.domain.Interceptor.Variable,
+										Name: h.domain.UseCase.Variable,
 									},
 								},
 								Sel: &ast.Ident{
@@ -3046,7 +3046,7 @@ func (h Handler) delete() *ast.FuncDecl {
 											Name: "s",
 										},
 										Sel: &ast.Ident{
-											Name: h.domain.Interceptor.Variable,
+											Name: h.domain.UseCase.Variable,
 										},
 									},
 									Sel: &ast.Ident{

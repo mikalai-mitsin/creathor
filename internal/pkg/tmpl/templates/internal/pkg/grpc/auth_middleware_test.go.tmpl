@@ -41,7 +41,7 @@ func (t Transport) SetTrailer(_ metadata.MD) error {
 func TestAuthMiddleware_Auth(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authInterceptor := mock_grpc.NewMockAuthInterceptor(ctrl)
+    authUseCase := mock_grpc.NewMockAuthUseCase(ctrl)
     ctx := context.Background()
     token := mock_entities.NewToken(t)
     user := mock_user_entities.NewUser(t)
@@ -52,7 +52,7 @@ func TestAuthMiddleware_Auth(t *testing.T) {
         "authorization": fmt.Sprintf("Bearer %s", "token.String()"),
     }))
     type fields struct {
-        authInterceptor AuthInterceptor
+        authUseCase AuthUseCase
     }
     type args struct {
         ctx context.Context
@@ -68,10 +68,10 @@ func TestAuthMiddleware_Auth(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                authInterceptor.EXPECT().Auth(ctxWithToken, token).Return(user, nil)
+                authUseCase.EXPECT().Auth(ctxWithToken, token).Return(user, nil)
             },
             fields: fields{
-                authInterceptor: authInterceptor,
+                authUseCase: authUseCase,
             },
             args: args{
                 ctx: ctxWithToken,
@@ -82,13 +82,13 @@ func TestAuthMiddleware_Auth(t *testing.T) {
         {
             name: "bad token",
             setup: func() {
-                authInterceptor.EXPECT().
+                authUseCase.EXPECT().
                     Auth(ctxWithBadToken, entities.Token("token.String()")).
                     Return(nil, errs.NewBadTokenError()).
                     Times(1)
             },
             fields: fields{
-                authInterceptor: authInterceptor,
+                authUseCase: authUseCase,
             },
             args: args{
                 ctx: ctxWithBadToken,
@@ -100,7 +100,7 @@ func TestAuthMiddleware_Auth(t *testing.T) {
             name:  "without token",
             setup: func() {},
             fields: fields{
-                authInterceptor: authInterceptor,
+                authUseCase: authUseCase,
             },
             args: args{
                 ctx: ctx,
@@ -113,7 +113,7 @@ func TestAuthMiddleware_Auth(t *testing.T) {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
             m := AuthMiddleware{
-                authInterceptor: tt.fields.authInterceptor,
+                authUseCase: tt.fields.authUseCase,
             }
             got, err := m.Auth(tt.args.ctx)
             if !errors.Is(err, tt.wantErr) {
@@ -130,9 +130,9 @@ func TestAuthMiddleware_Auth(t *testing.T) {
 func TestNewAuthMiddleware(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authInterceptor := mock_grpc.NewMockAuthInterceptor(ctrl)
+    authUseCase := mock_grpc.NewMockAuthUseCase(ctrl)
     type args struct {
-        authInterceptor AuthInterceptor
+        authUseCase AuthUseCase
         logger          Logger
     }
     tests := []struct {
@@ -143,16 +143,16 @@ func TestNewAuthMiddleware(t *testing.T) {
         {
             name: "ok",
             args: args{
-                authInterceptor: authInterceptor,
+                authUseCase: authUseCase,
             },
             want: &AuthMiddleware{
-                authInterceptor: authInterceptor,
+                authUseCase: authUseCase,
             },
         },
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            if got := NewAuthMiddleware(tt.args.authInterceptor, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
+            if got := NewAuthMiddleware(tt.args.authUseCase, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
                 t.Errorf("NewAuthMiddleware() = %v, want %v", got, tt.want)
             }
         })

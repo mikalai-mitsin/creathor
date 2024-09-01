@@ -7,12 +7,12 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
-func NewInterceptor(m *configs.DomainConfig) *Layer {
-	interceptor := &Layer{
+func NewUseCase(m *configs.DomainConfig) *Layer {
+	usecase := &Layer{
 		Auth:     m.Auth,
 		Events:   m.KafkaEnabled,
-		Name:     m.InterceptorTypeName(),
-		Variable: m.InterceptorVariableName(),
+		Name:     m.UseCaseTypeName(),
+		Variable: m.UseCaseVariableName(),
 		Methods: []*Method{
 			{
 				Name: "Create",
@@ -192,5 +192,5 @@ func NewInterceptor(m *configs.DomainConfig) *Layer {
 			},
 		},
 	}
-	return interceptor
+	return usecase
 }

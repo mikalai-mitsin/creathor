@@ -10,13 +10,13 @@ import (
 
 type AuthServiceServer struct {
 	{{ .ProtoPackage }}.UnimplementedAuthServiceServer
-	authInterceptor AuthInterceptor
+	authUseCase AuthUseCase
 }
 
 func NewAuthServiceServer(
-	authInterceptor AuthInterceptor,
+	authUseCase AuthUseCase,
 ) *AuthServiceServer {
-	return &AuthServiceServer{authInterceptor: authInterceptor}
+	return &AuthServiceServer{authUseCase: authUseCase}
 }
 
 func (s AuthServiceServer) CreateToken(
@@ -27,7 +27,7 @@ func (s AuthServiceServer) CreateToken(
 		Email:    strings.ToLower(input.GetEmail()),
 		Password: input.GetPassword(),
 	}
-	tokenPair, err := s.authInterceptor.CreateToken(ctx, login)
+	tokenPair, err := s.authUseCase.CreateToken(ctx, login)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (s AuthServiceServer) RefreshToken(
 	ctx context.Context,
 	input *{{ .ProtoPackage }}.RefreshToken,
 ) (*{{ .ProtoPackage }}.TokenPair, error) {
-	tokenPair, err := s.authInterceptor.RefreshToken(ctx, entities.Token(input.GetToken()))
+	tokenPair, err := s.authUseCase.RefreshToken(ctx, entities.Token(input.GetToken()))
 	if err != nil {
 		return nil, err
 	}

@@ -1,4 +1,4 @@
-package interceptors
+package usecases
 
 import (
 	"bytes"
@@ -15,15 +15,15 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
-type InterceptorCrud struct {
+type UseCaseCrud struct {
 	domain *domain.Domain
 }
 
-func NewInterceptorCrud(domain *domain.Domain) *InterceptorCrud {
-	return &InterceptorCrud{domain: domain}
+func NewUseCaseCrud(domain *domain.Domain) *UseCaseCrud {
+	return &UseCaseCrud{domain: domain}
 }
 
-func (i InterceptorCrud) Sync() error {
+func (i UseCaseCrud) Sync() error {
 	err := os.MkdirAll(path.Dir(i.filename()), 0777)
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func (i InterceptorCrud) Sync() error {
 	if err := i.syncConstructor(); err != nil {
 		return err
 	}
-	for _, method := range i.domain.Interceptor.Methods {
+	for _, method := range i.domain.UseCase.Methods {
 		switch method.Name {
 		case "Create":
 			if err := i.syncCreateMethod(method); err != nil {
@@ -64,11 +64,11 @@ func (i InterceptorCrud) Sync() error {
 	return nil
 }
 
-func (i InterceptorCrud) filename() string {
-	return filepath.Join("internal", "app", i.domain.DirName(), "interceptors", i.domain.FileName())
+func (i UseCaseCrud) filename() string {
+	return filepath.Join("internal", "app", i.domain.DirName(), "usecases", i.domain.FileName())
 }
 
-func (i InterceptorCrud) structure() *ast.TypeSpec {
+func (i UseCaseCrud) structure() *ast.TypeSpec {
 	fields := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent(i.domain.Service.Variable)},
@@ -80,7 +80,7 @@ func (i InterceptorCrud) structure() *ast.TypeSpec {
 		},
 	}
 	structure := &ast.TypeSpec{
-		Name: ast.NewIdent(i.domain.Interceptor.Name),
+		Name: ast.NewIdent(i.domain.UseCase.Name),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: fields,
@@ -90,7 +90,7 @@ func (i InterceptorCrud) structure() *ast.TypeSpec {
 	return structure
 }
 
-func (i InterceptorCrud) syncStruct() error {
+func (i UseCaseCrud) syncStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -99,7 +99,7 @@ func (i InterceptorCrud) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.domain.Interceptor.Name {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.domain.UseCase.Name {
 			structure = t
 			structureExists = true
 			return false
@@ -126,7 +126,7 @@ func (i InterceptorCrud) syncStruct() error {
 	return nil
 }
 
-func (i InterceptorCrud) constructor() *ast.FuncDecl {
+func (i UseCaseCrud) constructor() *ast.FuncDecl {
 	fields := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent(i.domain.Service.Variable)},
@@ -148,7 +148,7 @@ func (i InterceptorCrud) constructor() *ast.FuncDecl {
 		},
 	}
 	constructor := &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("New%s", i.domain.Interceptor.Name)),
+		Name: ast.NewIdent(fmt.Sprintf("New%s", i.domain.UseCase.Name)),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: fields,
@@ -157,7 +157,7 @@ func (i InterceptorCrud) constructor() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Type: ast.NewIdent(
-							fmt.Sprintf("*%s", i.domain.Interceptor.Name),
+							fmt.Sprintf("*%s", i.domain.UseCase.Name),
 						),
 					},
 				},
@@ -170,7 +170,7 @@ func (i InterceptorCrud) constructor() *ast.FuncDecl {
 						&ast.UnaryExpr{
 							Op: token.AND,
 							X: &ast.CompositeLit{
-								Type: ast.NewIdent(i.domain.Interceptor.Name),
+								Type: ast.NewIdent(i.domain.UseCase.Name),
 								Elts: exprs,
 							},
 						},
@@ -182,7 +182,7 @@ func (i InterceptorCrud) constructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (i InterceptorCrud) syncConstructor() error {
+func (i UseCaseCrud) syncConstructor() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -192,7 +192,7 @@ func (i InterceptorCrud) syncConstructor() error {
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", i.domain.Interceptor.Name) {
+			t.Name.String() == fmt.Sprintf("New%s", i.domain.UseCase.Name) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -215,7 +215,7 @@ func (i InterceptorCrud) syncConstructor() error {
 	return nil
 }
 
-func (i InterceptorCrud) createMethod(method *domain.Method) *ast.FuncDecl {
+func (i UseCaseCrud) createMethod(method *domain.Method) *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		&ast.AssignStmt{
@@ -276,7 +276,7 @@ func (i InterceptorCrud) createMethod(method *domain.Method) *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.domain.Interceptor.Name),
+						X: ast.NewIdent(i.domain.UseCase.Name),
 					},
 				},
 			},
@@ -296,7 +296,7 @@ func (i InterceptorCrud) createMethod(method *domain.Method) *ast.FuncDecl {
 	}
 }
 
-func (i InterceptorCrud) syncCreateMethod(m *domain.Method) error {
+func (i UseCaseCrud) syncCreateMethod(m *domain.Method) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -329,7 +329,7 @@ func (i InterceptorCrud) syncCreateMethod(m *domain.Method) error {
 	return nil
 }
 
-func (i InterceptorCrud) astListMethod(m *domain.Method) *ast.FuncDecl {
+func (i UseCaseCrud) astListMethod(m *domain.Method) *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		// Try to update model at use case
@@ -394,7 +394,7 @@ func (i InterceptorCrud) astListMethod(m *domain.Method) *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.domain.Interceptor.Name),
+						X: ast.NewIdent(i.domain.UseCase.Name),
 					},
 				},
 			},
@@ -415,7 +415,7 @@ func (i InterceptorCrud) astListMethod(m *domain.Method) *ast.FuncDecl {
 	}
 }
 
-func (i InterceptorCrud) syncListMethod(m *domain.Method) error {
+func (i UseCaseCrud) syncListMethod(m *domain.Method) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -447,7 +447,7 @@ func (i InterceptorCrud) syncListMethod(m *domain.Method) error {
 	return nil
 }
 
-func (i InterceptorCrud) astGetMethod(m *domain.Method) *ast.FuncDecl {
+func (i UseCaseCrud) astGetMethod(m *domain.Method) *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(
 		body,
@@ -513,7 +513,7 @@ func (i InterceptorCrud) astGetMethod(m *domain.Method) *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.domain.Interceptor.Name),
+						X: ast.NewIdent(i.domain.UseCase.Name),
 					},
 				},
 			},
@@ -533,7 +533,7 @@ func (i InterceptorCrud) astGetMethod(m *domain.Method) *ast.FuncDecl {
 	}
 }
 
-func (i InterceptorCrud) syncGetMethod(m *domain.Method) error {
+func (i UseCaseCrud) syncGetMethod(m *domain.Method) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -565,7 +565,7 @@ func (i InterceptorCrud) syncGetMethod(m *domain.Method) error {
 	return nil
 }
 
-func (i InterceptorCrud) updateMethod(m *domain.Method) *ast.FuncDecl {
+func (i UseCaseCrud) updateMethod(m *domain.Method) *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		// Try to update model at use case
@@ -627,7 +627,7 @@ func (i InterceptorCrud) updateMethod(m *domain.Method) *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.domain.Interceptor.Name),
+						X: ast.NewIdent(i.domain.UseCase.Name),
 					},
 				},
 			},
@@ -647,7 +647,7 @@ func (i InterceptorCrud) updateMethod(m *domain.Method) *ast.FuncDecl {
 	}
 }
 
-func (i InterceptorCrud) syncUpdateMethod(m *domain.Method) error {
+func (i UseCaseCrud) syncUpdateMethod(m *domain.Method) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -679,7 +679,7 @@ func (i InterceptorCrud) syncUpdateMethod(m *domain.Method) error {
 	return nil
 }
 
-func (i InterceptorCrud) deleteMethod(m *domain.Method) *ast.FuncDecl {
+func (i UseCaseCrud) deleteMethod(m *domain.Method) *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		// Try to delete model at use case
@@ -735,7 +735,7 @@ func (i InterceptorCrud) deleteMethod(m *domain.Method) *ast.FuncDecl {
 						ast.NewIdent("i"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.domain.Interceptor.Name),
+						X: ast.NewIdent(i.domain.UseCase.Name),
 					},
 				},
 			},
@@ -755,7 +755,7 @@ func (i InterceptorCrud) deleteMethod(m *domain.Method) *ast.FuncDecl {
 	}
 }
 
-func (i InterceptorCrud) syncDeleteMethod(m *domain.Method) error {
+func (i UseCaseCrud) syncDeleteMethod(m *domain.Method) error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -787,9 +787,9 @@ func (i InterceptorCrud) syncDeleteMethod(m *domain.Method) error {
 	return nil
 }
 
-func (i InterceptorCrud) file() *ast.File {
+func (i UseCaseCrud) file() *ast.File {
 	return &ast.File{
-		Name: ast.NewIdent("interceptors"),
+		Name: ast.NewIdent("usecases"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -834,18 +834,18 @@ func (i InterceptorCrud) file() *ast.File {
 
 var destinationPath = "."
 
-func (i InterceptorCrud) syncTest() error {
+func (i UseCaseCrud) syncTest() error {
 	test := tmpl.Template{
-		SourcePath: "templates/internal/domain/interceptors/crud_test.go.tmpl",
+		SourcePath: "templates/internal/domain/usecases/crud_test.go.tmpl",
 		DestinationPath: filepath.Join(
 			destinationPath,
 			"internal",
 			"app",
 			i.domain.DirName(),
-			"interceptors",
+			"usecases",
 			i.domain.TestFileName(),
 		),
-		Name: "interceptor test",
+		Name: "usecase test",
 	}
 	if err := test.RenderToFile(i.domain); err != nil {
 		return err

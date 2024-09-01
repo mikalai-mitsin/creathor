@@ -13,15 +13,15 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
-type InterceptorInterfaceAuth struct {
+type UseCaseInterfaceAuth struct {
 	project *configs.Project
 }
 
-func NewInterceptorInterfaceAuth(project *configs.Project) *InterceptorInterfaceAuth {
-	return &InterceptorInterfaceAuth{project: project}
+func NewUseCaseInterfaceAuth(project *configs.Project) *UseCaseInterfaceAuth {
+	return &UseCaseInterfaceAuth{project: project}
 }
 
-func (i InterceptorInterfaceAuth) file() *ast.File {
+func (i UseCaseInterfaceAuth) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
 			Name: "grpc",
@@ -275,10 +275,10 @@ func (i InterceptorInterfaceAuth) file() *ast.File {
 				Doc: &ast.CommentGroup{
 					List: []*ast.Comment{
 						{
-							Text: "//AuthInterceptor - domain layer interceptor interface",
+							Text: "//AuthUseCase - domain layer usecase interface",
 						},
 						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth_interceptor.go . AuthInterceptor",
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth_usecase.go . AuthUseCase",
 						},
 					},
 				},
@@ -286,7 +286,7 @@ func (i InterceptorInterfaceAuth) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: "AuthInterceptor",
+							Name: "AuthUseCase",
 						},
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{
@@ -361,7 +361,7 @@ func (i InterceptorInterfaceAuth) file() *ast.File {
 	}
 }
 
-func (i InterceptorInterfaceAuth) Sync() error {
+func (i UseCaseInterfaceAuth) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "grpc", "interfaces.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {

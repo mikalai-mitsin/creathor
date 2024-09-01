@@ -34,32 +34,24 @@ func (u ServiceCrud) Sync() error {
 	if err := u.syncConstructor(); err != nil {
 		return err
 	}
-	for _, method := range u.domain.Service.Methods {
-		switch method.Name {
-		case "Create":
-			if err := u.syncCreateMethod(); err != nil {
-				return err
-			}
-		case "Get":
-			if err := u.syncGetMethod(); err != nil {
-				return err
-			}
-		case "GetByEmail":
-			if err := u.syncGetByEmailMethod(); err != nil {
-				return err
-			}
-		case "List":
-			if err := u.syncListMethod(); err != nil {
-				return err
-			}
-		case "Update":
-			if err := u.syncUpdateMethod(); err != nil {
-				return err
-			}
-		case "Delete":
-			if err := u.syncDeleteMethod(); err != nil {
-				return err
-			}
+	if err := u.syncCreateMethod(); err != nil {
+		return err
+	}
+	if err := u.syncGetMethod(); err != nil {
+		return err
+	}
+	if err := u.syncListMethod(); err != nil {
+		return err
+	}
+	if err := u.syncUpdateMethod(); err != nil {
+		return err
+	}
+	if err := u.syncDeleteMethod(); err != nil {
+		return err
+	}
+	if u.domain.SnakeName() == "user" {
+		if err := u.syncGetByEmailMethod(); err != nil {
+			return err
 		}
 	}
 	if err := u.syncTest(); err != nil {

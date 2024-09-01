@@ -34,29 +34,20 @@ func (i UseCaseCrud) Sync() error {
 	if err := i.syncConstructor(); err != nil {
 		return err
 	}
-	for _, method := range i.domain.UseCase.Methods {
-		switch method.Name {
-		case "Create":
-			if err := i.syncCreateMethod(method); err != nil {
-				return err
-			}
-		case "Get":
-			if err := i.syncGetMethod(method); err != nil {
-				return err
-			}
-		case "List":
-			if err := i.syncListMethod(method); err != nil {
-				return err
-			}
-		case "Update":
-			if err := i.syncUpdateMethod(method); err != nil {
-				return err
-			}
-		case "Delete":
-			if err := i.syncDeleteMethod(method); err != nil {
-				return err
-			}
-		}
+	if err := i.syncCreateMethod(); err != nil {
+		return err
+	}
+	if err := i.syncGetMethod(); err != nil {
+		return err
+	}
+	if err := i.syncListMethod(); err != nil {
+		return err
+	}
+	if err := i.syncUpdateMethod(); err != nil {
+		return err
+	}
+	if err := i.syncDeleteMethod(); err != nil {
+		return err
 	}
 	if err := i.syncTest(); err != nil {
 		return err
@@ -215,7 +206,7 @@ func (i UseCaseCrud) syncConstructor() error {
 	return nil
 }
 
-func (i UseCaseCrud) createMethod(method *domain.Method) *ast.FuncDecl {
+func (i UseCaseCrud) createMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		&ast.AssignStmt{
@@ -284,10 +275,39 @@ func (i UseCaseCrud) createMethod(method *domain.Method) *ast.FuncDecl {
 		Name: ast.NewIdent("Create"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
-				List: method.Args,
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{ast.NewIdent("ctx")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
+						},
+					},
+					{
+						Names: []*ast.Ident{ast.NewIdent("create")},
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetCreateModel().Name),
+							},
+						},
+					},
+				},
 			},
 			Results: &ast.FieldList{
-				List: method.Return,
+				List: []*ast.Field{
+					{
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+							},
+						},
+					},
+					{
+						Type: ast.NewIdent("error"),
+					},
+				},
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -296,7 +316,7 @@ func (i UseCaseCrud) createMethod(method *domain.Method) *ast.FuncDecl {
 	}
 }
 
-func (i UseCaseCrud) syncCreateMethod(m *domain.Method) error {
+func (i UseCaseCrud) syncCreateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -313,7 +333,7 @@ func (i UseCaseCrud) syncCreateMethod(m *domain.Method) error {
 		return true
 	})
 	if method == nil {
-		method = i.createMethod(m)
+		method = i.createMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -329,7 +349,7 @@ func (i UseCaseCrud) syncCreateMethod(m *domain.Method) error {
 	return nil
 }
 
-func (i UseCaseCrud) astListMethod(m *domain.Method) *ast.FuncDecl {
+func (i UseCaseCrud) astListMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		// Try to update model at use case
@@ -398,15 +418,48 @@ func (i UseCaseCrud) astListMethod(m *domain.Method) *ast.FuncDecl {
 					},
 				},
 			},
-			Closing: 0,
 		},
 		Name: ast.NewIdent("List"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
-				List: m.Args,
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{ast.NewIdent("ctx")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
+						},
+					},
+					{
+						Names: []*ast.Ident{ast.NewIdent("filter")},
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetFilterModel().Name),
+							},
+						},
+					},
+				},
 			},
 			Results: &ast.FieldList{
-				List: m.Return,
+				List: []*ast.Field{
+					{
+						Type: &ast.ArrayType{
+							Elt: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
+						},
+					},
+					{
+						Type: ast.NewIdent("uint64"),
+					},
+					{
+						Type: ast.NewIdent("error"),
+					},
+				},
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -415,7 +468,7 @@ func (i UseCaseCrud) astListMethod(m *domain.Method) *ast.FuncDecl {
 	}
 }
 
-func (i UseCaseCrud) syncListMethod(m *domain.Method) error {
+func (i UseCaseCrud) syncListMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -432,7 +485,7 @@ func (i UseCaseCrud) syncListMethod(m *domain.Method) error {
 		return true
 	})
 	if method == nil {
-		method = i.astListMethod(m)
+		method = i.astListMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -447,7 +500,7 @@ func (i UseCaseCrud) syncListMethod(m *domain.Method) error {
 	return nil
 }
 
-func (i UseCaseCrud) astGetMethod(m *domain.Method) *ast.FuncDecl {
+func (i UseCaseCrud) astGetMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(
 		body,
@@ -521,10 +574,37 @@ func (i UseCaseCrud) astGetMethod(m *domain.Method) *ast.FuncDecl {
 		Name: ast.NewIdent("Get"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
-				List: m.Args,
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{ast.NewIdent("ctx")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
+						},
+					},
+					{
+						Names: []*ast.Ident{ast.NewIdent("id")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("uuid"),
+							Sel: ast.NewIdent("UUID"),
+						},
+					},
+				},
 			},
 			Results: &ast.FieldList{
-				List: m.Return,
+				List: []*ast.Field{
+					{
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+							},
+						},
+					},
+					{
+						Type: ast.NewIdent("error"),
+					},
+				},
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -533,7 +613,7 @@ func (i UseCaseCrud) astGetMethod(m *domain.Method) *ast.FuncDecl {
 	}
 }
 
-func (i UseCaseCrud) syncGetMethod(m *domain.Method) error {
+func (i UseCaseCrud) syncGetMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -550,7 +630,7 @@ func (i UseCaseCrud) syncGetMethod(m *domain.Method) error {
 		return true
 	})
 	if method == nil {
-		method = i.astGetMethod(m)
+		method = i.astGetMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -565,7 +645,7 @@ func (i UseCaseCrud) syncGetMethod(m *domain.Method) error {
 	return nil
 }
 
-func (i UseCaseCrud) updateMethod(m *domain.Method) *ast.FuncDecl {
+func (i UseCaseCrud) updateMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		// Try to update model at use case
@@ -635,10 +715,39 @@ func (i UseCaseCrud) updateMethod(m *domain.Method) *ast.FuncDecl {
 		Name: ast.NewIdent("Update"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
-				List: m.Args,
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{ast.NewIdent("ctx")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
+						},
+					},
+					{
+						Names: []*ast.Ident{ast.NewIdent("update")},
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetUpdateModel().Name),
+							},
+						},
+					},
+				},
 			},
 			Results: &ast.FieldList{
-				List: m.Return,
+				List: []*ast.Field{
+					{
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+							},
+						},
+					},
+					{
+						Type: ast.NewIdent("error"),
+					},
+				},
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -647,7 +756,7 @@ func (i UseCaseCrud) updateMethod(m *domain.Method) *ast.FuncDecl {
 	}
 }
 
-func (i UseCaseCrud) syncUpdateMethod(m *domain.Method) error {
+func (i UseCaseCrud) syncUpdateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -664,7 +773,7 @@ func (i UseCaseCrud) syncUpdateMethod(m *domain.Method) error {
 		return true
 	})
 	if method == nil {
-		method = i.updateMethod(m)
+		method = i.updateMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -679,7 +788,7 @@ func (i UseCaseCrud) syncUpdateMethod(m *domain.Method) error {
 	return nil
 }
 
-func (i UseCaseCrud) deleteMethod(m *domain.Method) *ast.FuncDecl {
+func (i UseCaseCrud) deleteMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		// Try to delete model at use case
@@ -743,10 +852,29 @@ func (i UseCaseCrud) deleteMethod(m *domain.Method) *ast.FuncDecl {
 		Name: ast.NewIdent("Delete"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
-				List: m.Args,
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{ast.NewIdent("ctx")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
+						},
+					},
+					{
+						Names: []*ast.Ident{ast.NewIdent("id")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("uuid"),
+							Sel: ast.NewIdent("UUID"),
+						},
+					},
+				},
 			},
 			Results: &ast.FieldList{
-				List: m.Return,
+				List: []*ast.Field{
+					{
+						Type: ast.NewIdent("error"),
+					},
+				},
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -755,7 +883,7 @@ func (i UseCaseCrud) deleteMethod(m *domain.Method) *ast.FuncDecl {
 	}
 }
 
-func (i UseCaseCrud) syncDeleteMethod(m *domain.Method) error {
+func (i UseCaseCrud) syncDeleteMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -772,7 +900,7 @@ func (i UseCaseCrud) syncDeleteMethod(m *domain.Method) error {
 		return true
 	})
 	if method == nil {
-		method = i.deleteMethod(m)
+		method = i.deleteMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)

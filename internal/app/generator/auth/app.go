@@ -716,7 +716,7 @@ func (i AppAuth) file() *ast.File {
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X:   ast.NewIdent("grpcServer"),
-									Sel: ast.NewIdent("AddUseCase"),
+									Sel: ast.NewIdent("AddInterceptor"),
 								},
 								Args: []ast.Expr{
 									&ast.SelectorExpr{
@@ -724,7 +724,7 @@ func (i AppAuth) file() *ast.File {
 											X:   ast.NewIdent("a"),
 											Sel: ast.NewIdent("authMiddleware"),
 										},
-										Sel: ast.NewIdent("UnaryServerUseCase"),
+										Sel: ast.NewIdent("UnaryServerInterceptor"),
 									},
 								},
 							},

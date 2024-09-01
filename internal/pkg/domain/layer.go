@@ -5,5 +5,4 @@ type Layer struct {
 	Events   bool
 	Name     string
 	Variable string
-	Methods  []*Method
 }

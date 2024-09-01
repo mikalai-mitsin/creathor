@@ -114,23 +114,190 @@ func (i UseCaseInterfaces) imports() *ast.GenDecl {
 }
 
 func (i UseCaseInterfaces) appServiceInterface() *ast.GenDecl {
-	methods := make([]*ast.Field, len(i.domain.Service.Methods))
-	for i, method := range i.domain.Service.Methods {
-		methods[i] = &ast.Field{
-			Names: []*ast.Ident{
-				{
-					Name: method.Name,
-				},
-			},
+	methods := []*ast.Field{
+		{
+			Names: []*ast.Ident{ast.NewIdent("Create")},
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{
-					List: method.Args,
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetCreateModel().Name),
+								},
+							},
+						},
+					},
 				},
 				Results: &ast.FieldList{
-					List: method.Return,
+					List: []*ast.Field{
+						{
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
+						},
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
 				},
 			},
-		}
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("Get")},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("uuid"),
+								Sel: ast.NewIdent("UUID"),
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
+						},
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("List")},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetFilterModel().Name),
+								},
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.ArrayType{
+								Elt: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X:   ast.NewIdent("entities"),
+										Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+									},
+								},
+							},
+						},
+						{
+							Type: ast.NewIdent("uint64"),
+						},
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("Update")},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetUpdateModel().Name),
+								},
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
+						},
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("Delete")},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("uuid"),
+								Sel: ast.NewIdent("UUID"),
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
+				},
+			},
+		},
 	}
 	return &ast.GenDecl{
 		Doc: &ast.CommentGroup{

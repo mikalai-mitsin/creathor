@@ -124,23 +124,239 @@ func (i ServiceInterfaces) imports() *ast.GenDecl {
 }
 
 func (i ServiceInterfaces) repositoryInterface() *ast.GenDecl {
-	methods := make([]*ast.Field, len(i.domain.Repository.Methods))
-	for i, method := range i.domain.Repository.Methods {
-		methods[i] = &ast.Field{
-			Names: []*ast.Ident{
-				{
-					Name: method.Name,
-				},
-			},
+	methods := []*ast.Field{
+		{
+			Names: []*ast.Ident{ast.NewIdent("Create")},
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{
-					List: method.Args,
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
+						},
+					},
 				},
 				Results: &ast.FieldList{
-					List: method.Return,
+					List: []*ast.Field{
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
 				},
 			},
-		}
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("Get")},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("uuid"),
+								Sel: ast.NewIdent("UUID"),
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
+						},
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("List")},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetFilterModel().Name),
+								},
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.ArrayType{
+								Elt: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X:   ast.NewIdent("entities"),
+										Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+									},
+								},
+							},
+						},
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("Count")},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetFilterModel().Name),
+								},
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: ast.NewIdent("uint64"),
+						},
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("Update")},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("Delete")},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("uuid"),
+								Sel: ast.NewIdent("UUID"),
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
+				},
+			},
+		},
+	}
+	if i.domain.SnakeName() == "user" {
+		methods = append(methods, &ast.Field{
+			Names: []*ast.Ident{ast.NewIdent("GetByEmail")},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: ast.NewIdent("string"),
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
+						},
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
+				},
+			},
+		})
 	}
 	return &ast.GenDecl{
 		Doc: &ast.CommentGroup{

@@ -1015,7 +1015,7 @@ func (m AuthMiddleware) syncAuthMethod() error {
 	return nil
 }
 
-func (m AuthMiddleware) astUnaryServerUseCaseMethod() *ast.FuncDecl {
+func (m AuthMiddleware) astUnaryServerInterceptorMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -1034,7 +1034,7 @@ func (m AuthMiddleware) astUnaryServerUseCaseMethod() *ast.FuncDecl {
 			},
 		},
 		Name: &ast.Ident{
-			Name: "UnaryServerUseCase",
+			Name: "UnaryServerInterceptor",
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
@@ -1186,7 +1186,7 @@ func (m AuthMiddleware) astUnaryServerUseCaseMethod() *ast.FuncDecl {
 	}
 }
 
-func (m AuthMiddleware) syncUnaryServerUseCaseMethod() error {
+func (m AuthMiddleware) syncUnaryServerInterceptorMethod() error {
 	fileset := token.NewFileSet()
 	filename := m.filename()
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -1196,7 +1196,7 @@ func (m AuthMiddleware) syncUnaryServerUseCaseMethod() error {
 	var methodExist bool
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "UnaryServerUseCase" {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "UnaryServerInterceptor" {
 			methodExist = true
 			method = t
 			return false
@@ -1204,7 +1204,7 @@ func (m AuthMiddleware) syncUnaryServerUseCaseMethod() error {
 		return true
 	})
 	if method == nil {
-		method = m.astUnaryServerUseCaseMethod()
+		method = m.astUnaryServerInterceptorMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -1229,7 +1229,7 @@ func (m AuthMiddleware) Sync() error {
 	if err := m.syncAuthMethod(); err != nil {
 		return err
 	}
-	if err := m.syncUnaryServerUseCaseMethod(); err != nil {
+	if err := m.syncUnaryServerInterceptorMethod(); err != nil {
 		return err
 	}
 	return nil

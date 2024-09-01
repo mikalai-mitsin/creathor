@@ -70,36 +70,27 @@ func (r RepositoryCrud) Sync() error {
 	if err := r.syncDTOToModel(); err != nil {
 		return err
 	}
-	for _, method := range r.domain.Repository.Methods {
-		switch method.Name {
-		case "Create":
-			if err := r.syncCreateMethod(); err != nil {
-				return err
-			}
-		case "Get":
-			if err := r.syncGetMethod(); err != nil {
-				return err
-			}
-		case "GetByEmail":
-			if err := r.syncGetByEmailMethod(); err != nil {
-				return err
-			}
-		case "List":
-			if err := r.syncListMethod(); err != nil {
-				return err
-			}
-		case "Count":
-			if err := r.syncCountMethod(); err != nil {
-				return err
-			}
-		case "Update":
-			if err := r.syncUpdateMethod(); err != nil {
-				return err
-			}
-		case "Delete":
-			if err := r.syncDeleteMethod(); err != nil {
-				return err
-			}
+	if err := r.syncCreateMethod(); err != nil {
+		return err
+	}
+	if err := r.syncGetMethod(); err != nil {
+		return err
+	}
+	if err := r.syncListMethod(); err != nil {
+		return err
+	}
+	if err := r.syncCountMethod(); err != nil {
+		return err
+	}
+	if err := r.syncUpdateMethod(); err != nil {
+		return err
+	}
+	if err := r.syncDeleteMethod(); err != nil {
+		return err
+	}
+	if r.domain.Name == "user" {
+		if err := r.syncGetByEmailMethod(); err != nil {
+			return err
 		}
 	}
 	if err := r.syncMigrations(); err != nil {

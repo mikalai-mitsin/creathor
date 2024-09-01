@@ -12,15 +12,15 @@ import (
 	"path"
 )
 
-type UseCaseInterfaces struct {
+type InterfacesGenerator struct {
 	domain *domain.Domain
 }
 
-func NewUseCaseInterfaces(domain *domain.Domain) *UseCaseInterfaces {
-	return &UseCaseInterfaces{domain: domain}
+func NewInterfacesGenerator(domain *domain.Domain) *InterfacesGenerator {
+	return &InterfacesGenerator{domain: domain}
 }
 
-func (i UseCaseInterfaces) Sync() error {
+func (i InterfacesGenerator) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "app", i.domain.DirName(), "usecases", "interfaces.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
@@ -61,7 +61,7 @@ func (i UseCaseInterfaces) Sync() error {
 	return nil
 }
 
-func (i UseCaseInterfaces) file() *ast.File {
+func (i InterfacesGenerator) file() *ast.File {
 	file := &ast.File{
 		Name: ast.NewIdent("usecases"),
 		Decls: []ast.Decl{
@@ -71,7 +71,7 @@ func (i UseCaseInterfaces) file() *ast.File {
 	return file
 }
 
-func (i UseCaseInterfaces) imports() *ast.GenDecl {
+func (i InterfacesGenerator) imports() *ast.GenDecl {
 	imports := &ast.GenDecl{
 		Tok: token.IMPORT,
 		Specs: []ast.Spec{
@@ -104,7 +104,7 @@ func (i UseCaseInterfaces) imports() *ast.GenDecl {
 	return imports
 }
 
-func (i UseCaseInterfaces) appServiceInterface() *ast.GenDecl {
+func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 	methods := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent("Create")},
@@ -323,7 +323,7 @@ func (i UseCaseInterfaces) appServiceInterface() *ast.GenDecl {
 	}
 }
 
-func (i UseCaseInterfaces) loggerInterface() *ast.GenDecl {
+func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 	return &ast.GenDecl{
 		Doc: &ast.CommentGroup{
 			List: []*ast.Comment{

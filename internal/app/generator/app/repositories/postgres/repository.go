@@ -17,23 +17,23 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-type RepositoryCrud struct {
+type RepositoryGenerator struct {
 	domain *domain.Domain
 }
 
-func NewRepositoryCrud(domain *domain.Domain) *RepositoryCrud {
-	return &RepositoryCrud{domain: domain}
+func NewRepositoryGenerator(domain *domain.Domain) *RepositoryGenerator {
+	return &RepositoryGenerator{domain: domain}
 }
 
-func (r RepositoryCrud) getDTOName() string {
+func (r RepositoryGenerator) getDTOName() string {
 	return fmt.Sprintf("%sDTO", strcase.ToCamel(r.domain.GetMainModel().Name))
 }
 
-func (r RepositoryCrud) getDTOListName() string {
+func (r RepositoryGenerator) getDTOListName() string {
 	return fmt.Sprintf("%sListDTO", strcase.ToCamel(r.domain.GetMainModel().Name))
 }
 
-func (r RepositoryCrud) filename() string {
+func (r RepositoryGenerator) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
@@ -44,7 +44,7 @@ func (r RepositoryCrud) filename() string {
 	)
 }
 
-func (r RepositoryCrud) Sync() error {
+func (r RepositoryGenerator) Sync() error {
 	err := os.MkdirAll(path.Dir(r.filename()), 0777)
 	if err != nil {
 		return err
@@ -102,7 +102,7 @@ func (r RepositoryCrud) Sync() error {
 	return nil
 }
 
-func (r RepositoryCrud) dtoStruct() *ast.TypeSpec {
+func (r RepositoryGenerator) dtoStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Name: ast.NewIdent(r.getDTOName()),
 		Type: &ast.StructType{
@@ -192,7 +192,7 @@ func (r RepositoryCrud) dtoStruct() *ast.TypeSpec {
 	return structure
 }
 
-func (r RepositoryCrud) syncDTOStruct() error {
+func (r RepositoryGenerator) syncDTOStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -253,7 +253,7 @@ func (r RepositoryCrud) syncDTOStruct() error {
 	return nil
 }
 
-func (r RepositoryCrud) dtoConstructor() *ast.FuncDecl {
+func (r RepositoryGenerator) dtoConstructor() *ast.FuncDecl {
 	dto := &ast.CompositeLit{
 		Type: ast.NewIdent(r.getDTOName()),
 		Elts: []ast.Expr{},
@@ -440,7 +440,7 @@ func (r RepositoryCrud) dtoConstructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (r RepositoryCrud) syncDTOConstructor() error {
+func (r RepositoryGenerator) syncDTOConstructor() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -535,7 +535,7 @@ func (r RepositoryCrud) syncDTOConstructor() error {
 	return nil
 }
 
-func (r RepositoryCrud) dtoToModel() *ast.FuncDecl {
+func (r RepositoryGenerator) dtoToModel() *ast.FuncDecl {
 	model := &ast.CompositeLit{
 		Type: &ast.SelectorExpr{
 			X: ast.NewIdent("entities"),
@@ -737,7 +737,7 @@ func (r RepositoryCrud) dtoToModel() *ast.FuncDecl {
 	return method
 }
 
-func (r RepositoryCrud) syncDTOToModel() error {
+func (r RepositoryGenerator) syncDTOToModel() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -770,7 +770,7 @@ func (r RepositoryCrud) syncDTOToModel() error {
 	return nil
 }
 
-func (r RepositoryCrud) astStruct() *ast.TypeSpec {
+func (r RepositoryGenerator) astStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Doc:        nil,
 		Name:       ast.NewIdent(r.domain.GetRepositoryTypeName()),
@@ -808,7 +808,7 @@ func (r RepositoryCrud) astStruct() *ast.TypeSpec {
 	return structure
 }
 
-func (r RepositoryCrud) file() *ast.File {
+func (r RepositoryGenerator) file() *ast.File {
 	return &ast.File{
 		Name: ast.NewIdent("postgres"),
 		Decls: []ast.Decl{
@@ -901,7 +901,7 @@ func (r RepositoryCrud) file() *ast.File {
 	}
 }
 
-func (r RepositoryCrud) syncStruct() error {
+func (r RepositoryGenerator) syncStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -941,7 +941,7 @@ func (r RepositoryCrud) syncStruct() error {
 	return nil
 }
 
-func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
+func (r RepositoryGenerator) astConstructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
 		Doc:  nil,
 		Recv: nil,
@@ -1026,7 +1026,7 @@ func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (r RepositoryCrud) syncConstructor() error {
+func (r RepositoryGenerator) syncConstructor() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1059,7 +1059,7 @@ func (r RepositoryCrud) syncConstructor() error {
 	return nil
 }
 
-func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
+func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 	var columns []ast.Expr
 	var values []ast.Expr
 	for _, param := range r.domain.GetMainModel().Params {
@@ -1341,7 +1341,7 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 	return fun
 }
 
-func (r RepositoryCrud) syncCreateMethod() error {
+func (r RepositoryGenerator) syncCreateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1418,7 +1418,7 @@ func (r RepositoryCrud) syncCreateMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) search() ast.Stmt {
+func (r RepositoryGenerator) search() ast.Stmt {
 	if !r.domain.SearchEnabled() {
 		return &ast.EmptyStmt{}
 	}
@@ -1525,7 +1525,7 @@ func (r RepositoryCrud) search() ast.Stmt {
 	return stmt
 }
 
-func (r RepositoryCrud) listMethod() *ast.FuncDecl {
+func (r RepositoryGenerator) listMethod() *ast.FuncDecl {
 	tableName := r.domain.TableName()
 	var columns []ast.Expr
 	for _, param := range r.domain.GetMainModel().Params {
@@ -2216,7 +2216,7 @@ func (r RepositoryCrud) listMethod() *ast.FuncDecl {
 	}
 }
 
-func (r RepositoryCrud) syncListMethod() error {
+func (r RepositoryGenerator) syncListMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -2270,7 +2270,7 @@ func (r RepositoryCrud) syncListMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
+func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 	tableName := r.domain.TableName()
 	columns := []ast.Expr{
 		&ast.BasicLit{
@@ -2783,7 +2783,7 @@ func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 	}
 }
 
-func (r RepositoryCrud) syncCountMethod() error {
+func (r RepositoryGenerator) syncCountMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -2815,7 +2815,7 @@ func (r RepositoryCrud) syncCountMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) getMethod() *ast.FuncDecl {
+func (r RepositoryGenerator) getMethod() *ast.FuncDecl {
 	tableName := r.domain.TableName()
 	var columns []ast.Expr
 	for _, param := range r.domain.GetMainModel().Params {
@@ -3222,7 +3222,7 @@ func (r RepositoryCrud) getMethod() *ast.FuncDecl {
 	}
 }
 
-func (r RepositoryCrud) getByEmailMethod() *ast.FuncDecl {
+func (r RepositoryGenerator) getByEmailMethod() *ast.FuncDecl {
 	tableName := r.domain.TableName()
 	var columns []ast.Expr
 	for _, param := range r.domain.GetMainModel().Params {
@@ -3611,7 +3611,7 @@ func (r RepositoryCrud) getByEmailMethod() *ast.FuncDecl {
 	}
 }
 
-func (r RepositoryCrud) syncGetMethod() error {
+func (r RepositoryGenerator) syncGetMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -3665,7 +3665,7 @@ func (r RepositoryCrud) syncGetMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) syncGetByEmailMethod() error {
+func (r RepositoryGenerator) syncGetByEmailMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -3719,7 +3719,7 @@ func (r RepositoryCrud) syncGetByEmailMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
+func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 	tableName := r.domain.TableName()
 	updateBlock := &ast.BlockStmt{
 		List: []ast.Stmt{},
@@ -4305,7 +4305,7 @@ func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
 	return method
 }
 
-func (r RepositoryCrud) syncUpdateMethod() error {
+func (r RepositoryGenerator) syncUpdateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -4409,7 +4409,7 @@ func (r RepositoryCrud) syncUpdateMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
+func (r RepositoryGenerator) astDeleteMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -4924,7 +4924,7 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 	}
 }
 
-func (r RepositoryCrud) syncDeleteMethod() error {
+func (r RepositoryGenerator) syncDeleteMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -4956,7 +4956,7 @@ func (r RepositoryCrud) syncDeleteMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) astDTOListType() *ast.TypeSpec {
+func (r RepositoryGenerator) astDTOListType() *ast.TypeSpec {
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
 			Name: r.getDTOListName(),
@@ -4971,7 +4971,7 @@ func (r RepositoryCrud) astDTOListType() *ast.TypeSpec {
 	}
 }
 
-func (r RepositoryCrud) syncDTOListType() error {
+func (r RepositoryGenerator) syncDTOListType() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -5008,7 +5008,7 @@ func (r RepositoryCrud) syncDTOListType() error {
 	return nil
 }
 
-func (r RepositoryCrud) astDTOToEntities() *ast.FuncDecl {
+func (r RepositoryGenerator) astDTOToEntities() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -5142,7 +5142,7 @@ func (r RepositoryCrud) astDTOToEntities() *ast.FuncDecl {
 	}
 }
 
-func (r RepositoryCrud) syncDTOListToEntities() error {
+func (r RepositoryGenerator) syncDTOListToEntities() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -5176,7 +5176,7 @@ func (r RepositoryCrud) syncDTOListToEntities() error {
 
 var destinationPath = "."
 
-func (r RepositoryCrud) syncTest() error {
+func (r RepositoryGenerator) syncTest() error {
 	test := tmpl.Template{
 		SourcePath: "templates/internal/domain/repositories/postgres/crud_test.go.tmpl",
 		DestinationPath: filepath.Join(
@@ -5196,7 +5196,7 @@ func (r RepositoryCrud) syncTest() error {
 	return nil
 }
 
-func (r RepositoryCrud) syncMigrations() error {
+func (r RepositoryGenerator) syncMigrations() error {
 	pattern := fmt.Sprintf("*_%s.up.sql", r.domain.TableName())
 	dir, err := os.ReadDir(path.Join(
 		destinationPath,

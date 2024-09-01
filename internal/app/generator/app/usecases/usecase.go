@@ -3,7 +3,6 @@ package usecases
 import (
 	"bytes"
 	"fmt"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -15,15 +14,15 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
-type UseCaseCrud struct {
+type UseCaseGenerator struct {
 	domain *domain.Domain
 }
 
-func NewUseCaseCrud(domain *domain.Domain) *UseCaseCrud {
-	return &UseCaseCrud{domain: domain}
+func NewUseCaseGenerator(domain *domain.Domain) *UseCaseGenerator {
+	return &UseCaseGenerator{domain: domain}
 }
 
-func (i UseCaseCrud) Sync() error {
+func (i UseCaseGenerator) Sync() error {
 	err := os.MkdirAll(path.Dir(i.filename()), 0777)
 	if err != nil {
 		return err
@@ -49,17 +48,14 @@ func (i UseCaseCrud) Sync() error {
 	if err := i.syncDeleteMethod(); err != nil {
 		return err
 	}
-	if err := i.syncTest(); err != nil {
-		return err
-	}
 	return nil
 }
 
-func (i UseCaseCrud) filename() string {
+func (i UseCaseGenerator) filename() string {
 	return filepath.Join("internal", "app", i.domain.DirName(), "usecases", i.domain.FileName())
 }
 
-func (i UseCaseCrud) structure() *ast.TypeSpec {
+func (i UseCaseGenerator) structure() *ast.TypeSpec {
 	fields := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent(i.domain.GetServicePrivateVariableName())},
@@ -81,7 +77,7 @@ func (i UseCaseCrud) structure() *ast.TypeSpec {
 	return structure
 }
 
-func (i UseCaseCrud) syncStruct() error {
+func (i UseCaseGenerator) syncStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -117,7 +113,7 @@ func (i UseCaseCrud) syncStruct() error {
 	return nil
 }
 
-func (i UseCaseCrud) constructor() *ast.FuncDecl {
+func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 	fields := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent(i.domain.GetServicePrivateVariableName())},
@@ -173,7 +169,7 @@ func (i UseCaseCrud) constructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (i UseCaseCrud) syncConstructor() error {
+func (i UseCaseGenerator) syncConstructor() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -206,7 +202,7 @@ func (i UseCaseCrud) syncConstructor() error {
 	return nil
 }
 
-func (i UseCaseCrud) createMethod() *ast.FuncDecl {
+func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		&ast.AssignStmt{
@@ -316,7 +312,7 @@ func (i UseCaseCrud) createMethod() *ast.FuncDecl {
 	}
 }
 
-func (i UseCaseCrud) syncCreateMethod() error {
+func (i UseCaseGenerator) syncCreateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -349,7 +345,7 @@ func (i UseCaseCrud) syncCreateMethod() error {
 	return nil
 }
 
-func (i UseCaseCrud) astListMethod() *ast.FuncDecl {
+func (i UseCaseGenerator) astListMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		// Try to update model at use case
@@ -468,7 +464,7 @@ func (i UseCaseCrud) astListMethod() *ast.FuncDecl {
 	}
 }
 
-func (i UseCaseCrud) syncListMethod() error {
+func (i UseCaseGenerator) syncListMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -500,7 +496,7 @@ func (i UseCaseCrud) syncListMethod() error {
 	return nil
 }
 
-func (i UseCaseCrud) astGetMethod() *ast.FuncDecl {
+func (i UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(
 		body,
@@ -613,7 +609,7 @@ func (i UseCaseCrud) astGetMethod() *ast.FuncDecl {
 	}
 }
 
-func (i UseCaseCrud) syncGetMethod() error {
+func (i UseCaseGenerator) syncGetMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -645,7 +641,7 @@ func (i UseCaseCrud) syncGetMethod() error {
 	return nil
 }
 
-func (i UseCaseCrud) updateMethod() *ast.FuncDecl {
+func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		// Try to update model at use case
@@ -756,7 +752,7 @@ func (i UseCaseCrud) updateMethod() *ast.FuncDecl {
 	}
 }
 
-func (i UseCaseCrud) syncUpdateMethod() error {
+func (i UseCaseGenerator) syncUpdateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -788,7 +784,7 @@ func (i UseCaseCrud) syncUpdateMethod() error {
 	return nil
 }
 
-func (i UseCaseCrud) deleteMethod() *ast.FuncDecl {
+func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		// Try to delete model at use case
@@ -883,7 +879,7 @@ func (i UseCaseCrud) deleteMethod() *ast.FuncDecl {
 	}
 }
 
-func (i UseCaseCrud) syncDeleteMethod() error {
+func (i UseCaseGenerator) syncDeleteMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -915,7 +911,7 @@ func (i UseCaseCrud) syncDeleteMethod() error {
 	return nil
 }
 
-func (i UseCaseCrud) file() *ast.File {
+func (i UseCaseGenerator) file() *ast.File {
 	return &ast.File{
 		Name: ast.NewIdent("usecases"),
 		Decls: []ast.Decl{
@@ -961,22 +957,3 @@ func (i UseCaseCrud) file() *ast.File {
 }
 
 var destinationPath = "."
-
-func (i UseCaseCrud) syncTest() error {
-	test := tmpl.Template{
-		SourcePath: "templates/internal/domain/usecases/crud_test.go.tmpl",
-		DestinationPath: filepath.Join(
-			destinationPath,
-			"internal",
-			"app",
-			i.domain.DirName(),
-			"usecases",
-			i.domain.TestFileName(),
-		),
-		Name: "usecase test",
-	}
-	if err := test.RenderToFile(i.domain); err != nil {
-		return err
-	}
-	return nil
-}

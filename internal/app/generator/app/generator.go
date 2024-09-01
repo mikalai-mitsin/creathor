@@ -29,18 +29,22 @@ func NewGenerator(d *domain.Domain) *Generator {
 
 func (g *Generator) Sync() error {
 	domainGenerators := []generator.Generator{
-		usecases.NewUseCaseCrud(g.domain),
-		usecases.NewUseCaseInterfaces(g.domain),
+		usecases.NewInterfacesGenerator(g.domain),
+		usecases.NewUseCaseGenerator(g.domain),
+		usecases.NewTestGenerator(g.domain),
 
-		services.NewServiceCrud(g.domain),
-		services.NewRepositoryInterfaceCrud(g.domain),
+		services.NewInterfacesGenerator(g.domain),
+		services.NewServiceGenerator(g.domain),
+		services.NewTestGenerator(g.domain),
 
-		postgres.NewRepositoryInterfaces(g.domain),
-		postgres.NewRepositoryCrud(g.domain),
+		postgres.NewInterfacesGenerator(g.domain),
+		postgres.NewRepositoryGenerator(g.domain),
+		postgres.NewTestGenerator(g.domain),
 
-		grpc.NewHandler(g.domain),
-		grpc.NewProto(g.domain),
-		grpc.NewHandlerInterfaces(g.domain),
+		grpc.NewProtoGenerator(g.domain),
+		grpc.NewInterfacesGenerator(g.domain),
+		grpc.NewHandlerGenerator(g.domain),
+		grpc.NewTestGenerator(g.domain),
 
 		NewApp(g.domain),
 	}

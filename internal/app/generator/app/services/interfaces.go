@@ -13,15 +13,15 @@ import (
 	"path/filepath"
 )
 
-type ServiceInterfaces struct {
+type InterfacesGenerator struct {
 	domain *domain.Domain
 }
 
-func NewRepositoryInterfaceCrud(domain *domain.Domain) *ServiceInterfaces {
-	return &ServiceInterfaces{domain: domain}
+func NewInterfacesGenerator(domain *domain.Domain) *InterfacesGenerator {
+	return &InterfacesGenerator{domain: domain}
 }
 
-func (i ServiceInterfaces) Sync() error {
+func (i InterfacesGenerator) Sync() error {
 	fileset := token.NewFileSet()
 	filename := filepath.Join("internal", "app", i.domain.DirName(), "services", "interfaces.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
@@ -76,7 +76,7 @@ func (i ServiceInterfaces) Sync() error {
 	return nil
 }
 
-func (i ServiceInterfaces) file() *ast.File {
+func (i InterfacesGenerator) file() *ast.File {
 	return &ast.File{
 		Name: ast.NewIdent("services"),
 		Decls: []ast.Decl{
@@ -85,7 +85,7 @@ func (i ServiceInterfaces) file() *ast.File {
 	}
 }
 
-func (i ServiceInterfaces) imports() *ast.GenDecl {
+func (i InterfacesGenerator) imports() *ast.GenDecl {
 	return &ast.GenDecl{
 		Tok: token.IMPORT,
 		Specs: []ast.Spec{
@@ -123,7 +123,7 @@ func (i ServiceInterfaces) imports() *ast.GenDecl {
 	}
 }
 
-func (i ServiceInterfaces) repositoryInterface() *ast.GenDecl {
+func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 	methods := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent("Create")},
@@ -389,7 +389,7 @@ func (i ServiceInterfaces) repositoryInterface() *ast.GenDecl {
 	}
 }
 
-func (i ServiceInterfaces) loggerInterface() *ast.GenDecl {
+func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 	return &ast.GenDecl{
 		Doc: &ast.CommentGroup{
 			List: []*ast.Comment{
@@ -612,7 +612,7 @@ func (i ServiceInterfaces) loggerInterface() *ast.GenDecl {
 	}
 }
 
-func (i ServiceInterfaces) clockInterface() *ast.GenDecl {
+func (i InterfacesGenerator) clockInterface() *ast.GenDecl {
 	return &ast.GenDecl{
 		Doc: &ast.CommentGroup{
 			List: []*ast.Comment{
@@ -653,7 +653,7 @@ func (i ServiceInterfaces) clockInterface() *ast.GenDecl {
 	}
 }
 
-func (i ServiceInterfaces) uuidGeneratorInterface() *ast.GenDecl {
+func (i InterfacesGenerator) uuidGeneratorInterface() *ast.GenDecl {
 	return &ast.GenDecl{
 		Doc: &ast.CommentGroup{
 			List: []*ast.Comment{

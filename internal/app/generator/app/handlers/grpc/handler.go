@@ -14,17 +14,17 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
-type Handler struct {
+type HandlerGenerator struct {
 	domain *domain.Domain
 }
 
-func NewHandler(domain *domain.Domain) *Handler {
-	return &Handler{
+func NewHandlerGenerator(domain *domain.Domain) *HandlerGenerator {
+	return &HandlerGenerator{
 		domain: domain,
 	}
 }
 
-func (h Handler) file() *ast.File {
+func (h HandlerGenerator) file() *ast.File {
 	importSpec := []ast.Spec{
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
@@ -112,11 +112,11 @@ func (h Handler) file() *ast.File {
 	}
 }
 
-func (h Handler) filename() string {
+func (h HandlerGenerator) filename() string {
 	return path.Join("internal", "app", h.domain.DirName(), "handlers", "grpc", h.domain.FileName())
 }
 
-func (h Handler) createParams() []ast.Expr {
+func (h HandlerGenerator) createParams() []ast.Expr {
 	var exprs []ast.Expr
 	for _, param := range h.domain.GetCreateModel().Params {
 		var value ast.Expr
@@ -175,7 +175,7 @@ func (h Handler) createParams() []ast.Expr {
 	return exprs
 }
 
-func (h Handler) encodeCreate() *ast.FuncDecl {
+func (h HandlerGenerator) encodeCreate() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
 			Name: fmt.Sprintf("encode%s", h.domain.GetCreateModel().Name),
@@ -253,7 +253,7 @@ func (h Handler) encodeCreate() *ast.FuncDecl {
 	}
 }
 
-func (h Handler) syncEncodeCreate() error {
+func (h HandlerGenerator) syncEncodeCreate() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, h.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -370,7 +370,7 @@ func (h Handler) syncEncodeCreate() error {
 	return nil
 }
 
-func (h Handler) updateStmts() []*ast.IfStmt {
+func (h HandlerGenerator) updateStmts() []*ast.IfStmt {
 	var stmts []*ast.IfStmt
 	for _, param := range h.domain.GetUpdateModel().Params {
 		if param.GetName() == "ID" {
@@ -617,7 +617,7 @@ func (h Handler) updateStmts() []*ast.IfStmt {
 	return stmts
 }
 
-func (h Handler) encodeUpdate() *ast.FuncDecl {
+func (h HandlerGenerator) encodeUpdate() *ast.FuncDecl {
 	body := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
@@ -725,7 +725,7 @@ func (h Handler) encodeUpdate() *ast.FuncDecl {
 	}
 }
 
-func (h Handler) syncEncodeUpdate() error {
+func (h HandlerGenerator) syncEncodeUpdate() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, h.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -758,7 +758,7 @@ func (h Handler) syncEncodeUpdate() error {
 	return nil
 }
 
-func (h Handler) encodeFilter() *ast.FuncDecl {
+func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 	stmts := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
@@ -1157,7 +1157,7 @@ func (h Handler) encodeFilter() *ast.FuncDecl {
 	}
 }
 
-func (h Handler) syncEncodeFilter() error {
+func (h HandlerGenerator) syncEncodeFilter() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, h.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1190,7 +1190,7 @@ func (h Handler) syncEncodeFilter() error {
 	return nil
 }
 
-func (h Handler) decode() *ast.FuncDecl {
+func (h HandlerGenerator) decode() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
 			Name: fmt.Sprintf("decode%s", h.domain.GetMainModel().Name),
@@ -1272,7 +1272,7 @@ func (h Handler) decode() *ast.FuncDecl {
 	}
 }
 
-func (h Handler) modelParams() []ast.Expr {
+func (h HandlerGenerator) modelParams() []ast.Expr {
 	var exprs []ast.Expr
 	for _, param := range h.domain.GetMainModel().Params {
 		var value ast.Expr
@@ -1336,7 +1336,7 @@ func (h Handler) modelParams() []ast.Expr {
 	return exprs
 }
 
-func (h Handler) syncDecodeModel() error {
+func (h HandlerGenerator) syncDecodeModel() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, h.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1393,7 +1393,7 @@ func (h Handler) syncDecodeModel() error {
 	return nil
 }
 
-func (h Handler) decodeList() *ast.FuncDecl {
+func (h HandlerGenerator) decodeList() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
 			Name: fmt.Sprintf("decodeList%s", h.domain.GetMainModel().Name),
@@ -1593,7 +1593,7 @@ func (h Handler) decodeList() *ast.FuncDecl {
 	}
 }
 
-func (h Handler) syncDecodeList() error {
+func (h HandlerGenerator) syncDecodeList() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, h.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1626,7 +1626,7 @@ func (h Handler) syncDecodeList() error {
 	return nil
 }
 
-func (h Handler) decodeUpdate() *ast.FuncDecl {
+func (h HandlerGenerator) decodeUpdate() *ast.FuncDecl {
 	stmts := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
@@ -1821,7 +1821,7 @@ func (h Handler) decodeUpdate() *ast.FuncDecl {
 	}
 }
 
-func (h Handler) decodeUpdateParams() []ast.Expr {
+func (h HandlerGenerator) decodeUpdateParams() []ast.Expr {
 	var exprs []ast.Expr
 	for _, param := range h.domain.GetUpdateModel().Params {
 		var value ast.Expr
@@ -1865,7 +1865,7 @@ func (h Handler) decodeUpdateParams() []ast.Expr {
 	return exprs
 }
 
-func (h Handler) syncDecodeUpdate() error {
+func (h HandlerGenerator) syncDecodeUpdate() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, h.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1898,7 +1898,7 @@ func (h Handler) syncDecodeUpdate() error {
 	return nil
 }
 
-func (h Handler) structure() *ast.TypeSpec {
+func (h HandlerGenerator) structure() *ast.TypeSpec {
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
 			Name: h.domain.GetGRPCHandlerTypeName(),
@@ -1941,7 +1941,7 @@ func (h Handler) structure() *ast.TypeSpec {
 	}
 }
 
-func (h Handler) syncStruct() error {
+func (h HandlerGenerator) syncStruct() error {
 	fileset := token.NewFileSet()
 	filename := h.filename()
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -1978,7 +1978,7 @@ func (h Handler) syncStruct() error {
 	return nil
 }
 
-func (h Handler) constructor() *ast.FuncDecl {
+func (h HandlerGenerator) constructor() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
 			Name: fmt.Sprintf("New%s", h.domain.GetGRPCHandlerTypeName()),
@@ -2054,7 +2054,7 @@ func (h Handler) constructor() *ast.FuncDecl {
 	}
 }
 
-func (h Handler) syncConstructor() error {
+func (h HandlerGenerator) syncConstructor() error {
 	fileset := token.NewFileSet()
 	filename := h.filename()
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -2088,7 +2088,7 @@ func (h Handler) syncConstructor() error {
 	return nil
 }
 
-func (h Handler) create() *ast.FuncDecl {
+func (h HandlerGenerator) create() *ast.FuncDecl {
 	args := []ast.Expr{
 		&ast.Ident{
 			Name: "ctx",
@@ -2259,7 +2259,7 @@ func (h Handler) create() *ast.FuncDecl {
 	}
 }
 
-func (h Handler) syncCreateMethod() error {
+func (h HandlerGenerator) syncCreateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, h.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -2291,7 +2291,7 @@ func (h Handler) syncCreateMethod() error {
 	return nil
 }
 
-func (h Handler) get() *ast.FuncDecl {
+func (h HandlerGenerator) get() *ast.FuncDecl {
 	args := []ast.Expr{
 		&ast.Ident{
 			Name: "ctx",
@@ -2474,7 +2474,7 @@ func (h Handler) get() *ast.FuncDecl {
 	}
 }
 
-func (h Handler) syncGetMethod() error {
+func (h HandlerGenerator) syncGetMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, h.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -2507,7 +2507,7 @@ func (h Handler) syncGetMethod() error {
 	return nil
 }
 
-func (h Handler) list() *ast.FuncDecl {
+func (h HandlerGenerator) list() *ast.FuncDecl {
 	args := []ast.Expr{
 		&ast.Ident{
 			Name: "ctx",
@@ -2684,7 +2684,7 @@ func (h Handler) list() *ast.FuncDecl {
 	}
 }
 
-func (h Handler) syncListMethod() error {
+func (h HandlerGenerator) syncListMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, h.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -2717,7 +2717,7 @@ func (h Handler) syncListMethod() error {
 	return nil
 }
 
-func (h Handler) update() *ast.FuncDecl {
+func (h HandlerGenerator) update() *ast.FuncDecl {
 	args := []ast.Expr{
 		&ast.Ident{
 			Name: "ctx",
@@ -2888,7 +2888,7 @@ func (h Handler) update() *ast.FuncDecl {
 	}
 }
 
-func (h Handler) syncUpdateMethod() error {
+func (h HandlerGenerator) syncUpdateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, h.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -2921,7 +2921,7 @@ func (h Handler) syncUpdateMethod() error {
 	return nil
 }
 
-func (h Handler) delete() *ast.FuncDecl {
+func (h HandlerGenerator) delete() *ast.FuncDecl {
 	args := []ast.Expr{
 		&ast.Ident{
 			Name: "ctx",
@@ -3104,7 +3104,7 @@ func (h Handler) delete() *ast.FuncDecl {
 	}
 }
 
-func (h Handler) syncDeleteMethod() error {
+func (h HandlerGenerator) syncDeleteMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, h.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -3137,7 +3137,7 @@ func (h Handler) syncDeleteMethod() error {
 	return nil
 }
 
-func (h Handler) Sync() error {
+func (h HandlerGenerator) Sync() error {
 	err := os.MkdirAll(path.Dir(h.filename()), 0777)
 	if err != nil {
 		return err

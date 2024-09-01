@@ -3,7 +3,6 @@ package services
 import (
 	"bytes"
 	"fmt"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -15,15 +14,15 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
-type ServiceCrud struct {
+type ServiceGenerator struct {
 	domain *domain.Domain
 }
 
-func NewServiceCrud(domain *domain.Domain) *ServiceCrud {
-	return &ServiceCrud{domain: domain}
+func NewServiceGenerator(domain *domain.Domain) *ServiceGenerator {
+	return &ServiceGenerator{domain: domain}
 }
 
-func (u ServiceCrud) Sync() error {
+func (u ServiceGenerator) Sync() error {
 	err := os.MkdirAll(path.Dir(u.filename()), 0777)
 	if err != nil {
 		return err
@@ -54,17 +53,14 @@ func (u ServiceCrud) Sync() error {
 			return err
 		}
 	}
-	if err := u.syncTest(); err != nil {
-		return err
-	}
 	return nil
 }
 
-func (u ServiceCrud) filename() string {
+func (u ServiceGenerator) filename() string {
 	return filepath.Join("internal", "app", u.domain.DirName(), "services", "service.go")
 }
 
-func (u ServiceCrud) file() *ast.File {
+func (u ServiceGenerator) file() *ast.File {
 	return &ast.File{
 		Name: ast.NewIdent("services"),
 		Decls: []ast.Decl{
@@ -89,7 +85,7 @@ func (u ServiceCrud) file() *ast.File {
 	}
 }
 
-func (u ServiceCrud) structure() *ast.TypeSpec {
+func (u ServiceGenerator) structure() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Name: ast.NewIdent(u.domain.GetServiceTypeName()),
 		Type: &ast.StructType{
@@ -118,7 +114,7 @@ func (u ServiceCrud) structure() *ast.TypeSpec {
 	return structure
 }
 
-func (u ServiceCrud) syncStruct() error {
+func (u ServiceGenerator) syncStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -154,7 +150,7 @@ func (u ServiceCrud) syncStruct() error {
 	return nil
 }
 
-func (u ServiceCrud) constructor() *ast.FuncDecl {
+func (u ServiceGenerator) constructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
 		Name: ast.NewIdent(u.domain.GetServiceConstructorName()),
 		Type: &ast.FuncType{
@@ -222,7 +218,7 @@ func (u ServiceCrud) constructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (u ServiceCrud) syncConstructor() error {
+func (u ServiceGenerator) syncConstructor() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -255,7 +251,7 @@ func (u ServiceCrud) syncConstructor() error {
 	return nil
 }
 
-func (u ServiceCrud) create() *ast.FuncDecl {
+func (u ServiceGenerator) create() *ast.FuncDecl {
 	params := []ast.Expr{
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("ID"),
@@ -454,7 +450,7 @@ func (u ServiceCrud) create() *ast.FuncDecl {
 	return fun
 }
 
-func (u ServiceCrud) syncCreateMethod() error {
+func (u ServiceGenerator) syncCreateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -515,7 +511,7 @@ func (u ServiceCrud) syncCreateMethod() error {
 	return nil
 }
 
-func (u ServiceCrud) list() *ast.FuncDecl {
+func (u ServiceGenerator) list() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			Opening: 0,
@@ -671,7 +667,7 @@ func (u ServiceCrud) list() *ast.FuncDecl {
 	}
 }
 
-func (u ServiceCrud) syncListMethod() error {
+func (u ServiceGenerator) syncListMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -703,7 +699,7 @@ func (u ServiceCrud) syncListMethod() error {
 	return nil
 }
 
-func (u ServiceCrud) get() *ast.FuncDecl {
+func (u ServiceGenerator) get() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			Opening: 0,
@@ -802,7 +798,7 @@ func (u ServiceCrud) get() *ast.FuncDecl {
 	}
 }
 
-func (u ServiceCrud) syncGetMethod() error {
+func (u ServiceGenerator) syncGetMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -834,7 +830,7 @@ func (u ServiceCrud) syncGetMethod() error {
 	return nil
 }
 
-func (u ServiceCrud) update() *ast.FuncDecl {
+func (u ServiceGenerator) update() *ast.FuncDecl {
 	block := &ast.BlockStmt{
 		List: []ast.Stmt{},
 	}
@@ -1079,7 +1075,7 @@ func (u ServiceCrud) update() *ast.FuncDecl {
 	return fun
 }
 
-func (u ServiceCrud) syncUpdateMethod() error {
+func (u ServiceGenerator) syncUpdateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1170,7 +1166,7 @@ func (u ServiceCrud) syncUpdateMethod() error {
 	return nil
 }
 
-func (u ServiceCrud) delete() *ast.FuncDecl {
+func (u ServiceGenerator) delete() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Doc: nil,
 		Recv: &ast.FieldList{
@@ -1261,7 +1257,7 @@ func (u ServiceCrud) delete() *ast.FuncDecl {
 	}
 }
 
-func (u ServiceCrud) syncDeleteMethod() error {
+func (u ServiceGenerator) syncDeleteMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1293,7 +1289,7 @@ func (u ServiceCrud) syncDeleteMethod() error {
 	return nil
 }
 
-func (u ServiceCrud) getByEmail() *ast.FuncDecl {
+func (u ServiceGenerator) getByEmail() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			Opening: 0,
@@ -1392,7 +1388,7 @@ func (u ServiceCrud) getByEmail() *ast.FuncDecl {
 	}
 }
 
-func (u ServiceCrud) syncGetByEmailMethod() error {
+func (u ServiceGenerator) syncGetByEmailMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1425,22 +1421,3 @@ func (u ServiceCrud) syncGetByEmailMethod() error {
 }
 
 var destinationPath = "."
-
-func (u ServiceCrud) syncTest() error {
-	test := tmpl.Template{
-		SourcePath: "templates/internal/domain/services/crud_test.go.tmpl",
-		DestinationPath: filepath.Join(
-			destinationPath,
-			"internal",
-			"app",
-			u.domain.DirName(),
-			"services",
-			u.domain.TestFileName(),
-		),
-		Name: "service test",
-	}
-	if err := test.RenderToFile(u.domain); err != nil {
-		return err
-	}
-	return nil
-}

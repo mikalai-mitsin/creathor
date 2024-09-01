@@ -14,15 +14,15 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
-type RepositoryInterfaces struct {
+type InterfacesGenerator struct {
 	domain *domain.Domain
 }
 
-func NewRepositoryInterfaces(domain *domain.Domain) *RepositoryInterfaces {
-	return &RepositoryInterfaces{domain: domain}
+func NewInterfacesGenerator(domain *domain.Domain) *InterfacesGenerator {
+	return &InterfacesGenerator{domain: domain}
 }
 
-func (r RepositoryInterfaces) Sync() error {
+func (r InterfacesGenerator) Sync() error {
 	fileset := token.NewFileSet()
 	filename := filepath.Join(
 		"internal",
@@ -63,7 +63,7 @@ func (r RepositoryInterfaces) Sync() error {
 	return nil
 }
 
-func (r RepositoryInterfaces) file() *ast.File {
+func (r InterfacesGenerator) file() *ast.File {
 	return &ast.File{
 		Name: ast.NewIdent("postgres"),
 		Decls: []ast.Decl{
@@ -72,7 +72,7 @@ func (r RepositoryInterfaces) file() *ast.File {
 	}
 }
 
-func (r RepositoryInterfaces) imports() *ast.GenDecl {
+func (r InterfacesGenerator) imports() *ast.GenDecl {
 	return &ast.GenDecl{
 		Tok: token.IMPORT,
 		Specs: []ast.Spec{
@@ -86,7 +86,7 @@ func (r RepositoryInterfaces) imports() *ast.GenDecl {
 	}
 }
 
-func (r RepositoryInterfaces) loggerInterface() *ast.GenDecl {
+func (r InterfacesGenerator) loggerInterface() *ast.GenDecl {
 	return &ast.GenDecl{
 		Doc: &ast.CommentGroup{
 			List: []*ast.Comment{

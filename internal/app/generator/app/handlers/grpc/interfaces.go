@@ -13,15 +13,15 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
-type HandlerInterfaces struct {
+type InterfacesGenerator struct {
 	domain *domain.Domain
 }
 
-func NewHandlerInterfaces(domain *domain.Domain) *HandlerInterfaces {
-	return &HandlerInterfaces{domain: domain}
+func NewInterfacesGenerator(domain *domain.Domain) *InterfacesGenerator {
+	return &InterfacesGenerator{domain: domain}
 }
 
-func (i HandlerInterfaces) Sync() error {
+func (i InterfacesGenerator) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join(
 		"internal",
@@ -69,7 +69,7 @@ func (i HandlerInterfaces) Sync() error {
 	return nil
 }
 
-func (i HandlerInterfaces) file() *ast.File {
+func (i InterfacesGenerator) file() *ast.File {
 	return &ast.File{
 		Name: ast.NewIdent("handlers"),
 		Decls: []ast.Decl{
@@ -78,7 +78,7 @@ func (i HandlerInterfaces) file() *ast.File {
 	}
 }
 
-func (i HandlerInterfaces) imports() *ast.GenDecl {
+func (i InterfacesGenerator) imports() *ast.GenDecl {
 	return &ast.GenDecl{
 		Tok: token.IMPORT,
 		Specs: []ast.Spec{
@@ -110,7 +110,7 @@ func (i HandlerInterfaces) imports() *ast.GenDecl {
 	}
 }
 
-func (i HandlerInterfaces) usecaseInterface() *ast.GenDecl {
+func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 	methods := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent("Create")},
@@ -329,7 +329,7 @@ func (i HandlerInterfaces) usecaseInterface() *ast.GenDecl {
 	}
 }
 
-func (i HandlerInterfaces) loggerInterface() *ast.GenDecl {
+func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 	return &ast.GenDecl{
 		Doc: &ast.CommentGroup{
 			List: []*ast.Comment{

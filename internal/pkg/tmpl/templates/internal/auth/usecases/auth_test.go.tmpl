@@ -21,13 +21,13 @@ func TestAuthUseCase_Auth(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     authService := NewMockAuthService(ctrl)
-    logger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     token := mock_entities.NewToken(t)
     user := mock_user_entities.NewUser(t)
     type fields struct {
         authService AuthService
-        logger      Logger
+        logger      logger
     }
     type args struct {
         ctx    context.Context
@@ -48,7 +48,7 @@ func TestAuthUseCase_Auth(t *testing.T) {
             },
             fields: fields{
                 authService: authService,
-                logger:      logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:    ctx,
@@ -67,7 +67,7 @@ func TestAuthUseCase_Auth(t *testing.T) {
             },
             fields: fields{
                 authService: authService,
-                logger:      logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:    ctx,
@@ -100,15 +100,15 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     authService := NewMockAuthService(ctrl)
-    logger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     login := mock_entities.NewLogin(t)
     pair := mock_entities.NewTokenPair(t)
-    clockmock := NewMockClock(ctrl)
+    clockmock := NewMockclock(ctrl)
     type fields struct {
         authService AuthService
-        logger      Logger
-        clock       Clock
+        logger      logger
+        clock       clock
     }
     type args struct {
         ctx   context.Context
@@ -129,7 +129,7 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
             },
             fields: fields{
                 authService: authService,
-                logger:      logger,
+                logger: mockLogger,
                 clock:       clockmock,
             },
             args: args{
@@ -149,7 +149,7 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
             },
             fields: fields{
                 authService: authService,
-                logger:      logger,
+                logger: mockLogger,
                 clock:       clockmock,
             },
             args: args{
@@ -184,15 +184,15 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     authService := NewMockAuthService(ctrl)
-    logger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     pair := mock_entities.NewTokenPair(t)
     refresh := mock_entities.NewToken(t)
-    clockmock := NewMockClock(ctrl)
+    clockmock := NewMockclock(ctrl)
     type fields struct {
         authService AuthService
-        logger      Logger
-        clock       Clock
+        logger      logger
+        clock       clock
     }
     type args struct {
         ctx     context.Context
@@ -213,7 +213,7 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
             },
             fields: fields{
                 authService: authService,
-                logger:      logger,
+                logger: mockLogger,
                 clock:       clockmock,
             },
             args: args{
@@ -232,7 +232,7 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
             },
             fields: fields{
                 authService: authService,
-                logger:      logger,
+                logger: mockLogger,
                 clock:       clockmock,
             },
             args: args{
@@ -267,12 +267,12 @@ func TestNewAuthUseCase(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     authService := NewMockAuthService(ctrl)
-    clockmock := NewMockClock(ctrl)
-    logger := NewMockLogger(ctrl)
+    clockmock := NewMockclock(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     type args struct {
         authService AuthService
-        logger      Logger
-        clock       Clock
+        logger      logger
+        clock       clock
     }
     tests := []struct {
         name string
@@ -283,13 +283,13 @@ func TestNewAuthUseCase(t *testing.T) {
             name: "ok",
             args: args{
                 authService: authService,
-                logger:      logger,
+                logger: mockLogger,
                 clock:       clockmock,
             },
             want: &AuthUseCase{
                 authService: authService,
                 clock:       clockmock,
-                logger:      logger,
+                logger: mockLogger,
             },
         },
     }
@@ -307,12 +307,12 @@ func TestAuthUseCase_ValidateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     authService := NewMockAuthService(ctrl)
-    logger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     token := entities.Token("this_is_valid_token")
     type fields struct {
         authService AuthService
-        logger      Logger
+        logger      logger
     }
     type args struct {
         ctx   context.Context
@@ -332,7 +332,7 @@ func TestAuthUseCase_ValidateToken(t *testing.T) {
             },
             fields: fields{
                 authService: authService,
-                logger:      logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:   ctx,
@@ -350,7 +350,7 @@ func TestAuthUseCase_ValidateToken(t *testing.T) {
             },
             fields: fields{
                 authService: authService,
-                logger:      logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:   ctx,

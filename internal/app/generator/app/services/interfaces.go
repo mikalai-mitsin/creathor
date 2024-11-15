@@ -41,10 +41,10 @@ func (i InterfacesGenerator) Sync() error {
 			if t.Name.String() == i.domain.GetRepositoryTypeName() {
 				repositoryExists = true
 			}
-			if t.Name.String() == "Logger" {
+			if t.Name.String() == "logger" {
 				loggerExists = true
 			}
-			if t.Name.String() == "Clock" {
+			if t.Name.String() == "clock" {
 				clockExists = true
 			}
 			if t.Name.String() == "UUIDGenerator" {
@@ -396,14 +396,14 @@ func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 		Doc: &ast.CommentGroup{
 			List: []*ast.Comment{
 				{
-					Text: "//Logger - base logger interface",
+					Text: "//logger - base logger interface",
 				},
 			},
 		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: ast.NewIdent("Logger"),
+				Name: ast.NewIdent("logger"),
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: []*ast.Field{
@@ -616,14 +616,14 @@ func (i InterfacesGenerator) clockInterface() *ast.GenDecl {
 		Doc: &ast.CommentGroup{
 			List: []*ast.Comment{
 				{
-					Text: "// Clock - clock interface",
+					Text: "// clock - clock interface",
 				},
 			},
 		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: ast.NewIdent("Clock"),
+				Name: ast.NewIdent("clock"),
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: []*ast.Field{

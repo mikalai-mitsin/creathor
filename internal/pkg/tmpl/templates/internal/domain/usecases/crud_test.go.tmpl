@@ -25,10 +25,10 @@ func TestNew{{ .GetUseCaseTypeName }}(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .Config.ServiceTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     type args struct {
         {{ .Config.ServiceVariableName }} {{ .Config.ServiceTypeName }}
-        logger          Logger
+        logger          logger
     }
     tests := []struct {
         name  string
@@ -62,12 +62,12 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .Config.ServiceTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .Config.ServiceTypeName }}
-        logger          Logger
+        logger          logger
     }
     type args struct {
         ctx context.Context
@@ -136,13 +136,13 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .Config.ServiceTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     create := mock_entities.New{{ .Config.CreateTypeName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .Config.ServiceTypeName }}
-        logger          Logger
+        logger          logger
     }
     type args struct {
         ctx    context.Context
@@ -209,13 +209,13 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .Config.ServiceTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     update := mock_entities.New{{ .Config.UpdateTypeName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .Config.ServiceTypeName }}
-        logger          Logger
+        logger          logger
     }
     type args struct {
         ctx    context.Context
@@ -282,12 +282,12 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .Config.ServiceTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .Config.ServiceTypeName }}
-        logger          Logger
+        logger          logger
     }
     type args struct {
         ctx context.Context
@@ -352,7 +352,7 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .Config.ServiceTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     filter := mock_entities.New{{ .Config.FilterTypeName }}(t)
     count := faker.New().UInt64Between(2, 20)
@@ -362,7 +362,7 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
     }
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .Config.ServiceTypeName }}
-        logger          Logger
+        logger          logger
     }
     type args struct {
         ctx         context.Context

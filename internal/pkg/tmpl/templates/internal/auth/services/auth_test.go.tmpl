@@ -21,13 +21,13 @@ func TestAuthService_Auth(t *testing.T) {
     defer ctrl.Finish()
     userRepository :=  NewMockUserRepository(ctrl)
     authRepository :=  NewMockAuthRepository(ctrl)
-    logger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     user := mockUserEntities.NewUser(t)
     type fields struct {
         authRepository AuthRepository
         userRepository UserRepository
-        logger         Logger
+        logger         logger
     }
     type args struct {
         ctx    context.Context
@@ -50,7 +50,7 @@ func TestAuthService_Auth(t *testing.T) {
             fields: fields{
                 authRepository: authRepository,
                 userRepository: userRepository,
-                logger:         logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:    ctx,
@@ -70,7 +70,7 @@ func TestAuthService_Auth(t *testing.T) {
             fields: fields{
                 authRepository: authRepository,
                 userRepository: userRepository,
-                logger:         logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:    ctx,
@@ -88,7 +88,7 @@ func TestAuthService_Auth(t *testing.T) {
             fields: fields{
                 authRepository: authRepository,
                 userRepository: userRepository,
-                logger:         logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:    ctx,
@@ -123,7 +123,7 @@ func TestAuthService_CreateToken(t *testing.T) {
     defer ctrl.Finish()
     userRepository :=  NewMockUserRepository(ctrl)
     authRepository :=  NewMockAuthRepository(ctrl)
-    logger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     user := mockUserEntities.NewUser(t)
     login := mockEntities.NewLogin(t)
@@ -133,7 +133,7 @@ func TestAuthService_CreateToken(t *testing.T) {
     type fields struct {
         authRepository AuthRepository
         userRepository UserRepository
-        logger         Logger
+        logger         logger
     }
     type args struct {
         ctx   context.Context
@@ -156,7 +156,7 @@ func TestAuthService_CreateToken(t *testing.T) {
             fields: fields{
                 authRepository: authRepository,
                 userRepository: userRepository,
-                logger:         logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:   ctx,
@@ -175,7 +175,7 @@ func TestAuthService_CreateToken(t *testing.T) {
             fields: fields{
                 authRepository: authRepository,
                 userRepository: userRepository,
-                logger:         logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:   ctx,
@@ -194,7 +194,7 @@ func TestAuthService_CreateToken(t *testing.T) {
             fields: fields{
                 authRepository: authRepository,
                 userRepository: userRepository,
-                logger:         logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
@@ -219,7 +219,7 @@ func TestAuthService_CreateToken(t *testing.T) {
             fields: fields{
                 authRepository: authRepository,
                 userRepository: userRepository,
-                logger:         logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:   ctx,
@@ -254,13 +254,13 @@ func TestAuthService_RefreshToken(t *testing.T) {
     defer ctrl.Finish()
     userRepository :=  NewMockUserRepository(ctrl)
     authRepository :=  NewMockAuthRepository(ctrl)
-    logger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     pair := mockEntities.NewTokenPair(t)
     type fields struct {
         authRepository AuthRepository
         userRepository UserRepository
-        logger         Logger
+        logger         logger
     }
     type args struct {
         ctx     context.Context
@@ -282,7 +282,7 @@ func TestAuthService_RefreshToken(t *testing.T) {
             fields: fields{
                 authRepository: authRepository,
                 userRepository: userRepository,
-                logger:         logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:     ctx,
@@ -302,7 +302,7 @@ func TestAuthService_RefreshToken(t *testing.T) {
             fields: fields{
                 authRepository: authRepository,
                 userRepository: userRepository,
-                logger:         logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:     ctx,
@@ -337,12 +337,12 @@ func TestAuthService_ValidateToken(t *testing.T) {
     defer ctrl.Finish()
     userRepository :=  NewMockUserRepository(ctrl)
     authRepository :=  NewMockAuthRepository(ctrl)
-    logger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     type fields struct {
         authRepository AuthRepository
         userRepository UserRepository
-        logger         Logger
+        logger         logger
     }
     type args struct {
         ctx    context.Context
@@ -363,7 +363,7 @@ func TestAuthService_ValidateToken(t *testing.T) {
             fields: fields{
                 authRepository: authRepository,
                 userRepository: userRepository,
-                logger:         logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:    ctx,
@@ -382,7 +382,7 @@ func TestAuthService_ValidateToken(t *testing.T) {
             fields: fields{
                 authRepository: authRepository,
                 userRepository: userRepository,
-                logger:         logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:    ctx,
@@ -415,11 +415,11 @@ func TestNewAuthService(t *testing.T) {
     defer ctrl.Finish()
     userRepository :=  NewMockUserRepository(ctrl)
     authRepository :=  NewMockAuthRepository(ctrl)
-    logger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     type args struct {
         authRepository       AuthRepository
         userRepository       UserRepository
-        logger               Logger
+        logger               logger
     }
     tests := []struct {
         name string
@@ -431,12 +431,12 @@ func TestNewAuthService(t *testing.T) {
             args: args{
                 authRepository: authRepository,
                 userRepository: userRepository,
-                logger:         logger,
+                logger: mockLogger,
             },
             want: &AuthService{
                 authRepository: authRepository,
                 userRepository: userRepository,
-                logger:         logger,
+                logger: mockLogger,
             },
         },
     }
@@ -454,14 +454,14 @@ func TestAuthService_CreateTokenByUser(t *testing.T) {
     defer ctrl.Finish()
     userRepository :=  NewMockUserRepository(ctrl)
     authRepository :=  NewMockAuthRepository(ctrl)
-    logger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     user := mockUserEntities.NewUser(t)
     tokenPair := mockEntities.NewTokenPair(t)
     type fields struct {
         authRepository AuthRepository
         userRepository UserRepository
-        logger         Logger
+        logger         logger
     }
     type args struct {
         ctx  context.Context
@@ -483,7 +483,7 @@ func TestAuthService_CreateTokenByUser(t *testing.T) {
             fields: fields{
                 authRepository: authRepository,
                 userRepository: userRepository,
-                logger:         logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:  ctx,
@@ -500,7 +500,7 @@ func TestAuthService_CreateTokenByUser(t *testing.T) {
             fields: fields{
                 authRepository: authRepository,
                 userRepository: userRepository,
-                logger:         logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx:  ctx,

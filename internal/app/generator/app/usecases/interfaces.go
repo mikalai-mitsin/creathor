@@ -38,7 +38,7 @@ func (i InterfacesGenerator) Sync() error {
 			if t.Name.String() == i.domain.GetServiceTypeName() {
 				appServiceExists = true
 			}
-			if t.Name.String() == "Logger" {
+			if t.Name.String() == "logger" {
 				loggerExists = true
 			}
 			return true
@@ -327,17 +327,10 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 
 func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 	return &ast.GenDecl{
-		Doc: &ast.CommentGroup{
-			List: []*ast.Comment{
-				{
-					Text: "//Logger - base logger interface",
-				},
-			},
-		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: ast.NewIdent("Logger"),
+				Name: ast.NewIdent("logger"),
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: []*ast.Field{

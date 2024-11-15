@@ -22,13 +22,13 @@ func TestNew{{ .Config.ServiceTypeName }}(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.RepositoryTypeName }} := NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    mockClock := NewMockClock(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockClock := NewMockclock(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     mockUUID := NewMockUUIDGenerator(ctrl)
     type args struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
-        clock  Clock
-        logger Logger
+        clock  clock
+        logger logger
         uuid   UUIDGenerator
     }
     tests := []struct {
@@ -68,12 +68,12 @@ func Test{{ .Config.ServiceTypeName }}_Get(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.RepositoryTypeName }} := NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
-        logger           Logger
+        logger           logger
     }
     type args struct {
         ctx context.Context
@@ -138,7 +138,7 @@ func Test{{ .Config.ServiceTypeName }}_List(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.RepositoryTypeName }} := NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     var {{ .Config.ListVariable }} []*entities.{{ .Config.ModelName }}
     count := faker.New().UInt64Between(2, 20)
@@ -148,7 +148,7 @@ func Test{{ .Config.ServiceTypeName }}_List(t *testing.T) {
     filter := mock_entities.New{{ .Config.FilterTypeName }}(t)
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
-        logger           Logger
+        logger           logger
     }
     type args struct {
         ctx    context.Context
@@ -236,16 +236,16 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.RepositoryTypeName }} := NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    mockClock := NewMockClock(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockClock := NewMockclock(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     mockUUID := NewMockUUIDGenerator(ctrl)
     ctx := context.Background()
     create := mock_entities.New{{ .Config.CreateTypeName }}(t)
     now := time.Now().UTC()
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
-        clock            Clock
-        logger           Logger
+        clock            clock
+        logger           logger
         uuid             UUIDGenerator
     }
     type args struct {
@@ -373,16 +373,16 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.RepositoryTypeName }} := NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
-    mockClock := NewMockClock(ctrl)
+    mockClock := NewMockclock(ctrl)
     update := mock_entities.New{{ .Config.UpdateTypeName }}(t)
     now := {{ .Config.Variable }}.UpdatedAt
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
-        clock            Clock
-        logger           Logger
+        clock            clock
+        logger           logger
     }
     type args struct {
         ctx    context.Context
@@ -495,12 +495,12 @@ func Test{{ .Config.ServiceTypeName }}_Delete(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.RepositoryTypeName }} := NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
-        logger           Logger
+        logger           logger
     }
     type args struct {
         ctx context.Context

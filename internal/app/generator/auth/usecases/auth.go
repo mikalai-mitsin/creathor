@@ -102,7 +102,7 @@ func (i UseCaseAuth) file() *ast.File {
 												Name: "clock",
 											},
 										},
-										Type: ast.NewIdent("Clock"),
+										Type: ast.NewIdent("clock"),
 									},
 									{
 										Names: []*ast.Ident{
@@ -110,7 +110,7 @@ func (i UseCaseAuth) file() *ast.File {
 												Name: "logger",
 											},
 										},
-										Type: ast.NewIdent("Logger"),
+										Type: ast.NewIdent("logger"),
 									},
 								},
 							},
@@ -139,7 +139,7 @@ func (i UseCaseAuth) file() *ast.File {
 										Name: "clock",
 									},
 								},
-								Type: ast.NewIdent("Clock"),
+								Type: ast.NewIdent("clock"),
 							},
 							{
 								Names: []*ast.Ident{
@@ -147,7 +147,7 @@ func (i UseCaseAuth) file() *ast.File {
 										Name: "logger",
 									},
 								},
-								Type: ast.NewIdent("Logger"),
+								Type: ast.NewIdent("logger"),
 							},
 						},
 					},

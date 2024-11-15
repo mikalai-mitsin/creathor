@@ -23,13 +23,13 @@ func TestEventRepository_Send(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	syncProducer := mock_sarama.NewMockSyncProducer(ctrl)
-	logger := mock_log.NewMockLogger(ctrl)
+	logger := mock_log.NewMocklogger(ctrl)
 	config := configs.NewMockConfig(t)
 	ctx := context.Background()
 	event := mock_entities.NewEvent(t)
 	type fields struct {
 		producer sarama.SyncProducer
-		logger   Logger
+		logger   logger
 		topic    string
 	}
 	type args struct {
@@ -95,12 +95,12 @@ func TestNewEventRepository(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	syncProducer := mock_sarama.NewMockSyncProducer(ctrl)
-	logger := mock_log.NewMockLogger(ctrl)
+	logger := mock_log.NewMocklogger(ctrl)
 	config := configs.NewMockConfig(t)
 	type args struct {
 		producer sarama.SyncProducer
 		config   *configs.Config
-		logger   Logger
+		logger   logger
 	}
 	tests := []struct {
 		name string

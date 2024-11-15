@@ -69,14 +69,14 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 				Doc: &ast.CommentGroup{
 					List: []*ast.Comment{
 						{
-							Text: "//Logger - base logger interface",
+							Text: "//logger - base logger interface",
 						},
 					},
 				},
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: ast.NewIdent("Logger"),
+						Name: ast.NewIdent("logger"),
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{
 								List: []*ast.Field{

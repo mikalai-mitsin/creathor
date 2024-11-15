@@ -63,7 +63,7 @@ func (i UseCaseGenerator) structure() *ast.TypeSpec {
 		},
 		{
 			Names: []*ast.Ident{ast.NewIdent("logger")},
-			Type:  ast.NewIdent("Logger"),
+			Type:  ast.NewIdent("logger"),
 		},
 	}
 	structure := &ast.TypeSpec{
@@ -121,7 +121,7 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 		},
 		{
 			Names: []*ast.Ident{ast.NewIdent("logger")},
-			Type:  ast.NewIdent("Logger"),
+			Type:  ast.NewIdent("logger"),
 		},
 	}
 	exprs := []ast.Expr{

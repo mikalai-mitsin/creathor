@@ -21,8 +21,8 @@ import (
 const refreshAudience = "refresh"
 const accessAudience = "access"
 
-// Logger - base logger interface
-type Logger interface {
+// logger - base logger interface
+type logger interface {
 	Debug(msg string, fields ...log.Field)
 	Info(msg string, fields ...log.Field)
 	Print(msg string, fields ...log.Field)
@@ -32,8 +32,8 @@ type Logger interface {
 	Panic(msg string, fields ...log.Field)
 }
 
-// Clock - clock interface
-type Clock interface {
+// clock - clock interface
+type clock interface {
 	Now() time.Time
 }
 
@@ -42,14 +42,14 @@ type AuthRepository struct {
     refreshTTL time.Duration
     publicKey  *rsa.PublicKey
     privateKey *rsa.PrivateKey
-    clock      Clock
-    logger     Logger
+    clock      clock
+    logger     logger
 }
 
 func NewAuthRepository(
     config *configs.Config,
-    clock Clock,
-    logger Logger,
+    clock clock,
+    logger logger,
 ) *AuthRepository {
     private, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(config.Auth.PrivateKey))
     if err != nil {

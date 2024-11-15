@@ -46,7 +46,7 @@ func (i InterfacesGenerator) Sync() error {
 			if t.Name.String() == i.domain.GetUseCaseTypeName() {
 				usecaseExists = true
 			}
-			if t.Name.String() == "Logger" {
+			if t.Name.String() == "logger" {
 				loggerExists = true
 			}
 			return true
@@ -336,14 +336,14 @@ func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 		Doc: &ast.CommentGroup{
 			List: []*ast.Comment{
 				{
-					Text: "//Logger - base logger interface",
+					Text: "//logger - base logger interface",
 				},
 			},
 		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: ast.NewIdent("Logger"),
+				Name: ast.NewIdent("logger"),
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: []*ast.Field{

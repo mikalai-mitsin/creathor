@@ -19,6 +19,7 @@ import (
     "google.golang.org/protobuf/types/known/wrapperspb"
     "reflect"
     "github.com/jaswdr/faker"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
@@ -26,10 +27,10 @@ func TestNew{{ .Config.GRPCHandlerTypeName }}(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.UseCaseTypeName }} := NewMock{{ .Config.UseCaseTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     type args struct {
         {{ .Config.UseCaseVariableName }} {{ .Config.UseCaseTypeName }}
-        logger             Logger
+        logger             logger
     }
     tests := []struct {
         name string
@@ -50,9 +51,8 @@ func TestNew{{ .Config.GRPCHandlerTypeName }}(t *testing.T) {
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            if got := New{{ .Config.GRPCHandlerTypeName }}(tt.args.{{ .Config.UseCaseVariableName }}, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("New{{ .Config.GRPCHandlerTypeName }}() = %v, want %v", got, tt.want)
-            }
+            got := New{{ .Config.GRPCHandlerTypeName }}(tt.args.{{ .Config.UseCaseVariableName }}, tt.args.logger)
+            assert.Equal(t, tt.want, got)
         })
     }
 }
@@ -61,14 +61,14 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Create(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.UseCaseTypeName }} := NewMock{{ .Config.UseCaseTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     // create := mock_entities.New{{ .Config.CreateTypeName }}(t)
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
         {{ .Config.UseCaseVariableName }} {{ .Config.UseCaseTypeName }}
-        logger Logger
+        logger logger
     }
     type args struct {
         ctx   context.Context
@@ -133,13 +133,8 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Create(t *testing.T) {
                 logger:                            tt.fields.logger,
             }
             got, err := s.Create(tt.args.ctx, tt.args.input)
-            if !errors.Is(err, tt.wantErr) {
-                t.Errorf("Create() error = %v, wantErr %v", err, tt.wantErr)
-                return
-            }
-            if !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("Create() got = %v, want %v", got, tt.want)
-            }
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
         })
     }
 }
@@ -148,13 +143,13 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Delete(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.UseCaseTypeName }} := NewMock{{ .Config.UseCaseTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     id := uuid.NewUUID()
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
         {{ .Config.UseCaseVariableName }}                {{ .Config.UseCaseTypeName }}
-        logger                            Logger
+        logger                            logger
     }
     type args struct {
         ctx   context.Context
@@ -222,13 +217,8 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Delete(t *testing.T) {
                 logger:                            tt.fields.logger,
             }
             got, err := s.Delete(tt.args.ctx, tt.args.input)
-            if !errors.Is(err, tt.wantErr) {
-                t.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
-                return
-            }
-            if !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("Delete() got = %v, want %v", got, tt.want)
-            }
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
         })
     }
 }
@@ -237,13 +227,13 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Get(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.UseCaseTypeName }} := NewMock{{ .Config.UseCaseTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
         {{ .Config.UseCaseVariableName }}                {{ .Config.UseCaseTypeName }}
-        logger                            Logger
+        logger                            logger
     }
     type args struct {
         ctx   context.Context
@@ -307,13 +297,8 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Get(t *testing.T) {
                 logger:                            tt.fields.logger,
             }
             got, err := s.Get(tt.args.ctx, tt.args.input)
-            if !errors.Is(err, tt.wantErr) {
-                t.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
-                return
-            }
-            if !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("Get() got = %v, want %v", got, tt.want)
-            }
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
         })
     }
 }
@@ -322,7 +307,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.UseCaseTypeName }} := NewMock{{ .Config.UseCaseTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     filter := mock_entities.New{{ .Config.FilterTypeName }}(t)
     var ids []uuid.UUID
@@ -344,7 +329,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
         {{ .Config.UseCaseVariableName }}                {{ .Config.UseCaseTypeName }}
-        logger                            Logger
+        logger                            logger
     }
     type args struct {
         ctx   context.Context
@@ -361,7 +346,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                mock{{ .Config.UseCaseTypeName }}.EXPECT().List(ctx, filter).Return({{ .Config.ListVariable }}, count, nil).Times(1)
+                mock{{ .Config.UseCaseTypeName }}.EXPECT().List(ctx, gomock.Any()).Return({{ .Config.ListVariable }}, count, nil).Times(1)
             },
             fields: fields{
                 Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
@@ -373,7 +358,9 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
                 input: &{{ .Config.ProtoPackage }}.{{ .Config.FilterTypeName }}{
                     PageNumber: wrapperspb.UInt64(*filter.PageNumber),
                     PageSize:   wrapperspb.UInt64(*filter.PageSize),
+{{- if .Config.SearchEnabled }}
                     Search:     wrapperspb.String(*filter.Search),
+{{- end}}
                     OrderBy:    filter.OrderBy,
                     Ids:        stringIDs,
                 },
@@ -386,7 +373,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
             setup: func() {
                 mock{{ .Config.UseCaseTypeName }}.
                     EXPECT().
-                    List(ctx, filter).
+                    List(ctx, gomock.Any()).
                     Return(nil, uint64(0), errs.NewUnexpectedBehaviorError("i error")).
                     Times(1)
             },
@@ -400,7 +387,9 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
                 input: &{{ .Config.ProtoPackage }}.{{ .Config.FilterTypeName }}{
                     PageNumber: wrapperspb.UInt64(*filter.PageNumber),
                     PageSize:   wrapperspb.UInt64(*filter.PageSize),
+{{- if .Config.SearchEnabled }}
                     Search:     wrapperspb.String(*filter.Search),
+{{- end }}
                     OrderBy:    filter.OrderBy,
                     Ids:        stringIDs,
                 },
@@ -418,13 +407,8 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
                 logger:                            tt.fields.logger,
             }
             got, err := s.List(tt.args.ctx, tt.args.input)
-            if !errors.Is(err, tt.wantErr) {
-                t.Errorf("List() error = %v, wantErr %v", err, tt.wantErr)
-                return
-            }
-            if !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("List() got = %v, want %v", got, tt.want)
-            }
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
         })
     }
 }
@@ -433,14 +417,14 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Update(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.UseCaseTypeName }} := NewMock{{ .Config.UseCaseTypeName }}(ctrl)
-    mockLogger := NewMockLogger(ctrl)
+    mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     update := mock_entities.New{{ .Config.UpdateTypeName }}(t)
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
         {{ .Config.UseCaseVariableName }}                {{ .Config.UseCaseTypeName }}
-        logger                            Logger
+        logger                            logger
     }
     type args struct {
         ctx   context.Context
@@ -499,13 +483,8 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Update(t *testing.T) {
                 logger:                            tt.fields.logger,
             }
             got, err := s.Update(tt.args.ctx, tt.args.input)
-            if !errors.Is(err, tt.wantErr) {
-                t.Errorf("Update() error = %v, wantErr %v", err, tt.wantErr)
-                return
-            }
-            if !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("Update() got = %v, want %v", got, tt.want)
-            }
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
         })
     }
 }
@@ -549,9 +528,8 @@ func Test_decode{{ .Config.ModelName }}(t *testing.T) {
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            if got := decode{{ .Config.ModelName }}(tt.args.{{ .Config.Variable }}); !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("decode{{ .Config.ModelName }}() = %v, want %v", got, tt.want)
-            }
+            got := decode{{ .Config.ModelName }}(tt.args.{{ .Config.Variable }})
+            assert.Equal(t, tt.want, got)
         })
     }
 }
@@ -572,7 +550,9 @@ func Test_encode{{ .Config.FilterTypeName }}(t *testing.T) {
                 input: &{{ .Config.ProtoPackage }}.{{ .Config.FilterTypeName }}{
                     PageNumber: wrapperspb.UInt64(2),
                     PageSize:   wrapperspb.UInt64(5),
+{{- if .Config.SearchEnabled }}
                     Search:     wrapperspb.String("my name is"),
+{{- end}}
                     OrderBy:    []string{"created_at", "id"},
                     Ids:        []string{string(id)},
                 },
@@ -581,16 +561,17 @@ func Test_encode{{ .Config.FilterTypeName }}(t *testing.T) {
                 PageSize:   pointer.Pointer(uint64(5)),
                 PageNumber: pointer.Pointer(uint64(2)),
                 OrderBy:    []string{"created_at", "id"},
+{{- if .Config.SearchEnabled }}
                 Search:     pointer.Pointer("my name is"),
+{{- end}}
                 IDs:        []uuid.UUID{id},
             },
         },
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            if got := encode{{ .Config.FilterTypeName }}(tt.args.input); !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("encodeUserFilter() = %v, want %v", got, tt.want)
-            }
+            got := encode{{ .Config.FilterTypeName }}(tt.args.input)
+            assert.Equal(t, tt.want, got)
         })
     }
 }

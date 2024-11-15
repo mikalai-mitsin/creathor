@@ -796,7 +796,7 @@ func (r RepositoryGenerator) astStruct() *ast.TypeSpec {
 					{
 						Doc:     nil,
 						Names:   []*ast.Ident{ast.NewIdent("logger")},
-						Type:    ast.NewIdent("Logger"),
+						Type:    ast.NewIdent("logger"),
 						Tag:     nil,
 						Comment: nil,
 					},
@@ -966,7 +966,7 @@ func (r RepositoryGenerator) astConstructor() *ast.FuncDecl {
 					{
 						Doc:     nil,
 						Names:   []*ast.Ident{ast.NewIdent("logger")},
-						Type:    ast.NewIdent("Logger"),
+						Type:    ast.NewIdent("logger"),
 						Tag:     nil,
 						Comment: nil,
 					},

@@ -12,14 +12,14 @@ import (
 
 type EventRepository struct {
 	producer sarama.SyncProducer
-	logger   Logger
+	logger   logger
 	topic    string
 }
 
 func NewEventRepository(
 	producer sarama.SyncProducer,
 	config *configs.Config,
-	logger Logger,
+	logger logger,
 ) repositories.EventRepository {
 	return &EventRepository{producer: producer, logger: logger, topic: config.Kafka.Topic}
 }

@@ -97,11 +97,11 @@ func (u ServiceGenerator) structure() *ast.TypeSpec {
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("clock")},
-						Type:  ast.NewIdent("Clock"),
+						Type:  ast.NewIdent("clock"),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("logger")},
-						Type:  ast.NewIdent("Logger"),
+						Type:  ast.NewIdent("logger"),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("uuid")},
@@ -162,11 +162,11 @@ func (u ServiceGenerator) constructor() *ast.FuncDecl {
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("clock")},
-						Type:  ast.NewIdent("Clock"),
+						Type:  ast.NewIdent("clock"),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("logger")},
-						Type:  ast.NewIdent("Logger"),
+						Type:  ast.NewIdent("logger"),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("uuid")},

@@ -133,7 +133,7 @@ func TestNewAuthMiddleware(t *testing.T) {
     authUseCase := mock_grpc.NewMockAuthUseCase(ctrl)
     type args struct {
         authUseCase AuthUseCase
-        logger          Logger
+        logger          logger
     }
     tests := []struct {
         name string

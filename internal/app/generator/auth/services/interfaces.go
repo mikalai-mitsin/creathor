@@ -28,6 +28,14 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 		},
 		Decls: []ast.Decl{
 			&ast.GenDecl{
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Slash: token.NoPos,
+							Text:  "//go:generate mockgen -source=interfaces.go -package=services -destination=interfaces_mock.go",
+						},
+					},
+				},
 				Tok: token.IMPORT,
 				Specs: []ast.Spec{
 					&ast.ImportSpec{
@@ -62,9 +70,6 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 					List: []*ast.Comment{
 						{
 							Text: "//Logger - base logger interface",
-						},
-						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/logger.go . Logger",
 						},
 					},
 				},
@@ -283,9 +288,6 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 					List: []*ast.Comment{
 						{
 							Text: "//AuthRepository - domain layer repository interface",
-						},
-						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth_repository.go . AuthRepository",
 						},
 					},
 				},
@@ -548,9 +550,6 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 					List: []*ast.Comment{
 						{
 							Text: "//UserRepository - domain layer repository interface",
-						},
-						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/user_repository.go . UserRepository",
 						},
 					},
 				},

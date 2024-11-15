@@ -28,6 +28,14 @@ func (i *Interfaces) file() *ast.File {
 		},
 		Decls: []ast.Decl{
 			&ast.GenDecl{
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Slash: token.NoPos,
+							Text:  "//go:generate mockgen -source=interfaces.go -package=handlers -destination=interfaces_mock.go",
+						},
+					},
+				},
 				Tok: token.IMPORT,
 				Specs: []ast.Spec{
 					&ast.ImportSpec{
@@ -49,9 +57,6 @@ func (i *Interfaces) file() *ast.File {
 					List: []*ast.Comment{
 						{
 							Text: "//Logger - base logger interface",
-						},
-						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/logger.go . Logger",
 						},
 					},
 				},
@@ -269,9 +274,6 @@ func (i *Interfaces) file() *ast.File {
 					List: []*ast.Comment{
 						{
 							Text: "//AuthUseCase - domain layer usecase interface",
-						},
-						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/interfaces.go . AuthUseCase",
 						},
 					},
 				},

@@ -81,6 +81,14 @@ func (i InterfacesGenerator) file() *ast.File {
 func (i InterfacesGenerator) imports() *ast.GenDecl {
 	return &ast.GenDecl{
 		Tok: token.IMPORT,
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Slash: token.NoPos,
+					Text:  "//go:generate mockgen -source=interfaces.go -package=handlers -destination=interfaces_mock.go",
+				},
+			},
+		},
 		Specs: []ast.Spec{
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
@@ -305,12 +313,6 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 						i.domain.GetUseCaseTypeName(),
 					),
 				},
-				{
-					Text: fmt.Sprintf(
-						"//go:generate mockgen -build_flags=-mod=mod -destination mock/usecase.go . %s",
-						i.domain.GetUseCaseTypeName(),
-					),
-				},
 			},
 		},
 		Tok: token.TYPE,
@@ -335,9 +337,6 @@ func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Text: "//Logger - base logger interface",
-				},
-				{
-					Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/logger.go . Logger",
 				},
 			},
 		},

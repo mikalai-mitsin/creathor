@@ -9,7 +9,6 @@ import (
     "{{ .Module }}/internal/pkg/errs"
     "{{ .Module }}/internal/pkg/log"
     "{{ .Module }}/internal/app/auth/entities"
-    mockServices "{{ .Module }}/internal/app/auth/services/mock"
     userEntities "{{ .Module }}/internal/app/user/entities"
     mockEntities "{{ .Module }}/internal/app/auth/entities/mock"
     mockUserEntities "{{ .Module }}/internal/app/user/entities/mock"
@@ -20,9 +19,9 @@ import (
 func TestAuthService_Auth(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository :=  mockServices.NewMockUserRepository(ctrl)
-    authRepository :=  mockServices.NewMockAuthRepository(ctrl)
-    logger := mockServices.NewMockLogger(ctrl)
+    userRepository :=  NewMockUserRepository(ctrl)
+    authRepository :=  NewMockAuthRepository(ctrl)
+    logger := NewMockLogger(ctrl)
     ctx := context.Background()
     user := mockUserEntities.NewUser(t)
     type fields struct {
@@ -122,9 +121,9 @@ func TestAuthService_Auth(t *testing.T) {
 func TestAuthService_CreateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository :=  mockServices.NewMockUserRepository(ctrl)
-    authRepository :=  mockServices.NewMockAuthRepository(ctrl)
-    logger := mockServices.NewMockLogger(ctrl)
+    userRepository :=  NewMockUserRepository(ctrl)
+    authRepository :=  NewMockAuthRepository(ctrl)
+    logger := NewMockLogger(ctrl)
     ctx := context.Background()
     user := mockUserEntities.NewUser(t)
     login := mockEntities.NewLogin(t)
@@ -253,9 +252,9 @@ func TestAuthService_CreateToken(t *testing.T) {
 func TestAuthService_RefreshToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository :=  mockServices.NewMockUserRepository(ctrl)
-    authRepository :=  mockServices.NewMockAuthRepository(ctrl)
-    logger := mockServices.NewMockLogger(ctrl)
+    userRepository :=  NewMockUserRepository(ctrl)
+    authRepository :=  NewMockAuthRepository(ctrl)
+    logger := NewMockLogger(ctrl)
     ctx := context.Background()
     pair := mockEntities.NewTokenPair(t)
     type fields struct {
@@ -336,9 +335,9 @@ func TestAuthService_RefreshToken(t *testing.T) {
 func TestAuthService_ValidateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository :=  mockServices.NewMockUserRepository(ctrl)
-    authRepository :=  mockServices.NewMockAuthRepository(ctrl)
-    logger := mockServices.NewMockLogger(ctrl)
+    userRepository :=  NewMockUserRepository(ctrl)
+    authRepository :=  NewMockAuthRepository(ctrl)
+    logger := NewMockLogger(ctrl)
     ctx := context.Background()
     type fields struct {
         authRepository AuthRepository
@@ -414,9 +413,9 @@ func TestAuthService_ValidateToken(t *testing.T) {
 func TestNewAuthService(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository :=  mockServices.NewMockUserRepository(ctrl)
-    authRepository :=  mockServices.NewMockAuthRepository(ctrl)
-    logger := mockServices.NewMockLogger(ctrl)
+    userRepository :=  NewMockUserRepository(ctrl)
+    authRepository :=  NewMockAuthRepository(ctrl)
+    logger := NewMockLogger(ctrl)
     type args struct {
         authRepository       AuthRepository
         userRepository       UserRepository
@@ -453,9 +452,9 @@ func TestNewAuthService(t *testing.T) {
 func TestAuthService_CreateTokenByUser(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository :=  mockServices.NewMockUserRepository(ctrl)
-    authRepository :=  mockServices.NewMockAuthRepository(ctrl)
-    logger := mockServices.NewMockLogger(ctrl)
+    userRepository :=  NewMockUserRepository(ctrl)
+    authRepository :=  NewMockAuthRepository(ctrl)
+    logger := NewMockLogger(ctrl)
     ctx := context.Background()
     user := mockUserEntities.NewUser(t)
     tokenPair := mockEntities.NewTokenPair(t)

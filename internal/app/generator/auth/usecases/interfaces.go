@@ -28,6 +28,14 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 		},
 		Decls: []ast.Decl{
 			&ast.GenDecl{
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Slash: token.NoPos,
+							Text:  "//go:generate mockgen -source=interfaces.go -package=usecases -destination=interfaces_mock.go",
+						},
+					},
+				},
 				Tok: token.IMPORT,
 				Specs: []ast.Spec{
 					&ast.ImportSpec{
@@ -56,9 +64,6 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 					List: []*ast.Comment{
 						{
 							Text: "// Clock - clock interface",
-						},
-						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/clock.go . Clock",
 						},
 					},
 				},
@@ -94,9 +99,6 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 					List: []*ast.Comment{
 						{
 							Text: "//Logger - base logger interface",
-						},
-						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/logger.go . Logger",
 						},
 					},
 				},
@@ -314,9 +316,6 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 					List: []*ast.Comment{
 						{
 							Text: "//AuthService - domain layer usecase interface",
-						},
-						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth_service.go . AuthService",
 						},
 					},
 				},

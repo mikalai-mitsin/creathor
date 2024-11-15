@@ -88,6 +88,14 @@ func (i InterfacesGenerator) file() *ast.File {
 func (i InterfacesGenerator) imports() *ast.GenDecl {
 	return &ast.GenDecl{
 		Tok: token.IMPORT,
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Slash: token.NoPos,
+					Text:  "//go:generate mockgen -source=interfaces.go -package=services -destination=interfaces_mock.go",
+				},
+			},
+		},
 		Specs: []ast.Spec{
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
@@ -367,12 +375,6 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 						i.domain.GetRepositoryTypeName(),
 					),
 				},
-				{
-					Text: fmt.Sprintf(
-						"//go:generate mockgen -build_flags=-mod=mod -destination mock/repository.go . %s",
-						i.domain.GetRepositoryTypeName(),
-					),
-				},
 			},
 		},
 		Tok: token.TYPE,
@@ -395,9 +397,6 @@ func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Text: "//Logger - base logger interface",
-				},
-				{
-					Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/logger.go . Logger",
 				},
 			},
 		},
@@ -619,9 +618,6 @@ func (i InterfacesGenerator) clockInterface() *ast.GenDecl {
 				{
 					Text: "// Clock - clock interface",
 				},
-				{
-					Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/clock.go . Clock",
-				},
 			},
 		},
 		Tok: token.TYPE,
@@ -659,9 +655,6 @@ func (i InterfacesGenerator) uuidGeneratorInterface() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Text: "// UUIDGenerator - UUID generator interface",
-				},
-				{
-					Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/uuid_generator.go . UUIDGenerator",
 				},
 			},
 		},

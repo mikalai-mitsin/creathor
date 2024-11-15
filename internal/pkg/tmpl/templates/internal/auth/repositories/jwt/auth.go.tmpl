@@ -1,5 +1,6 @@
 package jwt
 
+//go:generate mockgen -source=auth.go -package=jwt -destination=interfaces_mock.go
 import (
     "context"
     "crypto/rsa"
@@ -21,8 +22,6 @@ const refreshAudience = "refresh"
 const accessAudience = "access"
 
 // Logger - base logger interface
-//
-//go:generate mockgen -build_flags=-mod=mod -destination mock/logger.go . Logger
 type Logger interface {
 	Debug(msg string, fields ...log.Field)
 	Info(msg string, fields ...log.Field)
@@ -34,8 +33,6 @@ type Logger interface {
 }
 
 // Clock - clock interface
-//
-//go:generate mockgen -build_flags=-mod=mod -destination mock/clock.go . Clock
 type Clock interface {
 	Now() time.Time
 }

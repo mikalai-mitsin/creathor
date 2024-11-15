@@ -7,7 +7,6 @@ import (
     "{{ .Module }}/internal/pkg/errs"
     "{{ .Module }}/internal/app/auth/entities"
     mock_entities "{{ .Module }}/internal/app/auth/entities/mock"
-    mock_grpc "{{ .Module }}/internal/app/auth/handlers/grpc/mock"
 
     {{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
     "go.uber.org/mock/gomock"
@@ -18,7 +17,7 @@ import (
 func TestAuthServiceServer_CreateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authUseCase := mock_grpc.NewMockAuthUseCase(ctrl)
+    authUseCase := NewMockAuthUseCase(ctrl)
     ctx := context.Background()
     login := mock_entities.NewLogin(t)
     pair := mock_entities.NewTokenPair(t)
@@ -103,7 +102,7 @@ func TestAuthServiceServer_CreateToken(t *testing.T) {
 func TestAuthServiceServer_RefreshToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authUseCase := mock_grpc.NewMockAuthUseCase(ctrl)
+    authUseCase := NewMockAuthUseCase(ctrl)
     ctx := context.Background()
     token := mock_entities.NewToken(t)
     pair := mock_entities.NewTokenPair(t)
@@ -186,7 +185,7 @@ func TestAuthServiceServer_RefreshToken(t *testing.T) {
 func TestNewAuthServiceServer(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authUseCase := mock_grpc.NewMockAuthUseCase(ctrl)
+    authUseCase := NewMockAuthUseCase(ctrl)
     type args struct {
         authUseCase AuthUseCase
     }

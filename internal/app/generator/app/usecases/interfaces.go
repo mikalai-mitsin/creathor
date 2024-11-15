@@ -27,7 +27,7 @@ func (i InterfacesGenerator) Sync() error {
 	if err != nil {
 		return err
 	}
-	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, filename, nil, parser.AllErrors)
 	if err != nil {
 		file = i.file()
 	}
@@ -74,6 +74,14 @@ func (i InterfacesGenerator) file() *ast.File {
 func (i InterfacesGenerator) imports() *ast.GenDecl {
 	imports := &ast.GenDecl{
 		Tok: token.IMPORT,
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Slash: token.NoPos,
+					Text:  "//go:generate mockgen -source=interfaces.go -package=usecases -destination=interfaces_mock.go",
+				},
+			},
+		},
 		Specs: []ast.Spec{
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
@@ -299,12 +307,6 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 						i.domain.GetServiceTypeName(),
 					),
 				},
-				{
-					Text: fmt.Sprintf(
-						"//go:generate mockgen -build_flags=-mod=mod -destination mock/service.go . %s",
-						i.domain.GetServiceTypeName(),
-					),
-				},
 			},
 		},
 		Tok: token.TYPE,
@@ -329,9 +331,6 @@ func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Text: "//Logger - base logger interface",
-				},
-				{
-					Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/logger.go . Logger",
 				},
 			},
 		},

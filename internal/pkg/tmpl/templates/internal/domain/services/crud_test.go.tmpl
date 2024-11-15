@@ -10,7 +10,6 @@ import (
     "{{ .Module }}/internal/pkg/errs"
     "{{ .Module }}/internal/app/{{ .DirName }}/entities"
     mock_entities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
-    mock_services "{{ .Module }}/internal/app/{{ .DirName }}/services/mock"
     "{{ .Module }}/internal/pkg/clock"
     "{{ .Module }}/internal/pkg/uuid"
     "{{ .Module }}/internal/pkg/log"
@@ -22,10 +21,10 @@ import (
 func TestNew{{ .Config.ServiceTypeName }}(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.RepositoryTypeName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    mockClock := mock_services.NewMockClock(ctrl)
-    mockLogger := mock_services.NewMockLogger(ctrl)
-    mockUUID := mock_services.NewMockUUIDGenerator(ctrl)
+    mock{{ .Config.RepositoryTypeName }} := NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    mockClock := NewMockClock(ctrl)
+    mockLogger := NewMockLogger(ctrl)
+    mockUUID := NewMockUUIDGenerator(ctrl)
     type args struct {
         {{ .Config.RepositoryVariableName }} {{ .Config.RepositoryTypeName }}
         clock  Clock
@@ -68,8 +67,8 @@ func TestNew{{ .Config.ServiceTypeName }}(t *testing.T) {
 func Test{{ .Config.ServiceTypeName }}_Get(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.RepositoryTypeName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    mockLogger := mock_services.NewMockLogger(ctrl)
+    mock{{ .Config.RepositoryTypeName }} := NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    mockLogger := NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
@@ -138,8 +137,8 @@ func Test{{ .Config.ServiceTypeName }}_Get(t *testing.T) {
 func Test{{ .Config.ServiceTypeName }}_List(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.RepositoryTypeName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    mockLogger := mock_services.NewMockLogger(ctrl)
+    mock{{ .Config.RepositoryTypeName }} := NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    mockLogger := NewMockLogger(ctrl)
     ctx := context.Background()
     var {{ .Config.ListVariable }} []*entities.{{ .Config.ModelName }}
     count := faker.New().UInt64Between(2, 20)
@@ -236,10 +235,10 @@ func Test{{ .Config.ServiceTypeName }}_List(t *testing.T) {
 func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.RepositoryTypeName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    mockClock := mock_services.NewMockClock(ctrl)
-    mockLogger := mock_services.NewMockLogger(ctrl)
-    mockUUID := mock_services.NewMockUUIDGenerator(ctrl)
+    mock{{ .Config.RepositoryTypeName }} := NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    mockClock := NewMockClock(ctrl)
+    mockLogger := NewMockLogger(ctrl)
+    mockUUID := NewMockUUIDGenerator(ctrl)
     ctx := context.Background()
     create := mock_entities.New{{ .Config.CreateTypeName }}(t)
     now := time.Now().UTC()
@@ -373,11 +372,11 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
 func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.RepositoryTypeName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    mockLogger := mock_services.NewMockLogger(ctrl)
+    mock{{ .Config.RepositoryTypeName }} := NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    mockLogger := NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
-    mockClock := mock_services.NewMockClock(ctrl)
+    mockClock := NewMockClock(ctrl)
     update := mock_entities.New{{ .Config.UpdateTypeName }}(t)
     now := {{ .Config.Variable }}.UpdatedAt
     type fields struct {
@@ -495,8 +494,8 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
 func Test{{ .Config.ServiceTypeName }}_Delete(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.RepositoryTypeName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    mockLogger := mock_services.NewMockLogger(ctrl)
+    mock{{ .Config.RepositoryTypeName }} := NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    mockLogger := NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {

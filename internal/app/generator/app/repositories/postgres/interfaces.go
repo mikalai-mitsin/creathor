@@ -75,6 +75,14 @@ func (r InterfacesGenerator) file() *ast.File {
 func (r InterfacesGenerator) imports() *ast.GenDecl {
 	return &ast.GenDecl{
 		Tok: token.IMPORT,
+		Doc: &ast.CommentGroup{
+			List: []*ast.Comment{
+				{
+					Slash: token.NoPos,
+					Text:  "//go:generate mockgen -source=interfaces.go -package=postgres -destination=interfaces_mock.go",
+				},
+			},
+		},
 		Specs: []ast.Spec{
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
@@ -92,9 +100,6 @@ func (r InterfacesGenerator) loggerInterface() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Text: "//Logger - base logger interface",
-				},
-				{
-					Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/logger.go . Logger",
 				},
 			},
 		},

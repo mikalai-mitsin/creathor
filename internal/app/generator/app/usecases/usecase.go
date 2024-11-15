@@ -59,7 +59,7 @@ func (i UseCaseGenerator) structure() *ast.TypeSpec {
 	fields := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent(i.domain.GetServicePrivateVariableName())},
-			Type:  ast.NewIdent(i.domain.GetServiceTypeName()),
+			Type:  ast.NewIdent(i.domain.GetServiceInterfaceName()),
 		},
 		{
 			Names: []*ast.Ident{ast.NewIdent("logger")},
@@ -117,7 +117,7 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 	fields := []*ast.Field{
 		{
 			Names: []*ast.Ident{ast.NewIdent(i.domain.GetServicePrivateVariableName())},
-			Type:  ast.NewIdent(i.domain.GetServiceTypeName()),
+			Type:  ast.NewIdent(i.domain.GetServiceInterfaceName()),
 		},
 		{
 			Names: []*ast.Ident{ast.NewIdent("logger")},

@@ -367,20 +367,10 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 		})
 	}
 	return &ast.GenDecl{
-		Doc: &ast.CommentGroup{
-			List: []*ast.Comment{
-				{
-					Text: fmt.Sprintf(
-						"//%s - domain layer repository interface",
-						i.domain.GetRepositoryTypeName(),
-					),
-				},
-			},
-		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: ast.NewIdent(i.domain.GetRepositoryTypeName()),
+				Name: ast.NewIdent(i.domain.GetRepositoryInterfaceName()),
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: methods,

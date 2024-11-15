@@ -57,7 +57,7 @@ func (u ServiceGenerator) Sync() error {
 }
 
 func (u ServiceGenerator) filename() string {
-	return filepath.Join("internal", "app", u.domain.DirName(), "services", "service.go")
+	return filepath.Join("internal", "app", u.domain.DirName(), "services", u.domain.FileName())
 }
 
 func (u ServiceGenerator) file() *ast.File {
@@ -93,7 +93,7 @@ func (u ServiceGenerator) structure() *ast.TypeSpec {
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{ast.NewIdent(u.domain.GetRepositoryPrivateVariableName())},
-						Type:  ast.NewIdent(u.domain.GetRepositoryTypeName()),
+						Type:  ast.NewIdent(u.domain.GetRepositoryInterfaceName()),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("clock")},
@@ -158,7 +158,7 @@ func (u ServiceGenerator) constructor() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{ast.NewIdent(u.domain.GetRepositoryPrivateVariableName())},
-						Type:  ast.NewIdent(u.domain.GetRepositoryTypeName()),
+						Type:  ast.NewIdent(u.domain.GetRepositoryInterfaceName()),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("clock")},

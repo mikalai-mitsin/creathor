@@ -299,21 +299,11 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 		},
 	}
 	return &ast.GenDecl{
-		Doc: &ast.CommentGroup{
-			List: []*ast.Comment{
-				{
-					Text: fmt.Sprintf(
-						"//%s - domain layer use case interface",
-						i.domain.GetServiceTypeName(),
-					),
-				},
-			},
-		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
 				Name: &ast.Ident{
-					Name: i.domain.GetServiceTypeName(),
+					Name: i.domain.GetServiceInterfaceName(),
 				},
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{

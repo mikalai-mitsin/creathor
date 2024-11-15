@@ -194,6 +194,10 @@ func (m *Domain) GetUseCaseTypeName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Config.Model))
 }
 
+func (m *Domain) GetUseCaseInterfaceName() string {
+	return fmt.Sprintf("%sUseCase", strcase.ToLowerCamel(m.Config.Model))
+}
+
 func (m *Domain) GetUseCaseConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetUseCaseTypeName())
 }
@@ -210,6 +214,10 @@ func (m *Domain) GetServiceTypeName() string {
 	return fmt.Sprintf("%sService", strcase.ToCamel(m.Config.Model))
 }
 
+func (m *Domain) GetServiceInterfaceName() string {
+	return fmt.Sprintf("%sService", strcase.ToLowerCamel(m.Config.Model))
+}
+
 func (m *Domain) GetServiceConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetServiceTypeName())
 }
@@ -224,6 +232,10 @@ func (m *Domain) GetRepositoryPublicVariableName() string {
 
 func (m *Domain) GetRepositoryTypeName() string {
 	return fmt.Sprintf("%sRepository", strcase.ToCamel(m.Config.Model))
+}
+
+func (m *Domain) GetRepositoryInterfaceName() string {
+	return fmt.Sprintf("%sRepository", strcase.ToLowerCamel(m.Config.Model))
 }
 
 func (m *Domain) GetRepositoryConstructorName() string {

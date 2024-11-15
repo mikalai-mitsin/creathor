@@ -305,21 +305,11 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 		},
 	}
 	return &ast.GenDecl{
-		Doc: &ast.CommentGroup{
-			List: []*ast.Comment{
-				{
-					Text: fmt.Sprintf(
-						"//%s - domain layer usecase interface",
-						i.domain.GetUseCaseTypeName(),
-					),
-				},
-			},
-		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
 				Name: &ast.Ident{
-					Name: i.domain.GetUseCaseTypeName(),
+					Name: i.domain.GetUseCaseInterfaceName(),
 				},
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{

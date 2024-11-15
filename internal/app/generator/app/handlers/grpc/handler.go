@@ -1925,7 +1925,7 @@ func (h HandlerGenerator) structure() *ast.TypeSpec {
 								Name: h.domain.GetUseCasePrivateVariableName(),
 							},
 						},
-						Type: ast.NewIdent(h.domain.GetUseCaseTypeName()),
+						Type: ast.NewIdent(h.domain.GetUseCaseInterfaceName()),
 					},
 					{
 						Names: []*ast.Ident{
@@ -1992,7 +1992,7 @@ func (h HandlerGenerator) constructor() *ast.FuncDecl {
 								Name: h.domain.GetUseCasePrivateVariableName(),
 							},
 						},
-						Type: ast.NewIdent(h.domain.GetUseCaseTypeName()),
+						Type: ast.NewIdent(h.domain.GetUseCaseInterfaceName()),
 					},
 					{
 						Names: []*ast.Ident{

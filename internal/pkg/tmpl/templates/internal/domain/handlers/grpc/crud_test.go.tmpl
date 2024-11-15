@@ -26,10 +26,10 @@ import (
 func TestNew{{ .Config.GRPCHandlerTypeName }}(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .Config.UseCaseTypeName }}(ctrl)
+    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     type args struct {
-        {{ .Config.UseCaseVariableName }} {{ .Config.UseCaseTypeName }}
+        {{ .Config.UseCaseVariableName }} {{ .GetUseCaseInterfaceName }}
         logger             logger
     }
     tests := []struct {
@@ -60,14 +60,14 @@ func TestNew{{ .Config.GRPCHandlerTypeName }}(t *testing.T) {
 func Test{{ .Config.GRPCHandlerTypeName }}_Create(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .Config.UseCaseTypeName }}(ctrl)
+    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     // create := mock_entities.New{{ .Config.CreateTypeName }}(t)
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
-        {{ .Config.UseCaseVariableName }} {{ .Config.UseCaseTypeName }}
+        {{ .Config.UseCaseVariableName }} {{ .GetUseCaseInterfaceName }}
         logger logger
     }
     type args struct {
@@ -142,13 +142,13 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Create(t *testing.T) {
 func Test{{ .Config.GRPCHandlerTypeName }}_Delete(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .Config.UseCaseTypeName }}(ctrl)
+    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     id := uuid.NewUUID()
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
-        {{ .Config.UseCaseVariableName }}                {{ .Config.UseCaseTypeName }}
+        {{ .Config.UseCaseVariableName }}                {{ .GetUseCaseInterfaceName }}
         logger                            logger
     }
     type args struct {
@@ -226,13 +226,13 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Delete(t *testing.T) {
 func Test{{ .Config.GRPCHandlerTypeName }}_Get(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .Config.UseCaseTypeName }}(ctrl)
+    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
-        {{ .Config.UseCaseVariableName }}                {{ .Config.UseCaseTypeName }}
+        {{ .Config.UseCaseVariableName }}                {{ .GetUseCaseInterfaceName }}
         logger                            logger
     }
     type args struct {
@@ -306,7 +306,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Get(t *testing.T) {
 func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .Config.UseCaseTypeName }}(ctrl)
+    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     filter := mock_entities.New{{ .Config.FilterTypeName }}(t)
@@ -328,7 +328,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
     filter.IDs = ids
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
-        {{ .Config.UseCaseVariableName }}                {{ .Config.UseCaseTypeName }}
+        {{ .Config.UseCaseVariableName }}                {{ .GetUseCaseInterfaceName }}
         logger                            logger
     }
     type args struct {
@@ -416,14 +416,14 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
 func Test{{ .Config.GRPCHandlerTypeName }}_Update(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .Config.UseCaseTypeName }}(ctrl)
+    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     update := mock_entities.New{{ .Config.UpdateTypeName }}(t)
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
-        {{ .Config.UseCaseVariableName }}                {{ .Config.UseCaseTypeName }}
+        {{ .Config.UseCaseVariableName }}                {{ .GetUseCaseInterfaceName }}
         logger                            logger
     }
     type args struct {

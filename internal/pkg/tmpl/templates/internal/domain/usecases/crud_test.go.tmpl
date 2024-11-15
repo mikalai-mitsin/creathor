@@ -16,6 +16,7 @@ import (
 
     "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
+    "github.com/stretchr/testify/assert"
 
     "{{ .Module }}/internal/pkg/clock"
     "{{ .Module }}/internal/pkg/uuid"
@@ -24,8 +25,8 @@ import (
 func TestNew{{ .GetUseCaseTypeName }}(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    {{ .Config.ServiceVariableName }} := mock_usecases.NewMock{{ .Config.ServiceTypeName }}(ctrl)
-    logger := mock_usecases.NewMockLogger(ctrl)
+    mock{{ .Config.ServiceTypeName }} := mock_usecases.NewMock{{ .Config.ServiceTypeName }}(ctrl)
+    mockLogger := mock_usecases.NewMockLogger(ctrl)
     type args struct {
         {{ .Config.ServiceVariableName }} {{ .Config.ServiceTypeName }}
         logger          Logger
@@ -40,21 +41,20 @@ func TestNew{{ .GetUseCaseTypeName }}(t *testing.T) {
             name:  "ok",
             setup: func() {},
             args: args{
-                {{ .Config.ServiceVariableName }}: {{ .Config.ServiceVariableName }},
-                logger:          logger,
+                {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+                logger: mockLogger,
             },
             want: &{{ .GetUseCaseTypeName }}{
-                {{ .Config.ServiceVariableName }}: {{ .Config.ServiceVariableName }},
-                logger:          logger,
+                {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+                logger: mockLogger,
             },
         },
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
-            if got := New{{ .GetUseCaseTypeName }}(tt.args.{{ .Config.ServiceVariableName }}, tt.args.logger); !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("New{{ .GetUseCaseTypeName }}() = %v, want %v", got, tt.want)
-            }
+            got := New{{ .GetUseCaseTypeName }}(tt.args.{{ .Config.ServiceVariableName }}, tt.args.logger)
+            assert.Equal(t, tt.want, got)
         })
     }
 }
@@ -62,8 +62,8 @@ func TestNew{{ .GetUseCaseTypeName }}(t *testing.T) {
 func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    {{ .Config.ServiceVariableName }} := mock_usecases.NewMock{{ .Config.ServiceTypeName }}(ctrl)
-    logger := mock_usecases.NewMockLogger(ctrl)
+    mock{{ .Config.ServiceTypeName }} := mock_usecases.NewMock{{ .Config.ServiceTypeName }}(ctrl)
+    mockLogger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
@@ -85,13 +85,13 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                {{ .Config.ServiceVariableName }}.EXPECT().
+                mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Get(ctx, {{ .Config.Variable }}.ID).
                     Return({{ .Config.Variable }}, nil)
             },
             fields: fields{
-                {{ .Config.ServiceVariableName }}: {{ .Config.ServiceVariableName }},
-                logger:          logger,
+                {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
@@ -103,13 +103,13 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
         {
             name: "{{ .Config.ModelName }} not found",
             setup: func() {
-                {{ .Config.ServiceVariableName }}.EXPECT().
+                mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Get(ctx, {{ .Config.Variable }}.ID).
                     Return(nil, errs.NewEntityNotFoundError())
             },
             fields: fields{
-                {{ .Config.ServiceVariableName }}: {{ .Config.ServiceVariableName }},
-                logger:          logger,
+                {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx:         ctx,
@@ -127,13 +127,8 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
                 logger:          tt.fields.logger,
             }
             got, err := i.Get(tt.args.ctx, tt.args.id)
-            if !errors.Is(err, tt.wantErr) {
-                t.Errorf("{{ .GetUseCaseTypeName }}.Get() error = %v, wantErr %v", err, tt.wantErr)
-                return
-            }
-            if !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("{{ .GetUseCaseTypeName }}.Get() = %v, want %v", got, tt.want)
-            }
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
         })
     }
 }
@@ -141,8 +136,8 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
 func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    {{ .Config.ServiceVariableName }} := mock_usecases.NewMock{{ .Config.ServiceTypeName }}(ctrl)
-    logger := mock_usecases.NewMockLogger(ctrl)
+    mock{{ .Config.ServiceTypeName }} := mock_usecases.NewMock{{ .Config.ServiceTypeName }}(ctrl)
+    mockLogger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     create := mock_entities.New{{ .Config.CreateTypeName }}(t)
@@ -165,11 +160,11 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                {{ .Config.ServiceVariableName }}.EXPECT().Create(ctx, create).Return({{ .Config.Variable }}, nil)
+                mock{{ .Config.ServiceTypeName }}.EXPECT().Create(ctx, create).Return({{ .Config.Variable }}, nil)
             },
             fields: fields{
-                {{ .Config.ServiceVariableName }}: {{ .Config.ServiceVariableName }},
-                logger:          logger,
+                {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx:    ctx,
@@ -181,13 +176,13 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
         {
             name: "create error",
             setup: func() {
-                {{ .Config.ServiceVariableName }}.EXPECT().
+                mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Create(ctx, create).
                     Return(nil, errs.NewUnexpectedBehaviorError("c u"))
             },
             fields: fields{
-                {{ .Config.ServiceVariableName }}: {{ .Config.ServiceVariableName }},
-                logger:          logger,
+                {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx:    ctx,
@@ -205,13 +200,8 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
                 logger:          tt.fields.logger,
             }
             got, err := i.Create(tt.args.ctx, tt.args.create)
-            if !errors.Is(err, tt.wantErr) {
-                t.Errorf("{{ .GetUseCaseTypeName }}.Create() error = %v, wantErr %v", err, tt.wantErr)
-                return
-            }
-            if !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("{{ .GetUseCaseTypeName }}.Create() = %v, want %v", got, tt.want)
-            }
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
         })
     }
 }
@@ -219,8 +209,8 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
 func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    {{ .Config.ServiceVariableName }} := mock_usecases.NewMock{{ .Config.ServiceTypeName }}(ctrl)
-    logger := mock_usecases.NewMockLogger(ctrl)
+    mock{{ .Config.ServiceTypeName }} := mock_usecases.NewMock{{ .Config.ServiceTypeName }}(ctrl)
+    mockLogger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     update := mock_entities.New{{ .Config.UpdateTypeName }}(t)
@@ -243,11 +233,11 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                {{ .Config.ServiceVariableName }}.EXPECT().Update(ctx, update).Return({{ .Config.Variable }}, nil)
+                mock{{ .Config.ServiceTypeName }}.EXPECT().Update(ctx, update).Return({{ .Config.Variable }}, nil)
             },
             fields: fields{
-                {{ .Config.ServiceVariableName }}: {{ .Config.ServiceVariableName }},
-                logger:          logger,
+                {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx:    ctx,
@@ -259,13 +249,13 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
         {
             name: "update error",
             setup: func() {
-                {{ .Config.ServiceVariableName }}.EXPECT().
+                mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Update(ctx, update).
                     Return(nil, errs.NewUnexpectedBehaviorError("d 2"))
             },
             fields: fields{
-                {{ .Config.ServiceVariableName }}: {{ .Config.ServiceVariableName }},
-                logger:          logger,
+                {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx:    ctx,
@@ -283,13 +273,8 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
                 logger:          tt.fields.logger,
             }
             got, err := i.Update(tt.args.ctx, tt.args.update)
-            if !errors.Is(err, tt.wantErr) {
-                t.Errorf("{{ .GetUseCaseTypeName }}.Update() error = %v, wantErr %v", err, tt.wantErr)
-                return
-            }
-            if !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("{{ .GetUseCaseTypeName }}.Update() = %v, want %v", got, tt.want)
-            }
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
         })
     }
 }
@@ -297,8 +282,8 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
 func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    {{ .Config.ServiceVariableName }} := mock_usecases.NewMock{{ .Config.ServiceTypeName }}(ctrl)
-    logger := mock_usecases.NewMockLogger(ctrl)
+    mock{{ .Config.ServiceTypeName }} := mock_usecases.NewMock{{ .Config.ServiceTypeName }}(ctrl)
+    mockLogger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
@@ -319,13 +304,13 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                {{ .Config.ServiceVariableName }}.EXPECT().
+                mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Delete(ctx, {{ .Config.Variable }}.ID).
                     Return(nil)
             },
             fields: fields{
-                {{ .Config.ServiceVariableName }}: {{ .Config.ServiceVariableName }},
-                logger:          logger,
+                {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
@@ -336,13 +321,13 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
         {
             name: "delete error",
             setup: func() {
-                {{ .Config.ServiceVariableName }}.EXPECT().
+                mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Delete(ctx, {{ .Config.Variable }}.ID).
                     Return(errs.NewUnexpectedBehaviorError("d 2"))
             },
             fields: fields{
-                {{ .Config.ServiceVariableName }}: {{ .Config.ServiceVariableName }},
-                logger:          logger,
+                {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
@@ -358,9 +343,8 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
                 {{ .Config.ServiceVariableName }}: tt.fields.{{ .Config.ServiceVariableName }},
                 logger:          tt.fields.logger,
             }
-            if err := i.Delete(tt.args.ctx, tt.args.id); !errors.Is(err, tt.wantErr) {
-                t.Errorf("{{ .GetUseCaseTypeName }}.Delete() error = %v, wantErr %v", err, tt.wantErr)
-            }
+            err := i.Delete(tt.args.ctx, tt.args.id)
+            assert.ErrorIs(t, err, tt.wantErr)
         })
     }
 }
@@ -368,8 +352,8 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
 func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    {{ .Config.ServiceVariableName }} := mock_usecases.NewMock{{ .Config.ServiceTypeName }}(ctrl)
-    logger := mock_usecases.NewMockLogger(ctrl)
+    mock{{ .Config.ServiceTypeName }} := mock_usecases.NewMock{{ .Config.ServiceTypeName }}(ctrl)
+    mockLogger := mock_usecases.NewMockLogger(ctrl)
     ctx := context.Background()
     filter := mock_entities.New{{ .Config.FilterTypeName }}(t)
     count := faker.New().UInt64Between(2, 20)
@@ -397,13 +381,13 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                {{ .Config.ServiceVariableName }}.EXPECT().
+                mock{{ .Config.ServiceTypeName }}.EXPECT().
                     List(ctx, filter).
                     Return({{ .Config.ListVariable }}, count, nil)
             },
             fields: fields{
-                {{ .Config.ServiceVariableName }}: {{ .Config.ServiceVariableName }},
-                logger:          logger,
+                {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx:         ctx,
@@ -416,13 +400,13 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
         {
             name: "list error",
             setup: func() {
-                {{ .Config.ServiceVariableName }}.EXPECT().
+                mock{{ .Config.ServiceTypeName }}.EXPECT().
                     List(ctx, filter).
                     Return(nil, uint64(0), errs.NewUnexpectedBehaviorError("l e"))
             },
             fields: fields{
-                {{ .Config.ServiceVariableName }}: {{ .Config.ServiceVariableName }},
-                logger:          logger,
+                {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx:         ctx,
@@ -441,16 +425,9 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
                 logger:          tt.fields.logger,
             }
             got, got1, err := i.List(tt.args.ctx, tt.args.filter)
-            if !errors.Is(err, tt.wantErr) {
-                t.Errorf("{{ .GetUseCaseTypeName }}.List() error = %v, wantErr %v", err, tt.wantErr)
-                return
-            }
-            if !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("{{ .GetUseCaseTypeName }}.List() got = %v, want %v", got, tt.want)
-            }
-            if got1 != tt.want1 {
-                t.Errorf("{{ .GetUseCaseTypeName }}.List() got1 = %v, want %v", got1, tt.want1)
-            }
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
+            assert.Equal(t, tt.want1, got1)
         })
     }
 }

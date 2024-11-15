@@ -16,12 +16,13 @@ import (
     "{{ .Module }}/internal/pkg/log"
     "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
+    "github.com/stretchr/testify/assert"
 )
 
 func TestNew{{ .Config.ServiceTypeName }}(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    {{ .Config.RepositoryVariableName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    mock{{ .Config.RepositoryTypeName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
     mockClock := mock_services.NewMockClock(ctrl)
     mockLogger := mock_services.NewMockLogger(ctrl)
     mockUUID := mock_services.NewMockUUIDGenerator(ctrl)
@@ -42,13 +43,13 @@ func TestNew{{ .Config.ServiceTypeName }}(t *testing.T) {
             setup: func() {
             },
             args: args{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
                 clock:  mockClock,
                 logger: mockLogger,
                 uuid:   mockUUID,
             },
             want: &{{ .Config.ServiceTypeName }}{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
                 clock:  mockClock,
                 logger: mockLogger,
                 uuid:   mockUUID,
@@ -58,9 +59,8 @@ func TestNew{{ .Config.ServiceTypeName }}(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
-            if got := New{{ .Config.ServiceTypeName }}(tt.args.{{ .Config.RepositoryVariableName }}, tt.args.clock, tt.args.logger, tt.args.uuid); !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("New{{ .Config.ServiceTypeName }}() = %v, want %v", got, tt.want)
-            }
+            got := New{{ .Config.ServiceTypeName }}(tt.args.{{ .Config.RepositoryVariableName }}, tt.args.clock, tt.args.logger, tt.args.uuid)
+            assert.Equal(t, tt.want, got)
         })
     }
 }
@@ -68,8 +68,8 @@ func TestNew{{ .Config.ServiceTypeName }}(t *testing.T) {
 func Test{{ .Config.ServiceTypeName }}_Get(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    {{ .Config.RepositoryVariableName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    logger := mock_services.NewMockLogger(ctrl)
+    mock{{ .Config.RepositoryTypeName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    mockLogger := mock_services.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
@@ -91,11 +91,11 @@ func Test{{ .Config.ServiceTypeName }}_Get(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                {{ .Config.RepositoryVariableName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return({{ .Config.Variable }}, nil)
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return({{ .Config.Variable }}, nil)
             },
             fields: fields{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                logger:           logger,
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
@@ -107,11 +107,11 @@ func Test{{ .Config.ServiceTypeName }}_Get(t *testing.T) {
         {
             name: "{{ .Config.ModelName }} not found",
             setup: func() {
-                {{ .Config.RepositoryVariableName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return(nil, errs.NewEntityNotFoundError())
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return(nil, errs.NewEntityNotFoundError())
             },
             fields: fields{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                logger:           logger,
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
@@ -129,13 +129,8 @@ func Test{{ .Config.ServiceTypeName }}_Get(t *testing.T) {
                 logger:           tt.fields.logger,
             }
             got, err := u.Get(tt.args.ctx, tt.args.id)
-            if !errors.Is(err, tt.wantErr) {
-                t.Errorf("{{ .Config.ServiceTypeName }}.Get() error = %v, wantErr %v", err, tt.wantErr)
-                return
-            }
-            if !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("{{ .Config.ServiceTypeName }}.Get() = %v, want %v", got, tt.want)
-            }
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
         })
     }
 }
@@ -143,8 +138,8 @@ func Test{{ .Config.ServiceTypeName }}_Get(t *testing.T) {
 func Test{{ .Config.ServiceTypeName }}_List(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    {{ .Config.RepositoryVariableName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    logger := mock_services.NewMockLogger(ctrl)
+    mock{{ .Config.RepositoryTypeName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    mockLogger := mock_services.NewMockLogger(ctrl)
     ctx := context.Background()
     var {{ .Config.ListVariable }} []*entities.{{ .Config.ModelName }}
     count := faker.New().UInt64Between(2, 20)
@@ -172,12 +167,12 @@ func Test{{ .Config.ServiceTypeName }}_List(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                {{ .Config.RepositoryVariableName }}.EXPECT().List(ctx, filter).Return({{ .Config.ListVariable }}, nil)
-                {{ .Config.RepositoryVariableName }}.EXPECT().Count(ctx, filter).Return(count, nil)
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().List(ctx, filter).Return({{ .Config.ListVariable }}, nil)
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().Count(ctx, filter).Return(count, nil)
             },
             fields: fields{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                logger:           logger,
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx:    ctx,
@@ -190,11 +185,11 @@ func Test{{ .Config.ServiceTypeName }}_List(t *testing.T) {
         {
             name: "list error",
             setup: func() {
-                {{ .Config.RepositoryVariableName }}.EXPECT().List(ctx, filter).Return(nil, errs.NewUnexpectedBehaviorError("test error"))
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().List(ctx, filter).Return(nil, errs.NewUnexpectedBehaviorError("test error"))
             },
             fields: fields{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                logger:           logger,
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx:    ctx,
@@ -207,12 +202,12 @@ func Test{{ .Config.ServiceTypeName }}_List(t *testing.T) {
         {
             name: "count error",
             setup: func() {
-                {{ .Config.RepositoryVariableName }}.EXPECT().List(ctx, filter).Return({{ .Config.ListVariable }}, nil)
-                {{ .Config.RepositoryVariableName }}.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().List(ctx, filter).Return({{ .Config.ListVariable }}, nil)
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
             },
             fields: fields{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                logger:           logger,
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx:    ctx,
@@ -231,16 +226,9 @@ func Test{{ .Config.ServiceTypeName }}_List(t *testing.T) {
                 logger:           tt.fields.logger,
             }
             got, got1, err := u.List(tt.args.ctx, tt.args.filter)
-            if !errors.Is(err, tt.wantErr) {
-                t.Errorf("{{ .Config.ServiceTypeName }}.List() error = %v, wantErr %v", err, tt.wantErr)
-                return
-            }
-            if !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("{{ .Config.ServiceTypeName }}.List() = %v, want %v", got, tt.want)
-            }
-            if got1 != tt.want1 {
-                t.Errorf("{{ .Config.ServiceTypeName }}.List() got1 = %v, want %v", got1, tt.want1)
-            }
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
+            assert.Equal(t, tt.want1, got1)
         })
     }
 }
@@ -248,7 +236,7 @@ func Test{{ .Config.ServiceTypeName }}_List(t *testing.T) {
 func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    {{ .Config.RepositoryVariableName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    mock{{ .Config.RepositoryTypeName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
     mockClock := mock_services.NewMockClock(ctrl)
     mockLogger := mock_services.NewMockLogger(ctrl)
     mockUUID := mock_services.NewMockUUIDGenerator(ctrl)
@@ -278,7 +266,7 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
             setup: func() {
                 mockClock.EXPECT().Now().Return(now)
                 mockUUID.EXPECT().NewUUID().Return(uuid.UUID("test"))
-                {{ .Config.RepositoryVariableName }}.EXPECT().
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
                     Create(
                         ctx,
                         &entities.{{ .Config.ModelName }}{
@@ -293,7 +281,7 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
                     Return(nil)
             },
             fields: fields{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
                 clock:            mockClock,
                 logger:           mockLogger,
                 uuid: mockUUID,
@@ -317,7 +305,7 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
             setup: func() {
                 mockClock.EXPECT().Now().Return(now)
                 mockUUID.EXPECT().NewUUID().Return(uuid.UUID("test 2"))
-                {{ .Config.RepositoryVariableName }}.EXPECT().
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
                     Create(
                         ctx,
                         &entities.{{ .Config.ModelName }}{
@@ -332,7 +320,7 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
                     Return(errs.NewUnexpectedBehaviorError("test error"))
             },
             fields: fields{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
                 clock:            mockClock,
                 logger:           mockLogger,
                 uuid:             mockUUID,
@@ -349,7 +337,7 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
             setup: func() {
             },
             fields: fields{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
                 logger:           mockLogger,
                 clock:            mockClock,
                 uuid:             mockUUID,
@@ -376,13 +364,8 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
                 uuid:             tt.fields.uuid,
             }
             got, err := u.Create(tt.args.ctx, tt.args.create)
-            if !errors.Is(err, tt.wantErr) {
-                t.Errorf("{{ .Config.ServiceTypeName }}.Create() error = %v, wantErr %v", err, tt.wantErr)
-                return
-            }
-            if !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("{{ .Config.ServiceTypeName }}.Create() = %v, want %v", got, tt.want)
-            }
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
         })
     }
 }
@@ -390,8 +373,8 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
 func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    {{ .Config.RepositoryVariableName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    logger := mock_services.NewMockLogger(ctrl)
+    mock{{ .Config.RepositoryTypeName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    mockLogger := mock_services.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     mockClock := mock_services.NewMockClock(ctrl)
@@ -418,15 +401,15 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
             name: "ok",
             setup: func() {
                 mockClock.EXPECT().Now().Return(now)
-                {{ .Config.RepositoryVariableName }}.EXPECT().
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
                     Get(ctx, update.ID).Return({{ .Config.Variable }}, nil)
-                {{ .Config.RepositoryVariableName }}.EXPECT().
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
                     Update(ctx, {{ .Config.Variable }}).Return(nil)
             },
             fields: fields{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
                 clock:            mockClock,
-                logger:           logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
@@ -439,17 +422,17 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
             name: "update error",
             setup: func() {
                 mockClock.EXPECT().Now().Return(now)
-                {{ .Config.RepositoryVariableName }}.EXPECT().
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
                     Get(ctx, update.ID).
                     Return({{ .Config.Variable }}, nil)
-                {{ .Config.RepositoryVariableName }}.EXPECT().
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
                     Update(ctx, {{ .Config.Variable }}).
                     Return(errs.NewUnexpectedBehaviorError("test error"))
             },
             fields: fields{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
                 clock:            mockClock,
-                logger:           logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
@@ -461,12 +444,12 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
         {
             name: "{{ .Config.ModelName }} not found",
             setup: func() {
-                {{ .Config.RepositoryVariableName }}.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFoundError())
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFoundError())
             },
             fields: fields{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
                 clock:            mockClock,
-                logger:           logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
@@ -480,9 +463,9 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
             setup: func() {
             },
             fields: fields{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
                 clock:            mockClock,
-                logger:           logger,
+                logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
@@ -503,13 +486,8 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
                 logger:           tt.fields.logger,
             }
             got, err := u.Update(tt.args.ctx, tt.args.update)
-            if !errors.Is(err, tt.wantErr) {
-                t.Errorf("{{ .Config.ServiceTypeName }}.Update() error = %v, wantErr %v", err, tt.wantErr)
-                return
-            }
-            if !reflect.DeepEqual(got, tt.want) {
-                t.Errorf("{{ .Config.ServiceTypeName }}.Update() = %v, want %v", got, tt.want)
-            }
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
         })
     }
 }
@@ -517,8 +495,8 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
 func Test{{ .Config.ServiceTypeName }}_Delete(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    {{ .Config.RepositoryVariableName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
-    logger := mock_services.NewMockLogger(ctrl)
+    mock{{ .Config.RepositoryTypeName }} := mock_services.NewMock{{ .Config.RepositoryTypeName }}(ctrl)
+    mockLogger := mock_services.NewMockLogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
     type fields struct {
@@ -539,13 +517,13 @@ func Test{{ .Config.ServiceTypeName }}_Delete(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                {{ .Config.RepositoryVariableName }}.EXPECT().
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
                     Delete(ctx, {{ .Config.Variable }}.ID).
                     Return(nil)
             },
             fields: fields{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                logger:           logger,
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
@@ -556,13 +534,13 @@ func Test{{ .Config.ServiceTypeName }}_Delete(t *testing.T) {
         {
             name: "{{ .Config.ModelName }} not found",
             setup: func() {
-                {{ .Config.RepositoryVariableName }}.EXPECT().
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
                     Delete(ctx, {{ .Config.Variable }}.ID).
                     Return(errs.NewEntityNotFoundError())
             },
             fields: fields{
-                {{ .Config.RepositoryVariableName }}: {{ .Config.RepositoryVariableName }},
-                logger:           logger,
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
@@ -578,9 +556,8 @@ func Test{{ .Config.ServiceTypeName }}_Delete(t *testing.T) {
                 {{ .Config.RepositoryVariableName }}: tt.fields.{{ .Config.RepositoryVariableName }},
                 logger:           tt.fields.logger,
             }
-            if err := u.Delete(tt.args.ctx, tt.args.id); !errors.Is(err, tt.wantErr) {
-                t.Errorf("{{ .Config.ServiceTypeName }}.Delete() error = %v, wantErr %v", err, tt.wantErr)
-            }
+            err := u.Delete(tt.args.ctx, tt.args.id)
+            assert.ErrorIs(t, err, tt.wantErr)
         })
     }
 }

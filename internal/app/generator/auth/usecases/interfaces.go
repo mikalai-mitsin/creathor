@@ -95,13 +95,6 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 				},
 			},
 			&ast.GenDecl{
-				Doc: &ast.CommentGroup{
-					List: []*ast.Comment{
-						{
-							Text: "//logger - base logger interface",
-						},
-					},
-				},
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
@@ -312,18 +305,11 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 				},
 			},
 			&ast.GenDecl{
-				Doc: &ast.CommentGroup{
-					List: []*ast.Comment{
-						{
-							Text: "//AuthService - domain layer usecase interface",
-						},
-					},
-				},
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: "AuthService",
+							Name: "authService",
 						},
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{

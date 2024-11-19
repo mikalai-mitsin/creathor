@@ -10,13 +10,15 @@ import (
 
 type AuthServiceServer struct {
 	{{ .ProtoPackage }}.UnimplementedAuthServiceServer
-	authUseCase AuthUseCase
+	authUseCase authUseCase
+logger logger
 }
 
 func NewAuthServiceServer(
-	authUseCase AuthUseCase,
+	authUseCase authUseCase,
+	logger logger,
 ) *AuthServiceServer {
-	return &AuthServiceServer{authUseCase: authUseCase}
+	return &AuthServiceServer{authUseCase: authUseCase, logger: logger}
 }
 
 func (s AuthServiceServer) CreateToken(

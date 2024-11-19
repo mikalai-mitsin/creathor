@@ -24,12 +24,12 @@ func TestNew{{ .Config.ServiceTypeName }}(t *testing.T) {
     mock{{ .Config.RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockClock := NewMockclock(ctrl)
     mockLogger := NewMocklogger(ctrl)
-    mockUUID := NewMockUUIDGenerator(ctrl)
+    mockUUID := NewMockuuidGenerator(ctrl)
     type args struct {
         {{ .Config.RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
         clock  clock
         logger logger
-        uuid   UUIDGenerator
+        uuid   uuidGenerator
     }
     tests := []struct {
         name  string
@@ -238,7 +238,7 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
     mock{{ .Config.RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockClock := NewMockclock(ctrl)
     mockLogger := NewMocklogger(ctrl)
-    mockUUID := NewMockUUIDGenerator(ctrl)
+    mockUUID := NewMockuuidGenerator(ctrl)
     ctx := context.Background()
     create := mock_entities.New{{ .Config.CreateTypeName }}(t)
     now := time.Now().UTC()
@@ -246,7 +246,7 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
         {{ .Config.RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
         clock            clock
         logger           logger
-        uuid             UUIDGenerator
+        uuid             uuidGenerator
     }
     type args struct {
         ctx    context.Context

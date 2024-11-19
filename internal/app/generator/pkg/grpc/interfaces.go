@@ -52,16 +52,6 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 				},
 			},
 			&ast.GenDecl{
-				Doc: &ast.CommentGroup{
-					List: []*ast.Comment{
-						{
-							Text: "//Logger - base logger interface",
-						},
-						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/logger.go . Logger",
-						},
-					},
-				},
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{

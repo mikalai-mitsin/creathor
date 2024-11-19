@@ -38,7 +38,7 @@ func (i InterfacesGenerator) Sync() error {
 	uuidGeneratorExists := false
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.TypeSpec); ok {
-			if t.Name.String() == i.domain.GetRepositoryTypeName() {
+			if t.Name.String() == i.domain.GetRepositoryInterfaceName() {
 				repositoryExists = true
 			}
 			if t.Name.String() == "logger" {
@@ -47,7 +47,7 @@ func (i InterfacesGenerator) Sync() error {
 			if t.Name.String() == "clock" {
 				clockExists = true
 			}
-			if t.Name.String() == "UUIDGenerator" {
+			if t.Name.String() == "uuidGenerator" {
 				uuidGeneratorExists = true
 			}
 			return true
@@ -383,13 +383,6 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 
 func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 	return &ast.GenDecl{
-		Doc: &ast.CommentGroup{
-			List: []*ast.Comment{
-				{
-					Text: "//logger - base logger interface",
-				},
-			},
-		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
@@ -641,17 +634,10 @@ func (i InterfacesGenerator) clockInterface() *ast.GenDecl {
 
 func (i InterfacesGenerator) uuidGeneratorInterface() *ast.GenDecl {
 	return &ast.GenDecl{
-		Doc: &ast.CommentGroup{
-			List: []*ast.Comment{
-				{
-					Text: "// UUIDGenerator - UUID generator interface",
-				},
-			},
-		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: ast.NewIdent("UUIDGenerator"),
+				Name: ast.NewIdent("uuidGenerator"),
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: []*ast.Field{

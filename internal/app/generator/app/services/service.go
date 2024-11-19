@@ -105,7 +105,7 @@ func (u ServiceGenerator) structure() *ast.TypeSpec {
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("uuid")},
-						Type:  ast.NewIdent("UUIDGenerator"),
+						Type:  ast.NewIdent("uuidGenerator"),
 					},
 				},
 			},
@@ -170,7 +170,7 @@ func (u ServiceGenerator) constructor() *ast.FuncDecl {
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("uuid")},
-						Type:  ast.NewIdent("UUIDGenerator"),
+						Type:  ast.NewIdent("uuidGenerator"),
 					},
 				},
 			},

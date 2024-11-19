@@ -19,14 +19,14 @@ import (
 func TestAuthService_Auth(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository :=  NewMockUserRepository(ctrl)
-    authRepository :=  NewMockAuthRepository(ctrl)
+    mockUserRepository :=  NewMockuserRepository(ctrl)
+    mockAuthRepository :=  NewMockauthRepository(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     user := mockUserEntities.NewUser(t)
     type fields struct {
-        authRepository AuthRepository
-        userRepository UserRepository
+        authRepository authRepository
+        userRepository userRepository
         logger         logger
     }
     type args struct {
@@ -44,12 +44,12 @@ func TestAuthService_Auth(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                authRepository.EXPECT().GetSubject(ctx, entities.Token("mytoken")).Return(string(user.ID), nil).Times(1)
-                userRepository.EXPECT().Get(ctx, user.ID).Return(user, nil).Times(1)
+                mockAuthRepository.EXPECT().GetSubject(ctx, entities.Token("mytoken")).Return(string(user.ID), nil).Times(1)
+                mockUserRepository.EXPECT().Get(ctx, user.ID).Return(user, nil).Times(1)
             },
             fields: fields{
-                authRepository: authRepository,
-                userRepository: userRepository,
+                authRepository: mockAuthRepository,
+                userRepository: mockUserRepository,
                 logger: mockLogger,
             },
             args: args{
@@ -62,14 +62,14 @@ func TestAuthService_Auth(t *testing.T) {
         {
             name: "bad user",
             setup: func() {
-                authRepository.EXPECT().
+                mockAuthRepository.EXPECT().
                     GetSubject(ctx, entities.Token("mytoken")).
                     Return("", errs.NewBadTokenError()).
                     Times(1)
             },
             fields: fields{
-                authRepository: authRepository,
-                userRepository: userRepository,
+                authRepository: mockAuthRepository,
+                userRepository: mockUserRepository,
                 logger: mockLogger,
             },
             args: args{
@@ -82,12 +82,12 @@ func TestAuthService_Auth(t *testing.T) {
         {
             name: "user not found",
             setup: func() {
-                authRepository.EXPECT().GetSubject(ctx, entities.Token("mytoken")).Return(string(user.ID), nil).Times(1)
-                userRepository.EXPECT().Get(ctx, user.ID).Return(nil, errs.NewEntityNotFoundError()).Times(1)
+                mockAuthRepository.EXPECT().GetSubject(ctx, entities.Token("mytoken")).Return(string(user.ID), nil).Times(1)
+                mockUserRepository.EXPECT().Get(ctx, user.ID).Return(nil, errs.NewEntityNotFoundError()).Times(1)
             },
             fields: fields{
-                authRepository: authRepository,
-                userRepository: userRepository,
+                authRepository: mockAuthRepository,
+                userRepository: mockUserRepository,
                 logger: mockLogger,
             },
             args: args{
@@ -121,8 +121,8 @@ func TestAuthService_Auth(t *testing.T) {
 func TestAuthService_CreateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository :=  NewMockUserRepository(ctrl)
-    authRepository :=  NewMockAuthRepository(ctrl)
+    mockUserRepository :=  NewMockuserRepository(ctrl)
+    mockAuthRepository :=  NewMockauthRepository(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     user := mockUserEntities.NewUser(t)
@@ -131,8 +131,8 @@ func TestAuthService_CreateToken(t *testing.T) {
     pair := mockEntities.NewTokenPair(t)
     user.SetPassword(login.Password)
     type fields struct {
-        authRepository AuthRepository
-        userRepository UserRepository
+        authRepository authRepository
+        userRepository userRepository
         logger         logger
     }
     type args struct {
@@ -150,12 +150,12 @@ func TestAuthService_CreateToken(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                userRepository.EXPECT().GetByEmail(ctx, user.Email).Return(user, nil).Times(1)
-                authRepository.EXPECT().Create(ctx, user).Return(pair, nil).Times(1)
+                mockUserRepository.EXPECT().GetByEmail(ctx, user.Email).Return(user, nil).Times(1)
+                mockAuthRepository.EXPECT().Create(ctx, user).Return(pair, nil).Times(1)
             },
             fields: fields{
-                authRepository: authRepository,
-                userRepository: userRepository,
+                authRepository: mockAuthRepository,
+                userRepository: mockUserRepository,
                 logger: mockLogger,
             },
             args: args{
@@ -168,13 +168,13 @@ func TestAuthService_CreateToken(t *testing.T) {
         {
             name: "user not found",
             setup: func() {
-                userRepository.EXPECT().
+                mockUserRepository.EXPECT().
                     GetByEmail(ctx, user.Email).Return(nil, errs.NewEntityNotFoundError()).
                     Times(1)
             },
             fields: fields{
-                authRepository: authRepository,
-                userRepository: userRepository,
+                authRepository: mockAuthRepository,
+                userRepository: mockUserRepository,
                 logger: mockLogger,
             },
             args: args{
@@ -187,13 +187,13 @@ func TestAuthService_CreateToken(t *testing.T) {
         {
             name: "bad password",
             setup: func() {
-                userRepository.EXPECT().
+                mockUserRepository.EXPECT().
                     GetByEmail(ctx, user.Email).Return(user, nil).
                     Times(1)
             },
             fields: fields{
-                authRepository: authRepository,
-                userRepository: userRepository,
+                authRepository: mockAuthRepository,
+                userRepository: mockUserRepository,
                 logger: mockLogger,
             },
             args: args{
@@ -209,16 +209,16 @@ func TestAuthService_CreateToken(t *testing.T) {
         {
             name: "bad password",
             setup: func() {
-                userRepository.EXPECT().
+                mockUserRepository.EXPECT().
                     GetByEmail(ctx, user.Email).Return(user, nil).
                     Times(1)
-                authRepository.EXPECT().Create(ctx, user).
+                mockAuthRepository.EXPECT().Create(ctx, user).
                     Return(nil, errs.NewUnexpectedBehaviorError("system errpr")).
                     Times(1)
             },
             fields: fields{
-                authRepository: authRepository,
-                userRepository: userRepository,
+                authRepository: mockAuthRepository,
+                userRepository: mockUserRepository,
                 logger: mockLogger,
             },
             args: args{
@@ -252,14 +252,14 @@ func TestAuthService_CreateToken(t *testing.T) {
 func TestAuthService_RefreshToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository :=  NewMockUserRepository(ctrl)
-    authRepository :=  NewMockAuthRepository(ctrl)
+    mockUserRepository :=  NewMockuserRepository(ctrl)
+    mockAuthRepository :=  NewMockauthRepository(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     pair := mockEntities.NewTokenPair(t)
     type fields struct {
-        authRepository AuthRepository
-        userRepository UserRepository
+        authRepository authRepository
+        userRepository userRepository
         logger         logger
     }
     type args struct {
@@ -277,11 +277,11 @@ func TestAuthService_RefreshToken(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                authRepository.EXPECT().RefreshToken(ctx, entities.Token("my_r_token")).Return(pair, nil).Times(1)
+                mockAuthRepository.EXPECT().RefreshToken(ctx, entities.Token("my_r_token")).Return(pair, nil).Times(1)
             },
             fields: fields{
-                authRepository: authRepository,
-                userRepository: userRepository,
+                authRepository: mockAuthRepository,
+                userRepository: mockUserRepository,
                 logger: mockLogger,
             },
             args: args{
@@ -294,14 +294,14 @@ func TestAuthService_RefreshToken(t *testing.T) {
         {
             name: "repository error",
             setup: func() {
-                authRepository.EXPECT().
+                mockAuthRepository.EXPECT().
                     RefreshToken(ctx, entities.Token("my_r_token")).
                     Return(nil, errs.NewBadTokenError()).
                     Times(1)
             },
             fields: fields{
-                authRepository: authRepository,
-                userRepository: userRepository,
+                authRepository: mockAuthRepository,
+                userRepository: mockUserRepository,
                 logger: mockLogger,
             },
             args: args{
@@ -335,13 +335,13 @@ func TestAuthService_RefreshToken(t *testing.T) {
 func TestAuthService_ValidateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository :=  NewMockUserRepository(ctrl)
-    authRepository :=  NewMockAuthRepository(ctrl)
+    mockUserRepository :=  NewMockuserRepository(ctrl)
+    mockAuthRepository :=  NewMockauthRepository(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     type fields struct {
-        authRepository AuthRepository
-        userRepository UserRepository
+        authRepository authRepository
+        userRepository userRepository
         logger         logger
     }
     type args struct {
@@ -358,11 +358,11 @@ func TestAuthService_ValidateToken(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                authRepository.EXPECT().Validate(ctx, entities.Token("my_token")).Return(nil).Times(1)
+                mockAuthRepository.EXPECT().Validate(ctx, entities.Token("my_token")).Return(nil).Times(1)
             },
             fields: fields{
-                authRepository: authRepository,
-                userRepository: userRepository,
+                authRepository: mockAuthRepository,
+                userRepository: mockUserRepository,
                 logger: mockLogger,
             },
             args: args{
@@ -374,14 +374,14 @@ func TestAuthService_ValidateToken(t *testing.T) {
         {
             name: "repository error",
             setup: func() {
-                authRepository.EXPECT().
+                mockAuthRepository.EXPECT().
                     Validate(ctx, entities.Token("my_token")).
                     Return(errs.NewUnexpectedBehaviorError("error 345")).
                     Times(1)
             },
             fields: fields{
-                authRepository: authRepository,
-                userRepository: userRepository,
+                authRepository: mockAuthRepository,
+                userRepository: mockUserRepository,
                 logger: mockLogger,
             },
             args: args{
@@ -413,12 +413,12 @@ func TestAuthService_ValidateToken(t *testing.T) {
 func TestNewAuthService(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository :=  NewMockUserRepository(ctrl)
-    authRepository :=  NewMockAuthRepository(ctrl)
+    mockUserRepository :=  NewMockuserRepository(ctrl)
+    mockAuthRepository :=  NewMockauthRepository(ctrl)
     mockLogger := NewMocklogger(ctrl)
     type args struct {
-        authRepository       AuthRepository
-        userRepository       UserRepository
+        authRepository       authRepository
+        userRepository       userRepository
         logger               logger
     }
     tests := []struct {
@@ -429,13 +429,13 @@ func TestNewAuthService(t *testing.T) {
         {
             name: "ok",
             args: args{
-                authRepository: authRepository,
-                userRepository: userRepository,
+                authRepository: mockAuthRepository,
+                userRepository: mockUserRepository,
                 logger: mockLogger,
             },
             want: &AuthService{
-                authRepository: authRepository,
-                userRepository: userRepository,
+                authRepository: mockAuthRepository,
+                userRepository: mockUserRepository,
                 logger: mockLogger,
             },
         },
@@ -452,15 +452,15 @@ func TestNewAuthService(t *testing.T) {
 func TestAuthService_CreateTokenByUser(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    userRepository :=  NewMockUserRepository(ctrl)
-    authRepository :=  NewMockAuthRepository(ctrl)
+    mockUserRepository :=  NewMockuserRepository(ctrl)
+    mockAuthRepository :=  NewMockauthRepository(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     user := mockUserEntities.NewUser(t)
     tokenPair := mockEntities.NewTokenPair(t)
     type fields struct {
-        authRepository AuthRepository
-        userRepository UserRepository
+        authRepository authRepository
+        userRepository userRepository
         logger         logger
     }
     type args struct {
@@ -478,11 +478,11 @@ func TestAuthService_CreateTokenByUser(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                authRepository.EXPECT().Create(ctx, user).Return(tokenPair, nil)
+                mockAuthRepository.EXPECT().Create(ctx, user).Return(tokenPair, nil)
             },
             fields: fields{
-                authRepository: authRepository,
-                userRepository: userRepository,
+                authRepository: mockAuthRepository,
+                userRepository: mockUserRepository,
                 logger: mockLogger,
             },
             args: args{
@@ -495,11 +495,11 @@ func TestAuthService_CreateTokenByUser(t *testing.T) {
         {
             name: "error",
             setup: func() {
-                authRepository.EXPECT().Create(ctx, user).Return(nil, errs.NewUnexpectedBehaviorError("asd"))
+                mockAuthRepository.EXPECT().Create(ctx, user).Return(nil, errs.NewUnexpectedBehaviorError("asd"))
             },
             fields: fields{
-                authRepository: authRepository,
-                userRepository: userRepository,
+                authRepository: mockAuthRepository,
+                userRepository: mockUserRepository,
                 logger: mockLogger,
             },
             args: args{

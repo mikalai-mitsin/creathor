@@ -94,7 +94,7 @@ func (i UseCaseAuth) file() *ast.File {
 												Name: "authService",
 											},
 										},
-										Type: ast.NewIdent("AuthService"),
+										Type: ast.NewIdent("authService"),
 									},
 									{
 										Names: []*ast.Ident{
@@ -131,7 +131,7 @@ func (i UseCaseAuth) file() *ast.File {
 										Name: "authService",
 									},
 								},
-								Type: ast.NewIdent("AuthService"),
+								Type: ast.NewIdent("authService"),
 							},
 							{
 								Names: []*ast.Ident{

@@ -53,13 +53,6 @@ func (i *Interfaces) file() *ast.File {
 				},
 			},
 			&ast.GenDecl{
-				Doc: &ast.CommentGroup{
-					List: []*ast.Comment{
-						{
-							Text: "//logger - base logger interface",
-						},
-					},
-				},
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
@@ -273,7 +266,7 @@ func (i *Interfaces) file() *ast.File {
 				Doc: &ast.CommentGroup{
 					List: []*ast.Comment{
 						{
-							Text: "//AuthUseCase - domain layer usecase interface",
+							Text: "//authUseCase - domain layer usecase interface",
 						},
 					},
 				},
@@ -281,7 +274,7 @@ func (i *Interfaces) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: "AuthUseCase",
+							Name: "authUseCase",
 						},
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{

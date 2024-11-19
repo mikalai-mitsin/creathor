@@ -43,7 +43,7 @@ func (i InterfacesGenerator) Sync() error {
 	var usecaseExists bool
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.TypeSpec); ok {
-			if t.Name.String() == i.domain.GetUseCaseTypeName() {
+			if t.Name.String() == i.domain.GetUseCaseInterfaceName() {
 				usecaseExists = true
 			}
 			if t.Name.String() == "logger" {
@@ -323,13 +323,6 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 
 func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 	return &ast.GenDecl{
-		Doc: &ast.CommentGroup{
-			List: []*ast.Comment{
-				{
-					Text: "//logger - base logger interface",
-				},
-			},
-		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{

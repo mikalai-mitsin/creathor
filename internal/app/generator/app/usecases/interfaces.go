@@ -35,7 +35,7 @@ func (i InterfacesGenerator) Sync() error {
 	loggerExists := false
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.TypeSpec); ok {
-			if t.Name.String() == i.domain.GetServiceTypeName() {
+			if t.Name.String() == i.domain.GetServiceInterfaceName() {
 				appServiceExists = true
 			}
 			if t.Name.String() == "logger" {

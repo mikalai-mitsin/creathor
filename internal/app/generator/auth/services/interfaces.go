@@ -66,13 +66,6 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 				},
 			},
 			&ast.GenDecl{
-				Doc: &ast.CommentGroup{
-					List: []*ast.Comment{
-						{
-							Text: "//logger - base logger interface",
-						},
-					},
-				},
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
@@ -284,17 +277,10 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 			},
 			&ast.GenDecl{
 				Tok: token.TYPE,
-				Doc: &ast.CommentGroup{
-					List: []*ast.Comment{
-						{
-							Text: "//AuthRepository - domain layer repository interface",
-						},
-					},
-				},
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: "AuthRepository",
+							Name: "authRepository",
 						},
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{
@@ -546,17 +532,10 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 			},
 			&ast.GenDecl{
 				Tok: token.TYPE,
-				Doc: &ast.CommentGroup{
-					List: []*ast.Comment{
-						{
-							Text: "//UserRepository - domain layer repository interface",
-						},
-					},
-				},
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: "UserRepository",
+							Name: "userRepository",
 						},
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{

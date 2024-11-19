@@ -96,13 +96,6 @@ func (r InterfacesGenerator) imports() *ast.GenDecl {
 
 func (r InterfacesGenerator) loggerInterface() *ast.GenDecl {
 	return &ast.GenDecl{
-		Doc: &ast.CommentGroup{
-			List: []*ast.Comment{
-				{
-					Text: "//logger - base logger interface",
-				},
-			},
-		},
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{

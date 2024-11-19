@@ -21,7 +21,6 @@ import (
 const refreshAudience = "refresh"
 const accessAudience = "access"
 
-// logger - base logger interface
 type logger interface {
 	Debug(msg string, fields ...log.Field)
 	Info(msg string, fields ...log.Field)

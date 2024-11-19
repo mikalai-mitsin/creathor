@@ -100,7 +100,7 @@ func (u ServiceAuth) file() *ast.File {
 												Name: "authRepository",
 											},
 										},
-										Type: ast.NewIdent("AuthRepository"),
+										Type: ast.NewIdent("authRepository"),
 									},
 									{
 										Names: []*ast.Ident{
@@ -108,7 +108,7 @@ func (u ServiceAuth) file() *ast.File {
 												Name: "userRepository",
 											},
 										},
-										Type: ast.NewIdent("UserRepository"),
+										Type: ast.NewIdent("userRepository"),
 									},
 									{
 										Names: []*ast.Ident{
@@ -137,7 +137,7 @@ func (u ServiceAuth) file() *ast.File {
 										Name: "authRepository",
 									},
 								},
-								Type: ast.NewIdent("AuthRepository"),
+								Type: ast.NewIdent("authRepository"),
 							},
 							{
 								Names: []*ast.Ident{
@@ -145,7 +145,7 @@ func (u ServiceAuth) file() *ast.File {
 										Name: "userRepository",
 									},
 								},
-								Type: ast.NewIdent("UserRepository"),
+								Type: ast.NewIdent("userRepository"),
 							},
 							{
 								Names: []*ast.Ident{

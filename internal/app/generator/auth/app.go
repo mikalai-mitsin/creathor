@@ -523,6 +523,7 @@ func (i AppAuth) file() *ast.File {
 										&ast.Ident{
 											Name: "authUseCase",
 										},
+										ast.NewIdent("logger"),
 									},
 								},
 							},

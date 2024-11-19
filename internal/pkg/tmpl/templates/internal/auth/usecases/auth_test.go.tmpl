@@ -20,13 +20,13 @@ import (
 func TestAuthUseCase_Auth(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authService := NewMockAuthService(ctrl)
+    mockAuthService := NewMockauthService(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     token := mock_entities.NewToken(t)
     user := mock_user_entities.NewUser(t)
     type fields struct {
-        authService AuthService
+        authService authService
         logger      logger
     }
     type args struct {
@@ -44,10 +44,10 @@ func TestAuthUseCase_Auth(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                authService.EXPECT().Auth(ctx, token).Return(user, nil).Times(1)
+                mockAuthService.EXPECT().Auth(ctx, token).Return(user, nil).Times(1)
             },
             fields: fields{
-                authService: authService,
+                authService: mockAuthService,
                 logger: mockLogger,
             },
             args: args{
@@ -60,13 +60,13 @@ func TestAuthUseCase_Auth(t *testing.T) {
         {
             name: "repository error",
             setup: func() {
-                authService.EXPECT().
+                mockAuthService.EXPECT().
                     Auth(ctx, token).
                     Return(nil, errs.NewBadTokenError()).
                     Times(1)
             },
             fields: fields{
-                authService: authService,
+                authService: mockAuthService,
                 logger: mockLogger,
             },
             args: args{
@@ -99,14 +99,14 @@ func TestAuthUseCase_Auth(t *testing.T) {
 func TestAuthUseCase_CreateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authService := NewMockAuthService(ctrl)
+    mockAuthService := NewMockauthService(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     login := mock_entities.NewLogin(t)
     pair := mock_entities.NewTokenPair(t)
     clockmock := NewMockclock(ctrl)
     type fields struct {
-        authService AuthService
+        authService authService
         logger      logger
         clock       clock
     }
@@ -125,10 +125,10 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                authService.EXPECT().CreateToken(ctx, login).Return(pair, nil).Times(1)
+                mockAuthService.EXPECT().CreateToken(ctx, login).Return(pair, nil).Times(1)
             },
             fields: fields{
-                authService: authService,
+                authService: mockAuthService,
                 logger: mockLogger,
                 clock:       clockmock,
             },
@@ -142,13 +142,13 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
         {
             name: "create requestUser error",
             setup: func() {
-                authService.EXPECT().
+                mockAuthService.EXPECT().
                     CreateToken(ctx, login).
                     Return(nil, errs.NewInvalidParameter("email or password")).
                     Times(1)
             },
             fields: fields{
-                authService: authService,
+                authService: mockAuthService,
                 logger: mockLogger,
                 clock:       clockmock,
             },
@@ -183,14 +183,14 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
 func TestAuthUseCase_RefreshToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authService := NewMockAuthService(ctrl)
+    mockAuthService := NewMockauthService(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     pair := mock_entities.NewTokenPair(t)
     refresh := mock_entities.NewToken(t)
     clockmock := NewMockclock(ctrl)
     type fields struct {
-        authService AuthService
+        authService authService
         logger      logger
         clock       clock
     }
@@ -209,10 +209,10 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                authService.EXPECT().RefreshToken(ctx, refresh).Return(pair, nil).Times(1)
+                mockAuthService.EXPECT().RefreshToken(ctx, refresh).Return(pair, nil).Times(1)
             },
             fields: fields{
-                authService: authService,
+                authService: mockAuthService,
                 logger: mockLogger,
                 clock:       clockmock,
             },
@@ -226,12 +226,12 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
         {
             name: "bad requestUser",
             setup: func() {
-                authService.EXPECT().
+                mockAuthService.EXPECT().
                     RefreshToken(ctx, refresh).
                     Return(nil, errs.NewBadTokenError()).Times(1)
             },
             fields: fields{
-                authService: authService,
+                authService: mockAuthService,
                 logger: mockLogger,
                 clock:       clockmock,
             },
@@ -266,11 +266,11 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
 func TestNewAuthUseCase(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authService := NewMockAuthService(ctrl)
+    mockAuthService := NewMockauthService(ctrl)
     clockmock := NewMockclock(ctrl)
     mockLogger := NewMocklogger(ctrl)
     type args struct {
-        authService AuthService
+        authService authService
         logger      logger
         clock       clock
     }
@@ -282,12 +282,12 @@ func TestNewAuthUseCase(t *testing.T) {
         {
             name: "ok",
             args: args{
-                authService: authService,
+                authService: mockAuthService,
                 logger: mockLogger,
                 clock:       clockmock,
             },
             want: &AuthUseCase{
-                authService: authService,
+                authService: mockAuthService,
                 clock:       clockmock,
                 logger: mockLogger,
             },
@@ -306,12 +306,12 @@ func TestNewAuthUseCase(t *testing.T) {
 func TestAuthUseCase_ValidateToken(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    authService := NewMockAuthService(ctrl)
+    mockAuthService := NewMockauthService(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     token := entities.Token("this_is_valid_token")
     type fields struct {
-        authService AuthService
+        authService authService
         logger      logger
     }
     type args struct {
@@ -328,10 +328,10 @@ func TestAuthUseCase_ValidateToken(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                authService.EXPECT().ValidateToken(ctx, token).Return(nil).Times(1)
+                mockAuthService.EXPECT().ValidateToken(ctx, token).Return(nil).Times(1)
             },
             fields: fields{
-                authService: authService,
+                authService: mockAuthService,
                 logger: mockLogger,
             },
             args: args{
@@ -343,13 +343,13 @@ func TestAuthUseCase_ValidateToken(t *testing.T) {
         {
             name: "repository error",
             setup: func() {
-                authService.EXPECT().
+                mockAuthService.EXPECT().
                     ValidateToken(ctx, token).
                     Return(errs.NewUnexpectedBehaviorError("35124345")).
                     Times(1)
             },
             fields: fields{
-                authService: authService,
+                authService: mockAuthService,
                 logger: mockLogger,
             },
             args: args{

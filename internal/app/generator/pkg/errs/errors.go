@@ -3912,11 +3912,15 @@ func (i Errors) Sync() error {
 	if err := i.syncErrs(); err != nil {
 		return err
 	}
-	if err := i.syncHttp(); err != nil {
-		return err
+	if i.project.GRPCEnabled {
+		if err := i.syncGrpc(); err != nil {
+			return err
+		}
 	}
-	if err := i.syncGrpc(); err != nil {
-		return err
+	if i.project.HTTPEnabled {
+		if err := i.syncHttp(); err != nil {
+			return err
+		}
 	}
 	if err := i.syncPostgres(); err != nil {
 		return err

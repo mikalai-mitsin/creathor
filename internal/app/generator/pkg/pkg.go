@@ -9,6 +9,7 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/domain/repositories"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/errs"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/grpc"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/http"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/log"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/pointer"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/postgres"
@@ -31,12 +32,20 @@ func (g *Generator) Sync() error {
 		cg.NewConfigGenerator(g.project),
 		containers.NewFxContainer(g.project),
 		errs.NewErrors(g.project),
-		grpc.NewMiddlewares(g.project),
-		grpc.NewServer(g.project),
 		log.NewGenerator(g.project),
 		pointer.NewGenerator(g.project),
 		postgres.NewGenerator(g.project),
 		uuid.NewGenerator(g.project),
+	}
+	if g.project.HTTPEnabled {
+		generators = append(generators, http.NewServer(g.project))
+	}
+	if g.project.GRPCEnabled {
+		generators = append(
+			generators,
+			grpc.NewMiddlewares(g.project),
+			grpc.NewServer(g.project),
+		)
 	}
 	if g.project.Auth {
 		generators = append(generators, auth.NewGenerator(g.project))

@@ -2268,56 +2268,45 @@ func (i Errors) fileHttp() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: `"encoding/json"`,
+							Value: "\"errors\"",
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: `"net/http"`,
+							Value: "\"github.com/go-chi/render\"",
 						},
 					},
-				},
-			},
-			&ast.GenDecl{
-				Tok: token.CONST,
-				Specs: []ast.Spec{
-					&ast.ValueSpec{
-						Names: []*ast.Ident{
-							{
-								Name: "ClientClosedRequest",
-							},
-						},
-						Values: []ast.Expr{
-							&ast.BasicLit{
-								Kind:  token.INT,
-								Value: "499",
-							},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: "\"net/http\"",
 						},
 					},
 				},
 			},
 			&ast.FuncDecl{
-				Name: &ast.Ident{
-					Name: "GetHTTPStatus",
-				},
-				Type: &ast.FuncType{
-					Params: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "e",
-									},
+				Recv: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Names: []*ast.Ident{
+								{
+									Name: "e",
 								},
-								Type: &ast.StarExpr{
-									X: &ast.Ident{
-										Name: "Error",
-									},
+							},
+							Type: &ast.StarExpr{
+								X: &ast.Ident{
+									Name: "Error",
 								},
 							},
 						},
 					},
+				},
+				Name: &ast.Ident{
+					Name: "GetHTTPStatus",
+				},
+				Type: &ast.FuncType{
+					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
@@ -2357,22 +2346,6 @@ func (i Errors) fileHttp() *ast.File {
 														Sel: &ast.Ident{
 															Name: "StatusOK",
 														},
-													},
-												},
-											},
-										},
-									},
-									&ast.CaseClause{
-										List: []ast.Expr{
-											&ast.Ident{
-												Name: "ErrorCodeCanceled",
-											},
-										},
-										Body: []ast.Stmt{
-											&ast.ReturnStmt{
-												Results: []ast.Expr{
-													&ast.Ident{
-														Name: "ClientClosedRequest",
 													},
 												},
 											},
@@ -2716,8 +2689,24 @@ func (i Errors) fileHttp() *ast.File {
 				},
 			},
 			&ast.FuncDecl{
+				Recv: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Names: []*ast.Ident{
+								{
+									Name: "e",
+								},
+							},
+							Type: &ast.StarExpr{
+								X: &ast.Ident{
+									Name: "Error",
+								},
+							},
+						},
+					},
+				},
 				Name: &ast.Ident{
-					Name: "RenderToHTTPResponse",
+					Name: "Render",
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -2725,19 +2714,7 @@ func (i Errors) fileHttp() *ast.File {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: "e",
-									},
-								},
-								Type: &ast.StarExpr{
-									X: &ast.Ident{
-										Name: "Error",
-									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "writer",
+										Name: "w",
 									},
 								},
 								Type: &ast.SelectorExpr{
@@ -2746,6 +2723,23 @@ func (i Errors) fileHttp() *ast.File {
 									},
 									Sel: &ast.Ident{
 										Name: "ResponseWriter",
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "r",
+									},
+								},
+								Type: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "http",
+										},
+										Sel: &ast.Ident{
+											Name: "Request",
+										},
 									},
 								},
 							},
@@ -2767,52 +2761,254 @@ func (i Errors) fileHttp() *ast.File {
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "writer",
+										Name: "render",
 									},
 									Sel: &ast.Ident{
-										Name: "WriteHeader",
+										Name: "Status",
 									},
 								},
 								Args: []ast.Expr{
+									&ast.Ident{
+										Name: "r",
+									},
 									&ast.CallExpr{
-										Fun: &ast.Ident{
-											Name: "GetHTTPStatus",
-										},
-										Args: []ast.Expr{
-											&ast.Ident{
+										Fun: &ast.SelectorExpr{
+											X: &ast.Ident{
 												Name: "e",
+											},
+											Sel: &ast.Ident{
+												Name: "GetHTTPStatus",
 											},
 										},
 									},
 								},
 							},
 						},
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "render",
+									},
+									Sel: &ast.Ident{
+										Name: "JSON",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.Ident{
+										Name: "w",
+									},
+									&ast.Ident{
+										Name: "r",
+									},
+									&ast.Ident{
+										Name: "e",
+									},
+								},
+							},
+						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.CallExpr{
-											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "json",
-												},
-												Sel: &ast.Ident{
-													Name: "NewEncoder",
-												},
-											},
-											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "writer",
-												},
-											},
+								&ast.Ident{
+									Name: "nil",
+								},
+							},
+						},
+					},
+				},
+			},
+			&ast.FuncDecl{
+				Name: &ast.Ident{
+					Name: "RenderToHTTPResponse",
+				},
+				Type: &ast.FuncType{
+					Params: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "err",
+									},
+								},
+								Type: &ast.Ident{
+									Name: "error",
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "w",
+									},
+								},
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "http",
+									},
+									Sel: &ast.Ident{
+										Name: "ResponseWriter",
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "r",
+									},
+								},
+								Type: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "http",
 										},
 										Sel: &ast.Ident{
-											Name: "Encode",
+											Name: "Request",
 										},
 									},
-									Args: []ast.Expr{
-										&ast.Ident{
+								},
+							},
+						},
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.DeclStmt{
+							Decl: &ast.GenDecl{
+								Tok: token.VAR,
+								Specs: []ast.Spec{
+									&ast.ValueSpec{
+										Names: []*ast.Ident{
+											{
+												Name: "e",
+											},
+										},
+										Type: &ast.StarExpr{
+											X: &ast.Ident{
+												Name: "Error",
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "errors",
+									},
+									Sel: &ast.Ident{
+										Name: "As",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.Ident{
+										Name: "err",
+									},
+									&ast.UnaryExpr{
+										Op: token.AND,
+										X: &ast.Ident{
 											Name: "e",
+										},
+									},
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.IfStmt{
+										Init: &ast.AssignStmt{
+											Lhs: []ast.Expr{
+												&ast.Ident{
+													Name: "err",
+												},
+											},
+											Tok: token.DEFINE,
+											Rhs: []ast.Expr{
+												&ast.CallExpr{
+													Fun: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "render",
+														},
+														Sel: &ast.Ident{
+															Name: "Render",
+														},
+													},
+													Args: []ast.Expr{
+														&ast.Ident{
+															Name: "w",
+														},
+														&ast.Ident{
+															Name: "r",
+														},
+														&ast.Ident{
+															Name: "e",
+														},
+													},
+												},
+											},
+										},
+										Cond: &ast.BinaryExpr{
+											X: &ast.Ident{
+												Name: "err",
+											},
+											Op: token.NEQ,
+											Y: &ast.Ident{
+												Name: "nil",
+											},
+										},
+										Body: &ast.BlockStmt{
+											List: []ast.Stmt{
+												&ast.ExprStmt{
+													X: &ast.CallExpr{
+														Fun: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "render",
+															},
+															Sel: &ast.Ident{
+																Name: "Status",
+															},
+														},
+														Args: []ast.Expr{
+															&ast.Ident{
+																Name: "r",
+															},
+															&ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "http",
+																},
+																Sel: &ast.Ident{
+																	Name: "StatusInternalServerError",
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									&ast.ReturnStmt{},
+								},
+							},
+						},
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "render",
+									},
+									Sel: &ast.Ident{
+										Name: "Status",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.Ident{
+										Name: "r",
+									},
+									&ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "http",
+										},
+										Sel: &ast.Ident{
+											Name: "StatusInternalServerError",
 										},
 									},
 								},
@@ -2826,18 +3022,23 @@ func (i Errors) fileHttp() *ast.File {
 			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: `"encoding/json"`,
+					Value: "\"errors\"",
 				},
 			},
 			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: `"net/http"`,
+					Value: "\"github.com/go-chi/render\"",
+				},
+			},
+			{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: "\"net/http\"",
 				},
 			},
 		},
 	}
-
 }
 
 func (i Errors) fileGrpc() *ast.File {

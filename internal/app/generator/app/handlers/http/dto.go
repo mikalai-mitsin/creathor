@@ -902,6 +902,50 @@ func (g *DTOGenerator) syncFilterDTOStruct() error {
 }
 
 func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
+	exprs := []ast.Expr{
+		&ast.KeyValueExpr{
+			Key: &ast.Ident{
+				Name: "IDs",
+			},
+			Value: &ast.Ident{
+				Name: "nil",
+			},
+		},
+		&ast.KeyValueExpr{
+			Key: &ast.Ident{
+				Name: "PageSize",
+			},
+			Value: &ast.Ident{
+				Name: "0",
+			},
+		},
+		&ast.KeyValueExpr{
+			Key: &ast.Ident{
+				Name: "PageNumber",
+			},
+			Value: &ast.Ident{
+				Name: "0",
+			},
+		},
+		&ast.KeyValueExpr{
+			Key: &ast.Ident{
+				Name: "OrderBy",
+			},
+			Value: &ast.Ident{
+				Name: "nil",
+			},
+		},
+	}
+	if g.domain.SearchEnabled() {
+		exprs = append(exprs, &ast.KeyValueExpr{
+			Key: &ast.Ident{
+				Name: "Search",
+			},
+			Value: &ast.Ident{
+				Name: `""`,
+			},
+		})
+	}
 	stmts := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
@@ -915,48 +959,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 					Op: token.AND,
 					X: &ast.CompositeLit{
 						Type: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
-						Elts: []ast.Expr{
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "IDs",
-								},
-								Value: &ast.Ident{
-									Name: "nil",
-								},
-							},
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "PageSize",
-								},
-								Value: &ast.Ident{
-									Name: "0",
-								},
-							},
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "PageNumber",
-								},
-								Value: &ast.Ident{
-									Name: "0",
-								},
-							},
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "OrderBy",
-								},
-								Value: &ast.Ident{
-									Name: "nil",
-								},
-							},
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "Search",
-								},
-								Value: &ast.Ident{
-									Name: `""`,
-								},
-							},
-						},
+						Elts: exprs,
 					},
 				},
 			},

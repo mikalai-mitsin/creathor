@@ -2,8 +2,58 @@
 ## [Unreleased]
 
 
-<a name="0.4.8"></a>
-## [0.4.8] - 2024-06-18
+<a name="0.5.0"></a>
+## [0.5.0] - 2024-12-09
+### Chore
+- clean
+
+### Feat
+- rename models with entities
+- use auth in app
+- add http cmd
+- add http container
+- add http server
+- use config in app build
+- mount handler to router
+- add http handler generator
+- fix search
+- use private interfaces
+- fix tests
+- local mock
+- add assert to tests
+- cleanup layout names
+- remove layout
+- remove methods
+- rename interceptor with usecases
+- rename usecases with services
+- use private interfaces
+- add register func to app
+- remove auth from interceptor
+- add auth middleware
+- add middlewares to grpc
+- invoke auth app
+- remove permissions from auth
+- invoke auth module first
+- remove logger
+- start app
+- update configs
+- add app generator
+- cleanup
+- add logger to repository
+- add logger, clock and uuid interfaces to usecase
+- add logger to handlers
+- rename handlers
+- **errors:** update is function
+- **interceptors:** add logger
+- **interceptors:** clean up interfaces
+
+### Fix
+- update imports
+- auth flag
+
+
+<a name="v0.4.8"></a>
+## [v0.4.8] - 2024-06-18
 ### Feat
 - add uuid generator
 - fix tests
@@ -341,8 +391,9 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/0.4.8...HEAD
-[0.4.8]: https://github.com/mikalai-mitsin/creathor/compare/vv0.5.0...0.4.8
+[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/0.5.0...HEAD
+[0.5.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.8...0.5.0
+[v0.4.8]: https://github.com/mikalai-mitsin/creathor/compare/vv0.5.0...v0.4.8
 [vv0.5.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.7...vv0.5.0
 [v0.4.7]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.6...v0.4.7
 [v0.4.6]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.5...v0.4.6

@@ -5,7 +5,6 @@ import "testing"
 func NewMockConfig(t *testing.T) *Config {
     t.Helper()
     return &Config{
-        BindAddr: ":8005",
         LogLevel: "debug",
         Database: database{
             URI:                "",

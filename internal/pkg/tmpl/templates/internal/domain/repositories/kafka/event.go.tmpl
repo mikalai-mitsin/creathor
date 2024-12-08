@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"{{ .Module }}/internal/pkg/configs"
-	"{{ .Module }}/internal/domain/models"
+	"{{ .Module }}/internal/domain/entities"
 	"{{ .Module }}/internal/domain/repositories"
 	"{{ .Module }}/internal/pkg/clock"
 	"github.com/Shopify/sarama"
@@ -12,19 +12,19 @@ import (
 
 type EventRepository struct {
 	producer sarama.SyncProducer
-	logger   log.Logger
+	logger   logger
 	topic    string
 }
 
 func NewEventRepository(
 	producer sarama.SyncProducer,
 	config *configs.Config,
-	logger log.Logger,
+	logger logger,
 ) repositories.EventRepository {
 	return &EventRepository{producer: producer, logger: logger, topic: config.Kafka.Topic}
 }
 
-func (r *EventRepository) Send(_ context.Context, event *models.Event) error {
+func (r *EventRepository) Send(_ context.Context, event *entities.Event) error {
 	data, err := json.Marshal(event)
 	if err != nil {
 		return err

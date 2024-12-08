@@ -9,9 +9,6 @@ import (
     "go.uber.org/fx/fxevent"
 )
 
-//nolint: lll
-//go:generate mockgen -build_flags=-mod=mod -destination mock/log_mock.go . Logger
-
 type ctxKey int
 
 const (
@@ -31,21 +28,9 @@ func Any(key string, value interface{}) Field {
 func Int64(key string, value int64) Field {
     return Field(zap.Int64(key, value))
 }
+
 func Uint64(key string, value uint64) Field {
     return Field(zap.Uint64(key, value))
-}
-
-type Logger interface {
-    fxevent.Logger
-    Debug(msg string, fields ...Field)
-    Info(msg string, fields ...Field)
-    Print(msg string, fields ...Field)
-    Warn(msg string, fields ...Field)
-    Warning(msg string, fields ...Field)
-    Error(msg string, fields ...Field)
-    Fatal(msg string, fields ...Field)
-    Panic(msg string, fields ...Field)
-    Logger() *zap.Logger
 }
 
 type Log struct {
@@ -120,7 +105,7 @@ func (l Log) Panic(msg string, fields ...Field) {
     l.logger.Panic(msg, zf...)
 }
 
-func NewLog(level string) (Logger, error) {
+func NewLog(level string) (*Log, error) {
     config := zap.NewProductionConfig()
     lvl, err := zap.ParseAtomicLevel(level)
     if err != nil {

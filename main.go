@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/auth"
+
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/layout"
 
 	"fmt"
@@ -11,8 +13,6 @@ import (
 	"os/exec"
 	"path"
 	"strings"
-
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/auth"
 
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg"
@@ -73,9 +73,11 @@ func initProject(ctx *cli.Context) error {
 	if err := pkgGenerator.Sync(); err != nil {
 		return err
 	}
-	authGenerator := auth.NewGenerator(project)
-	if err := authGenerator.Sync(); err != nil {
-		return err
+	if project.Auth {
+		authGenerator := auth.NewGenerator(project)
+		if err := authGenerator.Sync(); err != nil {
+			return err
+		}
 	}
 	for _, m := range project.Domains {
 		d := &domain.Domain{
@@ -83,17 +85,13 @@ func initProject(ctx *cli.Context) error {
 			Name:        m.Model,
 			Module:      project.Module,
 			ProtoModule: project.ProtoPackage(),
-			Models: []*domain.Model{
+			Entities: []*domain.Model{
 				domain.NewMainModel(m),
 				domain.NewFilterModel(m),
 				domain.NewCreateModel(m),
 				domain.NewUpdateModel(m),
 			},
-			UseCase:     domain.NewUseCase(m),
-			Repository:  domain.NewRepository(m),
-			Interceptor: domain.NewInterceptor(m),
-			GRPCHandler: domain.NewGRPCHandler(m),
-			Auth:        project.Auth,
+			Auth: project.Auth,
 		}
 		appGenerator := app.NewGenerator(d)
 		if err := appGenerator.Sync(); err != nil {

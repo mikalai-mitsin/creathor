@@ -13,11 +13,6 @@ func (uuid UUID) String() string {
     return string(uuid)
 }
 
-//go:generate mockgen -build_flags=-mod=mod -destination mock/uuid_mock.go . Generator
-type Generator interface {
-	NewUUID() UUID
-}
-
 type UUIDv4Generator struct{}
 
 func NewUUIDv4Generator() *UUIDv4Generator {

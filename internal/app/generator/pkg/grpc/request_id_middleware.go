@@ -109,7 +109,7 @@ func (m RequestIDMiddleware) file() *ast.File {
 					},
 				},
 			},
-			// unary server interceptor
+			// unary server usecase
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"{{ .Module }}/internal/pkg/configs"
 	"{{ .Module }}/internal/pkg/errs"
-	"{{ .Module }}/internal/domain/models"
-	mock_models "{{ .Module }}/internal/domain/models/mock"
+	"{{ .Module }}/internal/domain/entities"
+	mock_entities "{{ .Module }}/internal/domain/entities/mock"
 	"{{ .Module }}/internal/domain/repositories"
 	mock_sarama "{{ .Module }}/internal/repositories/kafka/mock"
 	"{{ .Module }}/internal/pkg/clock"
@@ -23,18 +23,18 @@ func TestEventRepository_Send(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	syncProducer := mock_sarama.NewMockSyncProducer(ctrl)
-	logger := mock_log.NewMockLogger(ctrl)
+	logger := mock_log.NewMocklogger(ctrl)
 	config := configs.NewMockConfig(t)
 	ctx := context.Background()
-	event := mock_models.NewEvent(t)
+	event := mock_entities.NewEvent(t)
 	type fields struct {
 		producer sarama.SyncProducer
-		logger   log.Logger
+		logger   logger
 		topic    string
 	}
 	type args struct {
 		in0   context.Context
-		event *models.Event
+		event *entities.Event
 	}
 	tests := []struct {
 		name    string
@@ -95,12 +95,12 @@ func TestNewEventRepository(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	syncProducer := mock_sarama.NewMockSyncProducer(ctrl)
-	logger := mock_log.NewMockLogger(ctrl)
+	logger := mock_log.NewMocklogger(ctrl)
 	config := configs.NewMockConfig(t)
 	type args struct {
 		producer sarama.SyncProducer
 		config   *configs.Config
-		logger   log.Logger
+		logger   logger
 	}
 	tests := []struct {
 		name string

@@ -3,7 +3,6 @@ package postgres
 import (
 	"bytes"
 	"fmt"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -12,28 +11,30 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
+
 	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 
 	"github.com/iancoleman/strcase"
 )
 
-type RepositoryCrud struct {
+type RepositoryGenerator struct {
 	domain *domain.Domain
 }
 
-func NewRepositoryCrud(domain *domain.Domain) *RepositoryCrud {
-	return &RepositoryCrud{domain: domain}
+func NewRepositoryGenerator(domain *domain.Domain) *RepositoryGenerator {
+	return &RepositoryGenerator{domain: domain}
 }
 
-func (r RepositoryCrud) getDTOName() string {
+func (r RepositoryGenerator) getDTOName() string {
 	return fmt.Sprintf("%sDTO", strcase.ToCamel(r.domain.GetMainModel().Name))
 }
 
-func (r RepositoryCrud) getDTOListName() string {
+func (r RepositoryGenerator) getDTOListName() string {
 	return fmt.Sprintf("%sListDTO", strcase.ToCamel(r.domain.GetMainModel().Name))
 }
 
-func (r RepositoryCrud) filename() string {
+func (r RepositoryGenerator) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
@@ -44,7 +45,7 @@ func (r RepositoryCrud) filename() string {
 	)
 }
 
-func (r RepositoryCrud) Sync() error {
+func (r RepositoryGenerator) Sync() error {
 	err := os.MkdirAll(path.Dir(r.filename()), 0777)
 	if err != nil {
 		return err
@@ -61,7 +62,7 @@ func (r RepositoryCrud) Sync() error {
 	if err := r.syncDTOListType(); err != nil {
 		return err
 	}
-	if err := r.syncDTOListToModels(); err != nil {
+	if err := r.syncDTOListToEntities(); err != nil {
 		return err
 	}
 	if err := r.syncDTOConstructor(); err != nil {
@@ -70,36 +71,27 @@ func (r RepositoryCrud) Sync() error {
 	if err := r.syncDTOToModel(); err != nil {
 		return err
 	}
-	for _, method := range r.domain.Repository.Methods {
-		switch method.Name {
-		case "Create":
-			if err := r.syncCreateMethod(); err != nil {
-				return err
-			}
-		case "Get":
-			if err := r.syncGetMethod(); err != nil {
-				return err
-			}
-		case "GetByEmail":
-			if err := r.syncGetByEmailMethod(); err != nil {
-				return err
-			}
-		case "List":
-			if err := r.syncListMethod(); err != nil {
-				return err
-			}
-		case "Count":
-			if err := r.syncCountMethod(); err != nil {
-				return err
-			}
-		case "Update":
-			if err := r.syncUpdateMethod(); err != nil {
-				return err
-			}
-		case "Delete":
-			if err := r.syncDeleteMethod(); err != nil {
-				return err
-			}
+	if err := r.syncCreateMethod(); err != nil {
+		return err
+	}
+	if err := r.syncGetMethod(); err != nil {
+		return err
+	}
+	if err := r.syncListMethod(); err != nil {
+		return err
+	}
+	if err := r.syncCountMethod(); err != nil {
+		return err
+	}
+	if err := r.syncUpdateMethod(); err != nil {
+		return err
+	}
+	if err := r.syncDeleteMethod(); err != nil {
+		return err
+	}
+	if r.domain.Name == "user" {
+		if err := r.syncGetByEmailMethod(); err != nil {
+			return err
 		}
 	}
 	if err := r.syncMigrations(); err != nil {
@@ -111,7 +103,7 @@ func (r RepositoryCrud) Sync() error {
 	return nil
 }
 
-func (r RepositoryCrud) dtoStruct() *ast.TypeSpec {
+func (r RepositoryGenerator) dtoStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Name: ast.NewIdent(r.getDTOName()),
 		Type: &ast.StructType{
@@ -201,7 +193,7 @@ func (r RepositoryCrud) dtoStruct() *ast.TypeSpec {
 	return structure
 }
 
-func (r RepositoryCrud) syncDTOStruct() error {
+func (r RepositoryGenerator) syncDTOStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -262,7 +254,7 @@ func (r RepositoryCrud) syncDTOStruct() error {
 	return nil
 }
 
-func (r RepositoryCrud) dtoConstructor() *ast.FuncDecl {
+func (r RepositoryGenerator) dtoConstructor() *ast.FuncDecl {
 	dto := &ast.CompositeLit{
 		Type: ast.NewIdent(r.getDTOName()),
 		Elts: []ast.Expr{},
@@ -324,7 +316,7 @@ func (r RepositoryCrud) dtoConstructor() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: r.domain.GetMainModel().Name,
@@ -449,7 +441,7 @@ func (r RepositoryCrud) dtoConstructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (r RepositoryCrud) syncDTOConstructor() error {
+func (r RepositoryGenerator) syncDTOConstructor() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -544,10 +536,10 @@ func (r RepositoryCrud) syncDTOConstructor() error {
 	return nil
 }
 
-func (r RepositoryCrud) dtoToModel() *ast.FuncDecl {
+func (r RepositoryGenerator) dtoToModel() *ast.FuncDecl {
 	model := &ast.CompositeLit{
 		Type: &ast.SelectorExpr{
-			X: ast.NewIdent("models"),
+			X: ast.NewIdent("entities"),
 			Sel: &ast.Ident{
 				Name: r.domain.GetMainModel().Name,
 			},
@@ -630,7 +622,7 @@ func (r RepositoryCrud) dtoToModel() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: r.domain.GetMainModel().Name,
@@ -746,7 +738,7 @@ func (r RepositoryCrud) dtoToModel() *ast.FuncDecl {
 	return method
 }
 
-func (r RepositoryCrud) syncDTOToModel() error {
+func (r RepositoryGenerator) syncDTOToModel() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -779,10 +771,10 @@ func (r RepositoryCrud) syncDTOToModel() error {
 	return nil
 }
 
-func (r RepositoryCrud) astStruct() *ast.TypeSpec {
+func (r RepositoryGenerator) astStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Doc:        nil,
-		Name:       ast.NewIdent(r.domain.Repository.Name),
+		Name:       ast.NewIdent(r.domain.GetRepositoryTypeName()),
 		TypeParams: nil,
 		Assign:     0,
 		Type: &ast.StructType{
@@ -803,12 +795,9 @@ func (r RepositoryCrud) astStruct() *ast.TypeSpec {
 						Comment: nil,
 					},
 					{
-						Doc:   nil,
-						Names: []*ast.Ident{ast.NewIdent("logger")},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("log"),
-							Sel: ast.NewIdent("Logger"),
-						},
+						Doc:     nil,
+						Names:   []*ast.Ident{ast.NewIdent("logger")},
+						Type:    ast.NewIdent("logger"),
 						Tag:     nil,
 						Comment: nil,
 					},
@@ -820,7 +809,7 @@ func (r RepositoryCrud) astStruct() *ast.TypeSpec {
 	return structure
 }
 
-func (r RepositoryCrud) file() *ast.File {
+func (r RepositoryGenerator) file() *ast.File {
 	return &ast.File{
 		Name: ast.NewIdent("postgres"),
 		Decls: []ast.Decl{
@@ -854,7 +843,7 @@ func (r RepositoryCrud) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: r.domain.ModelsImportPath(),
+							Value: r.domain.EntitiesImportPath(),
 						},
 					},
 					&ast.ImportSpec{
@@ -913,7 +902,7 @@ func (r RepositoryCrud) file() *ast.File {
 	}
 }
 
-func (r RepositoryCrud) syncStruct() error {
+func (r RepositoryGenerator) syncStruct() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -922,7 +911,8 @@ func (r RepositoryCrud) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.domain.Repository.Name {
+		if t, ok := node.(*ast.TypeSpec); ok &&
+			t.Name.String() == r.domain.GetRepositoryTypeName() {
 			structure = t
 			structureExists = true
 			return false
@@ -953,11 +943,11 @@ func (r RepositoryCrud) syncStruct() error {
 	return nil
 }
 
-func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
+func (r RepositoryGenerator) astConstructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
 		Doc:  nil,
 		Recv: nil,
-		Name: ast.NewIdent(fmt.Sprintf("New%s", r.domain.Repository.Name)),
+		Name: ast.NewIdent(fmt.Sprintf("New%s", r.domain.GetRepositoryTypeName())),
 		Type: &ast.FuncType{
 			Func:       0,
 			TypeParams: nil,
@@ -976,12 +966,9 @@ func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 						Comment: nil,
 					},
 					{
-						Doc:   nil,
-						Names: []*ast.Ident{ast.NewIdent("logger")},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("log"),
-							Sel: ast.NewIdent("Logger"),
-						},
+						Doc:     nil,
+						Names:   []*ast.Ident{ast.NewIdent("logger")},
+						Type:    ast.NewIdent("logger"),
 						Tag:     nil,
 						Comment: nil,
 					},
@@ -993,7 +980,7 @@ func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 					{
 						Doc:     nil,
 						Names:   nil,
-						Type:    ast.NewIdent(fmt.Sprintf("*%s", r.domain.Repository.Name)),
+						Type:    ast.NewIdent(fmt.Sprintf("*%s", r.domain.GetRepositoryTypeName())),
 						Tag:     nil,
 						Comment: nil,
 					},
@@ -1011,7 +998,7 @@ func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 							OpPos: 0,
 							Op:    token.AND,
 							X: &ast.CompositeLit{
-								Type: ast.NewIdent(r.domain.Repository.Name),
+								Type: ast.NewIdent(r.domain.GetRepositoryTypeName()),
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
 										Key: &ast.Ident{
@@ -1041,7 +1028,7 @@ func (r RepositoryCrud) astConstructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (r RepositoryCrud) syncConstructor() error {
+func (r RepositoryGenerator) syncConstructor() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1051,7 +1038,7 @@ func (r RepositoryCrud) syncConstructor() error {
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", r.domain.Repository.Name) {
+			t.Name.String() == fmt.Sprintf("New%s", r.domain.GetRepositoryTypeName()) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -1074,7 +1061,7 @@ func (r RepositoryCrud) syncConstructor() error {
 	return nil
 }
 
-func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
+func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 	var columns []ast.Expr
 	var values []ast.Expr
 	for _, param := range r.domain.GetMainModel().Params {
@@ -1098,7 +1085,7 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 						ast.NewIdent("r"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(r.domain.Repository.Name),
+						X: ast.NewIdent(r.domain.GetRepositoryTypeName()),
 					},
 				},
 			},
@@ -1117,7 +1104,7 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 						Names: []*ast.Ident{ast.NewIdent("model")},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("models"),
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(r.domain.GetMainModel().Name),
 							},
 						},
@@ -1356,7 +1343,7 @@ func (r RepositoryCrud) astCreateMethod() *ast.FuncDecl {
 	return fun
 }
 
-func (r RepositoryCrud) syncCreateMethod() error {
+func (r RepositoryGenerator) syncCreateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -1433,7 +1420,7 @@ func (r RepositoryCrud) syncCreateMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) search() ast.Stmt {
+func (r RepositoryGenerator) search() ast.Stmt {
 	if !r.domain.SearchEnabled() {
 		return &ast.EmptyStmt{}
 	}
@@ -1540,7 +1527,7 @@ func (r RepositoryCrud) search() ast.Stmt {
 	return stmt
 }
 
-func (r RepositoryCrud) listMethod() *ast.FuncDecl {
+func (r RepositoryGenerator) listMethod() *ast.FuncDecl {
 	tableName := r.domain.TableName()
 	var columns []ast.Expr
 	for _, param := range r.domain.GetMainModel().Params {
@@ -1563,7 +1550,7 @@ func (r RepositoryCrud) listMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.domain.Repository.Name,
+							Name: r.domain.GetRepositoryTypeName(),
 						},
 					},
 				},
@@ -1599,7 +1586,7 @@ func (r RepositoryCrud) listMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: r.domain.GetFilterModel().Name,
@@ -1616,7 +1603,7 @@ func (r RepositoryCrud) listMethod() *ast.FuncDecl {
 							Elt: &ast.StarExpr{
 								X: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "models",
+										Name: "entities",
 									},
 									Sel: &ast.Ident{
 										Name: r.domain.GetMainModel().Name,
@@ -2217,7 +2204,7 @@ func (r RepositoryCrud) listMethod() *ast.FuncDecl {
 									Name: "dto",
 								},
 								Sel: &ast.Ident{
-									Name: "ToModels",
+									Name: "ToEntities",
 								},
 							},
 						},
@@ -2231,7 +2218,7 @@ func (r RepositoryCrud) listMethod() *ast.FuncDecl {
 	}
 }
 
-func (r RepositoryCrud) syncListMethod() error {
+func (r RepositoryGenerator) syncListMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -2285,7 +2272,7 @@ func (r RepositoryCrud) syncListMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
+func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 	tableName := r.domain.TableName()
 	columns := []ast.Expr{
 		&ast.BasicLit{
@@ -2321,7 +2308,7 @@ func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.domain.Repository.Name,
+							Name: r.domain.GetRepositoryTypeName(),
 						},
 					},
 				},
@@ -2357,7 +2344,7 @@ func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: r.domain.GetFilterModel().Name,
@@ -2798,7 +2785,7 @@ func (r RepositoryCrud) astCountMethod() *ast.FuncDecl {
 	}
 }
 
-func (r RepositoryCrud) syncCountMethod() error {
+func (r RepositoryGenerator) syncCountMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -2830,7 +2817,7 @@ func (r RepositoryCrud) syncCountMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) getMethod() *ast.FuncDecl {
+func (r RepositoryGenerator) getMethod() *ast.FuncDecl {
 	tableName := r.domain.TableName()
 	var columns []ast.Expr
 	for _, param := range r.domain.GetMainModel().Params {
@@ -2853,7 +2840,7 @@ func (r RepositoryCrud) getMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.domain.Repository.Name,
+							Name: r.domain.GetRepositoryTypeName(),
 						},
 					},
 				},
@@ -2903,7 +2890,7 @@ func (r RepositoryCrud) getMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: r.domain.GetMainModel().Name,
@@ -3237,7 +3224,7 @@ func (r RepositoryCrud) getMethod() *ast.FuncDecl {
 	}
 }
 
-func (r RepositoryCrud) getByEmailMethod() *ast.FuncDecl {
+func (r RepositoryGenerator) getByEmailMethod() *ast.FuncDecl {
 	tableName := r.domain.TableName()
 	var columns []ast.Expr
 	for _, param := range r.domain.GetMainModel().Params {
@@ -3260,7 +3247,7 @@ func (r RepositoryCrud) getByEmailMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.domain.Repository.Name,
+							Name: r.domain.GetRepositoryTypeName(),
 						},
 					},
 				},
@@ -3301,7 +3288,7 @@ func (r RepositoryCrud) getByEmailMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: r.domain.GetMainModel().Name,
@@ -3626,7 +3613,7 @@ func (r RepositoryCrud) getByEmailMethod() *ast.FuncDecl {
 	}
 }
 
-func (r RepositoryCrud) syncGetMethod() error {
+func (r RepositoryGenerator) syncGetMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -3680,7 +3667,7 @@ func (r RepositoryCrud) syncGetMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) syncGetByEmailMethod() error {
+func (r RepositoryGenerator) syncGetByEmailMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -3734,7 +3721,7 @@ func (r RepositoryCrud) syncGetByEmailMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
+func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 	tableName := r.domain.TableName()
 	updateBlock := &ast.BlockStmt{
 		List: []ast.Stmt{},
@@ -3789,7 +3776,7 @@ func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.domain.Repository.Name,
+							Name: r.domain.GetRepositoryTypeName(),
 						},
 					},
 				},
@@ -3825,7 +3812,7 @@ func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: r.domain.GetMainModel().Name,
@@ -4320,7 +4307,7 @@ func (r RepositoryCrud) updateMethod() *ast.FuncDecl {
 	return method
 }
 
-func (r RepositoryCrud) syncUpdateMethod() error {
+func (r RepositoryGenerator) syncUpdateMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -4424,7 +4411,7 @@ func (r RepositoryCrud) syncUpdateMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
+func (r RepositoryGenerator) astDeleteMethod() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -4436,7 +4423,7 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.Ident{
-							Name: r.domain.Repository.Name,
+							Name: r.domain.GetRepositoryTypeName(),
 						},
 					},
 				},
@@ -4939,7 +4926,7 @@ func (r RepositoryCrud) astDeleteMethod() *ast.FuncDecl {
 	}
 }
 
-func (r RepositoryCrud) syncDeleteMethod() error {
+func (r RepositoryGenerator) syncDeleteMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -4971,7 +4958,7 @@ func (r RepositoryCrud) syncDeleteMethod() error {
 	return nil
 }
 
-func (r RepositoryCrud) astDTOListType() *ast.TypeSpec {
+func (r RepositoryGenerator) astDTOListType() *ast.TypeSpec {
 	return &ast.TypeSpec{
 		Name: &ast.Ident{
 			Name: r.getDTOListName(),
@@ -4986,7 +4973,7 @@ func (r RepositoryCrud) astDTOListType() *ast.TypeSpec {
 	}
 }
 
-func (r RepositoryCrud) syncDTOListType() error {
+func (r RepositoryGenerator) syncDTOListType() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -5023,7 +5010,7 @@ func (r RepositoryCrud) syncDTOListType() error {
 	return nil
 }
 
-func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
+func (r RepositoryGenerator) astDTOToEntities() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -5040,7 +5027,7 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 			},
 		},
 		Name: &ast.Ident{
-			Name: "ToModels",
+			Name: "ToEntities",
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{},
@@ -5050,7 +5037,7 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 						Type: &ast.ArrayType{
 							Elt: &ast.StarExpr{
 								X: &ast.SelectorExpr{
-									X: ast.NewIdent("models"),
+									X: ast.NewIdent("entities"),
 									Sel: &ast.Ident{
 										Name: r.domain.GetMainModel().Name,
 									},
@@ -5080,7 +5067,7 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 									Elt: &ast.StarExpr{
 										X: &ast.SelectorExpr{
 											X: &ast.Ident{
-												Name: "models",
+												Name: "entities",
 											},
 											Sel: &ast.Ident{
 												Name: r.domain.GetMainModel().Name,
@@ -5157,7 +5144,7 @@ func (r RepositoryCrud) astDTOToModels() *ast.FuncDecl {
 	}
 }
 
-func (r RepositoryCrud) syncDTOListToModels() error {
+func (r RepositoryGenerator) syncDTOListToEntities() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
@@ -5166,7 +5153,7 @@ func (r RepositoryCrud) syncDTOListToModels() error {
 	var methodExists bool
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "ToModels" {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "ToEntities" {
 			methodExists = true
 			method = t
 			return false
@@ -5174,7 +5161,7 @@ func (r RepositoryCrud) syncDTOListToModels() error {
 		return true
 	})
 	if method == nil {
-		method = r.astDTOToModels()
+		method = r.astDTOToEntities()
 	}
 	if !methodExists {
 		file.Decls = append(file.Decls, method)
@@ -5191,7 +5178,7 @@ func (r RepositoryCrud) syncDTOListToModels() error {
 
 var destinationPath = "."
 
-func (r RepositoryCrud) syncTest() error {
+func (r RepositoryGenerator) syncTest() error {
 	test := tmpl.Template{
 		SourcePath: "templates/internal/domain/repositories/postgres/crud_test.go.tmpl",
 		DestinationPath: filepath.Join(
@@ -5211,7 +5198,7 @@ func (r RepositoryCrud) syncTest() error {
 	return nil
 }
 
-func (r RepositoryCrud) syncMigrations() error {
+func (r RepositoryGenerator) syncMigrations() error {
 	pattern := fmt.Sprintf("*_%s.up.sql", r.domain.TableName())
 	dir, err := os.ReadDir(path.Join(
 		destinationPath,

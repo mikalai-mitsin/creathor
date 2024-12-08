@@ -1,0 +1,562 @@
+package services
+
+import (
+    "context"
+    "errors"
+    "reflect"
+    "testing"
+    "time"
+
+    "{{ .Module }}/internal/pkg/errs"
+    "{{ .Module }}/internal/app/{{ .DirName }}/entities"
+    mock_entities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
+    "{{ .Module }}/internal/pkg/clock"
+    "{{ .Module }}/internal/pkg/uuid"
+    "{{ .Module }}/internal/pkg/log"
+    "go.uber.org/mock/gomock"
+    "github.com/jaswdr/faker"
+    "github.com/stretchr/testify/assert"
+)
+
+func TestNew{{ .Config.ServiceTypeName }}(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    mock{{ .Config.RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
+    mockClock := NewMockclock(ctrl)
+    mockLogger := NewMocklogger(ctrl)
+    mockUUID := NewMockuuidGenerator(ctrl)
+    type args struct {
+        {{ .Config.RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
+        clock  clock
+        logger logger
+        uuid   uuidGenerator
+    }
+    tests := []struct {
+        name  string
+        setup func()
+        args  args
+        want  *{{ .Config.ServiceTypeName }}
+    }{
+        {
+            name: "ok",
+            setup: func() {
+            },
+            args: args{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                clock:  mockClock,
+                logger: mockLogger,
+                uuid:   mockUUID,
+            },
+            want: &{{ .Config.ServiceTypeName }}{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                clock:  mockClock,
+                logger: mockLogger,
+                uuid:   mockUUID,
+            },
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            got := New{{ .Config.ServiceTypeName }}(tt.args.{{ .Config.RepositoryVariableName }}, tt.args.clock, tt.args.logger, tt.args.uuid)
+            assert.Equal(t, tt.want, got)
+        })
+    }
+}
+
+func Test{{ .Config.ServiceTypeName }}_Get(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    mock{{ .Config.RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
+    mockLogger := NewMocklogger(ctrl)
+    ctx := context.Background()
+    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
+    type fields struct {
+        {{ .Config.RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
+        logger           logger
+    }
+    type args struct {
+        ctx context.Context
+        id  uuid.UUID
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    *entities.{{ .Config.ModelName }}
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return({{ .Config.Variable }}, nil)
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                logger: mockLogger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  {{ .Config.Variable }}.ID,
+            },
+            want:    {{ .Config.Variable }},
+            wantErr: nil,
+        },
+        {
+            name: "{{ .Config.ModelName }} not found",
+            setup: func() {
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return(nil, errs.NewEntityNotFoundError())
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                logger: mockLogger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  {{ .Config.Variable }}.ID,
+            },
+            want:    nil,
+            wantErr: errs.NewEntityNotFoundError(),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            u := &{{ .Config.ServiceTypeName }}{
+                {{ .Config.RepositoryVariableName }}: tt.fields.{{ .Config.RepositoryVariableName }},
+                logger:           tt.fields.logger,
+            }
+            got, err := u.Get(tt.args.ctx, tt.args.id)
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
+        })
+    }
+}
+
+func Test{{ .Config.ServiceTypeName }}_List(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    mock{{ .Config.RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
+    mockLogger := NewMocklogger(ctrl)
+    ctx := context.Background()
+    var {{ .Config.ListVariable }} []*entities.{{ .Config.ModelName }}
+    count := faker.New().UInt64Between(2, 20)
+    for i := uint64(0); i < count; i++ {
+        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mock_entities.New{{ .Config.ModelName }}(t))
+    }
+    filter := mock_entities.New{{ .Config.FilterTypeName }}(t)
+    type fields struct {
+        {{ .Config.RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
+        logger           logger
+    }
+    type args struct {
+        ctx    context.Context
+        filter *entities.{{ .Config.FilterTypeName }}
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    []*entities.{{ .Config.ModelName }}
+        want1   uint64
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().List(ctx, filter).Return({{ .Config.ListVariable }}, nil)
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().Count(ctx, filter).Return(count, nil)
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                logger: mockLogger,
+            },
+            args: args{
+                ctx:    ctx,
+                filter: filter,
+            },
+            want:    {{ .Config.ListVariable }},
+            want1:   count,
+            wantErr: nil,
+        },
+        {
+            name: "list error",
+            setup: func() {
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().List(ctx, filter).Return(nil, errs.NewUnexpectedBehaviorError("test error"))
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                logger: mockLogger,
+            },
+            args: args{
+                ctx:    ctx,
+                filter: filter,
+            },
+            want:    nil,
+            want1:   0,
+            wantErr: errs.NewUnexpectedBehaviorError("test error"),
+        },
+        {
+            name: "count error",
+            setup: func() {
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().List(ctx, filter).Return({{ .Config.ListVariable }}, nil)
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                logger: mockLogger,
+            },
+            args: args{
+                ctx:    ctx,
+                filter: filter,
+            },
+            want:    nil,
+            want1:   0,
+            wantErr: errs.NewUnexpectedBehaviorError("test error"),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            u := &{{ .Config.ServiceTypeName }}{
+                {{ .Config.RepositoryVariableName }}: tt.fields.{{ .Config.RepositoryVariableName }},
+                logger:           tt.fields.logger,
+            }
+            got, got1, err := u.List(tt.args.ctx, tt.args.filter)
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
+            assert.Equal(t, tt.want1, got1)
+        })
+    }
+}
+
+func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    mock{{ .Config.RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
+    mockClock := NewMockclock(ctrl)
+    mockLogger := NewMocklogger(ctrl)
+    mockUUID := NewMockuuidGenerator(ctrl)
+    ctx := context.Background()
+    create := mock_entities.New{{ .Config.CreateTypeName }}(t)
+    now := time.Now().UTC()
+    type fields struct {
+        {{ .Config.RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
+        clock            clock
+        logger           logger
+        uuid             uuidGenerator
+    }
+    type args struct {
+        ctx    context.Context
+        create *entities.{{ .Config.CreateTypeName }}
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    *entities.{{ .Config.ModelName }}
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+                mockClock.EXPECT().Now().Return(now)
+                mockUUID.EXPECT().NewUUID().Return(uuid.UUID("test"))
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
+                    Create(
+                        ctx,
+                        &entities.{{ .Config.ModelName }}{
+                            ID: uuid.UUID("test"),
+{{- range $key, $value := .Config.Params }}
+                            {{ $value.GetName }}: create.{{ $value.GetName }},
+{{- end }}
+                            UpdatedAt: now,
+                            CreatedAt: now,
+                        },
+                    ).
+                    Return(nil)
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                clock:            mockClock,
+                logger:           mockLogger,
+                uuid: mockUUID,
+            },
+            args: args{
+                ctx: ctx,
+                create: create,
+            },
+            want: &entities.{{ .Config.ModelName }}{
+                ID: uuid.UUID("test"),
+{{- range $key, $value := .Config.Params }}
+                {{ $value.GetName }}: create.{{ $value.GetName }},
+{{- end }}
+                UpdatedAt: now,
+                CreatedAt: now,
+            },
+            wantErr: nil,
+        },
+        {
+            name: "unexpected behavior",
+            setup: func() {
+                mockClock.EXPECT().Now().Return(now)
+                mockUUID.EXPECT().NewUUID().Return(uuid.UUID("test 2"))
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
+                    Create(
+                        ctx,
+                        &entities.{{ .Config.ModelName }}{
+                            ID: uuid.UUID("test 2"),
+{{- range $key, $value := .Config.Params }}
+                            {{ $value.GetName }}: create.{{ $value.GetName }},
+{{- end }}
+                            UpdatedAt: now,
+                            CreatedAt: now,
+                        },
+                    ).
+                    Return(errs.NewUnexpectedBehaviorError("test error"))
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                clock:            mockClock,
+                logger:           mockLogger,
+                uuid:             mockUUID,
+            },
+            args: args{
+                ctx: ctx,
+                create: create,
+            },
+            want:    nil,
+            wantErr: errs.NewUnexpectedBehaviorError("test error"),
+        },
+        {
+            name: "invalid",
+            setup: func() {
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                logger:           mockLogger,
+                clock:            mockClock,
+                uuid:             mockUUID,
+            },
+            args: args{
+                ctx: ctx,
+                create: &entities.{{ .Config.CreateTypeName }}{},
+            },
+            want: nil,
+            wantErr: errs.NewInvalidFormError().WithParams(
+{{- range $key, $value := .Config.Params }}
+                errs.Param{Key: "{{ $value.Tag }}", Value: "cannot be blank"},
+{{- end }}
+            ),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            u := &{{ .Config.ServiceTypeName }}{
+                {{ .Config.RepositoryVariableName }}: tt.fields.{{ .Config.RepositoryVariableName }},
+                clock:            tt.fields.clock,
+                logger:           tt.fields.logger,
+                uuid:             tt.fields.uuid,
+            }
+            got, err := u.Create(tt.args.ctx, tt.args.create)
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
+        })
+    }
+}
+
+func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    mock{{ .Config.RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
+    mockLogger := NewMocklogger(ctrl)
+    ctx := context.Background()
+    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
+    mockClock := NewMockclock(ctrl)
+    update := mock_entities.New{{ .Config.UpdateTypeName }}(t)
+    now := {{ .Config.Variable }}.UpdatedAt
+    type fields struct {
+        {{ .Config.RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
+        clock            clock
+        logger           logger
+    }
+    type args struct {
+        ctx    context.Context
+        update *entities.{{ .Config.UpdateTypeName }}
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        want    *entities.{{ .Config.ModelName }}
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+                mockClock.EXPECT().Now().Return(now)
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
+                    Get(ctx, update.ID).Return({{ .Config.Variable }}, nil)
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
+                    Update(ctx, {{ .Config.Variable }}).Return(nil)
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                clock:            mockClock,
+                logger: mockLogger,
+            },
+            args: args{
+                ctx: ctx,
+                update: update,
+            },
+            want:    {{ .Config.Variable }},
+            wantErr: nil,
+        },
+        {
+            name: "update error",
+            setup: func() {
+                mockClock.EXPECT().Now().Return(now)
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
+                    Get(ctx, update.ID).
+                    Return({{ .Config.Variable }}, nil)
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
+                    Update(ctx, {{ .Config.Variable }}).
+                    Return(errs.NewUnexpectedBehaviorError("test error"))
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                clock:            mockClock,
+                logger: mockLogger,
+            },
+            args: args{
+                ctx: ctx,
+                update: update,
+            },
+            want:    nil,
+            wantErr: errs.NewUnexpectedBehaviorError("test error"),
+        },
+        {
+            name: "{{ .Config.ModelName }} not found",
+            setup: func() {
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().Get(ctx, update.ID).Return(nil, errs.NewEntityNotFoundError())
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                clock:            mockClock,
+                logger: mockLogger,
+            },
+            args: args{
+                ctx: ctx,
+                update: update,
+            },
+            want:    nil,
+            wantErr: errs.NewEntityNotFoundError(),
+        },
+        {
+            name: "invalid",
+            setup: func() {
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                clock:            mockClock,
+                logger: mockLogger,
+            },
+            args: args{
+                ctx: ctx,
+                update: &entities.{{ .Config.UpdateTypeName }}{
+                    ID: uuid.UUID("baduuid"),
+                },
+            },
+            want: nil,
+            wantErr: errs.NewInvalidFormError().WithParam("id", "must be a valid UUID"),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            u := &{{ .Config.ServiceTypeName }}{
+                {{ .Config.RepositoryVariableName }}: tt.fields.{{ .Config.RepositoryVariableName }},
+                clock:            tt.fields.clock,
+                logger:           tt.fields.logger,
+            }
+            got, err := u.Update(tt.args.ctx, tt.args.update)
+            assert.ErrorIs(t, err, tt.wantErr)
+            assert.Equal(t, tt.want, got)
+        })
+    }
+}
+
+func Test{{ .Config.ServiceTypeName }}_Delete(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    mock{{ .Config.RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
+    mockLogger := NewMocklogger(ctrl)
+    ctx := context.Background()
+    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
+    type fields struct {
+        {{ .Config.RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
+        logger           logger
+    }
+    type args struct {
+        ctx context.Context
+        id  uuid.UUID
+    }
+    tests := []struct {
+        name    string
+        setup   func()
+        fields  fields
+        args    args
+        wantErr error
+    }{
+        {
+            name: "ok",
+            setup: func() {
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
+                    Delete(ctx, {{ .Config.Variable }}.ID).
+                    Return(nil)
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                logger: mockLogger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  {{ .Config.Variable }}.ID,
+            },
+            wantErr: nil,
+        },
+        {
+            name: "{{ .Config.ModelName }} not found",
+            setup: func() {
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().
+                    Delete(ctx, {{ .Config.Variable }}.ID).
+                    Return(errs.NewEntityNotFoundError())
+            },
+            fields: fields{
+                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
+                logger: mockLogger,
+            },
+            args: args{
+                ctx: ctx,
+                id:  {{ .Config.Variable }}.ID,
+            },
+            wantErr: errs.NewEntityNotFoundError(),
+        },
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            tt.setup()
+            u := &{{ .Config.ServiceTypeName }}{
+                {{ .Config.RepositoryVariableName }}: tt.fields.{{ .Config.RepositoryVariableName }},
+                logger:           tt.fields.logger,
+            }
+            err := u.Delete(tt.args.ctx, tt.args.id)
+            assert.ErrorIs(t, err, tt.wantErr)
+        })
+    }
+}

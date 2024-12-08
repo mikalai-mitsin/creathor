@@ -13,15 +13,15 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
-type InterceptorInterfaceAuth struct {
+type UseCaseInterfaceAuth struct {
 	project *configs.Project
 }
 
-func NewInterceptorInterfaceAuth(project *configs.Project) *InterceptorInterfaceAuth {
-	return &InterceptorInterfaceAuth{project: project}
+func NewUseCaseInterfaceAuth(project *configs.Project) *UseCaseInterfaceAuth {
+	return &UseCaseInterfaceAuth{project: project}
 }
 
-func (i InterceptorInterfaceAuth) file() *ast.File {
+func (i UseCaseInterfaceAuth) file() *ast.File {
 	return &ast.File{
 		Name: &ast.Ident{
 			Name: "grpc",
@@ -39,14 +39,224 @@ func (i InterceptorInterfaceAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/auth/models"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/auth/entities"`, i.project.Module),
 						},
 					},
 					&ast.ImportSpec{
-						Name: ast.NewIdent("userModels"),
+						Name: ast.NewIdent("userEntities"),
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/user/models"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/user/entities"`, i.project.Module),
+						},
+					},
+				},
+			},
+			&ast.GenDecl{
+				Tok: token.TYPE,
+				Specs: []ast.Spec{
+					&ast.TypeSpec{
+						Name: ast.NewIdent("Logger"),
+						Type: &ast.InterfaceType{
+							Methods: &ast.FieldList{
+								List: []*ast.Field{
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("Debug"),
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("msg"),
+														},
+														Type: ast.NewIdent("string"),
+													},
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("fields"),
+														},
+														Type: &ast.Ellipsis{
+															Elt: &ast.SelectorExpr{
+																X:   ast.NewIdent("log"),
+																Sel: ast.NewIdent("Field"),
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("Info"),
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("msg"),
+														},
+														Type: ast.NewIdent("string"),
+													},
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("fields"),
+														},
+														Type: &ast.Ellipsis{
+															Elt: &ast.SelectorExpr{
+																X:   ast.NewIdent("log"),
+																Sel: ast.NewIdent("Field"),
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("Print"),
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("msg"),
+														},
+														Type: ast.NewIdent("string"),
+													},
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("fields"),
+														},
+														Type: &ast.Ellipsis{
+															Elt: &ast.SelectorExpr{
+																X:   ast.NewIdent("log"),
+																Sel: ast.NewIdent("Field"),
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("Warn"),
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("msg"),
+														},
+														Type: ast.NewIdent("string"),
+													},
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("fields"),
+														},
+														Type: &ast.Ellipsis{
+															Elt: &ast.SelectorExpr{
+																X:   ast.NewIdent("log"),
+																Sel: ast.NewIdent("Field"),
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("Error"),
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("msg"),
+														},
+														Type: ast.NewIdent("string"),
+													},
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("fields"),
+														},
+														Type: &ast.Ellipsis{
+															Elt: &ast.SelectorExpr{
+																X:   ast.NewIdent("log"),
+																Sel: ast.NewIdent("Field"),
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("Fatal"),
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("msg"),
+														},
+														Type: ast.NewIdent("string"),
+													},
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("fields"),
+														},
+														Type: &ast.Ellipsis{
+															Elt: &ast.SelectorExpr{
+																X:   ast.NewIdent("log"),
+																Sel: ast.NewIdent("Field"),
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("Panic"),
+										},
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("msg"),
+														},
+														Type: ast.NewIdent("string"),
+													},
+													{
+														Names: []*ast.Ident{
+															ast.NewIdent("fields"),
+														},
+														Type: &ast.Ellipsis{
+															Elt: &ast.SelectorExpr{
+																X:   ast.NewIdent("log"),
+																Sel: ast.NewIdent("Field"),
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
 						},
 					},
 				},
@@ -55,10 +265,10 @@ func (i InterceptorInterfaceAuth) file() *ast.File {
 				Doc: &ast.CommentGroup{
 					List: []*ast.Comment{
 						{
-							Text: "//AuthInterceptor - domain layer interceptor interface",
+							Text: "//AuthUseCase - domain layer usecase interface",
 						},
 						{
-							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth_interceptor.go . AuthInterceptor",
+							Text: "//go:generate mockgen -build_flags=-mod=mod -destination mock/auth_usecase.go . AuthUseCase",
 						},
 					},
 				},
@@ -66,7 +276,7 @@ func (i InterceptorInterfaceAuth) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: "AuthInterceptor",
+							Name: "AuthUseCase",
 						},
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{
@@ -103,7 +313,7 @@ func (i InterceptorInterfaceAuth) file() *ast.File {
 														},
 														Type: &ast.SelectorExpr{
 															X: &ast.Ident{
-																Name: "models",
+																Name: "entities",
 															},
 															Sel: &ast.Ident{
 																Name: "Token",
@@ -117,7 +327,7 @@ func (i InterceptorInterfaceAuth) file() *ast.File {
 													{
 														Type: &ast.StarExpr{
 															X: &ast.SelectorExpr{
-																X:   ast.NewIdent("userModels"),
+																X:   ast.NewIdent("userEntities"),
 																Sel: ast.NewIdent("User"),
 															},
 														},
@@ -141,7 +351,7 @@ func (i InterceptorInterfaceAuth) file() *ast.File {
 	}
 }
 
-func (i InterceptorInterfaceAuth) Sync() error {
+func (i UseCaseInterfaceAuth) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "grpc", "interfaces.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {

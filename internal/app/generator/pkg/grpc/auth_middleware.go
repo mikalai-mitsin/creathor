@@ -48,13 +48,7 @@ func (m AuthMiddleware) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/configs"`, m.project.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/auth/models"`, m.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/app/auth/entities"`, m.project.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -488,39 +482,15 @@ func (m AuthMiddleware) astStruct() *ast.TypeSpec {
 								Name: "logger",
 							},
 						},
-						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "log",
-							},
-							Sel: &ast.Ident{
-								Name: "Logger",
-							},
-						},
+						Type: ast.NewIdent("Logger"),
 					},
 					{
 						Names: []*ast.Ident{
 							{
-								Name: "config",
+								Name: "authUseCase",
 							},
 						},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "configs",
-								},
-								Sel: &ast.Ident{
-									Name: "Config",
-								},
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "authInterceptor",
-							},
-						},
-						Type: ast.NewIdent("AuthInterceptor"),
+						Type: ast.NewIdent("AuthUseCase"),
 					},
 				},
 			},
@@ -580,10 +550,10 @@ func (m AuthMiddleware) astConstructor() *ast.FuncDecl {
 					{
 						Names: []*ast.Ident{
 							{
-								Name: "authInterceptor",
+								Name: "authUseCase",
 							},
 						},
-						Type: ast.NewIdent("AuthInterceptor"),
+						Type: ast.NewIdent("AuthUseCase"),
 					},
 					{
 						Names: []*ast.Ident{
@@ -591,31 +561,7 @@ func (m AuthMiddleware) astConstructor() *ast.FuncDecl {
 								Name: "logger",
 							},
 						},
-						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "log",
-							},
-							Sel: &ast.Ident{
-								Name: "Logger",
-							},
-						},
-					},
-					{
-						Names: []*ast.Ident{
-							{
-								Name: "config",
-							},
-						},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "configs",
-								},
-								Sel: &ast.Ident{
-									Name: "Config",
-								},
-							},
-						},
+						Type: ast.NewIdent("Logger"),
 					},
 				},
 			},
@@ -644,10 +590,10 @@ func (m AuthMiddleware) astConstructor() *ast.FuncDecl {
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
 										Key: &ast.Ident{
-											Name: "authInterceptor",
+											Name: "authUseCase",
 										},
 										Value: &ast.Ident{
-											Name: "authInterceptor",
+											Name: "authUseCase",
 										},
 									},
 									&ast.KeyValueExpr{
@@ -656,14 +602,6 @@ func (m AuthMiddleware) astConstructor() *ast.FuncDecl {
 										},
 										Value: &ast.Ident{
 											Name: "logger",
-										},
-									},
-									&ast.KeyValueExpr{
-										Key: &ast.Ident{
-											Name: "config",
-										},
-										Value: &ast.Ident{
-											Name: "config",
 										},
 									},
 								},
@@ -784,7 +722,7 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 								},
 								Type: &ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "models",
+										Name: "entities",
 									},
 									Sel: &ast.Ident{
 										Name: "Token",
@@ -849,7 +787,7 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 											},
 											&ast.SelectorExpr{
 												X: &ast.Ident{
-													Name: "models",
+													Name: "entities",
 												},
 												Sel: &ast.Ident{
 													Name: "Guest",
@@ -898,7 +836,7 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 											},
 											&ast.SelectorExpr{
 												X: &ast.Ident{
-													Name: "models",
+													Name: "entities",
 												},
 												Sel: &ast.Ident{
 													Name: "Guest",
@@ -925,7 +863,7 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "models",
+									Name: "entities",
 								},
 								Sel: &ast.Ident{
 									Name: "Token",
@@ -957,7 +895,7 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 										Name: "m",
 									},
 									Sel: &ast.Ident{
-										Name: "authInterceptor",
+										Name: "authUseCase",
 									},
 								},
 								Sel: &ast.Ident{
@@ -992,16 +930,7 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 									&ast.Ident{
 										Name: "nil",
 									},
-									&ast.CallExpr{
-										Fun: &ast.Ident{
-											Name: "DecodeError",
-										},
-										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "err",
-											},
-										},
-									},
+									ast.NewIdent("err"),
 								},
 							},
 						},

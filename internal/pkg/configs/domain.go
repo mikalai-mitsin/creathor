@@ -16,6 +16,7 @@ type DomainConfig struct {
 	ProtoPackage   string   `json:"proto_package" yaml:"protoPackage"`
 	Auth           bool     `json:"auth"          yaml:"auth"`
 	Params         []*Param `json:"params"        yaml:"params"`
+	HTTPEnabled    bool     `                     yaml:"http"`
 	GRPCEnabled    bool     `                     yaml:"gRPC"`
 	GatewayEnabled bool     `                     yaml:"gateway"`
 	KafkaEnabled   bool     `                     yaml:"kafka"`
@@ -76,8 +77,12 @@ func (m *DomainConfig) DomainAlias() string {
 	return strcase.ToLowerCamel(m.Model)
 }
 
-func (m *DomainConfig) UseCaseTypeName() string {
-	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Model))
+func (m *DomainConfig) CamelCase() string {
+	return strcase.ToCamel(m.Model)
+}
+
+func (m *DomainConfig) ServiceTypeName() string {
+	return fmt.Sprintf("%sService", strcase.ToCamel(m.Model))
 }
 
 func (m *DomainConfig) GRPCHandlerTypeName() string {
@@ -104,16 +109,16 @@ func (m *DomainConfig) GRPCHandlerVariableName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToLowerCamel(m.Model))
 }
 
+func (m *DomainConfig) ServiceVariableName() string {
+	return fmt.Sprintf("%sService", strcase.ToLowerCamel(m.Model))
+}
+
+func (m *DomainConfig) UseCaseTypeName() string {
+	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Model))
+}
+
 func (m *DomainConfig) UseCaseVariableName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToLowerCamel(m.Model))
-}
-
-func (m *DomainConfig) InterceptorTypeName() string {
-	return fmt.Sprintf("%sInterceptor", strcase.ToCamel(m.Model))
-}
-
-func (m *DomainConfig) InterceptorVariableName() string {
-	return fmt.Sprintf("%sInterceptor", strcase.ToLowerCamel(m.Model))
 }
 
 func (m *DomainConfig) RepositoryTypeName() string {

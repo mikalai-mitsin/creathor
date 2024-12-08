@@ -62,6 +62,18 @@ func baseValue(t ast.Expr) ast.Expr {
 			},
 			Args: []ast.Expr{&ast.BasicLit{Kind: token.INT, Value: "15"}},
 		}
+	case "bool", "boolean":
+		fake = &ast.CallExpr{
+			Fun: &ast.SelectorExpr{
+				X: &ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X:   ast.NewIdent("faker"),
+						Sel: ast.NewIdent("New"),
+					},
+				},
+				Sel: ast.NewIdent("Bool"),
+			},
+		}
 	case "uuid", "UUID", "uuid.UUID":
 		fake = &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
@@ -94,9 +106,9 @@ func baseValue(t ast.Expr) ast.Expr {
 				},
 			},
 		}
-	case "models.GroupID", "GroupID":
+	case "entities.GroupID", "GroupID":
 		fake = &ast.SelectorExpr{
-			X:   ast.NewIdent("models"),
+			X:   ast.NewIdent("entities"),
 			Sel: ast.NewIdent("GroupIDUser"),
 		}
 	default:

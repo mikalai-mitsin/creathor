@@ -1,43 +1,37 @@
-package grpc
+package handlers
 
 import (
 	"context"
 	"{{ .Module }}/internal/pkg/grpc"
-	"{{ .Module }}/internal/app/auth/models"
+	"{{ .Module }}/internal/app/auth/entities"
 	{{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
 	"strings"
 )
 
-// AuthInterceptor - domain layer repository interface
-//
-//go:generate mockgen -build_flags=-mod=mod -destination mock/auth_interceptor.go . AuthInterceptor
-type AuthInterceptor interface {
-	CreateToken(ctx context.Context, login *models.Login) (*models.TokenPair, error)
-	RefreshToken(ctx context.Context, login models.Token) (*models.TokenPair, error)
-}
-
 type AuthServiceServer struct {
 	{{ .ProtoPackage }}.UnimplementedAuthServiceServer
-	authInterceptor AuthInterceptor
+	authUseCase authUseCase
+logger logger
 }
 
 func NewAuthServiceServer(
-	authInterceptor AuthInterceptor,
-) {{ .ProtoPackage }}.AuthServiceServer {
-	return &AuthServiceServer{authInterceptor: authInterceptor}
+	authUseCase authUseCase,
+	logger logger,
+) *AuthServiceServer {
+	return &AuthServiceServer{authUseCase: authUseCase, logger: logger}
 }
 
 func (s AuthServiceServer) CreateToken(
 	ctx context.Context,
 	input *{{ .ProtoPackage }}.CreateToken,
 ) (*{{ .ProtoPackage }}.TokenPair, error) {
-	login := &models.Login{
+	login := &entities.Login{
 		Email:    strings.ToLower(input.GetEmail()),
 		Password: input.GetPassword(),
 	}
-	tokenPair, err := s.authInterceptor.CreateToken(ctx, login)
+	tokenPair, err := s.authUseCase.CreateToken(ctx, login)
 	if err != nil {
-		return nil, grpc.DecodeError(err)
+		return nil, err
 	}
 	return decodeTokenPair(tokenPair), nil
 }
@@ -46,14 +40,14 @@ func (s AuthServiceServer) RefreshToken(
 	ctx context.Context,
 	input *{{ .ProtoPackage }}.RefreshToken,
 ) (*{{ .ProtoPackage }}.TokenPair, error) {
-	tokenPair, err := s.authInterceptor.RefreshToken(ctx, models.Token(input.GetToken()))
+	tokenPair, err := s.authUseCase.RefreshToken(ctx, entities.Token(input.GetToken()))
 	if err != nil {
-		return nil, grpc.DecodeError(err)
+		return nil, err
 	}
 	return decodeTokenPair(tokenPair), nil
 }
 
-func decodeTokenPair(pair *models.TokenPair) *{{ .ProtoPackage }}.TokenPair {
+func decodeTokenPair(pair *entities.TokenPair) *{{ .ProtoPackage }}.TokenPair {
 	return &{{ .ProtoPackage }}.TokenPair{
 		Access:  pair.Access.String(),
 		Refresh: pair.Refresh.String(),

@@ -75,7 +75,7 @@ func (i RepositoryInterfaceEvent) astInterface() *ast.GenDecl {
 												Type: &ast.StarExpr{
 													X: &ast.SelectorExpr{
 														X: &ast.Ident{
-															Name: "models",
+															Name: "entities",
 														},
 														Sel: &ast.Ident{
 															Name: "Event",
@@ -122,7 +122,7 @@ func (i RepositoryInterfaceEvent) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/domain/models"`, i.project.Module),
+							Value: fmt.Sprintf(`"%s/internal/domain/entities"`, i.project.Module),
 						},
 					},
 				},

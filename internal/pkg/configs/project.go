@@ -23,6 +23,7 @@ type Project struct {
 	TaskEnabled    bool            `yaml:"task"`
 	UptraceEnabled bool            `yaml:"uptrace"`
 	KafkaEnabled   bool            `yaml:"kafka"`
+	HTTPEnabled    bool            `yaml:"http"`
 }
 
 func NewProject(configPath string) (*Project, error) {
@@ -59,8 +60,9 @@ func NewProject(configPath string) (*Project, error) {
 				{Name: "LastName", Type: "string", Search: true},
 				{Name: "Password", Type: "string", Search: false},
 				{Name: "Email", Type: "string", Search: true},
-				{Name: "GroupID", Type: "models.GroupID", Search: false},
+				{Name: "GroupID", Type: "entities.GroupID", Search: false},
 			},
+			HTTPEnabled:    project.HTTPEnabled,
 			GRPCEnabled:    project.GRPCEnabled,
 			GatewayEnabled: project.GatewayEnabled,
 			KafkaEnabled:   project.KafkaEnabled,
@@ -72,6 +74,7 @@ func NewProject(configPath string) (*Project, error) {
 		domain.ProjectName = project.Name
 		domain.ProtoPackage = project.ProtoPackage()
 		domain.GRPCEnabled = project.GRPCEnabled
+		domain.HTTPEnabled = project.HTTPEnabled
 		domain.GatewayEnabled = project.GatewayEnabled
 	}
 	return project, nil

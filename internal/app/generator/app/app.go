@@ -51,6 +51,7 @@ func (a App) file() *ast.File {
 			a.structure(),
 			a.constructor(),
 			a.registerGRPC(),
+			a.registerHTTP(),
 		},
 	}
 }
@@ -60,9 +61,17 @@ func (a App) imports() *ast.GenDecl {
 		Tok: token.IMPORT,
 		Specs: []ast.Spec{
 			&ast.ImportSpec{
+				Name: ast.NewIdent("grpcHandlers"),
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: fmt.Sprintf(`"%s/internal/app/%s/handlers/grpc"`, a.domain.Module, a.domain.DirName()),
+				},
+			},
+			&ast.ImportSpec{
+				Name: ast.NewIdent("httpHandlers"),
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/app/%s/handlers/http"`, a.domain.Module, a.domain.DirName()),
 				},
 			},
 			&ast.ImportSpec{
@@ -93,6 +102,12 @@ func (a App) imports() *ast.GenDecl {
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, a.domain.Module),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s/internal/pkg/http"`, a.domain.Module),
 				},
 			},
 			&ast.ImportSpec{
@@ -226,12 +241,16 @@ func (a App) constructor() *ast.FuncDecl {
 			Value: ast.NewIdent(a.domain.GetServicePrivateVariableName()),
 		},
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(fmt.Sprintf("%sUseCase", a.domain.LowerCamelName())),
+			Key:   ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
 			Value: ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
 		},
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(fmt.Sprintf("%sHandler", a.domain.LowerCamelName())),
+			Key:   ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
 			Value: ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
+		},
+		&ast.KeyValueExpr{
+			Key:   ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
+			Value: ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
 		},
 	}
 	body := &ast.BlockStmt{
@@ -320,8 +339,28 @@ func (a App) constructor() *ast.FuncDecl {
 		Rhs: []ast.Expr{
 			&ast.CallExpr{
 				Fun: &ast.SelectorExpr{
-					X:   ast.NewIdent("handlers"),
+					X:   ast.NewIdent("grpcHandlers"),
 					Sel: ast.NewIdent(a.domain.GetGRPCHandlerConstructorName()),
+				},
+				Args: []ast.Expr{
+					ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
+					&ast.Ident{
+						Name: "logger",
+					},
+				},
+			},
+		},
+	})
+	body.List = append(body.List, &ast.AssignStmt{
+		Lhs: []ast.Expr{
+			ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
+		},
+		Tok: token.DEFINE,
+		Rhs: []ast.Expr{
+			&ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X:   ast.NewIdent("httpHandlers"),
+					Sel: ast.NewIdent(a.domain.GetHTTPHandlerConstructorName()),
 				},
 				Args: []ast.Expr{
 					ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
@@ -448,8 +487,19 @@ func (a App) structure() *ast.GenDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
-							X:   ast.NewIdent("handlers"),
+							X:   ast.NewIdent("grpcHandlers"),
 							Sel: ast.NewIdent(a.domain.GetGRPCHandlerTypeName()),
+						},
+					},
+				},
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
+					},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent("httpHandlers"),
+							Sel: ast.NewIdent(a.domain.GetHTTPHandlerTypeName()),
 						},
 					},
 				},
@@ -530,7 +580,7 @@ func (a App) registerGRPC() *ast.FuncDecl {
 							},
 							&ast.SelectorExpr{
 								X:   ast.NewIdent("a"),
-								Sel: ast.NewIdent(a.domain.GetRepositoryPrivateVariableName()),
+								Sel: ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
 							},
 						},
 					},
@@ -538,6 +588,104 @@ func (a App) registerGRPC() *ast.FuncDecl {
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
 						ast.NewIdent("nil"),
+					},
+				},
+			},
+		},
+	}
+}
+
+func (a App) registerHTTP() *ast.FuncDecl {
+	return &ast.FuncDecl{
+		Recv: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Names: []*ast.Ident{
+						{
+							Name: "a",
+						},
+					},
+					Type: &ast.StarExpr{
+						X: &ast.Ident{
+							Name: "App",
+						},
+					},
+				},
+			},
+		},
+		Name: &ast.Ident{
+			Name: "RegisterHTTP",
+		},
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{
+							{
+								Name: "httpServer",
+							},
+						},
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "http",
+								},
+								Sel: &ast.Ident{
+									Name: "Server",
+								},
+							},
+						},
+					},
+				},
+			},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: &ast.Ident{
+							Name: "error",
+						},
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.ExprStmt{
+					X: &ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "httpServer",
+							},
+							Sel: &ast.Ident{
+								Name: "Mount",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.BasicLit{
+								Kind:  token.STRING,
+								Value: fmt.Sprintf(`"/%s/"`, a.domain.GetManyVariableName()),
+							},
+							&ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "a",
+										},
+										Sel: ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
+									},
+									Sel: &ast.Ident{
+										Name: "ChiRouter",
+									},
+								},
+							},
+						},
+					},
+				},
+				&ast.ReturnStmt{
+					Results: []ast.Expr{
+						&ast.Ident{
+							Name: "nil",
+						},
 					},
 				},
 			},

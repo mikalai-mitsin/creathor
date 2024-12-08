@@ -171,7 +171,7 @@ func (m *Domain) GetManyVariableName() string {
 }
 
 func (m *Domain) GetGRPCHandlerPrivateVariableName() string {
-	return fmt.Sprintf("%sHandler", strcase.ToLowerCamel(m.Config.Model))
+	return fmt.Sprintf("grpc%sHandler", strcase.ToCamel(m.Config.Model))
 }
 
 func (m *Domain) GetGRPCHandlerPublicVariableName() string {
@@ -196,6 +196,10 @@ func (m *Domain) GetHTTPHandlerConstructorName() string {
 
 func (m *Domain) GetHTTPHandlerTypeName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Config.Model))
+}
+
+func (m *Domain) GetHTTPHandlerPrivateVariableName() string {
+	return fmt.Sprintf("http%sHandler", strcase.ToCamel(m.Config.Model))
 }
 
 func (m *Domain) GetHTTPItemDTOName() string {

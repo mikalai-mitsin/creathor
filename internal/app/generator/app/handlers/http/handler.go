@@ -1251,6 +1251,248 @@ func (h *HandlerGenerator) file() *ast.File {
 					},
 				},
 			},
+			&ast.FuncDecl{
+				Recv: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Names: []*ast.Ident{
+								{
+									Name: "h",
+								},
+							},
+							Type: &ast.StarExpr{
+								X: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
+							},
+						},
+					},
+				},
+				Name: &ast.Ident{
+					Name: "ChiRouter",
+				},
+				Type: &ast.FuncType{
+					Params: &ast.FieldList{},
+					Results: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "chi",
+									},
+									Sel: &ast.Ident{
+										Name: "Router",
+									},
+								},
+							},
+						},
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
+								&ast.Ident{
+									Name: "router",
+								},
+							},
+							Tok: token.DEFINE,
+							Rhs: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "chi",
+										},
+										Sel: &ast.Ident{
+											Name: "NewRouter",
+										},
+									},
+								},
+							},
+						},
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "router",
+									},
+									Sel: &ast.Ident{
+										Name: "Route",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.BasicLit{
+										Kind:  token.STRING,
+										Value: "\"/\"",
+									},
+									&ast.FuncLit{
+										Type: &ast.FuncType{
+											Params: &ast.FieldList{
+												List: []*ast.Field{
+													{
+														Names: []*ast.Ident{
+															{
+																Name: "g",
+															},
+														},
+														Type: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "chi",
+															},
+															Sel: &ast.Ident{
+																Name: "Router",
+															},
+														},
+													},
+												},
+											},
+										},
+										Body: &ast.BlockStmt{
+											List: []ast.Stmt{
+												&ast.ExprStmt{
+													X: &ast.CallExpr{
+														Fun: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "g",
+															},
+															Sel: &ast.Ident{
+																Name: "Post",
+															},
+														},
+														Args: []ast.Expr{
+															&ast.BasicLit{
+																Kind:  token.STRING,
+																Value: "\"/\"",
+															},
+															&ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "h",
+																},
+																Sel: &ast.Ident{
+																	Name: "Create",
+																},
+															},
+														},
+													},
+												},
+												&ast.ExprStmt{
+													X: &ast.CallExpr{
+														Fun: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "g",
+															},
+															Sel: &ast.Ident{
+																Name: "Get",
+															},
+														},
+														Args: []ast.Expr{
+															&ast.BasicLit{
+																Kind:  token.STRING,
+																Value: "\"/\"",
+															},
+															&ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "h",
+																},
+																Sel: &ast.Ident{
+																	Name: "List",
+																},
+															},
+														},
+													},
+												},
+												&ast.ExprStmt{
+													X: &ast.CallExpr{
+														Fun: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "g",
+															},
+															Sel: &ast.Ident{
+																Name: "Get",
+															},
+														},
+														Args: []ast.Expr{
+															&ast.BasicLit{
+																Kind:  token.STRING,
+																Value: "\"/{id}\"",
+															},
+															&ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "h",
+																},
+																Sel: &ast.Ident{
+																	Name: "Get",
+																},
+															},
+														},
+													},
+												},
+												&ast.ExprStmt{
+													X: &ast.CallExpr{
+														Fun: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "g",
+															},
+															Sel: &ast.Ident{
+																Name: "Patch",
+															},
+														},
+														Args: []ast.Expr{
+															&ast.BasicLit{
+																Kind:  token.STRING,
+																Value: "\"/{id}\"",
+															},
+															&ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "h",
+																},
+																Sel: &ast.Ident{
+																	Name: "Update",
+																},
+															},
+														},
+													},
+												},
+												&ast.ExprStmt{
+													X: &ast.CallExpr{
+														Fun: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "g",
+															},
+															Sel: &ast.Ident{
+																Name: "Delete",
+															},
+														},
+														Args: []ast.Expr{
+															&ast.BasicLit{
+																Kind:  token.STRING,
+																Value: "\"/{id}\"",
+															},
+															&ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "h",
+																},
+																Sel: &ast.Ident{
+																	Name: "Delete",
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								&ast.Ident{
+									Name: "router",
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }

@@ -38,11 +38,12 @@ func (g *Generator) Sync() error {
 		uuid.NewGenerator(g.project),
 	}
 	if g.project.HTTPEnabled {
-		generators = append(generators, http.NewServer(g.project))
+		generators = append(generators, http.NewConfig(g.project), http.NewServer(g.project))
 	}
 	if g.project.GRPCEnabled {
 		generators = append(
 			generators,
+			grpc.NewConfig(g.project),
 			grpc.NewMiddlewares(g.project),
 			grpc.NewServer(g.project),
 		)

@@ -55,44 +55,14 @@ func (u Server) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: "Config",
-						},
-						Type: &ast.StructType{
-							Fields: &ast.FieldList{
-								List: []*ast.Field{
-									&ast.Field{
-										Names: []*ast.Ident{
-											&ast.Ident{
-												Name: "Address",
-											},
-										},
-										Type: &ast.Ident{
-											Name: "string",
-										},
-										Tag: &ast.BasicLit{
-											Kind:  token.STRING,
-											Value: "`yaml:\"address\"`",
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			&ast.GenDecl{
-				Tok: token.TYPE,
-				Specs: []ast.Spec{
-					&ast.TypeSpec{
-						Name: &ast.Ident{
 							Name: "Server",
 						},
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
+											{
 												Name: "config",
 											},
 										},
@@ -102,9 +72,9 @@ func (u Server) file() *ast.File {
 											},
 										},
 									},
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
+											{
 												Name: "router",
 											},
 										},
@@ -119,9 +89,9 @@ func (u Server) file() *ast.File {
 											},
 										},
 									},
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
+											{
 												Name: "server",
 											},
 										},
@@ -149,9 +119,9 @@ func (u Server) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "config",
 									},
 								},
@@ -165,7 +135,7 @@ func (u Server) file() *ast.File {
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.StarExpr{
 									X: &ast.Ident{
 										Name: "Server",
@@ -287,9 +257,9 @@ func (u Server) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "s",
 								},
 							},
@@ -307,9 +277,9 @@ func (u Server) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "_",
 									},
 								},
@@ -326,7 +296,7 @@ func (u Server) file() *ast.File {
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.Ident{
 									Name: "error",
 								},
@@ -361,9 +331,9 @@ func (u Server) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "s",
 								},
 							},
@@ -381,9 +351,9 @@ func (u Server) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "ctx",
 									},
 								},
@@ -400,7 +370,7 @@ func (u Server) file() *ast.File {
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.Ident{
 									Name: "error",
 								},
@@ -440,9 +410,9 @@ func (u Server) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
+								{
 									Name: "s",
 								},
 							},
@@ -460,9 +430,9 @@ func (u Server) file() *ast.File {
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "path",
 									},
 								},
@@ -470,9 +440,9 @@ func (u Server) file() *ast.File {
 									Name: "string",
 								},
 							},
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "handler",
 									},
 								},
@@ -520,19 +490,19 @@ func (u Server) file() *ast.File {
 			},
 		},
 		Imports: []*ast.ImportSpec{
-			&ast.ImportSpec{
+			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: "\"context\"",
 				},
 			},
-			&ast.ImportSpec{
+			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: "\"net/http\"",
 				},
 			},
-			&ast.ImportSpec{
+			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: "\"github.com/go-chi/chi/v5\"",

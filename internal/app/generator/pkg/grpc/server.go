@@ -76,12 +76,6 @@ func (u Server) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/configs"`, u.project.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
 							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, u.project.Module),
 						},
 					},
@@ -144,14 +138,7 @@ func (u Server) file() *ast.File {
 											},
 										},
 										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "configs",
-												},
-												Sel: &ast.Ident{
-													Name: "Config",
-												},
-											},
+											X: ast.NewIdent("Config"),
 										},
 									},
 									{
@@ -230,14 +217,7 @@ func (u Server) file() *ast.File {
 									},
 								},
 								Type: &ast.StarExpr{
-									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "configs",
-										},
-										Sel: &ast.Ident{
-											Name: "Config",
-										},
-									},
+									X: ast.NewIdent("Config"),
 								},
 							},
 						},
@@ -686,7 +666,7 @@ func (u Server) file() *ast.File {
 												},
 											},
 											Sel: &ast.Ident{
-												Name: "BindAddr",
+												Name: "Address",
 											},
 										},
 									},

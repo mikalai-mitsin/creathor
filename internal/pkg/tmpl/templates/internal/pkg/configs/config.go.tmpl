@@ -3,6 +3,12 @@ package configs
 import (
     "{{ .Module }}/internal/pkg/errs"
     "github.com/ilyakaznacheev/cleanenv"
+    {{- if .HTTPEnabled }}
+    "{{ .Module }}/internal/pkg/http"
+    {{- end }}
+    {{- if .GRPCEnabled }}
+    "{{ .Module }}/internal/pkg/grpc"
+    {{- end }}
 )
 {{- if .KafkaEnabled }}
 type kafka struct {
@@ -36,7 +42,6 @@ type database struct {
 }
 
 type Config struct {
-    BindAddr string   `env:"BIND_ADDR" toml:"bind_addr" env-default:":8000"`
     LogLevel string   `env:"LOG_LEVEL" toml:"log_level" env-default:"debug"`
     Database database `toml:"database"`
 {{- if .Auth }}
@@ -47,6 +52,12 @@ type Config struct {
 {{- end }}
 {{- if .KafkaEnabled }}
     Kafka    kafka    `toml:"kafka"`
+{{- end }}
+{{- if .HTTPEnabled }}
+    HTTP    *http.Config    `toml:"http"`
+{{- end }}
+{{- if .GRPCEnabled }}
+    GRPC    *grpc.Config    `toml:"grpc"`
 {{- end }}
 }
 

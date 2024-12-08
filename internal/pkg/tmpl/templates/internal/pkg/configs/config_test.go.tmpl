@@ -12,12 +12,10 @@ import (
 
 func TestParseConfig(t *testing.T) {
     file := `
-bind_addr = ":8005"
 log_level = "debug"
 
     `
     badFile := `
-bind_addr = ":8003"
 log_level = 2
     `
     configPath := path.Join(os.TempDir(), "config.toml")
@@ -45,7 +43,6 @@ log_level = 2
                 configPath: configPath,
             },
             want: &Config{
-                BindAddr: ":8005",
                 LogLevel: "debug",
                 Database: database{
                     URI:                "",
@@ -69,7 +66,6 @@ log_level = 2
                 configPath: "",
             },
             want: &Config{
-                BindAddr: ":8000",
                 LogLevel: "debug",
                 Database: database{
                     URI:                "",

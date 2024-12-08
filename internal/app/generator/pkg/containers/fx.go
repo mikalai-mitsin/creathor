@@ -671,6 +671,49 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 						},
 					},
 				},
+				&ast.FuncLit{
+					Type: &ast.FuncType{
+						Params: &ast.FieldList{
+							List: []*ast.Field{
+								{
+									Names: []*ast.Ident{
+										ast.NewIdent("config"),
+									},
+									Type: &ast.StarExpr{
+										X: &ast.SelectorExpr{
+											X:   ast.NewIdent("configs"),
+											Sel: ast.NewIdent("Config"),
+										},
+									},
+								},
+							},
+						},
+						Results: &ast.FieldList{
+							List: []*ast.Field{
+								{
+									Type: &ast.StarExpr{
+										X: &ast.SelectorExpr{
+											X:   ast.NewIdent("grpc"),
+											Sel: ast.NewIdent("Config"),
+										},
+									},
+								},
+							},
+						},
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.ReturnStmt{
+								Results: []ast.Expr{
+									&ast.SelectorExpr{
+										X:   ast.NewIdent("config"),
+										Sel: ast.NewIdent("GRPC"),
+									},
+								},
+							},
+						},
+					},
+				},
 				&ast.SelectorExpr{
 					X: &ast.Ident{
 						Name: "grpc",

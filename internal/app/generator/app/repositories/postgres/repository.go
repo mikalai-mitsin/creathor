@@ -3,7 +3,6 @@ package postgres
 import (
 	"bytes"
 	"fmt"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -11,6 +10,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 
@@ -910,7 +911,8 @@ func (r RepositoryGenerator) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.domain.GetRepositoryTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok &&
+			t.Name.String() == r.domain.GetRepositoryTypeName() {
 			structure = t
 			structureExists = true
 			return false

@@ -2,8 +2,9 @@ package grpc
 
 import (
 	"fmt"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 	"path"
+
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 )

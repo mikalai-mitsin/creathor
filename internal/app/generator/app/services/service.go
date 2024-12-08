@@ -92,8 +92,10 @@ func (u ServiceGenerator) structure() *ast.TypeSpec {
 			Fields: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Names: []*ast.Ident{ast.NewIdent(u.domain.GetRepositoryPrivateVariableName())},
-						Type:  ast.NewIdent(u.domain.GetRepositoryInterfaceName()),
+						Names: []*ast.Ident{
+							ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
+						},
+						Type: ast.NewIdent(u.domain.GetRepositoryInterfaceName()),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("clock")},
@@ -157,8 +159,10 @@ func (u ServiceGenerator) constructor() *ast.FuncDecl {
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Names: []*ast.Ident{ast.NewIdent(u.domain.GetRepositoryPrivateVariableName())},
-						Type:  ast.NewIdent(u.domain.GetRepositoryInterfaceName()),
+						Names: []*ast.Ident{
+							ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
+						},
+						Type: ast.NewIdent(u.domain.GetRepositoryInterfaceName()),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("clock")},
@@ -192,8 +196,12 @@ func (u ServiceGenerator) constructor() *ast.FuncDecl {
 								Type: ast.NewIdent(u.domain.GetServiceTypeName()),
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
-										Key:   ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
-										Value: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
+										Key: ast.NewIdent(
+											u.domain.GetRepositoryPrivateVariableName(),
+										),
+										Value: ast.NewIdent(
+											u.domain.GetRepositoryPrivateVariableName(),
+										),
 									},
 									&ast.KeyValueExpr{
 										Key:   ast.NewIdent("clock"),
@@ -408,8 +416,10 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("u"),
-										Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
+										X: ast.NewIdent("u"),
+										Sel: ast.NewIdent(
+											u.domain.GetRepositoryPrivateVariableName(),
+										),
 									},
 									Sel: ast.NewIdent("Create"),
 								},
@@ -1033,8 +1043,10 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("u"),
-										Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
+										X: ast.NewIdent("u"),
+										Sel: ast.NewIdent(
+											u.domain.GetRepositoryPrivateVariableName(),
+										),
 									},
 									Sel: ast.NewIdent("Update"),
 								},
@@ -1219,8 +1231,10 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("u"),
-										Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
+										X: ast.NewIdent("u"),
+										Sel: ast.NewIdent(
+											u.domain.GetRepositoryPrivateVariableName(),
+										),
 									},
 									Sel: ast.NewIdent("Delete"),
 								},

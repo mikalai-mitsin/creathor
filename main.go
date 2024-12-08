@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/auth"
 
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/layout"

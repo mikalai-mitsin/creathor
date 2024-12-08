@@ -1951,7 +1951,8 @@ func (h HandlerGenerator) syncStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == h.domain.GetGRPCHandlerTypeName() {
+		if t, ok := node.(*ast.TypeSpec); ok &&
+			t.Name.String() == h.domain.GetGRPCHandlerTypeName() {
 			structure = t
 			structureExists = true
 			return false

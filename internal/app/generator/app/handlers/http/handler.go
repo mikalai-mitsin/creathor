@@ -3,13 +3,14 @@ package http
 import (
 	"bytes"
 	"fmt"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path"
+
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
 const destinationPath = "."
@@ -153,8 +154,12 @@ func (h *HandlerGenerator) file() *ast.File {
 										Type: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
-												Key:   ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
-												Value: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+												Key: ast.NewIdent(
+													h.domain.GetUseCasePrivateVariableName(),
+												),
+												Value: ast.NewIdent(
+													h.domain.GetUseCasePrivateVariableName(),
+												),
 											},
 											&ast.KeyValueExpr{
 												Key:   ast.NewIdent("logger"),
@@ -300,8 +305,10 @@ func (h *HandlerGenerator) file() *ast.File {
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
-											X:   ast.NewIdent("h"),
-											Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+											X: ast.NewIdent("h"),
+											Sel: ast.NewIdent(
+												h.domain.GetUseCasePrivateVariableName(),
+											),
 										},
 										Sel: ast.NewIdent("Create"),
 									},
@@ -494,8 +501,10 @@ func (h *HandlerGenerator) file() *ast.File {
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
-											X:   ast.NewIdent("h"),
-											Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+											X: ast.NewIdent("h"),
+											Sel: ast.NewIdent(
+												h.domain.GetUseCasePrivateVariableName(),
+											),
 										},
 										Sel: ast.NewIdent("Get"),
 									},
@@ -740,8 +749,10 @@ func (h *HandlerGenerator) file() *ast.File {
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
-											X:   ast.NewIdent("h"),
-											Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+											X: ast.NewIdent("h"),
+											Sel: ast.NewIdent(
+												h.domain.GetUseCasePrivateVariableName(),
+											),
 										},
 										Sel: ast.NewIdent("List"),
 									},
@@ -986,8 +997,10 @@ func (h *HandlerGenerator) file() *ast.File {
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
-											X:   ast.NewIdent("h"),
-											Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+											X: ast.NewIdent("h"),
+											Sel: ast.NewIdent(
+												h.domain.GetUseCasePrivateVariableName(),
+											),
 										},
 										Sel: ast.NewIdent("Update"),
 									},
@@ -1180,8 +1193,10 @@ func (h *HandlerGenerator) file() *ast.File {
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
 											X: &ast.SelectorExpr{
-												X:   ast.NewIdent("h"),
-												Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+												X: ast.NewIdent("h"),
+												Sel: ast.NewIdent(
+													h.domain.GetUseCasePrivateVariableName(),
+												),
 											},
 											Sel: ast.NewIdent("Delete"),
 										},

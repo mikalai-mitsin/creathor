@@ -3,7 +3,6 @@ package services
 import (
 	"bytes"
 	"fmt"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -11,6 +10,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
 type InterfacesGenerator struct {

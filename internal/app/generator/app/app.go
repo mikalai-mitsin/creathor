@@ -3,13 +3,14 @@ package app
 import (
 	"bytes"
 	"fmt"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path"
+
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
 type App struct {
@@ -65,20 +66,32 @@ func (a App) imports() *ast.GenDecl {
 	specs := []ast.Spec{
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/app/%s/usecases"`, a.domain.Module, a.domain.DirName()),
+				Kind: token.STRING,
+				Value: fmt.Sprintf(
+					`"%s/internal/app/%s/usecases"`,
+					a.domain.Module,
+					a.domain.DirName(),
+				),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/app/%s/repositories/postgres"`, a.domain.Module, a.domain.DirName()),
+				Kind: token.STRING,
+				Value: fmt.Sprintf(
+					`"%s/internal/app/%s/repositories/postgres"`,
+					a.domain.Module,
+					a.domain.DirName(),
+				),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/app/%s/services"`, a.domain.Module, a.domain.DirName()),
+				Kind: token.STRING,
+				Value: fmt.Sprintf(
+					`"%s/internal/app/%s/services"`,
+					a.domain.Module,
+					a.domain.DirName(),
+				),
 			},
 		},
 		&ast.ImportSpec{
@@ -122,8 +135,12 @@ func (a App) imports() *ast.GenDecl {
 		specs = append(specs, &ast.ImportSpec{
 			Name: ast.NewIdent("httpHandlers"),
 			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/app/%s/handlers/http"`, a.domain.Module, a.domain.DirName()),
+				Kind: token.STRING,
+				Value: fmt.Sprintf(
+					`"%s/internal/app/%s/handlers/http"`,
+					a.domain.Module,
+					a.domain.DirName(),
+				),
 			},
 		})
 	}
@@ -133,8 +150,12 @@ func (a App) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Name: ast.NewIdent("grpcHandlers"),
 				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/app/%s/handlers/grpc"`, a.domain.Module, a.domain.DirName()),
+					Kind: token.STRING,
+					Value: fmt.Sprintf(
+						`"%s/internal/app/%s/handlers/grpc"`,
+						a.domain.Module,
+						a.domain.DirName(),
+					),
 				},
 			}, &ast.ImportSpec{
 				Name: ast.NewIdent(a.domain.ProtoModule),
@@ -693,7 +714,9 @@ func (a App) registerHTTP() *ast.FuncDecl {
 										X: &ast.Ident{
 											Name: "a",
 										},
-										Sel: ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
+										Sel: ast.NewIdent(
+											a.domain.GetHTTPHandlerPrivateVariableName(),
+										),
 									},
 									Sel: &ast.Ident{
 										Name: "ChiRouter",

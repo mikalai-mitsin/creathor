@@ -1,13 +1,14 @@
 package auth
 
 import (
+	"path"
+
 	authModel "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/entities"
 	authGrpcHandlers "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/handlers/grpc"
 	authRepositoriesJwt "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/repositories/jwt"
 	authRepositoriesPosgres "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/repositories/postgres"
 	authServices "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/services"
 	authUseCases "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/usecases"
-	"path"
 
 	"github.com/mikalai-mitsin/creathor/internal/app/generator"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"

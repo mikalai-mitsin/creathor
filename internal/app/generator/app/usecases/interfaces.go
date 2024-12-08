@@ -3,13 +3,14 @@ package usecases
 import (
 	"bytes"
 	"fmt"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path"
+
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
 type InterfacesGenerator struct {

@@ -1,8 +1,9 @@
 package usecases
 
 import (
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 	"path/filepath"
+
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 )

@@ -1,9 +1,10 @@
 package grpc
 
 import (
+	"path"
+
 	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
-	"path"
 )
 
 type TestGenerator struct {

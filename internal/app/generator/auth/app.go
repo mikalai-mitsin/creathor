@@ -59,8 +59,11 @@ func (i AppAuth) file() *ast.File {
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/auth/handlers/grpc"`, i.project.Module),
+							Kind: token.STRING,
+							Value: fmt.Sprintf(
+								`"%s/internal/app/auth/handlers/grpc"`,
+								i.project.Module,
+							),
 						},
 					},
 					&ast.ImportSpec{
@@ -71,8 +74,11 @@ func (i AppAuth) file() *ast.File {
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/auth/repositories/jwt"`, i.project.Module),
+							Kind: token.STRING,
+							Value: fmt.Sprintf(
+								`"%s/internal/app/auth/repositories/jwt"`,
+								i.project.Module,
+							),
 						},
 					},
 					&ast.ImportSpec{
@@ -110,8 +116,12 @@ func (i AppAuth) file() *ast.File {
 							Name: i.project.ProtoPackage(),
 						},
 						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/pkg/%s/v1"`, i.project.Module, i.project.ProtoPackage()),
+							Kind: token.STRING,
+							Value: fmt.Sprintf(
+								`"%s/pkg/%s/v1"`,
+								i.project.Module,
+								i.project.ProtoPackage(),
+							),
 						},
 					},
 					&ast.ImportSpec{

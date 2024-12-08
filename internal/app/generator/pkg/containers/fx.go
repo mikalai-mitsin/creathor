@@ -3,7 +3,6 @@ package containers
 import (
 	"bytes"
 	"fmt"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -11,6 +10,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type FxContainer struct {

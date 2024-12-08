@@ -42,93 +42,101 @@ func (a App) Sync() error {
 }
 
 func (a App) file() *ast.File {
+	decls := []ast.Decl{
+		a.imports(),
+		a.structure(),
+		a.constructor(),
+	}
+	if a.domain.Config.HTTPEnabled {
+		decls = append(decls, a.registerHTTP())
+	}
+	if a.domain.Config.GRPCEnabled {
+		decls = append(decls, a.registerGRPC())
+	}
 	return &ast.File{
 		Name: &ast.Ident{
 			Name: a.domain.DirName(),
 		},
-		Decls: []ast.Decl{
-			a.imports(),
-			a.structure(),
-			a.constructor(),
-			a.registerGRPC(),
-			a.registerHTTP(),
-		},
+		Decls: decls,
 	}
 }
 
 func (a App) imports() *ast.GenDecl {
-	imports := &ast.GenDecl{
-		Tok: token.IMPORT,
-		Specs: []ast.Spec{
+	specs := []ast.Spec{
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/app/%s/usecases"`, a.domain.Module, a.domain.DirName()),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/app/%s/repositories/postgres"`, a.domain.Module, a.domain.DirName()),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/app/%s/services"`, a.domain.Module, a.domain.DirName()),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, a.domain.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, a.domain.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/pkg/http"`, a.domain.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/pkg/log"`, a.domain.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, a.domain.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"github.com/jmoiron/sqlx"`,
+			},
+		},
+	}
+	if a.domain.Config.HTTPEnabled {
+		specs = append(specs, &ast.ImportSpec{
+			Name: ast.NewIdent("httpHandlers"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/app/%s/handlers/http"`, a.domain.Module, a.domain.DirName()),
+			},
+		})
+	}
+	if a.domain.Config.GRPCEnabled {
+		specs = append(
+			specs,
 			&ast.ImportSpec{
 				Name: ast.NewIdent("grpcHandlers"),
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: fmt.Sprintf(`"%s/internal/app/%s/handlers/grpc"`, a.domain.Module, a.domain.DirName()),
 				},
-			},
-			&ast.ImportSpec{
-				Name: ast.NewIdent("httpHandlers"),
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/app/%s/handlers/http"`, a.domain.Module, a.domain.DirName()),
-				},
-			},
-			&ast.ImportSpec{
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/app/%s/usecases"`, a.domain.Module, a.domain.DirName()),
-				},
-			},
-			&ast.ImportSpec{
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/app/%s/repositories/postgres"`, a.domain.Module, a.domain.DirName()),
-				},
-			},
-			&ast.ImportSpec{
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/app/%s/services"`, a.domain.Module, a.domain.DirName()),
-				},
-			},
-			&ast.ImportSpec{
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, a.domain.Module),
-				},
-			},
-			&ast.ImportSpec{
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, a.domain.Module),
-				},
-			},
-			&ast.ImportSpec{
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/http"`, a.domain.Module),
-				},
-			},
-			&ast.ImportSpec{
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/log"`, a.domain.Module),
-				},
-			},
-			&ast.ImportSpec{
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, a.domain.Module),
-				},
-			},
-			&ast.ImportSpec{
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: `"github.com/jmoiron/sqlx"`,
-				},
-			},
-			&ast.ImportSpec{
+			}, &ast.ImportSpec{
 				Name: ast.NewIdent(a.domain.ProtoModule),
 				Path: &ast.BasicLit{
 					Kind: token.STRING,
@@ -139,9 +147,13 @@ func (a App) imports() *ast.GenDecl {
 					),
 				},
 			},
-		},
+		)
+
 	}
-	return imports
+	return &ast.GenDecl{
+		Tok:   token.IMPORT,
+		Specs: specs,
+	}
 }
 
 func (a App) constructor() *ast.FuncDecl {
@@ -244,14 +256,6 @@ func (a App) constructor() *ast.FuncDecl {
 			Key:   ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
 			Value: ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
 		},
-		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
-			Value: ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
-		},
-		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
-			Value: ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
-		},
 	}
 	body := &ast.BlockStmt{
 		List: []ast.Stmt{
@@ -331,46 +335,60 @@ func (a App) constructor() *ast.FuncDecl {
 			},
 		},
 	})
-	body.List = append(body.List, &ast.AssignStmt{
-		Lhs: []ast.Expr{
-			ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
-		},
-		Tok: token.DEFINE,
-		Rhs: []ast.Expr{
-			&ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X:   ast.NewIdent("grpcHandlers"),
-					Sel: ast.NewIdent(a.domain.GetGRPCHandlerConstructorName()),
-				},
-				Args: []ast.Expr{
-					ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
-					&ast.Ident{
-						Name: "logger",
+
+	if a.domain.Config.HTTPEnabled {
+		body.List = append(body.List, &ast.AssignStmt{
+			Lhs: []ast.Expr{
+				ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X:   ast.NewIdent("httpHandlers"),
+						Sel: ast.NewIdent(a.domain.GetHTTPHandlerConstructorName()),
+					},
+					Args: []ast.Expr{
+						ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
+						&ast.Ident{
+							Name: "logger",
+						},
 					},
 				},
 			},
-		},
-	})
-	body.List = append(body.List, &ast.AssignStmt{
-		Lhs: []ast.Expr{
-			ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
-		},
-		Tok: token.DEFINE,
-		Rhs: []ast.Expr{
-			&ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X:   ast.NewIdent("httpHandlers"),
-					Sel: ast.NewIdent(a.domain.GetHTTPHandlerConstructorName()),
-				},
-				Args: []ast.Expr{
-					ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
-					&ast.Ident{
-						Name: "logger",
+		})
+		exprs = append(exprs, &ast.KeyValueExpr{
+			Key:   ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
+			Value: ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
+		})
+	}
+	if a.domain.Config.GRPCEnabled {
+		body.List = append(body.List, &ast.AssignStmt{
+			Lhs: []ast.Expr{
+				ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X:   ast.NewIdent("grpcHandlers"),
+						Sel: ast.NewIdent(a.domain.GetGRPCHandlerConstructorName()),
+					},
+					Args: []ast.Expr{
+						ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
+						&ast.Ident{
+							Name: "logger",
+						},
 					},
 				},
 			},
-		},
-	})
+		})
+		exprs = append(exprs, &ast.KeyValueExpr{
+			Key:   ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
+			Value: ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
+		})
+	}
+
 	body.List = append(body.List, &ast.ReturnStmt{
 		Results: []ast.Expr{
 			&ast.UnaryExpr{
@@ -481,30 +499,34 @@ func (a App) structure() *ast.GenDecl {
 						},
 					},
 				},
-				{
-					Names: []*ast.Ident{
-						ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
-					},
-					Type: &ast.StarExpr{
-						X: &ast.SelectorExpr{
-							X:   ast.NewIdent("grpcHandlers"),
-							Sel: ast.NewIdent(a.domain.GetGRPCHandlerTypeName()),
-						},
-					},
-				},
-				{
-					Names: []*ast.Ident{
-						ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
-					},
-					Type: &ast.StarExpr{
-						X: &ast.SelectorExpr{
-							X:   ast.NewIdent("httpHandlers"),
-							Sel: ast.NewIdent(a.domain.GetHTTPHandlerTypeName()),
-						},
-					},
-				},
 			},
 		},
+	}
+	if a.domain.Config.HTTPEnabled {
+		structType.Fields.List = append(structType.Fields.List, &ast.Field{
+			Names: []*ast.Ident{
+				ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
+			},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X:   ast.NewIdent("httpHandlers"),
+					Sel: ast.NewIdent(a.domain.GetHTTPHandlerTypeName()),
+				},
+			},
+		})
+	}
+	if a.domain.Config.GRPCEnabled {
+		structType.Fields.List = append(structType.Fields.List, &ast.Field{
+			Names: []*ast.Ident{
+				ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
+			},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X:   ast.NewIdent("grpcHandlers"),
+					Sel: ast.NewIdent(a.domain.GetGRPCHandlerTypeName()),
+				},
+			},
+		})
 	}
 	return &ast.GenDecl{
 		Tok: token.TYPE,

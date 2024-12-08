@@ -42,16 +42,24 @@ func (g *Generator) Sync() error {
 		postgres.NewRepositoryGenerator(g.domain),
 		postgres.NewTestGenerator(g.domain),
 
-		grpc.NewProtoGenerator(g.domain),
-		grpc.NewInterfacesGenerator(g.domain),
-		grpc.NewHandlerGenerator(g.domain),
-		grpc.NewTestGenerator(g.domain),
-
-		http.NewDTOGenerator(g.domain),
-		http.NewHandlerGenerator(g.domain),
-		http.NewInterfacesGenerator(g.domain),
-
 		NewApp(g.domain),
+	}
+	if g.domain.Config.HTTPEnabled {
+		domainGenerators = append(
+			domainGenerators,
+			http.NewDTOGenerator(g.domain),
+			http.NewHandlerGenerator(g.domain),
+			http.NewInterfacesGenerator(g.domain),
+		)
+	}
+	if g.domain.Config.GRPCEnabled {
+		domainGenerators = append(
+			domainGenerators,
+			grpc.NewProtoGenerator(g.domain),
+			grpc.NewInterfacesGenerator(g.domain),
+			grpc.NewHandlerGenerator(g.domain),
+			grpc.NewTestGenerator(g.domain),
+		)
 	}
 	for _, model := range g.domain.Entities {
 		domainGenerators = append(domainGenerators, entities.NewModel(model, g.domain))

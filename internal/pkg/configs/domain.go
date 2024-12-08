@@ -16,6 +16,7 @@ type DomainConfig struct {
 	ProtoPackage   string   `json:"proto_package" yaml:"protoPackage"`
 	Auth           bool     `json:"auth"          yaml:"auth"`
 	Params         []*Param `json:"params"        yaml:"params"`
+	HTTPEnabled    bool     `                     yaml:"http"`
 	GRPCEnabled    bool     `                     yaml:"gRPC"`
 	GatewayEnabled bool     `                     yaml:"gateway"`
 	KafkaEnabled   bool     `                     yaml:"kafka"`

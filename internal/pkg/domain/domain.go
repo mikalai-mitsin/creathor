@@ -162,6 +162,14 @@ func (m *Domain) PermissionIDList() string {
 	return fmt.Sprintf("PermissionID%sList", m.CamelName())
 }
 
+func (m *Domain) GetOneVariableName() string {
+	return strcase.ToLowerCamel(m.Config.Model)
+}
+
+func (m *Domain) GetManyVariableName() string {
+	return inflection.Plural(m.GetOneVariableName())
+}
+
 func (m *Domain) GetGRPCHandlerPrivateVariableName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToLowerCamel(m.Config.Model))
 }
@@ -180,6 +188,43 @@ func (m *Domain) GetGRPCHandlerConstructorName() string {
 
 func (m *Domain) GetGRPCServiceDescriptionName() string {
 	return fmt.Sprintf("%sService_ServiceDesc", strcase.ToCamel(m.Config.Model))
+}
+
+func (m *Domain) GetHTTPHandlerConstructorName() string {
+	return fmt.Sprintf("New%s", m.GetHTTPHandlerTypeName())
+}
+
+func (m *Domain) GetHTTPHandlerTypeName() string {
+	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Config.Model))
+}
+
+func (m *Domain) GetHTTPItemDTOName() string {
+	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.GetMainModel().Name))
+}
+func (m *Domain) GetHTTPItemDTOConstructorName() string {
+	return fmt.Sprintf("New%s", m.GetHTTPItemDTOName())
+}
+
+func (m *Domain) GetHTTPUpdateDTOName() string {
+	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.GetUpdateModel().Name))
+}
+func (m *Domain) GetHTTPUpdateDTOConstructorName() string {
+	return fmt.Sprintf("New%s", m.GetHTTPUpdateDTOName())
+}
+
+func (m *Domain) GetHTTPCreateDTOName() string {
+	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.GetCreateModel().Name))
+}
+func (m *Domain) GetHTTPCreateDTOConstructorName() string {
+	return fmt.Sprintf("New%s", m.GetHTTPCreateDTOName())
+}
+
+func (m *Domain) GetHTTPListDTOName() string {
+	return fmt.Sprintf("%sListDTO", strcase.ToCamel(m.GetMainModel().Name))
+}
+
+func (m *Domain) GetHTTPListDTOConstructorName() string {
+	return fmt.Sprintf("New%s", strcase.ToCamel(m.GetHTTPListDTOName()))
 }
 
 func (m *Domain) GetUseCasePrivateVariableName() string {
@@ -240,4 +285,12 @@ func (m *Domain) GetRepositoryInterfaceName() string {
 
 func (m *Domain) GetRepositoryConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetRepositoryTypeName())
+}
+
+func (m *Domain) GetHTTPFilterDTOName() string {
+	return fmt.Sprintf("%sFilterDTO", strcase.ToCamel(m.Config.Model))
+}
+
+func (m *Domain) GetHTTPFilterDTOConstructorName() string {
+	return fmt.Sprintf("New%s", m.GetHTTPFilterDTOName())
 }

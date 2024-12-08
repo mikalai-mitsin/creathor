@@ -13,6 +13,7 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/app/generator"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/entities"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/handlers/grpc"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/handlers/http"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/repositories/postgres"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/services"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/usecases"
@@ -45,6 +46,10 @@ func (g *Generator) Sync() error {
 		grpc.NewInterfacesGenerator(g.domain),
 		grpc.NewHandlerGenerator(g.domain),
 		grpc.NewTestGenerator(g.domain),
+
+		http.NewDTOGenerator(g.domain),
+		http.NewHandlerGenerator(g.domain),
+		http.NewInterfacesGenerator(g.domain),
 
 		NewApp(g.domain),
 	}

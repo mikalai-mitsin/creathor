@@ -275,6 +275,10 @@ func (p *Param) ProtoType() string {
 	}
 }
 
+func (p *Param) JsonType() string {
+	return p.Type
+}
+
 func (p *Param) PostgresDTOType() string {
 	switch p.Type {
 	case "int8", "int16", "int32", "int":

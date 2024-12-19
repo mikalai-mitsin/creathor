@@ -964,6 +964,715 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 				},
 			},
 		},
+		&ast.IfStmt{
+			Cond: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "r",
+								},
+								Sel: &ast.Ident{
+									Name: "URL",
+								},
+							},
+							Sel: &ast.Ident{
+								Name: "Query",
+							},
+						},
+					},
+					Sel: &ast.Ident{
+						Name: "Has",
+					},
+				},
+				Args: []ast.Expr{
+					&ast.BasicLit{
+						Kind:  token.STRING,
+						Value: "\"page_size\"",
+					},
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.AssignStmt{
+						Lhs: []ast.Expr{
+							&ast.Ident{
+								Name: "pageSize",
+							},
+							&ast.Ident{
+								Name: "err",
+							},
+						},
+						Tok: token.DEFINE,
+						Rhs: []ast.Expr{
+							&ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "strconv",
+									},
+									Sel: &ast.Ident{
+										Name: "Atoi",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "r",
+														},
+														Sel: &ast.Ident{
+															Name: "URL",
+														},
+													},
+													Sel: &ast.Ident{
+														Name: "Query",
+													},
+												},
+											},
+											Sel: &ast.Ident{
+												Name: "Get",
+											},
+										},
+										Args: []ast.Expr{
+											&ast.BasicLit{
+												Kind:  token.STRING,
+												Value: "\"page_size\"",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					&ast.IfStmt{
+						Cond: &ast.BinaryExpr{
+							X: &ast.Ident{
+								Name: "err",
+							},
+							Op: token.NEQ,
+							Y: &ast.Ident{
+								Name: "nil",
+							},
+						},
+						Body: &ast.BlockStmt{
+							List: []ast.Stmt{
+								&ast.ReturnStmt{
+									Results: []ast.Expr{
+										&ast.Ident{
+											Name: "nil",
+										},
+										&ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X: &ast.CallExpr{
+													Fun: &ast.SelectorExpr{
+														X: &ast.CallExpr{
+															Fun: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "errs",
+																},
+																Sel: &ast.Ident{
+																	Name: "NewInvalidFormError",
+																},
+															},
+														},
+														Sel: &ast.Ident{
+															Name: "WithParam",
+														},
+													},
+													Args: []ast.Expr{
+														&ast.BasicLit{
+															Kind:  token.STRING,
+															Value: "\"page_size\"",
+														},
+														&ast.BasicLit{
+															Kind:  token.STRING,
+															Value: "\"Invalid page_size.\"",
+														},
+													},
+												},
+												Sel: &ast.Ident{
+													Name: "WithCause",
+												},
+											},
+											Args: []ast.Expr{
+												&ast.Ident{
+													Name: "err",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					&ast.AssignStmt{
+						Lhs: []ast.Expr{
+							&ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "filter",
+								},
+								Sel: &ast.Ident{
+									Name: "PageSize",
+								},
+							},
+						},
+						Tok: token.ASSIGN,
+						Rhs: []ast.Expr{
+							&ast.CallExpr{
+								Fun: &ast.Ident{
+									Name: "uint64",
+								},
+								Args: []ast.Expr{
+									&ast.Ident{
+										Name: "pageSize",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		&ast.IfStmt{
+			Cond: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "r",
+								},
+								Sel: &ast.Ident{
+									Name: "URL",
+								},
+							},
+							Sel: &ast.Ident{
+								Name: "Query",
+							},
+						},
+					},
+					Sel: &ast.Ident{
+						Name: "Has",
+					},
+				},
+				Args: []ast.Expr{
+					&ast.BasicLit{
+						Kind:  token.STRING,
+						Value: "\"page_number\"",
+					},
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.AssignStmt{
+						Lhs: []ast.Expr{
+							&ast.Ident{
+								Name: "pageNumber",
+							},
+							&ast.Ident{
+								Name: "err",
+							},
+						},
+						Tok: token.DEFINE,
+						Rhs: []ast.Expr{
+							&ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "strconv",
+									},
+									Sel: &ast.Ident{
+										Name: "Atoi",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "r",
+														},
+														Sel: &ast.Ident{
+															Name: "URL",
+														},
+													},
+													Sel: &ast.Ident{
+														Name: "Query",
+													},
+												},
+											},
+											Sel: &ast.Ident{
+												Name: "Get",
+											},
+										},
+										Args: []ast.Expr{
+											&ast.BasicLit{
+												Kind:  token.STRING,
+												Value: "\"page_number\"",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					&ast.IfStmt{
+						Cond: &ast.BinaryExpr{
+							X: &ast.Ident{
+								Name: "err",
+							},
+							Op: token.NEQ,
+							Y: &ast.Ident{
+								Name: "nil",
+							},
+						},
+						Body: &ast.BlockStmt{
+							List: []ast.Stmt{
+								&ast.ReturnStmt{
+									Results: []ast.Expr{
+										&ast.Ident{
+											Name: "nil",
+										},
+										&ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X: &ast.CallExpr{
+													Fun: &ast.SelectorExpr{
+														X: &ast.CallExpr{
+															Fun: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "errs",
+																},
+																Sel: &ast.Ident{
+																	Name: "NewInvalidFormError",
+																},
+															},
+														},
+														Sel: &ast.Ident{
+															Name: "WithParam",
+														},
+													},
+													Args: []ast.Expr{
+														&ast.BasicLit{
+															Kind:  token.STRING,
+															Value: "\"page_number\"",
+														},
+														&ast.BasicLit{
+															Kind:  token.STRING,
+															Value: "\"Invalid page_number.\"",
+														},
+													},
+												},
+												Sel: &ast.Ident{
+													Name: "WithCause",
+												},
+											},
+											Args: []ast.Expr{
+												&ast.Ident{
+													Name: "err",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					&ast.AssignStmt{
+						Lhs: []ast.Expr{
+							&ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "filter",
+								},
+								Sel: &ast.Ident{
+									Name: "PageNumber",
+								},
+							},
+						},
+						Tok: token.ASSIGN,
+						Rhs: []ast.Expr{
+							&ast.CallExpr{
+								Fun: &ast.Ident{
+									Name: "uint64",
+								},
+								Args: []ast.Expr{
+									&ast.Ident{
+										Name: "pageNumber",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		&ast.IfStmt{
+			Cond: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "r",
+								},
+								Sel: &ast.Ident{
+									Name: "URL",
+								},
+							},
+							Sel: &ast.Ident{
+								Name: "Query",
+							},
+						},
+					},
+					Sel: &ast.Ident{
+						Name: "Has",
+					},
+				},
+				Args: []ast.Expr{
+					&ast.BasicLit{
+						Kind:  token.STRING,
+						Value: "\"order_by\"",
+					},
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.AssignStmt{
+						Lhs: []ast.Expr{
+							&ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "filter",
+								},
+								Sel: &ast.Ident{
+									Name: "OrderBy",
+								},
+							},
+						},
+						Tok: token.ASSIGN,
+						Rhs: []ast.Expr{
+							&ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "strings",
+									},
+									Sel: &ast.Ident{
+										Name: "Split",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "r",
+														},
+														Sel: &ast.Ident{
+															Name: "URL",
+														},
+													},
+													Sel: &ast.Ident{
+														Name: "Query",
+													},
+												},
+											},
+											Sel: &ast.Ident{
+												Name: "Get",
+											},
+										},
+										Args: []ast.Expr{
+											&ast.BasicLit{
+												Kind:  token.STRING,
+												Value: "\"order_by\"",
+											},
+										},
+									},
+									&ast.BasicLit{
+										Kind:  token.STRING,
+										Value: "\",\"",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		&ast.IfStmt{
+			Cond: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "r",
+								},
+								Sel: &ast.Ident{
+									Name: "URL",
+								},
+							},
+							Sel: &ast.Ident{
+								Name: "Query",
+							},
+						},
+					},
+					Sel: &ast.Ident{
+						Name: "Has",
+					},
+				},
+				Args: []ast.Expr{
+					&ast.BasicLit{
+						Kind:  token.STRING,
+						Value: "\"ids\"",
+					},
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.AssignStmt{
+						Lhs: []ast.Expr{
+							&ast.Ident{
+								Name: "ids",
+							},
+						},
+						Tok: token.DEFINE,
+						Rhs: []ast.Expr{
+							&ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "strings",
+									},
+									Sel: &ast.Ident{
+										Name: "Split",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "r",
+														},
+														Sel: &ast.Ident{
+															Name: "URL",
+														},
+													},
+													Sel: &ast.Ident{
+														Name: "Query",
+													},
+												},
+											},
+											Sel: &ast.Ident{
+												Name: "Get",
+											},
+										},
+										Args: []ast.Expr{
+											&ast.BasicLit{
+												Kind:  token.STRING,
+												Value: "\"ids\"",
+											},
+										},
+									},
+									&ast.BasicLit{
+										Kind:  token.STRING,
+										Value: "\",\"",
+									},
+								},
+							},
+						},
+					},
+					&ast.AssignStmt{
+						Lhs: []ast.Expr{
+							&ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "filter",
+								},
+								Sel: &ast.Ident{
+									Name: "IDs",
+								},
+							},
+						},
+						Tok: token.ASSIGN,
+						Rhs: []ast.Expr{
+							&ast.CallExpr{
+								Fun: &ast.Ident{
+									Name: "make",
+								},
+								Args: []ast.Expr{
+									&ast.ArrayType{
+										Elt: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "uuid",
+											},
+											Sel: &ast.Ident{
+												Name: "UUID",
+											},
+										},
+									},
+									&ast.CallExpr{
+										Fun: &ast.Ident{
+											Name: "len",
+										},
+										Args: []ast.Expr{
+											&ast.Ident{
+												Name: "ids",
+											},
+										},
+									},
+									&ast.CallExpr{
+										Fun: &ast.Ident{
+											Name: "len",
+										},
+										Args: []ast.Expr{
+											&ast.Ident{
+												Name: "ids",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					&ast.RangeStmt{
+						Key: &ast.Ident{
+							Name: "i",
+						},
+						Value: &ast.Ident{
+							Name: "id",
+						},
+						Tok: token.DEFINE,
+						X: &ast.Ident{
+							Name: "ids",
+						},
+						Body: &ast.BlockStmt{
+							List: []ast.Stmt{
+								&ast.AssignStmt{
+									Lhs: []ast.Expr{
+										&ast.IndexExpr{
+											X: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "filter",
+												},
+												Sel: &ast.Ident{
+													Name: "IDs",
+												},
+											},
+											Index: &ast.Ident{
+												Name: "i",
+											},
+										},
+									},
+									Tok: token.ASSIGN,
+									Rhs: []ast.Expr{
+										&ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "uuid",
+												},
+												Sel: &ast.Ident{
+													Name: "UUID",
+												},
+											},
+											Args: []ast.Expr{
+												&ast.Ident{
+													Name: "id",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	if g.domain.SearchEnabled() {
+		stmts = append(stmts, &ast.IfStmt{
+			Cond: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "r",
+								},
+								Sel: &ast.Ident{
+									Name: "URL",
+								},
+							},
+							Sel: &ast.Ident{
+								Name: "Query",
+							},
+						},
+					},
+					Sel: &ast.Ident{
+						Name: "Has",
+					},
+				},
+				Args: []ast.Expr{
+					&ast.BasicLit{
+						Kind:  token.STRING,
+						Value: "\"search\"",
+					},
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.AssignStmt{
+						Lhs: []ast.Expr{
+							&ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "filter",
+								},
+								Sel: &ast.Ident{
+									Name: "Search",
+								},
+							},
+						},
+						Tok: token.ASSIGN,
+						Rhs: []ast.Expr{
+							&ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "r",
+												},
+												Sel: &ast.Ident{
+													Name: "URL",
+												},
+											},
+											Sel: &ast.Ident{
+												Name: "Query",
+											},
+										},
+									},
+									Sel: &ast.Ident{
+										Name: "Get",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.BasicLit{
+										Kind:  token.STRING,
+										Value: "\"search\"",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		})
 	}
 	stmts = append(stmts, &ast.ReturnStmt{
 		Results: []ast.Expr{
@@ -1293,13 +2002,107 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 					Op: token.AND,
 					X: &ast.CompositeLit{
 						Type: ast.NewIdent(g.domain.GetHTTPUpdateDTOName()),
-						Elts: []ast.Expr{
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "ID",
+					},
+				},
+			},
+		},
+		&ast.IfStmt{
+			Init: &ast.AssignStmt{
+				Lhs: []ast.Expr{
+					&ast.Ident{
+						Name: "err",
+					},
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "render",
+							},
+							Sel: &ast.Ident{
+								Name: "DecodeJSON",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "r",
 								},
-								Value: &ast.Ident{
-									Name: `uuid.UUID(chi.URLParam(r, "id"))`, // FIXME: replace with ast
+								Sel: &ast.Ident{
+									Name: "Body",
+								},
+							},
+							&ast.Ident{
+								Name: "update",
+							},
+						},
+					},
+				},
+			},
+			Cond: &ast.BinaryExpr{
+				X: &ast.Ident{
+					Name: "err",
+				},
+				Op: token.NEQ,
+				Y: &ast.Ident{
+					Name: "nil",
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							&ast.Ident{
+								Name: "nil",
+							},
+							&ast.Ident{
+								Name: "err",
+							},
+						},
+					},
+				},
+			},
+		},
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				&ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "update",
+					},
+					Sel: &ast.Ident{
+						Name: "ID",
+					},
+				},
+			},
+			Tok: token.ASSIGN,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "uuid",
+						},
+						Sel: &ast.Ident{
+							Name: "UUID",
+						},
+					},
+					Args: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "chi",
+								},
+								Sel: &ast.Ident{
+									Name: "URLParam",
+								},
+							},
+							Args: []ast.Expr{
+								&ast.Ident{
+									Name: "r",
+								},
+								&ast.BasicLit{
+									Kind:  token.STRING,
+									Value: "\"id\"",
 								},
 							},
 						},
@@ -1622,6 +2425,64 @@ func (g *DTOGenerator) createDTOConstructor() *ast.FuncDecl {
 					X: &ast.CompositeLit{
 						Type: ast.NewIdent(g.domain.GetHTTPCreateDTOName()),
 						Elts: []ast.Expr{},
+					},
+				},
+			},
+		},
+		&ast.IfStmt{
+			Init: &ast.AssignStmt{
+				Lhs: []ast.Expr{
+					&ast.Ident{
+						Name: "err",
+					},
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "render",
+							},
+							Sel: &ast.Ident{
+								Name: "DecodeJSON",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "r",
+								},
+								Sel: &ast.Ident{
+									Name: "Body",
+								},
+							},
+							&ast.Ident{
+								Name: "create",
+							},
+						},
+					},
+				},
+			},
+			Cond: &ast.BinaryExpr{
+				X: &ast.Ident{
+					Name: "err",
+				},
+				Op: token.NEQ,
+				Y: &ast.Ident{
+					Name: "nil",
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							&ast.Ident{
+								Name: "nil",
+							},
+							&ast.Ident{
+								Name: "err",
+							},
+						},
 					},
 				},
 			},

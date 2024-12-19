@@ -706,7 +706,7 @@ func (a App) registerHTTP() *ast.FuncDecl {
 						Args: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
-								Value: fmt.Sprintf(`"/%s/"`, a.domain.GetManyVariableName()),
+								Value: fmt.Sprintf(`"/api/v1/%s/"`, a.domain.GetManyVariableName()),
 							},
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{

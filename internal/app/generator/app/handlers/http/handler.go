@@ -228,7 +228,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /%s/ [POST]", h.domain.GetManyVariableName()),
+							Text: fmt.Sprintf("// @Router /api/v1/%s/ [POST]", h.domain.GetManyVariableName()),
 						},
 					},
 				},
@@ -521,7 +521,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /%s/{id}/ [GET]", h.domain.GetManyVariableName()),
+							Text: fmt.Sprintf("// @Router /api/v1/%s/{id}/ [GET]", h.domain.GetManyVariableName()),
 						},
 					},
 				},
@@ -763,7 +763,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /%s/ [GET]", h.domain.GetManyVariableName()),
+							Text: fmt.Sprintf("// @Router /api/v1/%s/ [GET]", h.domain.GetManyVariableName()),
 						},
 					},
 				},
@@ -1061,7 +1061,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /%s/{id}/ [PATCH]", h.domain.GetManyVariableName()),
+							Text: fmt.Sprintf("// @Router /api/v1/%s/{id}/ [PATCH]", h.domain.GetManyVariableName()),
 						},
 					},
 				},
@@ -1354,7 +1354,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /%s/{id}/ [DELETE]", h.domain.GetManyVariableName()),
+							Text: fmt.Sprintf("// @Router /api/v1/%s/{id}/ [DELETE]", h.domain.GetManyVariableName()),
 						},
 					},
 				},

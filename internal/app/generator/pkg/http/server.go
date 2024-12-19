@@ -129,7 +129,7 @@ func (u Server) file() *ast.File {
 							Text: "// @host 127.0.0.1:8000",
 						},
 						{
-							Text: "// @BasePath /api/v1",
+							Text: "// @BasePath /",
 						},
 						{
 							Text: "// @version 0.0.0",

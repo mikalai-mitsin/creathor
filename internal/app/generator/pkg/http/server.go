@@ -2,6 +2,7 @@ package http
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -113,6 +114,37 @@ func (u Server) file() *ast.File {
 				},
 			},
 			&ast.FuncDecl{
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// NewServer - provide http server",
+						},
+						{
+							Text: "//",
+						},
+						{
+							Text: fmt.Sprintf("// @title %s", u.project.Name),
+						},
+						{
+							Text: "// @host 127.0.0.1:8000",
+						},
+						{
+							Text: "// @BasePath /api/v1",
+						},
+						{
+							Text: "// @version 0.0.0",
+						},
+						{
+							Text: "// @securityDefinitions.apiKey BearerAuth",
+						},
+						{
+							Text: "// @in header",
+						},
+						{
+							Text: "// @name Authorization",
+						},
+					},
+				},
 				Name: &ast.Ident{
 					Name: "NewServer",
 				},

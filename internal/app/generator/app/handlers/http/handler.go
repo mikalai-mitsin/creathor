@@ -1324,7 +1324,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Param id path string true \"UUID\"",
 						},
 						{
-							Text: "// @Success 204 {object} %s \"No content\"",
+							Text: "// @Success 204 \"No content\"",
 						},
 						{
 							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",

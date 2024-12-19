@@ -201,6 +201,9 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
 						},
 						{
+							Text: "// @Security BearerAuth",
+						},
+						{
 							Text: "// @Accept json",
 						},
 						{
@@ -491,6 +494,9 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
 						},
 						{
+							Text: "// @Security BearerAuth",
+						},
+						{
 							Text: "// @Accept json",
 						},
 						{
@@ -728,6 +734,9 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 						{
 							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Security BearerAuth",
 						},
 						{
 							Text: "// @Accept json",
@@ -1022,6 +1031,9 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
 						},
 						{
+							Text: "// @Security BearerAuth",
+						},
+						{
 							Text: "// @Accept json",
 						},
 						{
@@ -1313,6 +1325,9 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 						{
 							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Security BearerAuth",
 						},
 						{
 							Text: "// @Accept json",

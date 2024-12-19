@@ -135,13 +135,7 @@ func (u Server) file() *ast.File {
 							Text: "// @version 0.0.0",
 						},
 						{
-							Text: "// @securityDefinitions.apiKey BearerAuth",
-						},
-						{
-							Text: "// @in header",
-						},
-						{
-							Text: "// @name Authorization",
+							Text: "// @securitydefinitions.BearerAuth BearerAuth",
 						},
 					},
 				},

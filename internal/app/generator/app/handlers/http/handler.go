@@ -186,6 +186,49 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 					},
 				},
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// Create",
+						},
+						{
+							Text: "//",
+						},
+						{
+							Text: fmt.Sprintf("// @Summary Create %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Accept json",
+						},
+						{
+							Text: "// @Produce json",
+						},
+						{
+							Text: fmt.Sprintf("// @Param form body %s true \"Create %s request\"", h.domain.GetHTTPCreateDTOName(), h.domain.GetOneVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Success 201 {object} %s \"Created %s\"", h.domain.GetHTTPItemDTOName(), h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
+						},
+						{
+							Text: "// @Failure 401 {object} errs.Error \"Unauthorized\"",
+						},
+						{
+							Text: "// @Failure 404 {object} errs.Error \"Not found\"",
+						},
+						{
+							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
+						},
+						{
+							Text: fmt.Sprintf("// @Router /%s/ [POST]", h.domain.GetManyVariableName()),
+						},
+					},
+				},
 				Name: ast.NewIdent("Create"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -433,6 +476,49 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 					},
 				},
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// Get",
+						},
+						{
+							Text: "//",
+						},
+						{
+							Text: fmt.Sprintf("// @Summary Get %s by id", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Accept json",
+						},
+						{
+							Text: "// @Produce json",
+						},
+						{
+							Text: "// @Param id path string true \"UUID\"",
+						},
+						{
+							Text: fmt.Sprintf("// @Success 200 {object} %s \"Requested %s\"", h.domain.GetHTTPItemDTOName(), h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
+						},
+						{
+							Text: "// @Failure 401 {object} errs.Error \"Unauthorized\"",
+						},
+						{
+							Text: "// @Failure 404 {object} errs.Error \"Not found\"",
+						},
+						{
+							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
+						},
+						{
+							Text: fmt.Sprintf("// @Router /%s/{id}/ [GET]", h.domain.GetManyVariableName()),
+						},
+					},
+				},
 				Name: ast.NewIdent("Get"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -626,6 +712,49 @@ func (h *HandlerGenerator) file() *ast.File {
 							Type: &ast.StarExpr{
 								X: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
 							},
+						},
+					},
+				},
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// List",
+						},
+						{
+							Text: "//",
+						},
+						{
+							Text: fmt.Sprintf("// @Summary List of %s", h.domain.GetManyVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Accept json",
+						},
+						{
+							Text: "// @Produce json",
+						},
+						{
+							Text: fmt.Sprintf("// @Param filter query %s true \"Filter of %s\"", h.domain.GetHTTPFilterDTOName(), h.domain.GetManyVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Success 200 {array} %s \"Filtered list of %s\"", h.domain.GetHTTPListDTOName(), h.domain.GetManyVariableName()),
+						},
+						{
+							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
+						},
+						{
+							Text: "// @Failure 401 {object} errs.Error \"Unauthorized\"",
+						},
+						{
+							Text: "// @Failure 404 {object} errs.Error \"Not found\"",
+						},
+						{
+							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
+						},
+						{
+							Text: fmt.Sprintf("// @Router /%s/ [GET]", h.domain.GetManyVariableName()),
 						},
 					},
 				},
@@ -878,6 +1007,52 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 					},
 				},
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// Update",
+						},
+						{
+							Text: "//",
+						},
+						{
+							Text: fmt.Sprintf("// @Summary Update %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Accept json",
+						},
+						{
+							Text: "// @Produce json",
+						},
+						{
+							Text: "// @Param id path string true \"UUID\"",
+						},
+						{
+							Text: fmt.Sprintf("// @Param form body %s true \"Update %s request\"", h.domain.GetHTTPUpdateDTOName(), h.domain.GetOneVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Success 200 {object} %s \"Updated %s\"", h.domain.GetHTTPItemDTOName(), h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
+						},
+						{
+							Text: "// @Failure 401 {object} errs.Error \"Unauthorized\"",
+						},
+						{
+							Text: "// @Failure 404 {object} errs.Error \"Not found\"",
+						},
+						{
+							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
+						},
+						{
+							Text: fmt.Sprintf("// @Router /%s/{id}/ [PATCH]", h.domain.GetManyVariableName()),
+						},
+					},
+				},
 				Name: ast.NewIdent("Update"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -1122,6 +1297,49 @@ func (h *HandlerGenerator) file() *ast.File {
 							Type: &ast.StarExpr{
 								X: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
 							},
+						},
+					},
+				},
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// Delete",
+						},
+						{
+							Text: "//",
+						},
+						{
+							Text: fmt.Sprintf("// @Summary Delete %s by id", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Accept json",
+						},
+						{
+							Text: "// @Produce json",
+						},
+						{
+							Text: "// @Param id path string true \"UUID\"",
+						},
+						{
+							Text: "// @Success 204 {object} %s \"No content\"",
+						},
+						{
+							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
+						},
+						{
+							Text: "// @Failure 401 {object} errs.Error \"Unauthorized\"",
+						},
+						{
+							Text: "// @Failure 404 {object} errs.Error \"Not found\"",
+						},
+						{
+							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
+						},
+						{
+							Text: fmt.Sprintf("// @Router /%s/{id}/ [DELETE]", h.domain.GetManyVariableName()),
 						},
 					},
 				},

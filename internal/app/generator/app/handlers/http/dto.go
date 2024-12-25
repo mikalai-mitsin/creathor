@@ -1754,16 +1754,112 @@ func (g *DTOGenerator) syncFilterDTOConstructor() error {
 }
 
 func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
-	model := &ast.CompositeLit{
-		Type: &ast.SelectorExpr{
-			X: ast.NewIdent("entities"),
-			Sel: &ast.Ident{
-				Name: g.domain.GetFilterModel().Name,
+	exprs := []ast.Expr{
+		&ast.KeyValueExpr{
+			Key: &ast.Ident{
+				Name: "PageSize",
+			},
+			Value: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "pointer",
+					},
+					Sel: &ast.Ident{
+						Name: "Pointer",
+					},
+				},
+				Args: []ast.Expr{
+					&ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "dto",
+						},
+						Sel: &ast.Ident{
+							Name: "PageSize",
+						},
+					},
+				},
 			},
 		},
-		Elts: []ast.Expr{},
+		&ast.KeyValueExpr{
+			Key: &ast.Ident{
+				Name: "PageNumber",
+			},
+			Value: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "pointer",
+					},
+					Sel: &ast.Ident{
+						Name: "Pointer",
+					},
+				},
+				Args: []ast.Expr{
+					&ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "dto",
+						},
+						Sel: &ast.Ident{
+							Name: "PageNumber",
+						},
+					},
+				},
+			},
+		},
+		&ast.KeyValueExpr{
+			Key: &ast.Ident{
+				Name: "OrderBy",
+			},
+			Value: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "dto",
+				},
+				Sel: &ast.Ident{
+					Name: "OrderBy",
+				},
+			},
+		},
+		&ast.KeyValueExpr{
+			Key: &ast.Ident{
+				Name: "IDs",
+			},
+			Value: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "dto",
+				},
+				Sel: &ast.Ident{
+					Name: "IDs",
+				},
+			},
+		},
 	}
-	method := &ast.FuncDecl{
+	if g.domain.SearchEnabled() {
+		exprs = append(exprs, &ast.KeyValueExpr{
+			Key: &ast.Ident{
+				Name: "Search",
+			},
+			Value: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "pointer",
+					},
+					Sel: &ast.Ident{
+						Name: "Pointer",
+					},
+				},
+				Args: []ast.Expr{
+					&ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "dto",
+						},
+						Sel: &ast.Ident{
+							Name: "Search",
+						},
+					},
+				},
+			},
+		})
+	}
+	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
 				{
@@ -1817,7 +1913,17 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 					Rhs: []ast.Expr{
 						&ast.UnaryExpr{
 							Op: token.AND,
-							X:  model,
+							X: &ast.CompositeLit{
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "entities",
+									},
+									Sel: &ast.Ident{
+										Name: "PostFilter",
+									},
+								},
+								Elts: exprs,
+							},
 						},
 					},
 				},
@@ -1830,7 +1936,6 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 			},
 		},
 	}
-	return method
 }
 
 func (g *DTOGenerator) syncFilterDTOToEntity() error {

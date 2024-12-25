@@ -2569,14 +2569,17 @@ func (g *DTOGenerator) syncCreateDTOConstructor() error {
 }
 
 func (g *DTOGenerator) createDTOToEntity() *ast.FuncDecl {
-	model := &ast.CompositeLit{
-		Type: &ast.SelectorExpr{
-			X: ast.NewIdent("entities"),
-			Sel: &ast.Ident{
-				Name: g.domain.GetCreateModel().Name,
+	var exprs []ast.Expr
+	for _, param := range g.domain.GetCreateModel().Params {
+		exprs = append(exprs, &ast.KeyValueExpr{
+			Key: ast.NewIdent(param.GetName()),
+			Value: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "dto",
+				},
+				Sel: ast.NewIdent(param.GetName()),
 			},
-		},
-		Elts: []ast.Expr{},
+		})
 	}
 	method := &ast.FuncDecl{
 		Recv: &ast.FieldList{
@@ -2632,7 +2635,15 @@ func (g *DTOGenerator) createDTOToEntity() *ast.FuncDecl {
 					Rhs: []ast.Expr{
 						&ast.UnaryExpr{
 							Op: token.AND,
-							X:  model,
+							X: &ast.CompositeLit{
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "entities",
+									},
+									Sel: ast.NewIdent(g.domain.GetCreateModel().Name),
+								},
+								Elts: exprs,
+							},
 						},
 					},
 				},

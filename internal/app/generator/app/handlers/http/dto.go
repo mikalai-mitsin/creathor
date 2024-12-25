@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"fmt"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -10,8 +11,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
 )
 
 type DTOGenerator struct {
@@ -2192,6 +2191,18 @@ func (g *DTOGenerator) syncUpdateDTOConstructor() error {
 }
 
 func (g *DTOGenerator) updateDTOToEntity() *ast.FuncDecl {
+	var exprs []ast.Expr
+	for _, param := range g.domain.GetUpdateModel().Params {
+		exprs = append(exprs, &ast.KeyValueExpr{
+			Key: ast.NewIdent(param.GetName()),
+			Value: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "dto",
+				},
+				Sel: ast.NewIdent(param.GetName()),
+			},
+		})
+	}
 	model := &ast.CompositeLit{
 		Type: &ast.SelectorExpr{
 			X: ast.NewIdent("entities"),
@@ -2199,7 +2210,7 @@ func (g *DTOGenerator) updateDTOToEntity() *ast.FuncDecl {
 				Name: g.domain.GetUpdateModel().Name,
 			},
 		},
-		Elts: []ast.Expr{},
+		Elts: exprs,
 	}
 	method := &ast.FuncDecl{
 		Recv: &ast.FieldList{

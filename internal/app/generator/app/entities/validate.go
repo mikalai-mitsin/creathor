@@ -108,6 +108,9 @@ func (m *Validate) checker(name *ast.Ident, typeName ast.Expr) *ast.CallExpr {
 		},
 	}
 	if _, ok := typeName.(*ast.StarExpr); !ok {
+		if ident, ok := typeName.(*ast.Ident); ok && ident.String() == "bool" {
+			return call
+		}
 		call.Args = append(call.Args, &ast.SelectorExpr{
 			X:   ast.NewIdent("validation"),
 			Sel: ast.NewIdent("Required"),

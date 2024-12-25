@@ -348,7 +348,9 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
             want: entities.{{ .Config.ModelName }}{},
             wantErr: errs.NewInvalidFormError().WithParams(
 {{- range $key, $value := .Config.Params }}
+{{- if ne $value.Type "bool"}}
                 errs.Param{Key: "{{ $value.Tag }}", Value: "cannot be blank"},
+{{- end }}
 {{- end }}
             ),
         },

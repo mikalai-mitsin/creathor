@@ -306,11 +306,9 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("create")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(u.domain.GetCreateModel().Name),
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(u.domain.GetCreateModel().Name),
 						},
 					},
 				},
@@ -318,11 +316,9 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 						},
 					},
 					{
@@ -358,7 +354,12 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									ast.NewIdent("nil"),
+									&ast.CompositeLit{
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("entities"),
+											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+										},
+									},
 									ast.NewIdent("err"),
 								},
 							},
@@ -393,15 +394,12 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 					Lhs: []ast.Expr{ast.NewIdent(u.domain.GetMainModel().Variable)},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
-						&ast.UnaryExpr{
-							Op: token.AND,
-							X: &ast.CompositeLit{
-								Type: &ast.SelectorExpr{
-									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
-								},
-								Elts: params,
+						&ast.CompositeLit{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 							},
+							Elts: params,
 						},
 					},
 				},
@@ -439,7 +437,12 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									ast.NewIdent("nil"),
+									&ast.CompositeLit{
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("entities"),
+											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+										},
+									},
 									ast.NewIdent("err"),
 								},
 							},
@@ -478,34 +481,6 @@ func (u ServiceGenerator) syncCreateMethod() error {
 	})
 	if method == nil {
 		method = u.create()
-	}
-	for _, param := range u.domain.GetCreateModel().Params {
-		param := param
-		ast.Inspect(method, func(node ast.Node) bool {
-			if cl, ok := node.(*ast.CompositeLit); ok {
-				if t, ok := cl.Type.(*ast.SelectorExpr); ok &&
-					t.Sel.String() == u.domain.GetMainModel().Name {
-					for _, elt := range cl.Elts {
-						if kv, ok := elt.(*ast.KeyValueExpr); ok {
-							if key, ok := kv.Key.(*ast.Ident); ok &&
-								key.String() == param.GetName() {
-								return false
-							}
-						}
-					}
-					cl.Elts = append(cl.Elts, &ast.KeyValueExpr{
-						Key:   ast.NewIdent(param.GetName()),
-						Colon: 0,
-						Value: &ast.SelectorExpr{
-							X:   ast.NewIdent("create"),
-							Sel: ast.NewIdent(param.GetName()),
-						},
-					})
-					return false
-				}
-			}
-			return true
-		})
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -549,11 +524,9 @@ func (u ServiceGenerator) list() *ast.FuncDecl {
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent(u.domain.GetFilterModel().Variable)},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(u.domain.GetFilterModel().Name),
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(u.domain.GetFilterModel().Name),
 						},
 					},
 				},
@@ -562,11 +535,9 @@ func (u ServiceGenerator) list() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Type: &ast.ArrayType{
-							Elt: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
-								},
+							Elt: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 							},
 						},
 					},
@@ -741,11 +712,9 @@ func (u ServiceGenerator) get() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 						},
 					},
 					{
@@ -789,7 +758,12 @@ func (u ServiceGenerator) get() *ast.FuncDecl {
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									ast.NewIdent("nil"),
+									&ast.CompositeLit{
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("entities"),
+											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+										},
+									},
 									ast.NewIdent("err"),
 								},
 							},
@@ -903,11 +877,9 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("update")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(u.domain.GetUpdateModel().Name),
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(u.domain.GetUpdateModel().Name),
 						},
 					},
 				},
@@ -915,11 +887,9 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 						},
 					},
 					{
@@ -955,7 +925,12 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									ast.NewIdent("nil"),
+									&ast.CompositeLit{
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("entities"),
+											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+										},
+									},
 									ast.NewIdent("err"),
 								},
 							},
@@ -996,7 +971,12 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									ast.NewIdent("nil"),
+									&ast.CompositeLit{
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("entities"),
+											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+										},
+									},
 									ast.NewIdent("err"),
 								},
 							},
@@ -1066,7 +1046,12 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									ast.NewIdent("nil"),
+									&ast.CompositeLit{
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("entities"),
+											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+										},
+									},
 									ast.NewIdent("err"),
 								},
 							},
@@ -1150,11 +1135,9 @@ func (u ServiceGenerator) syncUpdateMethod() error {
 									},
 									Tok: token.ASSIGN,
 									Rhs: []ast.Expr{
-										&ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X:   ast.NewIdent("update"),
-												Sel: ast.NewIdent(param.GetName()),
-											},
+										&ast.SelectorExpr{
+											X:   ast.NewIdent("update"),
+											Sel: ast.NewIdent(param.GetName()),
 										},
 									},
 								},
@@ -1335,11 +1318,9 @@ func (u ServiceGenerator) getByEmail() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 						},
 					},
 					{
@@ -1383,7 +1364,12 @@ func (u ServiceGenerator) getByEmail() *ast.FuncDecl {
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									ast.NewIdent("nil"),
+									&ast.CompositeLit{
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("entities"),
+											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+										},
+									},
 									ast.NewIdent("err"),
 								},
 							},

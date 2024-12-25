@@ -78,7 +78,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    *entities.{{ .Config.ModelName }}
+        want    entities.{{ .Config.ModelName }}
         wantErr error
     }{
         {
@@ -104,7 +104,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
             setup: func() {
                 mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Get(ctx, {{ .Config.Variable }}.ID).
-                    Return(nil, errs.NewEntityNotFoundError())
+                    Return(entities.{{ .Config.ModelName }}{}, errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
@@ -114,7 +114,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
                 ctx:         ctx,
                 id:          {{ .Config.Variable }}.ID,
             },
-            want:    nil,
+            want:    entities.{{ .Config.ModelName }}{},
             wantErr: errs.NewEntityNotFoundError(),
         },
     }
@@ -146,14 +146,14 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
     }
     type args struct {
         ctx    context.Context
-        create *entities.{{ .Config.CreateTypeName }}
+        create entities.{{ .Config.CreateTypeName }}
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *entities.{{ .Config.ModelName }}
+        want    entities.{{ .Config.ModelName }}
         wantErr error
     }{
         {
@@ -177,7 +177,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
             setup: func() {
                 mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Create(ctx, create).
-                    Return(nil, errs.NewUnexpectedBehaviorError("c u"))
+                    Return(entities.{{ .Config.ModelName }}{}, errs.NewUnexpectedBehaviorError("c u"))
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
@@ -187,7 +187,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
                 ctx:    ctx,
                 create: create,
             },
-            want:    nil,
+            want:    entities.{{ .Config.ModelName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("c u"),
         },
     }
@@ -219,14 +219,14 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
     }
     type args struct {
         ctx    context.Context
-        update *entities.{{ .Config.UpdateTypeName }}
+        update entities.{{ .Config.UpdateTypeName }}
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *entities.{{ .Config.ModelName }}
+        want    entities.{{ .Config.ModelName }}
         wantErr error
     }{
         {
@@ -250,7 +250,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
             setup: func() {
                 mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Update(ctx, update).
-                    Return(nil, errs.NewUnexpectedBehaviorError("d 2"))
+                    Return(entities.{{ .Config.ModelName }}{}, errs.NewUnexpectedBehaviorError("d 2"))
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
@@ -260,7 +260,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
                 ctx:    ctx,
                 update: update,
             },
-            want:    nil,
+            want:    entities.{{ .Config.ModelName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("d 2"),
         },
     }
@@ -356,7 +356,7 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
     ctx := context.Background()
     filter := mock_entities.New{{ .Config.FilterTypeName }}(t)
     count := faker.New().UInt64Between(2, 20)
-    {{ .Config.ListVariable }} := make([]*entities.{{ .Config.ModelName }}, 0, count)
+    {{ .Config.ListVariable }} := make([]entities.{{ .Config.ModelName }}, 0, count)
     for i := uint64(0); i < count; i++ {
         {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mock_entities.New{{ .Config.ModelName }}(t))
     }
@@ -366,14 +366,14 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
     }
     type args struct {
         ctx         context.Context
-        filter      *entities.{{ .Config.FilterTypeName }}
+        filter      entities.{{ .Config.FilterTypeName }}
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    []*entities.{{ .Config.ModelName }}
+        want    []entities.{{ .Config.ModelName }}
         want1   uint64
         wantErr error
     }{

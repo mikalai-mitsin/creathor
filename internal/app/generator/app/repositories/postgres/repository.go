@@ -1162,37 +1162,26 @@ func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 									Fun: &ast.SelectorExpr{
 										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.CallExpr{
-													Fun: &ast.SelectorExpr{
-														X:   ast.NewIdent("sq"),
-														Sel: ast.NewIdent("Insert"),
-													},
-													Args: []ast.Expr{
-														&ast.BasicLit{
-															Kind: token.STRING,
-															Value: fmt.Sprintf(
-																`"public.%s"`,
-																r.domain.TableName(),
-															),
-														},
-													},
-												},
-												Sel: ast.NewIdent("Columns"),
+												X:   ast.NewIdent("sq"),
+												Sel: ast.NewIdent("Insert"),
 											},
-											Args: columns,
+											Args: []ast.Expr{
+												&ast.BasicLit{
+													Kind: token.STRING,
+													Value: fmt.Sprintf(
+														`"public.%s"`,
+														r.domain.TableName(),
+													),
+												},
+											},
 										},
-										Sel: ast.NewIdent("Values"),
+										Sel: ast.NewIdent("Columns"),
 									},
-									Args: values,
+									Args: columns,
 								},
-								Sel: ast.NewIdent("Suffix"),
+								Sel: ast.NewIdent("Values"),
 							},
-							Args: []ast.Expr{
-								&ast.BasicLit{
-									Kind:  token.STRING,
-									Value: `"RETURNING id"`,
-								},
-							},
+							Args: values,
 						},
 					},
 				},
@@ -1227,86 +1216,85 @@ func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 				&ast.IfStmt{
 					Init: &ast.AssignStmt{
 						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
+							&ast.Ident{
+								Name: "_",
+							},
+							&ast.Ident{
+								Name: "err",
+							},
 						},
 						Tok: token.DEFINE,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X: &ast.SelectorExpr{
-												X:   ast.NewIdent("r"),
-												Sel: ast.NewIdent("database"),
-											},
-											Sel: ast.NewIdent("QueryRowxContext"),
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "r",
 										},
-										Args: []ast.Expr{
-											ast.NewIdent("ctx"),
-											ast.NewIdent("query"),
-											ast.NewIdent("args"),
+										Sel: &ast.Ident{
+											Name: "database",
 										},
-										Ellipsis: 3467,
 									},
-									Sel: ast.NewIdent("StructScan"),
+									Sel: &ast.Ident{
+										Name: "ExecContext",
+									},
 								},
 								Args: []ast.Expr{
-									ast.NewIdent("dto"),
+									&ast.Ident{
+										Name: "ctx",
+									},
+									&ast.Ident{
+										Name: "query",
+									},
+									&ast.Ident{
+										Name: "args",
+									},
 								},
+								Ellipsis: 653,
 							},
 						},
 					},
 					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
+						X: &ast.Ident{
+							Name: "err",
+						},
 						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
+						Y: &ast.Ident{
+							Name: "nil",
+						},
 					},
 					Body: &ast.BlockStmt{
 						List: []ast.Stmt{
 							&ast.AssignStmt{
 								Lhs: []ast.Expr{
-									ast.NewIdent("e"),
+									&ast.Ident{
+										Name: "e",
+									},
 								},
 								Tok: token.DEFINE,
 								Rhs: []ast.Expr{
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
-											X:   ast.NewIdent("errs"),
-											Sel: ast.NewIdent("FromPostgresError"),
+											X: &ast.Ident{
+												Name: "errs",
+											},
+											Sel: &ast.Ident{
+												Name: "FromPostgresError",
+											},
 										},
 										Args: []ast.Expr{
-											ast.NewIdent("err"),
+											&ast.Ident{
+												Name: "err",
+											},
 										},
 									},
 								},
 							},
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									ast.NewIdent("e"),
-								},
-							},
-						},
-					},
-				},
-				// Set model ID from DTO
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						&ast.SelectorExpr{
-							X:   ast.NewIdent("entity"),
-							Sel: ast.NewIdent("ID"),
-						},
-					},
-					Tok: token.ASSIGN,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X:   ast.NewIdent("uuid"),
-								Sel: ast.NewIdent("UUID"),
-							},
-							Args: []ast.Expr{
-								&ast.SelectorExpr{
-									X:   ast.NewIdent("dto"),
-									Sel: ast.NewIdent("ID"),
+									&ast.Ident{
+										Name: "e",
+									},
 								},
 							},
 						},

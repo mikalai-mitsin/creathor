@@ -684,8 +684,25 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 								Key: &ast.Ident{
 									Name: "Items",
 								},
-								Value: &ast.Ident{
-									Name: "nil",
+								Value: &ast.CallExpr{
+									Fun: &ast.Ident{
+										Name: "make",
+									},
+									Args: []ast.Expr{
+										&ast.ArrayType{
+											Elt: &ast.StarExpr{
+												X: ast.NewIdent(g.domain.GetHTTPItemDTOName()),
+											},
+										},
+										&ast.CallExpr{
+											Fun: &ast.Ident{
+												Name: "len",
+											},
+											Args: []ast.Expr{
+												ast.NewIdent(g.domain.GetManyVariableName()),
+											},
+										},
+									},
 								},
 							},
 							&ast.KeyValueExpr{
@@ -701,13 +718,92 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 				},
 			},
 		},
-	}
-	stmts = append(stmts, &ast.ReturnStmt{
-		Results: []ast.Expr{
-			ast.NewIdent("response"),
-			ast.NewIdent("nil"),
+		&ast.RangeStmt{
+			Key: &ast.Ident{
+				Name: "i",
+			},
+			Value: ast.NewIdent(g.domain.GetOneVariableName()),
+			Tok:   token.DEFINE,
+			X:     ast.NewIdent(g.domain.GetManyVariableName()),
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.AssignStmt{
+						Lhs: []ast.Expr{
+							&ast.Ident{
+								Name: "dto",
+							},
+							&ast.Ident{
+								Name: "err",
+							},
+						},
+						Tok: token.DEFINE,
+						Rhs: []ast.Expr{
+							&ast.CallExpr{
+								Fun: ast.NewIdent(g.domain.GetHTTPItemDTOConstructorName()),
+								Args: []ast.Expr{
+									ast.NewIdent(g.domain.GetOneVariableName()),
+								},
+							},
+						},
+					},
+					&ast.IfStmt{
+						Cond: &ast.BinaryExpr{
+							X: &ast.Ident{
+								Name: "err",
+							},
+							Op: token.NEQ,
+							Y: &ast.Ident{
+								Name: "nil",
+							},
+						},
+						Body: &ast.BlockStmt{
+							List: []ast.Stmt{
+								&ast.ReturnStmt{
+									Results: []ast.Expr{
+										&ast.Ident{
+											Name: "nil",
+										},
+										&ast.Ident{
+											Name: "err",
+										},
+									},
+								},
+							},
+						},
+					},
+					&ast.AssignStmt{
+						Lhs: []ast.Expr{
+							&ast.IndexExpr{
+								X: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "response",
+									},
+									Sel: &ast.Ident{
+										Name: "Items",
+									},
+								},
+								Index: &ast.Ident{
+									Name: "i",
+								},
+							},
+						},
+						Tok: token.ASSIGN,
+						Rhs: []ast.Expr{
+							&ast.Ident{
+								Name: "dto",
+							},
+						},
+					},
+				},
+			},
 		},
-	})
+		&ast.ReturnStmt{
+			Results: []ast.Expr{
+				ast.NewIdent("response"),
+				ast.NewIdent("nil"),
+			},
+		},
+	}
 	return &ast.FuncDecl{
 		Name: &ast.Ident{
 			Name: g.domain.GetHTTPListDTOConstructorName(),

@@ -274,7 +274,7 @@ func (r RepositoryGenerator) dtoConstructor() *ast.FuncDecl {
 			if param.PostgresDTOType() == param.Type {
 				elt.Value = &ast.SelectorExpr{
 					X: &ast.Ident{
-						Name: "model",
+						Name: "entity",
 					},
 					Sel: &ast.Ident{
 						Name: param.GetName(),
@@ -288,7 +288,7 @@ func (r RepositoryGenerator) dtoConstructor() *ast.FuncDecl {
 					Args: []ast.Expr{
 						&ast.SelectorExpr{
 							X: &ast.Ident{
-								Name: "model",
+								Name: "entity",
 							},
 							Sel: &ast.Ident{
 								Name: param.GetName(),
@@ -302,7 +302,7 @@ func (r RepositoryGenerator) dtoConstructor() *ast.FuncDecl {
 	}
 	constructor := &ast.FuncDecl{
 		Name: &ast.Ident{
-			Name: fmt.Sprintf("New%sFromModel", r.getDTOName()),
+			Name: fmt.Sprintf("New%sFromEntity", r.getDTOName()),
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
@@ -310,17 +310,15 @@ func (r RepositoryGenerator) dtoConstructor() *ast.FuncDecl {
 					{
 						Names: []*ast.Ident{
 							{
-								Name: "model",
+								Name: "entity",
 							},
 						},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: r.domain.GetMainModel().Name,
-								},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
+							},
+							Sel: &ast.Ident{
+								Name: r.domain.GetMainModel().Name,
 							},
 						},
 					},
@@ -329,11 +327,7 @@ func (r RepositoryGenerator) dtoConstructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.Ident{
-								Name: r.getDTOName(),
-							},
-						},
+						Type: ast.NewIdent(r.getDTOName()),
 					},
 				},
 			},
@@ -348,10 +342,7 @@ func (r RepositoryGenerator) dtoConstructor() *ast.FuncDecl {
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
-						&ast.UnaryExpr{
-							Op: token.AND,
-							X:  dto,
-						},
+						dto,
 					},
 				},
 			},
@@ -386,7 +377,7 @@ func (r RepositoryGenerator) dtoConstructor() *ast.FuncDecl {
 			Tok: token.DEFINE,
 			X: &ast.SelectorExpr{
 				X: &ast.Ident{
-					Name: "model",
+					Name: "entity",
 				},
 				Sel: &ast.Ident{
 					Name: param.GetName(),
@@ -451,7 +442,7 @@ func (r RepositoryGenerator) syncDTOConstructor() error {
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%sFromModel", r.getDTOName()) {
+			t.Name.String() == fmt.Sprintf("New%sFromEntity", r.getDTOName()) {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -491,7 +482,7 @@ func (r RepositoryGenerator) syncDTOConstructor() error {
 						if param.PostgresDTOType() == param.Type {
 							elt.Value = &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "model",
+									Name: "entity",
 								},
 								Sel: &ast.Ident{
 									Name: param.GetName(),
@@ -505,7 +496,7 @@ func (r RepositoryGenerator) syncDTOConstructor() error {
 								Args: []ast.Expr{
 									&ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: "model",
+											Name: "entity",
 										},
 										Sel: &ast.Ident{
 											Name: param.GetName(),
@@ -603,30 +594,24 @@ func (r RepositoryGenerator) dtoToModel() *ast.FuncDecl {
 							Name: "dto",
 						},
 					},
-					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: r.getDTOName(),
-						},
-					},
+					Type: ast.NewIdent(r.getDTOName()),
 				},
 			},
 		},
 		Name: &ast.Ident{
-			Name: "ToModel",
+			Name: "toEntity",
 		},
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: r.domain.GetMainModel().Name,
-								},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
+							},
+							Sel: &ast.Ident{
+								Name: r.domain.GetMainModel().Name,
 							},
 						},
 					},
@@ -638,15 +623,12 @@ func (r RepositoryGenerator) dtoToModel() *ast.FuncDecl {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.Ident{
-							Name: "model",
+							Name: "entity",
 						},
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
-						&ast.UnaryExpr{
-							Op: token.AND,
-							X:  model,
-						},
+						model,
 					},
 				},
 			},
@@ -693,7 +675,7 @@ func (r RepositoryGenerator) dtoToModel() *ast.FuncDecl {
 						Lhs: []ast.Expr{
 							&ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "model",
+									Name: "entity",
 								},
 								Sel: &ast.Ident{
 									Name: param.GetName(),
@@ -709,7 +691,7 @@ func (r RepositoryGenerator) dtoToModel() *ast.FuncDecl {
 								Args: []ast.Expr{
 									&ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: "model",
+											Name: "entity",
 										},
 										Sel: &ast.Ident{
 											Name: param.GetName(),
@@ -730,7 +712,7 @@ func (r RepositoryGenerator) dtoToModel() *ast.FuncDecl {
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
 				&ast.Ident{
-					Name: "model",
+					Name: "entity",
 				},
 			},
 		},
@@ -747,7 +729,7 @@ func (r RepositoryGenerator) syncDTOToModel() error {
 	var methodExists bool
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "ToModel" {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "toEntity" {
 			methodExists = true
 			method = t
 			return false
@@ -1101,12 +1083,10 @@ func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 						Type:  ast.NewIdent("context.Context"),
 					},
 					{
-						Names: []*ast.Ident{ast.NewIdent("model")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(r.domain.GetMainModel().Name),
-							},
+						Names: []*ast.Ident{ast.NewIdent("entity")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(r.domain.GetMainModel().Name),
 						},
 					},
 				},
@@ -1161,10 +1141,10 @@ func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: ast.NewIdent(
-								fmt.Sprintf("New%sDTOFromModel", r.domain.GetMainModel().Name),
+								fmt.Sprintf("New%sDTOFromEntity", r.domain.GetMainModel().Name),
 							),
 							Args: []ast.Expr{
-								ast.NewIdent("model"),
+								ast.NewIdent("entity"),
 							},
 						},
 					},
@@ -1312,7 +1292,7 @@ func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.SelectorExpr{
-							X:   ast.NewIdent("model"),
+							X:   ast.NewIdent("entity"),
 							Sel: ast.NewIdent("ID"),
 						},
 					},
@@ -1491,14 +1471,12 @@ func (r RepositoryGenerator) search() ast.Stmt {
 											Key: &ast.Ident{
 												Name: "Query",
 											},
-											Value: &ast.StarExpr{
-												X: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "filter",
-													},
-													Sel: &ast.Ident{
-														Name: "Search",
-													},
+											Value: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "filter",
+												},
+												Sel: &ast.Ident{
+													Name: "Search",
 												},
 											},
 										},
@@ -1583,14 +1561,12 @@ func (r RepositoryGenerator) listMethod() *ast.FuncDecl {
 								Name: "filter",
 							},
 						},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: r.domain.GetFilterModel().Name,
-								},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
+							},
+							Sel: &ast.Ident{
+								Name: r.domain.GetFilterModel().Name,
 							},
 						},
 					},
@@ -1600,14 +1576,12 @@ func (r RepositoryGenerator) listMethod() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Type: &ast.ArrayType{
-							Elt: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: &ast.Ident{
-										Name: r.domain.GetMainModel().Name,
-									},
+							Elt: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "entities",
+								},
+								Sel: &ast.Ident{
+									Name: r.domain.GetMainModel().Name,
 								},
 							},
 						},
@@ -2341,14 +2315,12 @@ func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 								Name: "filter",
 							},
 						},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: r.domain.GetFilterModel().Name,
-								},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
+							},
+							Sel: &ast.Ident{
+								Name: r.domain.GetFilterModel().Name,
 							},
 						},
 					},
@@ -2887,14 +2859,12 @@ func (r RepositoryGenerator) getMethod() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: r.domain.GetMainModel().Name,
-								},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
+							},
+							Sel: &ast.Ident{
+								Name: r.domain.GetMainModel().Name,
 							},
 						},
 					},
@@ -3191,8 +3161,11 @@ func (r RepositoryGenerator) getMethod() *ast.FuncDecl {
 							},
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									&ast.Ident{
-										Name: "nil",
+									&ast.CompositeLit{
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("entities"),
+											Sel: ast.NewIdent(r.domain.GetMainModel().Name),
+										},
 									},
 									&ast.Ident{
 										Name: "e",
@@ -3210,7 +3183,7 @@ func (r RepositoryGenerator) getMethod() *ast.FuncDecl {
 									Name: "dto",
 								},
 								Sel: &ast.Ident{
-									Name: "ToModel",
+									Name: "toEntity",
 								},
 							},
 						},
@@ -3285,14 +3258,12 @@ func (r RepositoryGenerator) getByEmailMethod() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: r.domain.GetMainModel().Name,
-								},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
+							},
+							Sel: &ast.Ident{
+								Name: r.domain.GetMainModel().Name,
 							},
 						},
 					},
@@ -3599,7 +3570,7 @@ func (r RepositoryGenerator) getByEmailMethod() *ast.FuncDecl {
 									Name: "dto",
 								},
 								Sel: &ast.Ident{
-									Name: "ToModel",
+									Name: "toEntity",
 								},
 							},
 						},
@@ -3806,17 +3777,15 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 					{
 						Names: []*ast.Ident{
 							{
-								Name: "model",
+								Name: "entity",
 							},
 						},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: r.domain.GetMainModel().Name,
-								},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
+							},
+							Sel: &ast.Ident{
+								Name: r.domain.GetMainModel().Name,
 							},
 						},
 					},
@@ -3887,11 +3856,11 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.Ident{
-								Name: fmt.Sprintf("New%sFromModel", r.getDTOName()),
+								Name: fmt.Sprintf("New%sFromEntity", r.getDTOName()),
 							},
 							Args: []ast.Expr{
 								&ast.Ident{
-									Name: "model",
+									Name: "entity",
 								},
 							},
 						},
@@ -3945,7 +3914,7 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 											},
 											Value: &ast.SelectorExpr{
 												X: &ast.Ident{
-													Name: "model",
+													Name: "entity",
 												},
 												Sel: &ast.Ident{
 													Name: "ID",
@@ -4100,7 +4069,7 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 												Args: []ast.Expr{
 													&ast.SelectorExpr{
 														X: &ast.Ident{
-															Name: "model",
+															Name: "entity",
 														},
 														Sel: &ast.Ident{
 															Name: "ID",
@@ -4200,7 +4169,7 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 												Args: []ast.Expr{
 													&ast.SelectorExpr{
 														X: &ast.Ident{
-															Name: "model",
+															Name: "entity",
 														},
 														Sel: &ast.Ident{
 															Name: "ID",
@@ -4272,7 +4241,7 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 												Args: []ast.Expr{
 													&ast.SelectorExpr{
 														X: &ast.Ident{
-															Name: "model",
+															Name: "entity",
 														},
 														Sel: &ast.Ident{
 															Name: "ID",
@@ -4962,11 +4931,7 @@ func (r RepositoryGenerator) astDTOListType() *ast.TypeSpec {
 			Name: r.getDTOListName(),
 		},
 		Type: &ast.ArrayType{
-			Elt: &ast.StarExpr{
-				X: &ast.Ident{
-					Name: r.getDTOName(),
-				},
-			},
+			Elt: ast.NewIdent(r.getDTOName()),
 		},
 	}
 }
@@ -5033,13 +4998,9 @@ func (r RepositoryGenerator) astDTOToEntities() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Type: &ast.ArrayType{
-							Elt: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X: ast.NewIdent("entities"),
-									Sel: &ast.Ident{
-										Name: r.domain.GetMainModel().Name,
-									},
-								},
+							Elt: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(r.domain.GetMainModel().Name),
 							},
 						},
 					},
@@ -5062,14 +5023,12 @@ func (r RepositoryGenerator) astDTOToEntities() *ast.FuncDecl {
 							},
 							Args: []ast.Expr{
 								&ast.ArrayType{
-									Elt: &ast.StarExpr{
-										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "entities",
-											},
-											Sel: &ast.Ident{
-												Name: r.domain.GetMainModel().Name,
-											},
+									Elt: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "entities",
+										},
+										Sel: &ast.Ident{
+											Name: r.domain.GetMainModel().Name,
 										},
 									},
 								},
@@ -5121,7 +5080,7 @@ func (r RepositoryGenerator) astDTOToEntities() *ast.FuncDecl {
 												},
 											},
 											Sel: &ast.Ident{
-												Name: "ToModel",
+												Name: "toEntity",
 											},
 										},
 									},

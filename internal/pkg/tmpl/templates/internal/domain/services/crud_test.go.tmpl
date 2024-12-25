@@ -383,6 +383,9 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
         ID:         post.ID,
         CreatedAt:  post.CreatedAt,
         UpdatedAt:  now,
+{{ range $i, $value := .Config.Params }}
+        {{ $value.GetName }}: *update.{{ $value.GetName }},
+{{- end }}
     }
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}

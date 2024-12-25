@@ -3014,6 +3014,36 @@ func (i Errors) fileHttp() *ast.File {
 								},
 							},
 						},
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "render",
+									},
+									Sel: &ast.Ident{
+										Name: "PlainText",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.Ident{
+										Name: "w",
+									},
+									&ast.Ident{
+										Name: "r",
+									},
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "err",
+											},
+											Sel: &ast.Ident{
+												Name: "Error",
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},

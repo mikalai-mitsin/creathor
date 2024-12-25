@@ -379,14 +379,12 @@ func (g *DTOGenerator) dtoConstructor() *ast.FuncDecl {
 								Name: "entity",
 							},
 						},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: g.domain.GetMainModel().Name,
-								},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
+							},
+							Sel: &ast.Ident{
+								Name: g.domain.GetMainModel().Name,
 							},
 						},
 					},
@@ -395,9 +393,7 @@ func (g *DTOGenerator) dtoConstructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: ast.NewIdent(g.domain.GetHTTPItemDTOName()),
-						},
+						Type: ast.NewIdent(g.domain.GetHTTPItemDTOName()),
 					},
 					{
 						Type: ast.NewIdent("error"),
@@ -415,10 +411,7 @@ func (g *DTOGenerator) dtoConstructor() *ast.FuncDecl {
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
-						&ast.UnaryExpr{
-							Op: token.AND,
-							X:  dto,
-						},
+						dto,
 					},
 				},
 			},
@@ -615,10 +608,8 @@ func (g *DTOGenerator) astDTOListType() *ast.TypeSpec {
 							ast.NewIdent("Items"),
 						},
 						Type: &ast.ArrayType{
-							Elt: &ast.StarExpr{
-								X: &ast.Ident{
-									Name: g.domain.GetHTTPItemDTOName(),
-								},
+							Elt: &ast.Ident{
+								Name: g.domain.GetHTTPItemDTOName(),
 							},
 						},
 						Tag: &ast.BasicLit{
@@ -687,43 +678,38 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
-				&ast.UnaryExpr{
-					Op: token.AND,
-					X: &ast.CompositeLit{
-						Type: ast.NewIdent(g.domain.GetHTTPListDTOName()),
-						Elts: []ast.Expr{
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "Items",
+				&ast.CompositeLit{
+					Type: ast.NewIdent(g.domain.GetHTTPListDTOName()),
+					Elts: []ast.Expr{
+						&ast.KeyValueExpr{
+							Key: &ast.Ident{
+								Name: "Items",
+							},
+							Value: &ast.CallExpr{
+								Fun: &ast.Ident{
+									Name: "make",
 								},
-								Value: &ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: "make",
+								Args: []ast.Expr{
+									&ast.ArrayType{
+										Elt: ast.NewIdent(g.domain.GetHTTPItemDTOName()),
 									},
-									Args: []ast.Expr{
-										&ast.ArrayType{
-											Elt: &ast.StarExpr{
-												X: ast.NewIdent(g.domain.GetHTTPItemDTOName()),
-											},
+									&ast.CallExpr{
+										Fun: &ast.Ident{
+											Name: "len",
 										},
-										&ast.CallExpr{
-											Fun: &ast.Ident{
-												Name: "len",
-											},
-											Args: []ast.Expr{
-												ast.NewIdent(g.domain.GetManyVariableName()),
-											},
+										Args: []ast.Expr{
+											ast.NewIdent(g.domain.GetManyVariableName()),
 										},
 									},
 								},
 							},
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "Count",
-								},
-								Value: &ast.Ident{
-									Name: "count",
-								},
+						},
+						&ast.KeyValueExpr{
+							Key: &ast.Ident{
+								Name: "Count",
+							},
+							Value: &ast.Ident{
+								Name: "count",
 							},
 						},
 					},
@@ -772,12 +758,10 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 							List: []ast.Stmt{
 								&ast.ReturnStmt{
 									Results: []ast.Expr{
-										&ast.Ident{
-											Name: "nil",
+										&ast.CompositeLit{
+											Type: ast.NewIdent(g.domain.GetHTTPListDTOName()),
 										},
-										&ast.Ident{
-											Name: "err",
-										},
+										ast.NewIdent("err"),
 									},
 								},
 							},
@@ -828,11 +812,9 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 							ast.NewIdent(g.domain.GetManyVariableName()),
 						},
 						Type: &ast.ArrayType{
-							Elt: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(g.domain.GetMainModel().Name),
-								},
+							Elt: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(g.domain.GetMainModel().Name),
 							},
 						},
 					},
@@ -847,9 +829,7 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: ast.NewIdent(g.domain.GetHTTPListDTOName()),
-						},
+						Type: ast.NewIdent(g.domain.GetHTTPListDTOName()),
 					},
 					{
 						Type: ast.NewIdent("error"),
@@ -1056,12 +1036,9 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
-				&ast.UnaryExpr{
-					Op: token.AND,
-					X: &ast.CompositeLit{
-						Type: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
-						Elts: exprs,
-					},
+				&ast.CompositeLit{
+					Type: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
+					Elts: exprs,
 				},
 			},
 		},
@@ -1163,8 +1140,8 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 							List: []ast.Stmt{
 								&ast.ReturnStmt{
 									Results: []ast.Expr{
-										&ast.Ident{
-											Name: "nil",
+										&ast.CompositeLit{
+											Type: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
 										},
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
@@ -1344,8 +1321,8 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 							List: []ast.Stmt{
 								&ast.ReturnStmt{
 									Results: []ast.Expr{
-										&ast.Ident{
-											Name: "nil",
+										&ast.CompositeLit{
+											Type: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
 										},
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
@@ -1822,9 +1799,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
-						},
+						Type: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
 					},
 					{
 						Type: ast.NewIdent("error"),
@@ -1962,11 +1937,7 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 							Name: "dto",
 						},
 					},
-					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: g.domain.GetHTTPFilterDTOName(),
-						},
-					},
+					Type: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
 				},
 			},
 		},
@@ -1978,14 +1949,12 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: g.domain.GetFilterModel().Name,
-								},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
+							},
+							Sel: &ast.Ident{
+								Name: g.domain.GetFilterModel().Name,
 							},
 						},
 					},
@@ -2005,19 +1974,16 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
-						&ast.UnaryExpr{
-							Op: token.AND,
-							X: &ast.CompositeLit{
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: &ast.Ident{
-										Name: "PostFilter",
-									},
+						&ast.CompositeLit{
+							Type: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "entities",
 								},
-								Elts: exprs,
+								Sel: &ast.Ident{
+									Name: "PostFilter",
+								},
 							},
+							Elts: exprs,
 						},
 					},
 				},
@@ -2042,7 +2008,7 @@ func (g *DTOGenerator) syncFilterDTOToEntity() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "toEntity" {
-			if t.Recv.List[0].Type.(*ast.StarExpr).X.(*ast.Ident).String() == g.domain.GetHTTPFilterDTOName() {
+			if t.Recv.List[0].Type.(*ast.Ident).String() == g.domain.GetHTTPFilterDTOName() {
 				methodExists = true
 				method = t
 				return false
@@ -2196,11 +2162,8 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
-				&ast.UnaryExpr{
-					Op: token.AND,
-					X: &ast.CompositeLit{
-						Type: ast.NewIdent(g.domain.GetHTTPUpdateDTOName()),
-					},
+				&ast.CompositeLit{
+					Type: ast.NewIdent(g.domain.GetHTTPUpdateDTOName()),
 				},
 			},
 		},
@@ -2251,12 +2214,10 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 				List: []ast.Stmt{
 					&ast.ReturnStmt{
 						Results: []ast.Expr{
-							&ast.Ident{
-								Name: "nil",
+							&ast.CompositeLit{
+								Type: ast.NewIdent(g.domain.GetHTTPUpdateDTOName()),
 							},
-							&ast.Ident{
-								Name: "err",
-							},
+							ast.NewIdent("err"),
 						},
 					},
 				},
@@ -2340,9 +2301,7 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: ast.NewIdent(g.domain.GetHTTPUpdateDTOName()),
-						},
+						Type: ast.NewIdent(g.domain.GetHTTPUpdateDTOName()),
 					},
 					{
 						Type: ast.NewIdent("error"),
@@ -2420,11 +2379,7 @@ func (g *DTOGenerator) updateDTOToEntity() *ast.FuncDecl {
 							Name: "dto",
 						},
 					},
-					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: g.domain.GetHTTPUpdateDTOName(),
-						},
-					},
+					Type: ast.NewIdent(g.domain.GetHTTPUpdateDTOName()),
 				},
 			},
 		},
@@ -2436,14 +2391,12 @@ func (g *DTOGenerator) updateDTOToEntity() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: g.domain.GetUpdateModel().Name,
-								},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
+							},
+							Sel: &ast.Ident{
+								Name: g.domain.GetUpdateModel().Name,
 							},
 						},
 					},
@@ -2463,10 +2416,7 @@ func (g *DTOGenerator) updateDTOToEntity() *ast.FuncDecl {
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
-						&ast.UnaryExpr{
-							Op: token.AND,
-							X:  model,
-						},
+						model,
 					},
 				},
 				&ast.ReturnStmt{
@@ -2491,7 +2441,7 @@ func (g *DTOGenerator) syncUpdateDTOToEntity() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "toEntity" {
-			if t.Recv.List[0].Type.(*ast.StarExpr).X.(*ast.Ident).String() == g.domain.GetHTTPUpdateDTOName() {
+			if t.Recv.List[0].Type.(*ast.Ident).String() == g.domain.GetHTTPUpdateDTOName() {
 				methodExists = true
 				method = t
 				return false
@@ -2630,12 +2580,9 @@ func (g *DTOGenerator) createDTOConstructor() *ast.FuncDecl {
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
-				&ast.UnaryExpr{
-					Op: token.AND,
-					X: &ast.CompositeLit{
-						Type: ast.NewIdent(g.domain.GetHTTPCreateDTOName()),
-						Elts: []ast.Expr{},
-					},
+				&ast.CompositeLit{
+					Type: ast.NewIdent(g.domain.GetHTTPCreateDTOName()),
+					Elts: []ast.Expr{},
 				},
 			},
 		},
@@ -2686,12 +2633,10 @@ func (g *DTOGenerator) createDTOConstructor() *ast.FuncDecl {
 				List: []ast.Stmt{
 					&ast.ReturnStmt{
 						Results: []ast.Expr{
-							&ast.Ident{
-								Name: "nil",
+							&ast.CompositeLit{
+								Type: ast.NewIdent(g.domain.GetHTTPCreateDTOName()),
 							},
-							&ast.Ident{
-								Name: "err",
-							},
+							ast.NewIdent("err"),
 						},
 					},
 				},
@@ -2729,9 +2674,7 @@ func (g *DTOGenerator) createDTOConstructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: ast.NewIdent(g.domain.GetHTTPCreateDTOName()),
-						},
+						Type: ast.NewIdent(g.domain.GetHTTPCreateDTOName()),
 					},
 					{
 						Type: ast.NewIdent("error"),
@@ -2800,11 +2743,7 @@ func (g *DTOGenerator) createDTOToEntity() *ast.FuncDecl {
 							Name: "dto",
 						},
 					},
-					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: g.domain.GetHTTPCreateDTOName(),
-						},
-					},
+					Type: ast.NewIdent(g.domain.GetHTTPCreateDTOName()),
 				},
 			},
 		},
@@ -2816,14 +2755,12 @@ func (g *DTOGenerator) createDTOToEntity() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: g.domain.GetCreateModel().Name,
-								},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
+							},
+							Sel: &ast.Ident{
+								Name: g.domain.GetCreateModel().Name,
 							},
 						},
 					},
@@ -2843,17 +2780,14 @@ func (g *DTOGenerator) createDTOToEntity() *ast.FuncDecl {
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
-						&ast.UnaryExpr{
-							Op: token.AND,
-							X: &ast.CompositeLit{
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: ast.NewIdent(g.domain.GetCreateModel().Name),
+						&ast.CompositeLit{
+							Type: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "entities",
 								},
-								Elts: exprs,
+								Sel: ast.NewIdent(g.domain.GetCreateModel().Name),
 							},
+							Elts: exprs,
 						},
 					},
 				},
@@ -2879,7 +2813,7 @@ func (g *DTOGenerator) syncCreateDTOToEntity() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "toEntity" {
-			if t.Recv.List[0].Type.(*ast.StarExpr).X.(*ast.Ident).String() == g.domain.GetHTTPCreateDTOName() {
+			if t.Recv.List[0].Type.(*ast.Ident).String() == g.domain.GetHTTPCreateDTOName() {
 				methodExists = true
 				method = t
 				return false

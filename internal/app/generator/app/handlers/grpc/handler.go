@@ -205,13 +205,11 @@ func (h HandlerGenerator) encodeCreate() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
 							},
+							Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
 						},
 					},
 				},
@@ -227,17 +225,14 @@ func (h HandlerGenerator) encodeCreate() *ast.FuncDecl {
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
-						&ast.UnaryExpr{
-							Op: token.AND,
-							X: &ast.CompositeLit{
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
+						&ast.CompositeLit{
+							Type: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "entities",
 								},
-								Elts: h.createParams(),
+								Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
 							},
+							Elts: h.createParams(),
 						},
 					},
 				},
@@ -627,38 +622,35 @@ func (h HandlerGenerator) encodeUpdate() *ast.FuncDecl {
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
-				&ast.UnaryExpr{
-					Op: token.AND,
-					X: &ast.CompositeLit{
-						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "entities",
-							},
-							Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
+				&ast.CompositeLit{
+					Type: &ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "entities",
 						},
-						Elts: []ast.Expr{
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "ID",
-								},
-								Value: &ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "uuid",
-										},
-										Sel: &ast.Ident{
-											Name: "UUID",
-										},
+						Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
+					},
+					Elts: []ast.Expr{
+						&ast.KeyValueExpr{
+							Key: &ast.Ident{
+								Name: "ID",
+							},
+							Value: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "uuid",
 									},
-									Args: []ast.Expr{
-										&ast.CallExpr{
-											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "input",
-												},
-												Sel: &ast.Ident{
-													Name: "GetId",
-												},
+									Sel: &ast.Ident{
+										Name: "UUID",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "input",
+											},
+											Sel: &ast.Ident{
+												Name: "GetId",
 											},
 										},
 									},
@@ -707,13 +699,11 @@ func (h HandlerGenerator) encodeUpdate() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
 							},
+							Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
 						},
 					},
 				},
@@ -768,64 +758,61 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
-				&ast.UnaryExpr{
-					Op: token.AND,
-					X: &ast.CompositeLit{
-						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "entities",
+				&ast.CompositeLit{
+					Type: &ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "entities",
+						},
+						Sel: &ast.Ident{
+							Name: h.domain.GetFilterModel().Name,
+						},
+					},
+					Elts: []ast.Expr{
+						&ast.KeyValueExpr{
+							Key: &ast.Ident{
+								Name: "IDs",
 							},
-							Sel: &ast.Ident{
-								Name: h.domain.GetFilterModel().Name,
+							Value: &ast.Ident{
+								Name: "nil",
 							},
 						},
-						Elts: []ast.Expr{
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "IDs",
-								},
-								Value: &ast.Ident{
-									Name: "nil",
-								},
+						&ast.KeyValueExpr{
+							Key: &ast.Ident{
+								Name: "PageSize",
 							},
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "PageSize",
-								},
-								Value: &ast.Ident{
-									Name: "nil",
-								},
+							Value: &ast.Ident{
+								Name: "nil",
 							},
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "PageNumber",
-								},
-								Value: &ast.Ident{
-									Name: "nil",
-								},
+						},
+						&ast.KeyValueExpr{
+							Key: &ast.Ident{
+								Name: "PageNumber",
 							},
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "OrderBy",
-								},
-								Value: &ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "input",
-										},
-										Sel: &ast.Ident{
-											Name: "GetOrderBy",
-										},
+							Value: &ast.Ident{
+								Name: "nil",
+							},
+						},
+						&ast.KeyValueExpr{
+							Key: &ast.Ident{
+								Name: "OrderBy",
+							},
+							Value: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "input",
+									},
+									Sel: &ast.Ident{
+										Name: "GetOrderBy",
 									},
 								},
 							},
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "Search",
-								},
-								Value: &ast.Ident{
-									Name: "nil",
-								},
+						},
+						&ast.KeyValueExpr{
+							Key: &ast.Ident{
+								Name: "Search",
+							},
+							Value: &ast.Ident{
+								Name: "nil",
 							},
 						},
 					},
@@ -1137,14 +1124,12 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetFilterModel().Name,
-								},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
+							},
+							Sel: &ast.Ident{
+								Name: h.domain.GetFilterModel().Name,
 							},
 						},
 					},
@@ -1204,14 +1189,12 @@ func (h HandlerGenerator) decode() *ast.FuncDecl {
 								Name: "item",
 							},
 						},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetMainModel().Name,
-								},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
+							},
+							Sel: &ast.Ident{
+								Name: h.domain.GetMainModel().Name,
 							},
 						},
 					},
@@ -1408,14 +1391,12 @@ func (h HandlerGenerator) decodeList() *ast.FuncDecl {
 							},
 						},
 						Type: &ast.ArrayType{
-							Elt: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: &ast.Ident{
-										Name: h.domain.GetMainModel().Name,
-									},
+							Elt: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "entities",
+								},
+								Sel: &ast.Ident{
+									Name: h.domain.GetMainModel().Name,
 								},
 							},
 						},
@@ -1785,14 +1766,12 @@ func (h HandlerGenerator) decodeUpdate() *ast.FuncDecl {
 								Name: "update",
 							},
 						},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetUpdateModel().Name,
-								},
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "entities",
+							},
+							Sel: &ast.Ident{
+								Name: h.domain.GetUpdateModel().Name,
 							},
 						},
 					},

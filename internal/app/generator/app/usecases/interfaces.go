@@ -127,11 +127,9 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 							},
 						},
 						{
-							Type: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetCreateModel().Name),
-								},
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetCreateModel().Name),
 							},
 						},
 					},
@@ -139,11 +137,9 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 				Results: &ast.FieldList{
 					List: []*ast.Field{
 						{
-							Type: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
-								},
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
 							},
 						},
 						{
@@ -175,11 +171,9 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 				Results: &ast.FieldList{
 					List: []*ast.Field{
 						{
-							Type: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
-								},
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
 							},
 						},
 						{
@@ -201,11 +195,9 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 							},
 						},
 						{
-							Type: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetFilterModel().Name),
-								},
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetFilterModel().Name),
 							},
 						},
 					},
@@ -214,11 +206,9 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 					List: []*ast.Field{
 						{
 							Type: &ast.ArrayType{
-								Elt: &ast.StarExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("entities"),
-										Sel: ast.NewIdent(i.domain.GetMainModel().Name),
-									},
+								Elt: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
 								},
 							},
 						},
@@ -244,11 +234,9 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 							},
 						},
 						{
-							Type: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetUpdateModel().Name),
-								},
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetUpdateModel().Name),
 							},
 						},
 					},
@@ -256,11 +244,9 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 				Results: &ast.FieldList{
 					List: []*ast.Field{
 						{
-							Type: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
-								},
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
 							},
 						},
 						{

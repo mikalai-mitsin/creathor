@@ -239,7 +239,12 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 				List: []ast.Stmt{
 					&ast.ReturnStmt{
 						Results: []ast.Expr{
-							ast.NewIdent("nil"),
+							&ast.CompositeLit{
+								Type: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
 							ast.NewIdent("err"),
 						},
 					},
@@ -281,11 +286,9 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("create")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetCreateModel().Name),
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(i.domain.GetCreateModel().Name),
 						},
 					},
 				},
@@ -293,11 +296,9 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(i.domain.GetMainModel().Name),
 						},
 					},
 					{
@@ -428,11 +429,9 @@ func (i UseCaseGenerator) astListMethod() *ast.FuncDecl {
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("filter")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetFilterModel().Name),
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(i.domain.GetFilterModel().Name),
 						},
 					},
 				},
@@ -441,11 +440,9 @@ func (i UseCaseGenerator) astListMethod() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Type: &ast.ArrayType{
-							Elt: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
-								},
+							Elt: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
 							},
 						},
 					},
@@ -535,7 +532,12 @@ func (i UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 				List: []ast.Stmt{
 					&ast.ReturnStmt{
 						Results: []ast.Expr{
-							ast.NewIdent("nil"),
+							&ast.CompositeLit{
+								Type: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
 							ast.NewIdent("err"),
 						},
 					},
@@ -590,11 +592,9 @@ func (i UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(i.domain.GetMainModel().Name),
 						},
 					},
 					{
@@ -679,7 +679,12 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 				List: []ast.Stmt{
 					&ast.ReturnStmt{
 						Results: []ast.Expr{
-							ast.NewIdent("nil"),
+							&ast.CompositeLit{
+								Type: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
 							ast.NewIdent("err"),
 						},
 					},
@@ -721,11 +726,9 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("update")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetUpdateModel().Name),
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(i.domain.GetUpdateModel().Name),
 						},
 					},
 				},
@@ -733,11 +736,9 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(i.domain.GetMainModel().Name),
 						},
 					},
 					{

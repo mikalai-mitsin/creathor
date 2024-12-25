@@ -147,6 +147,18 @@ func (g *DTOGenerator) file() *ast.File {
 							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, g.domain.Module),
 						},
 					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"github.com/go-chi/chi/v5"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"github.com/go-chi/render"`,
+						},
+					},
 				},
 			},
 		},
@@ -894,7 +906,7 @@ func (g *DTOGenerator) filterDTOStruct() *ast.TypeSpec {
 						Name: "PageSize",
 					},
 				},
-				Type: ast.NewIdent("uint64"),
+				Type: ast.NewIdent("*uint64"),
 				Tag: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: "`json:\"page_size\"`",
@@ -906,7 +918,7 @@ func (g *DTOGenerator) filterDTOStruct() *ast.TypeSpec {
 						Name: "PageNumber",
 					},
 				},
-				Type: ast.NewIdent("uint64"),
+				Type: ast.NewIdent("*uint64"),
 				Tag: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: "`json:\"page_number\"`",
@@ -1002,25 +1014,19 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 			Key: &ast.Ident{
 				Name: "IDs",
 			},
-			Value: &ast.Ident{
-				Name: "nil",
-			},
+			Value: ast.NewIdent("nil"),
 		},
 		&ast.KeyValueExpr{
 			Key: &ast.Ident{
 				Name: "PageSize",
 			},
-			Value: &ast.Ident{
-				Name: "0",
-			},
+			Value: ast.NewIdent("nil"),
 		},
 		&ast.KeyValueExpr{
 			Key: &ast.Ident{
 				Name: "PageNumber",
 			},
-			Value: &ast.Ident{
-				Name: "0",
-			},
+			Value: ast.NewIdent("nil"),
 		},
 		&ast.KeyValueExpr{
 			Key: &ast.Ident{
@@ -1218,12 +1224,20 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 						Tok: token.ASSIGN,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
-								Fun: &ast.Ident{
-									Name: "uint64",
+								Fun: &ast.SelectorExpr{
+									X:   ast.NewIdent("pointer"),
+									Sel: ast.NewIdent("Pointer"),
 								},
 								Args: []ast.Expr{
-									&ast.Ident{
-										Name: "pageSize",
+									&ast.CallExpr{
+										Fun: &ast.Ident{
+											Name: "uint64",
+										},
+										Args: []ast.Expr{
+											&ast.Ident{
+												Name: "pageSize",
+											},
+										},
 									},
 								},
 							},
@@ -1391,12 +1405,20 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 						Tok: token.ASSIGN,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
-								Fun: &ast.Ident{
-									Name: "uint64",
+								Fun: &ast.SelectorExpr{
+									X:   ast.NewIdent("pointer"),
+									Sel: ast.NewIdent("Pointer"),
 								},
 								Args: []ast.Expr{
-									&ast.Ident{
-										Name: "pageNumber",
+									&ast.CallExpr{
+										Fun: &ast.Ident{
+											Name: "uint64",
+										},
+										Args: []ast.Expr{
+											&ast.Ident{
+												Name: "pageNumber",
+											},
+										},
 									},
 								},
 							},
@@ -1855,24 +1877,12 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 			Key: &ast.Ident{
 				Name: "PageSize",
 			},
-			Value: &ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "pointer",
-					},
-					Sel: &ast.Ident{
-						Name: "Pointer",
-					},
+			Value: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "dto",
 				},
-				Args: []ast.Expr{
-					&ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "dto",
-						},
-						Sel: &ast.Ident{
-							Name: "PageSize",
-						},
-					},
+				Sel: &ast.Ident{
+					Name: "PageSize",
 				},
 			},
 		},
@@ -1880,24 +1890,12 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 			Key: &ast.Ident{
 				Name: "PageNumber",
 			},
-			Value: &ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "pointer",
-					},
-					Sel: &ast.Ident{
-						Name: "Pointer",
-					},
+			Value: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "dto",
 				},
-				Args: []ast.Expr{
-					&ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "dto",
-						},
-						Sel: &ast.Ident{
-							Name: "PageNumber",
-						},
-					},
+				Sel: &ast.Ident{
+					Name: "PageNumber",
 				},
 			},
 		},

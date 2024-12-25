@@ -3750,7 +3750,7 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 					Args: []ast.Expr{
 						&ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s.%s"`, tableName, param.Tag()),
+							Value: fmt.Sprintf(`"%s"`, param.Tag()),
 						},
 						&ast.SelectorExpr{
 							X: &ast.Ident{
@@ -4326,7 +4326,6 @@ func (r RepositoryGenerator) syncUpdateMethod() error {
 	if method == nil {
 		method = r.updateMethod()
 	}
-	tableName := r.domain.TableName()
 	for _, param := range r.domain.GetMainModel().Params {
 		param := param
 		if param.GetName() == "ID" {
@@ -4343,8 +4342,7 @@ func (r RepositoryGenerator) syncUpdateMethod() error {
 								for _, arg := range call.Args {
 									if bl, ok := arg.(*ast.BasicLit); ok &&
 										bl.Value == fmt.Sprintf(
-											`"%s.%s"`,
-											tableName,
+											`"%s"`,
 											param.Tag(),
 										) {
 										exists = true
@@ -4379,7 +4377,7 @@ func (r RepositoryGenerator) syncUpdateMethod() error {
 									Args: []ast.Expr{
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: fmt.Sprintf(`"%s.%s"`, tableName, param.Tag()),
+											Value: fmt.Sprintf(`"%s"`, param.Tag()),
 										},
 										&ast.SelectorExpr{
 											X: &ast.Ident{

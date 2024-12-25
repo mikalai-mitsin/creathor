@@ -2194,8 +2194,9 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 									Name: "Body",
 								},
 							},
-							&ast.Ident{
-								Name: "update",
+							&ast.UnaryExpr{
+								Op: token.AND,
+								X:  ast.NewIdent("update"),
 							},
 						},
 					},
@@ -2613,8 +2614,9 @@ func (g *DTOGenerator) createDTOConstructor() *ast.FuncDecl {
 									Name: "Body",
 								},
 							},
-							&ast.Ident{
-								Name: "create",
+							&ast.UnaryExpr{
+								Op: token.AND,
+								X:  ast.NewIdent("create"),
 							},
 						},
 					},

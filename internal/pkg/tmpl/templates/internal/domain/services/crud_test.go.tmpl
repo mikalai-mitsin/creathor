@@ -2,17 +2,13 @@ package services
 
 import (
     "context"
-    "errors"
-    "reflect"
     "testing"
     "time"
 
     "{{ .Module }}/internal/pkg/errs"
     "{{ .Module }}/internal/app/{{ .DirName }}/entities"
     mock_entities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
-    "{{ .Module }}/internal/pkg/clock"
     "{{ .Module }}/internal/pkg/uuid"
-    "{{ .Module }}/internal/pkg/log"
     "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
     "github.com/stretchr/testify/assert"

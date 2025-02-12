@@ -913,45 +913,42 @@ func (i UseCaseGenerator) syncDeleteMethod() error {
 }
 
 func (i UseCaseGenerator) file() *ast.File {
+	specs := []ast.Spec{
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"context"`,
+			},
+		},
+
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: i.domain.EntitiesImportPath(),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, i.domain.Module),
+			},
+		},
+	}
+	if i.domain.Auth {
+		specs = append(specs, &ast.ImportSpec{
+			Name: ast.NewIdent("userEntities"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/app/user/entities"`, i.domain.Module),
+			},
+		})
+	}
 	return &ast.File{
 		Name: ast.NewIdent("usecases"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
-				Tok: token.IMPORT,
-				Specs: []ast.Spec{
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"context"`,
-						},
-					},
-
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: i.domain.EntitiesImportPath(),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, i.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, i.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Name: ast.NewIdent("userEntities"),
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/user/entities"`, i.domain.Module),
-						},
-					},
-				},
+				Tok:   token.IMPORT,
+				Specs: specs,
 			},
 		},
 	}

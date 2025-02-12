@@ -2,22 +2,19 @@ package usecases
 
 import (
     "context"
-    "errors"
-    "reflect"
     "testing"
 
     "{{ .Module }}/internal/pkg/errs"
-    "{{ .Module }}/internal/pkg/log"
     "{{ .Module }}/internal/app/{{ .DirName }}/entities"
     mock_entities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
+{{- if .Auth }}
     userMockEntities "{{ .Module }}/internal/app/user/entities/mock"
     userEntities "{{ .Module }}/internal/app/user/entities"
-
+{{- end }}
     "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
     "github.com/stretchr/testify/assert"
 
-    "{{ .Module }}/internal/pkg/clock"
     "{{ .Module }}/internal/pkg/uuid"
 )
 

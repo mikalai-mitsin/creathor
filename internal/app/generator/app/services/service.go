@@ -79,6 +79,12 @@ func (u ServiceGenerator) file() *ast.File {
 							Value: u.domain.EntitiesImportPath(),
 						},
 					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, u.domain.Module),
+						},
+					},
 				},
 			},
 		},

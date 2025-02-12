@@ -60,12 +60,6 @@ func (h HandlerGenerator) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/log"`, h.domain.Module),
-			},
-		},
-		&ast.ImportSpec{
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
 				Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, h.domain.Module),
 			},
 		},

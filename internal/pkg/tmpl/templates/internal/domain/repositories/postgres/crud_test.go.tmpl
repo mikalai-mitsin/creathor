@@ -10,20 +10,17 @@ import (
 {{- end }}
     "database/sql"
     "errors"
-    "reflect"
     "testing"
 
     "{{ .Module }}/internal/pkg/errs"
     mock_entities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
     "{{ .Module }}/internal/pkg/postgres"
-    "{{ .Module }}/internal/pkg/log"
     "github.com/DATA-DOG/go-sqlmock"
     "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
     "github.com/stretchr/testify/assert"
 
     "{{ .Module }}/internal/app/{{ .DirName }}/entities"
-    "{{ .Module }}/internal/pkg/clock"
     "{{ .Module }}/internal/pkg/pointer"
     "{{ .Module }}/internal/pkg/uuid"
     "github.com/jmoiron/sqlx"

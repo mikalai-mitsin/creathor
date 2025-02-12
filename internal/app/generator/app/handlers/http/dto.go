@@ -102,19 +102,25 @@ func (g *DTOGenerator) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: `"context"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"fmt"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
 							Value: `"time"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"net/http"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"strings"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"strconv"`,
 						},
 					},
 					&ast.ImportSpec{
@@ -133,12 +139,6 @@ func (g *DTOGenerator) file() *ast.File {
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
 							Value: fmt.Sprintf(`"%s/internal/pkg/pointer"`, g.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, g.domain.Module),
 						},
 					},
 					&ast.ImportSpec{

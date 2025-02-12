@@ -108,7 +108,7 @@ func postInit(project *configs.Project) error {
 	fmt.Println("post init...")
 	var errb bytes.Buffer
 	if project.GRPCEnabled {
-		bufUpdate := exec.Command("buf", "mod", "update")
+		bufUpdate := exec.Command("buf", "dep", "update")
 		bufUpdate.Dir = path.Join(destinationPath, "api", "proto")
 		bufUpdate.Stderr = &errb
 		fmt.Println(strings.Join(bufUpdate.Args, " "))

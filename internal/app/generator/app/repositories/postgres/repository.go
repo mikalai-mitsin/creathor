@@ -792,93 +792,84 @@ func (r RepositoryGenerator) astStruct() *ast.TypeSpec {
 }
 
 func (r RepositoryGenerator) file() *ast.File {
+	specs := []ast.Spec{
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"context"`,
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"fmt"`,
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"time"`,
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/pkg/errs"`, r.domain.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: r.domain.EntitiesImportPath(),
+			},
+		},
+
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/pkg/pointer"`, r.domain.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, r.domain.Module),
+			},
+		},
+		&ast.ImportSpec{
+			Name: ast.NewIdent("sq"),
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"github.com/Masterminds/squirrel"`,
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"github.com/jmoiron/sqlx"`,
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: `"github.com/lib/pq"`,
+			},
+		},
+	}
+	if r.domain.SearchEnabled() {
+		specs = append(specs, &ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: fmt.Sprintf(`"%s/internal/pkg/postgres"`, r.domain.Module),
+			},
+		})
+	}
 	return &ast.File{
 		Name: ast.NewIdent("postgres"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
-				Tok: token.IMPORT,
-				Specs: []ast.Spec{
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"context"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"fmt"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"time"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/errs"`, r.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: r.domain.EntitiesImportPath(),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, r.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/postgres"`, r.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/pointer"`, r.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, r.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, r.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Name: ast.NewIdent("sq"),
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"github.com/Masterminds/squirrel"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"github.com/jmoiron/sqlx"`,
-						},
-					},
-					// FIXME
-					//&ast.ImportSpec{
-					//	Path: &ast.BasicLit{
-					//		Kind:  token.STRING,
-					//		Value: `"github.com/lib/pq"`,
-					//	},
-					//},
-				},
+				Tok:   token.IMPORT,
+				Specs: specs,
 			},
 		},
 	}

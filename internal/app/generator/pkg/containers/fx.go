@@ -94,7 +94,7 @@ func (f FxContainer) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, f.project.Module),
+				Value: fmt.Sprintf(`"%s/internal/pkg/log"`, f.project.Module),
 			},
 		},
 		&ast.ImportSpec{

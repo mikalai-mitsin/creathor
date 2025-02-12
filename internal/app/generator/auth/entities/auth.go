@@ -534,92 +534,89 @@ func (m ModelAuth) file() *ast.File {
 							},
 						},
 						Values: []ast.Expr{
-							&ast.UnaryExpr{
-								Op: token.AND,
-								X: &ast.CompositeLit{
-									Type: ast.NewIdent("userEntities.User"),
-									Elts: []ast.Expr{
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "ID",
-											},
-											Value: &ast.BasicLit{
-												Kind:  token.STRING,
-												Value: `""`,
-											},
+							&ast.CompositeLit{
+								Type: ast.NewIdent("userEntities.User"),
+								Elts: []ast.Expr{
+									&ast.KeyValueExpr{
+										Key: &ast.Ident{
+											Name: "ID",
 										},
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "FirstName",
-											},
-											Value: &ast.BasicLit{
-												Kind:  token.STRING,
-												Value: `""`,
-											},
+										Value: &ast.BasicLit{
+											Kind:  token.STRING,
+											Value: `""`,
 										},
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "LastName",
-											},
-											Value: &ast.BasicLit{
-												Kind:  token.STRING,
-												Value: `""`,
-											},
+									},
+									&ast.KeyValueExpr{
+										Key: &ast.Ident{
+											Name: "FirstName",
 										},
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "Password",
-											},
-											Value: &ast.BasicLit{
-												Kind:  token.STRING,
-												Value: `""`,
-											},
+										Value: &ast.BasicLit{
+											Kind:  token.STRING,
+											Value: `""`,
 										},
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "Email",
-											},
-											Value: &ast.BasicLit{
-												Kind:  token.STRING,
-												Value: `""`,
-											},
+									},
+									&ast.KeyValueExpr{
+										Key: &ast.Ident{
+											Name: "LastName",
 										},
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "CreatedAt",
-											},
-											Value: &ast.CompositeLit{
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "time",
-													},
-													Sel: &ast.Ident{
-														Name: "Time",
-													},
+										Value: &ast.BasicLit{
+											Kind:  token.STRING,
+											Value: `""`,
+										},
+									},
+									&ast.KeyValueExpr{
+										Key: &ast.Ident{
+											Name: "Password",
+										},
+										Value: &ast.BasicLit{
+											Kind:  token.STRING,
+											Value: `""`,
+										},
+									},
+									&ast.KeyValueExpr{
+										Key: &ast.Ident{
+											Name: "Email",
+										},
+										Value: &ast.BasicLit{
+											Kind:  token.STRING,
+											Value: `""`,
+										},
+									},
+									&ast.KeyValueExpr{
+										Key: &ast.Ident{
+											Name: "CreatedAt",
+										},
+										Value: &ast.CompositeLit{
+											Type: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "time",
+												},
+												Sel: &ast.Ident{
+													Name: "Time",
 												},
 											},
 										},
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "UpdatedAt",
-											},
-											Value: &ast.CompositeLit{
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "time",
-													},
-													Sel: &ast.Ident{
-														Name: "Time",
-													},
+									},
+									&ast.KeyValueExpr{
+										Key: &ast.Ident{
+											Name: "UpdatedAt",
+										},
+										Value: &ast.CompositeLit{
+											Type: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "time",
+												},
+												Sel: &ast.Ident{
+													Name: "Time",
 												},
 											},
 										},
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "GroupID",
-											},
-											Value: ast.NewIdent("userEntities.GroupIDGuest"),
+									},
+									&ast.KeyValueExpr{
+										Key: &ast.Ident{
+											Name: "GroupID",
 										},
+										Value: ast.NewIdent("userEntities.GroupIDGuest"),
 									},
 								},
 							},

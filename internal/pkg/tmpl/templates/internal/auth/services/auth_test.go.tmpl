@@ -7,7 +7,6 @@ import (
     "testing"
 
     "{{ .Module }}/internal/pkg/errs"
-    "{{ .Module }}/internal/pkg/log"
     "{{ .Module }}/internal/app/auth/entities"
     userEntities "{{ .Module }}/internal/app/user/entities"
     mockEntities "{{ .Module }}/internal/app/auth/entities/mock"
@@ -38,7 +37,7 @@ func TestAuthService_Auth(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    *userEntities.User
+        want    userEntities.User
         wantErr error
     }{
         {
@@ -76,7 +75,7 @@ func TestAuthService_Auth(t *testing.T) {
                 ctx:    ctx,
                 access: "mytoken",
             },
-            want:    nil,
+            want:    userEntities.User{},
             wantErr: errs.NewBadTokenError(),
         },
         {
@@ -94,7 +93,7 @@ func TestAuthService_Auth(t *testing.T) {
                 ctx:    ctx,
                 access: "mytoken",
             },
-            want:    nil,
+            want:    userEntities.User{},
             wantErr: errs.NewEntityNotFoundError(),
         },
     }
@@ -137,14 +136,14 @@ func TestAuthService_CreateToken(t *testing.T) {
     }
     type args struct {
         ctx   context.Context
-        login *entities.Login
+        login entities.Login
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *entities.TokenPair
+        want    entities.TokenPair
         wantErr error
     }{
         {
@@ -181,7 +180,7 @@ func TestAuthService_CreateToken(t *testing.T) {
                 ctx:   ctx,
                 login: login,
             },
-            want:    nil,
+            want:    entities.TokenPair{},
             wantErr: errs.NewEntityNotFoundError(),
         },
         {
@@ -198,12 +197,12 @@ func TestAuthService_CreateToken(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
-                login: &entities.Login{
+                login: entities.Login{
                     Email:    login.Email,
                     Password: "mojParol'",
                 },
             },
-            want:    nil,
+            want:    entities.TokenPair{},
             wantErr: errs.NewInvalidParameter("email or password"),
         },
         {
@@ -225,7 +224,7 @@ func TestAuthService_CreateToken(t *testing.T) {
                 ctx:   ctx,
                 login: login,
             },
-            want:    nil,
+            want:    entities.TokenPair{},
             wantErr: errs.NewUnexpectedBehaviorError("system errpr"),
         },
     }
@@ -271,7 +270,7 @@ func TestAuthService_RefreshToken(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    *entities.TokenPair
+        want    entities.TokenPair
         wantErr error
     }{
         {
@@ -308,7 +307,7 @@ func TestAuthService_RefreshToken(t *testing.T) {
                 ctx:     ctx,
                 refresh: "my_r_token",
             },
-            want:    nil,
+            want:    entities.TokenPair{},
             wantErr: errs.NewBadTokenError(),
         },
     }
@@ -465,14 +464,14 @@ func TestAuthService_CreateTokenByUser(t *testing.T) {
     }
     type args struct {
         ctx  context.Context
-        user *userEntities.User
+        user userEntities.User
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *entities.TokenPair
+        want    entities.TokenPair
         wantErr error
     }{
         {
@@ -506,7 +505,7 @@ func TestAuthService_CreateTokenByUser(t *testing.T) {
                 ctx:  ctx,
                 user: user,
             },
-            want:    nil,
+            want:    entities.TokenPair{},
             wantErr: errs.NewUnexpectedBehaviorError("asd"),
         },
     }

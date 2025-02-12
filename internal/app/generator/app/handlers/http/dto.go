@@ -1979,9 +1979,7 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 								X: &ast.Ident{
 									Name: "entities",
 								},
-								Sel: &ast.Ident{
-									Name: "PostFilter",
-								},
+								Sel: ast.NewIdent(g.domain.GetFilterModel().Name),
 							},
 							Elts: exprs,
 						},

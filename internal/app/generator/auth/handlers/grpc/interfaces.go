@@ -50,6 +50,12 @@ func (i *Interfaces) file() *ast.File {
 							Value: fmt.Sprintf(`"%s/internal/app/auth/entities"`, i.project.Module),
 						},
 					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, i.project.Module),
+						},
+					},
 				},
 			},
 			&ast.GenDecl{
@@ -309,14 +315,12 @@ func (i *Interfaces) file() *ast.File {
 																Name: "login",
 															},
 														},
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "entities",
-																},
-																Sel: &ast.Ident{
-																	Name: "Login",
-																},
+														Type: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "entities",
+															},
+															Sel: &ast.Ident{
+																Name: "Login",
 															},
 														},
 													},
@@ -325,15 +329,9 @@ func (i *Interfaces) file() *ast.File {
 											Results: &ast.FieldList{
 												List: []*ast.Field{
 													{
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "entities",
-																},
-																Sel: &ast.Ident{
-																	Name: "TokenPair",
-																},
-															},
+														Type: &ast.SelectorExpr{
+															X:   ast.NewIdent("entities"),
+															Sel: ast.NewIdent("TokenPair"),
 														},
 													},
 													{
@@ -389,15 +387,9 @@ func (i *Interfaces) file() *ast.File {
 											Results: &ast.FieldList{
 												List: []*ast.Field{
 													{
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "entities",
-																},
-																Sel: &ast.Ident{
-																	Name: "TokenPair",
-																},
-															},
+														Type: &ast.SelectorExpr{
+															X:   ast.NewIdent("entities"),
+															Sel: ast.NewIdent("TokenPair"),
 														},
 													},
 													{

@@ -47,7 +47,19 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
+							Value: `"time"`,
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
 							Value: fmt.Sprintf(`"%s/internal/app/auth/entities"`, i.project.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, i.project.Module),
 						},
 					},
 					&ast.ImportSpec{
@@ -344,14 +356,12 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 																Name: "login",
 															},
 														},
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "entities",
-																},
-																Sel: &ast.Ident{
-																	Name: "Login",
-																},
+														Type: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "entities",
+															},
+															Sel: &ast.Ident{
+																Name: "Login",
 															},
 														},
 													},
@@ -360,15 +370,9 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 											Results: &ast.FieldList{
 												List: []*ast.Field{
 													{
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "entities",
-																},
-																Sel: &ast.Ident{
-																	Name: "TokenPair",
-																},
-															},
+														Type: &ast.SelectorExpr{
+															X:   ast.NewIdent("entities"),
+															Sel: ast.NewIdent("TokenPair"),
 														},
 													},
 													{
@@ -410,12 +414,10 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 																Name: "user",
 															},
 														},
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: ast.NewIdent("userEntities"),
-																Sel: &ast.Ident{
-																	Name: "User",
-																},
+														Type: &ast.SelectorExpr{
+															X: ast.NewIdent("userEntities"),
+															Sel: &ast.Ident{
+																Name: "User",
 															},
 														},
 													},
@@ -424,13 +426,9 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 											Results: &ast.FieldList{
 												List: []*ast.Field{
 													{
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: ast.NewIdent("entities"),
-																Sel: &ast.Ident{
-																	Name: "TokenPair",
-																},
-															},
+														Type: &ast.SelectorExpr{
+															X:   ast.NewIdent("entities"),
+															Sel: ast.NewIdent("TokenPair"),
 														},
 													},
 													{
@@ -486,15 +484,9 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 											Results: &ast.FieldList{
 												List: []*ast.Field{
 													{
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "entities",
-																},
-																Sel: &ast.Ident{
-																	Name: "TokenPair",
-																},
-															},
+														Type: &ast.SelectorExpr{
+															X:   ast.NewIdent("entities"),
+															Sel: ast.NewIdent("TokenPair"),
 														},
 													},
 													{
@@ -602,12 +594,10 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 											Results: &ast.FieldList{
 												List: []*ast.Field{
 													{
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: ast.NewIdent("userEntities"),
-																Sel: &ast.Ident{
-																	Name: "User",
-																},
+														Type: &ast.SelectorExpr{
+															X: ast.NewIdent("userEntities"),
+															Sel: &ast.Ident{
+																Name: "User",
 															},
 														},
 													},

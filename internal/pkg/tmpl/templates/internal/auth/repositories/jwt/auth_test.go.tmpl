@@ -38,7 +38,7 @@ func TestAuthRepository_Create(t *testing.T) {
     }
     type args struct {
         in0  context.Context
-        user *userEntities.User
+        user userEntities.User
     }
     tests := []struct {
         name    string

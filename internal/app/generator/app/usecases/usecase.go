@@ -934,15 +934,6 @@ func (i UseCaseGenerator) file() *ast.File {
 			},
 		},
 	}
-	if i.domain.Auth {
-		specs = append(specs, &ast.ImportSpec{
-			Name: ast.NewIdent("userEntities"),
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/app/user/entities"`, i.domain.Module),
-			},
-		})
-	}
 	return &ast.File{
 		Name: ast.NewIdent("usecases"),
 		Decls: []ast.Decl{

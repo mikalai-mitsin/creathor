@@ -3,7 +3,6 @@ package handlers
 import (
     "context"
     "errors"
-    "{{ .Module }}/internal/pkg/grpc"
     "{{ .Module }}/internal/pkg/errs"
     "{{ .Module }}/internal/app/auth/entities"
     mock_entities "{{ .Module }}/internal/app/auth/entities/mock"
@@ -219,7 +218,7 @@ func TestNewAuthServiceServer(t *testing.T) {
 
 func Test_decodeTokenPair(t *testing.T) {
     type args struct {
-        pair *entities.TokenPair
+        pair entities.TokenPair
     }
     tests := []struct {
         name string
@@ -229,7 +228,7 @@ func Test_decodeTokenPair(t *testing.T) {
         {
             name: "ok",
             args: args{
-                pair: &entities.TokenPair{
+                pair: entities.TokenPair{
                     Access:  "dasasdasd",
                     Refresh: "asdartge245",
                 },

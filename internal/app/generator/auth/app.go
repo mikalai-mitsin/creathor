@@ -53,12 +53,6 @@ func (i AppAuth) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"context"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
 							Kind: token.STRING,
 							Value: fmt.Sprintf(
 								`"%s/internal/app/auth/handlers/grpc"`,
@@ -85,6 +79,12 @@ func (i AppAuth) file() *ast.File {
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
 							Value: fmt.Sprintf(`"%s/internal/app/auth/services"`, i.project.Module),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/app/user/repositories/postgres"`, i.project.Module),
 						},
 					},
 					&ast.ImportSpec{

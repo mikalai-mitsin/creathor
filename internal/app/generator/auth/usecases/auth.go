@@ -70,12 +70,6 @@ func (i UseCaseAuth) file() *ast.File {
 							Value: fmt.Sprintf(`"%s/internal/app/user/entities"`, i.project.Module),
 						},
 					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, i.project.Module),
-						},
-					},
 				},
 			},
 			&ast.GenDecl{
@@ -246,14 +240,12 @@ func (i UseCaseAuth) file() *ast.File {
 										Name: "login",
 									},
 								},
-								Type: &ast.StarExpr{
-									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "entities",
-										},
-										Sel: &ast.Ident{
-											Name: "Login",
-										},
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "entities",
+									},
+									Sel: &ast.Ident{
+										Name: "Login",
 									},
 								},
 							},
@@ -262,14 +254,12 @@ func (i UseCaseAuth) file() *ast.File {
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: &ast.StarExpr{
-									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "entities",
-										},
-										Sel: &ast.Ident{
-											Name: "TokenPair",
-										},
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "entities",
+									},
+									Sel: &ast.Ident{
+										Name: "TokenPair",
 									},
 								},
 							},
@@ -333,8 +323,11 @@ func (i UseCaseAuth) file() *ast.File {
 								List: []ast.Stmt{
 									&ast.ReturnStmt{
 										Results: []ast.Expr{
-											&ast.Ident{
-												Name: "nil",
+											&ast.CompositeLit{
+												Type: &ast.SelectorExpr{
+													X:   ast.NewIdent("entities"),
+													Sel: ast.NewIdent("TokenPair"),
+												},
 											},
 											&ast.Ident{
 												Name: "err",
@@ -547,14 +540,12 @@ func (i UseCaseAuth) file() *ast.File {
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: &ast.StarExpr{
-									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "entities",
-										},
-										Sel: &ast.Ident{
-											Name: "TokenPair",
-										},
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "entities",
+									},
+									Sel: &ast.Ident{
+										Name: "TokenPair",
 									},
 								},
 							},
@@ -618,8 +609,11 @@ func (i UseCaseAuth) file() *ast.File {
 								List: []ast.Stmt{
 									&ast.ReturnStmt{
 										Results: []ast.Expr{
-											&ast.Ident{
-												Name: "nil",
+											&ast.CompositeLit{
+												Type: &ast.SelectorExpr{
+													X:   ast.NewIdent("entities"),
+													Sel: ast.NewIdent("TokenPair"),
+												},
 											},
 											&ast.Ident{
 												Name: "err",
@@ -700,12 +694,10 @@ func (i UseCaseAuth) file() *ast.File {
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: &ast.StarExpr{
-									X: &ast.SelectorExpr{
-										X: ast.NewIdent("userEntities"),
-										Sel: &ast.Ident{
-											Name: "User",
-										},
+								Type: &ast.SelectorExpr{
+									X: ast.NewIdent("userEntities"),
+									Sel: &ast.Ident{
+										Name: "User",
 									},
 								},
 							},
@@ -769,8 +761,11 @@ func (i UseCaseAuth) file() *ast.File {
 								List: []ast.Stmt{
 									&ast.ReturnStmt{
 										Results: []ast.Expr{
-											&ast.Ident{
-												Name: "nil",
+											&ast.CompositeLit{
+												Type: &ast.SelectorExpr{
+													X:   ast.NewIdent("userEntities"),
+													Sel: ast.NewIdent("User"),
+												},
 											},
 											&ast.Ident{
 												Name: "err",

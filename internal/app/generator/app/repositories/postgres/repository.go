@@ -1450,12 +1450,14 @@ func (r RepositoryGenerator) search() ast.Stmt {
 											Key: &ast.Ident{
 												Name: "Query",
 											},
-											Value: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "filter",
-												},
-												Sel: &ast.Ident{
-													Name: "Search",
+											Value: &ast.StarExpr{
+												X: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "filter",
+													},
+													Sel: &ast.Ident{
+														Name: "Search",
+													},
 												},
 											},
 										},
@@ -3530,8 +3532,11 @@ func (r RepositoryGenerator) getByEmailMethod() *ast.FuncDecl {
 							},
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									&ast.Ident{
-										Name: "nil",
+									&ast.CompositeLit{
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("entities"),
+											Sel: ast.NewIdent(r.domain.GetMainModel().Name),
+										},
 									},
 									&ast.Ident{
 										Name: "e",

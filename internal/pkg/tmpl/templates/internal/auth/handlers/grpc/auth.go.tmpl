@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"{{ .Module }}/internal/pkg/grpc"
 	"{{ .Module }}/internal/app/auth/entities"
 	{{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
 	"strings"
@@ -11,7 +10,7 @@ import (
 type AuthServiceServer struct {
 	{{ .ProtoPackage }}.UnimplementedAuthServiceServer
 	authUseCase authUseCase
-logger logger
+    logger logger
 }
 
 func NewAuthServiceServer(
@@ -25,7 +24,7 @@ func (s AuthServiceServer) CreateToken(
 	ctx context.Context,
 	input *{{ .ProtoPackage }}.CreateToken,
 ) (*{{ .ProtoPackage }}.TokenPair, error) {
-	login := &entities.Login{
+	login := entities.Login{
 		Email:    strings.ToLower(input.GetEmail()),
 		Password: input.GetPassword(),
 	}
@@ -47,7 +46,7 @@ func (s AuthServiceServer) RefreshToken(
 	return decodeTokenPair(tokenPair), nil
 }
 
-func decodeTokenPair(pair *entities.TokenPair) *{{ .ProtoPackage }}.TokenPair {
+func decodeTokenPair(pair entities.TokenPair) *{{ .ProtoPackage }}.TokenPair {
 	return &{{ .ProtoPackage }}.TokenPair{
 		Access:  pair.Access.String(),
 		Refresh: pair.Refresh.String(),

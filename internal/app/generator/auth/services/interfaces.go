@@ -63,6 +63,12 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, i.project.Module),
 						},
 					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, i.project.Module),
+						},
+					},
 				},
 			},
 			&ast.GenDecl{
@@ -315,14 +321,12 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 																Name: "user",
 															},
 														},
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "userEntities",
-																},
-																Sel: &ast.Ident{
-																	Name: "User",
-																},
+														Type: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "userEntities",
+															},
+															Sel: &ast.Ident{
+																Name: "User",
 															},
 														},
 													},
@@ -331,15 +335,9 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 											Results: &ast.FieldList{
 												List: []*ast.Field{
 													{
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "entities",
-																},
-																Sel: &ast.Ident{
-																	Name: "TokenPair",
-																},
-															},
+														Type: &ast.SelectorExpr{
+															X:   ast.NewIdent("entities"),
+															Sel: ast.NewIdent("TokenPair"),
 														},
 													},
 													{
@@ -447,15 +445,9 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 											Results: &ast.FieldList{
 												List: []*ast.Field{
 													{
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "entities",
-																},
-																Sel: &ast.Ident{
-																	Name: "TokenPair",
-																},
-															},
+														Type: &ast.SelectorExpr{
+															X:   ast.NewIdent("entities"),
+															Sel: ast.NewIdent("TokenPair"),
 														},
 													},
 													{
@@ -577,14 +569,12 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 											Results: &ast.FieldList{
 												List: []*ast.Field{
 													{
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "userEntities",
-																},
-																Sel: &ast.Ident{
-																	Name: "User",
-																},
+														Type: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "userEntities",
+															},
+															Sel: &ast.Ident{
+																Name: "User",
 															},
 														},
 													},
@@ -634,14 +624,12 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 											Results: &ast.FieldList{
 												List: []*ast.Field{
 													{
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "userEntities",
-																},
-																Sel: &ast.Ident{
-																	Name: "User",
-																},
+														Type: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "userEntities",
+															},
+															Sel: &ast.Ident{
+																Name: "User",
 															},
 														},
 													},

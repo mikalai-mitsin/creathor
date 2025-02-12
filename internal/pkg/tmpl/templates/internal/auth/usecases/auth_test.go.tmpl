@@ -11,9 +11,6 @@ import (
     mock_entities "{{ .Module }}/internal/app/auth/entities/mock"
     mock_user_entities "{{ .Module }}/internal/app/user/entities/mock"
     user_entities "{{ .Module }}/internal/app/user/entities"
-    "{{ .Module }}/internal/pkg/clock"
-    "{{ .Module }}/internal/pkg/log"
-    mock_log "{{ .Module }}/internal/pkg/log/mock"
     "go.uber.org/mock/gomock"
 )
 
@@ -38,7 +35,7 @@ func TestAuthUseCase_Auth(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    *user_entities.User
+        want    user_entities.User
         wantErr error
     }{
         {
@@ -73,7 +70,7 @@ func TestAuthUseCase_Auth(t *testing.T) {
                 ctx:    ctx,
                 access: token,
             },
-            want:    nil,
+            want:    user_entities.User{},
             wantErr: errs.NewBadTokenError(),
         },
     }
@@ -112,14 +109,14 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
     }
     type args struct {
         ctx   context.Context
-        login *entities.Login
+        login entities.Login
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *entities.TokenPair
+        want    entities.TokenPair
         wantErr error
     }{
         {
@@ -156,7 +153,7 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
                 ctx:   ctx,
                 login: login,
             },
-            want:    nil,
+            want:    entities.TokenPair{},
             wantErr: errs.NewInvalidParameter("email or password"),
         },
     }
@@ -203,7 +200,7 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    *entities.TokenPair
+        want    entities.TokenPair
         wantErr error
     }{
         {
@@ -239,7 +236,7 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
                 ctx:     ctx,
                 refresh: refresh,
             },
-            want:    nil,
+            want:    entities.TokenPair{},
             wantErr: errs.NewBadTokenError(),
         },
     }

@@ -90,18 +90,6 @@ func (m *Middlewares) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: `"google.golang.org/grpc/codes"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: `"google.golang.org/grpc/status"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
 							Value: `"strings"`,
 						},
 					},
@@ -182,14 +170,12 @@ func (m *Middlewares) file() *ast.File {
 											Results: &ast.FieldList{
 												List: []*ast.Field{
 													{
-														Type: &ast.StarExpr{
-															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "userEntities",
-																},
-																Sel: &ast.Ident{
-																	Name: "User",
-																},
+														Type: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "userEntities",
+															},
+															Sel: &ast.Ident{
+																Name: "User",
 															},
 														},
 													},

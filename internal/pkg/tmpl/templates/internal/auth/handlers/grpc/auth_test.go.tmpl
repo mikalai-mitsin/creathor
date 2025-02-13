@@ -5,7 +5,7 @@ import (
     "errors"
     "{{ .Module }}/internal/pkg/errs"
     "{{ .Module }}/internal/app/auth/entities"
-    mock_entities "{{ .Module }}/internal/app/auth/entities/mock"
+    mockEntities "{{ .Module }}/internal/app/auth/entities/mock"
 
     {{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
     "go.uber.org/mock/gomock"
@@ -18,8 +18,8 @@ func TestAuthServiceServer_CreateToken(t *testing.T) {
     defer ctrl.Finish()
     mockAuthUseCase := NewMockauthUseCase(ctrl)
     ctx := context.Background()
-    login := mock_entities.NewLogin(t)
-    pair := mock_entities.NewTokenPair(t)
+    login := mockEntities.NewLogin(t)
+    pair := mockEntities.NewTokenPair(t)
     type fields struct {
         UnimplementedAuthServiceServer {{ .ProtoPackage }}.UnimplementedAuthServiceServer
         authUseCase                authUseCase
@@ -60,7 +60,7 @@ func TestAuthServiceServer_CreateToken(t *testing.T) {
             setup: func() {
                 mockAuthUseCase.EXPECT().
                     CreateToken(ctx, login).
-                    Return(nil, errs.NewBadTokenError()).
+                    Return(entities.TokenPair{}, errs.NewBadTokenError()).
                     Times(1)
             },
             fields: fields{
@@ -102,8 +102,8 @@ func TestAuthServiceServer_RefreshToken(t *testing.T) {
     defer ctrl.Finish()
     mockAuthUseCase := NewMockauthUseCase(ctrl)
     ctx := context.Background()
-    token := mock_entities.NewToken(t)
-    pair := mock_entities.NewTokenPair(t)
+    token := mockEntities.NewToken(t)
+    pair := mockEntities.NewTokenPair(t)
     type fields struct {
         UnimplementedAuthServiceServer {{ .ProtoPackage }}.UnimplementedAuthServiceServer
         authUseCase                authUseCase
@@ -144,7 +144,7 @@ func TestAuthServiceServer_RefreshToken(t *testing.T) {
             setup: func() {
                 mockAuthUseCase.EXPECT().
                     RefreshToken(ctx, token).
-                    Return(nil, errs.NewBadTokenError()).
+                    Return(entities.TokenPair{}, errs.NewBadTokenError()).
                     Times(1)
             },
             fields: fields{

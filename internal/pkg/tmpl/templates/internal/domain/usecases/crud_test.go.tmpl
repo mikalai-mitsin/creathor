@@ -6,7 +6,7 @@ import (
 
     "{{ .Module }}/internal/pkg/errs"
     "{{ .Module }}/internal/app/{{ .DirName }}/entities"
-    mock_entities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
+    mockEntities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
     "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
     "github.com/stretchr/testify/assert"
@@ -57,7 +57,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
         logger          logger
@@ -131,8 +131,8 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
-    create := mock_entities.New{{ .Config.CreateTypeName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
+    create := mockEntities.New{{ .Config.CreateTypeName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
         logger          logger
@@ -204,8 +204,8 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
-    update := mock_entities.New{{ .Config.UpdateTypeName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
+    update := mockEntities.New{{ .Config.UpdateTypeName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
         logger          logger
@@ -277,7 +277,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
         logger          logger
@@ -347,11 +347,11 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    filter := mock_entities.New{{ .Config.FilterTypeName }}(t)
+    filter := mockEntities.New{{ .Config.FilterTypeName }}(t)
     count := faker.New().UInt64Between(2, 20)
     {{ .Config.ListVariable }} := make([]entities.{{ .Config.ModelName }}, 0, count)
     for i := uint64(0); i < count; i++ {
-        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mock_entities.New{{ .Config.ModelName }}(t))
+        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mockEntities.New{{ .Config.ModelName }}(t))
     }
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}

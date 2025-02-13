@@ -82,7 +82,7 @@ func TestAuthService_Auth(t *testing.T) {
             name: "user not found",
             setup: func() {
                 mockAuthRepository.EXPECT().GetSubject(ctx, entities.Token("mytoken")).Return(string(user.ID), nil).Times(1)
-                mockUserRepository.EXPECT().Get(ctx, user.ID).Return(nil, errs.NewEntityNotFoundError()).Times(1)
+                mockUserRepository.EXPECT().Get(ctx, user.ID).Return(userEntities.User{}, errs.NewEntityNotFoundError()).Times(1)
             },
             fields: fields{
                 authRepository: mockAuthRepository,
@@ -168,7 +168,7 @@ func TestAuthService_CreateToken(t *testing.T) {
             name: "user not found",
             setup: func() {
                 mockUserRepository.EXPECT().
-                    GetByEmail(ctx, user.Email).Return(nil, errs.NewEntityNotFoundError()).
+                    GetByEmail(ctx, user.Email).Return(userEntities.User{}, errs.NewEntityNotFoundError()).
                     Times(1)
             },
             fields: fields{
@@ -212,7 +212,7 @@ func TestAuthService_CreateToken(t *testing.T) {
                     GetByEmail(ctx, user.Email).Return(user, nil).
                     Times(1)
                 mockAuthRepository.EXPECT().Create(ctx, user).
-                    Return(nil, errs.NewUnexpectedBehaviorError("system errpr")).
+                    Return(entities.TokenPair{}, errs.NewUnexpectedBehaviorError("system errpr")).
                     Times(1)
             },
             fields: fields{
@@ -295,7 +295,7 @@ func TestAuthService_RefreshToken(t *testing.T) {
             setup: func() {
                 mockAuthRepository.EXPECT().
                     RefreshToken(ctx, entities.Token("my_r_token")).
-                    Return(nil, errs.NewBadTokenError()).
+                    Return(entities.TokenPair{}, errs.NewBadTokenError()).
                     Times(1)
             },
             fields: fields{
@@ -494,7 +494,7 @@ func TestAuthService_CreateTokenByUser(t *testing.T) {
         {
             name: "error",
             setup: func() {
-                mockAuthRepository.EXPECT().Create(ctx, user).Return(nil, errs.NewUnexpectedBehaviorError("asd"))
+                mockAuthRepository.EXPECT().Create(ctx, user).Return(entities.TokenPair{}, errs.NewUnexpectedBehaviorError("asd"))
             },
             fields: fields{
                 authRepository: mockAuthRepository,

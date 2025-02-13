@@ -123,13 +123,7 @@ func postInit(project *configs.Project) error {
 			fmt.Println(errb.String())
 		}
 	}
-	goLines := exec.Command("golines", ".", "-w", "--ignore-generated")
-	goLines.Dir = destinationPath
-	fmt.Println(strings.Join(goLines.Args, " "))
-	if err := goLines.Run(); err != nil {
-		fmt.Println(errb.String())
-	}
-	clean := exec.Command("golangci-lint", "run", "./...", "--fix")
+	clean := exec.Command("task", "clean")
 	clean.Dir = destinationPath
 	fmt.Println(strings.Join(clean.Args, " "))
 	if err := clean.Run(); err != nil {

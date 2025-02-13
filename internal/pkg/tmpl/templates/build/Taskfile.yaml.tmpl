@@ -17,10 +17,13 @@ tasks:
 
   lint:
     cmds:
+      - goimports -e -d ./
       - golangci-lint run ./... --timeout 5m0s
 
   clean:
     cmds:
+      - goimports -w ./
+      - golines . -w --ignore-generated
       - golangci-lint run ./... --fix
 
   log:

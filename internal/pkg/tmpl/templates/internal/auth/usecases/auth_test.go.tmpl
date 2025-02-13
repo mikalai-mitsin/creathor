@@ -8,9 +8,9 @@ import (
 
     "{{ .Module }}/internal/pkg/errs"
     "{{ .Module }}/internal/app/auth/entities"
-    mock_entities "{{ .Module }}/internal/app/auth/entities/mock"
-    mock_user_entities "{{ .Module }}/internal/app/user/entities/mock"
-    user_entities "{{ .Module }}/internal/app/user/entities"
+    mockEntities "{{ .Module }}/internal/app/auth/entities/mock"
+    mockUserEntities "{{ .Module }}/internal/app/user/entities/mock"
+    userEntities "{{ .Module }}/internal/app/user/entities"
     "go.uber.org/mock/gomock"
 )
 
@@ -20,8 +20,8 @@ func TestAuthUseCase_Auth(t *testing.T) {
     mockAuthService := NewMockauthService(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    token := mock_entities.NewToken(t)
-    user := mock_user_entities.NewUser(t)
+    token := mockEntities.NewToken(t)
+    user := mockUserEntities.NewUser(t)
     type fields struct {
         authService authService
         logger      logger
@@ -35,7 +35,7 @@ func TestAuthUseCase_Auth(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    user_entities.User
+        want    userEntities.User
         wantErr error
     }{
         {
@@ -59,7 +59,7 @@ func TestAuthUseCase_Auth(t *testing.T) {
             setup: func() {
                 mockAuthService.EXPECT().
                     Auth(ctx, token).
-                    Return(nil, errs.NewBadTokenError()).
+                    Return(userEntities.User{}, errs.NewBadTokenError()).
                     Times(1)
             },
             fields: fields{
@@ -70,7 +70,7 @@ func TestAuthUseCase_Auth(t *testing.T) {
                 ctx:    ctx,
                 access: token,
             },
-            want:    user_entities.User{},
+            want:    userEntities.User{},
             wantErr: errs.NewBadTokenError(),
         },
     }
@@ -99,8 +99,8 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
     mockAuthService := NewMockauthService(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    login := mock_entities.NewLogin(t)
-    pair := mock_entities.NewTokenPair(t)
+    login := mockEntities.NewLogin(t)
+    pair := mockEntities.NewTokenPair(t)
     clockmock := NewMockclock(ctrl)
     type fields struct {
         authService authService
@@ -141,7 +141,7 @@ func TestAuthUseCase_CreateToken(t *testing.T) {
             setup: func() {
                 mockAuthService.EXPECT().
                     CreateToken(ctx, login).
-                    Return(nil, errs.NewInvalidParameter("email or password")).
+                    Return(entities.TokenPair{}, errs.NewInvalidParameter("email or password")).
                     Times(1)
             },
             fields: fields{
@@ -183,8 +183,8 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
     mockAuthService := NewMockauthService(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    pair := mock_entities.NewTokenPair(t)
-    refresh := mock_entities.NewToken(t)
+    pair := mockEntities.NewTokenPair(t)
+    refresh := mockEntities.NewToken(t)
     clockmock := NewMockclock(ctrl)
     type fields struct {
         authService authService
@@ -225,7 +225,7 @@ func TestAuthUseCase_RefreshToken(t *testing.T) {
             setup: func() {
                 mockAuthService.EXPECT().
                     RefreshToken(ctx, refresh).
-                    Return(nil, errs.NewBadTokenError()).Times(1)
+                    Return(entities.TokenPair{}, errs.NewBadTokenError()).Times(1)
             },
             fields: fields{
                 authService: mockAuthService,

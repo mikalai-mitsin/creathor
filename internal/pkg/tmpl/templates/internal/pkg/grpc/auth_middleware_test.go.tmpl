@@ -9,8 +9,8 @@ import (
 
     "{{ .Module }}/internal/pkg/errs"
     "{{ .Module }}/internal/app/auth/entities"
-    mock_user_entities "{{ .Module }}/internal/app/user/entities/mock"
-    mock_entities "{{ .Module }}/internal/app/auth/entities/mock"
+    mockUserEntities "{{ .Module }}/internal/app/user/entities/mock"
+    mockEntities "{{ .Module }}/internal/app/auth/entities/mock"
     mock_grpc "{{ .Module }}/internal/pkg/grpc/mock"
 
     "go.uber.org/mock/gomock"
@@ -43,8 +43,8 @@ func TestAuthMiddleware_Auth(t *testing.T) {
     defer ctrl.Finish()
     authUseCase := mock_grpc.NewMockAuthUseCase(ctrl)
     ctx := context.Background()
-    token := mock_entities.NewToken(t)
-    user := mock_user_entities.NewUser(t)
+    token := mockEntities.NewToken(t)
+    user := mockUserEntities.NewUser(t)
     ctxWithToken := metadata.NewIncomingContext(ctx, metadata.New(map[string]string{
         "authorization": fmt.Sprintf("Bearer %s", token.String()),
     }))

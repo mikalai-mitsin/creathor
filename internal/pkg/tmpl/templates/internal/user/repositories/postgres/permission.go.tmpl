@@ -11,7 +11,7 @@ import (
     "github.com/jmoiron/sqlx"
 )
 
-type objectPermissionChecker func(model any, user *entities.User) error
+type objectPermissionChecker func(model any, user entities.User) error
 
 var hasObjectPermission = map[entities.PermissionID][]objectPermissionChecker{
     entities.PermissionIDUserCreate: {objectAnybody},
@@ -34,15 +34,15 @@ func NewPermissionRepository(database *sqlx.DB) *PermissionRepository {
 func (r *PermissionRepository) HasPermission(
     ctx context.Context,
     permissionID entities.PermissionID,
-    user *entities.User,
+    user entities.User,
 ) error {
-    permission := &entities.Permission{}
+    permission := entities.Permission{}
     q := sq.Select("permissions.id", "permissions.name").
         From("public.permissions").
         InnerJoin("group_permissions ON permissions.id = group_permissions.permission_id").
         Where(sq.Eq{"group_permissions.group_id": user.GroupID, "permissions.id": permissionID})
     query, args := q.PlaceholderFormat(sq.Dollar).MustSql()
-    if err := r.database.GetContext(ctx, permission, query, args...); err != nil {
+    if err := r.database.GetContext(ctx, &permission, query, args...); err != nil {
         e := errs.FromPostgresError(err)
 		if e.Code == errs.ErrorCodeNotFound {
 			e = errs.NewPermissionDeniedError()
@@ -57,7 +57,7 @@ func (r *PermissionRepository) HasPermission(
 func (r *PermissionRepository) HasObjectPermission(
     _ context.Context,
     permission entities.PermissionID,
-    user *entities.User,
+    user entities.User,
     obj any,
 ) error {
     checkers := hasObjectPermission[permission]
@@ -69,7 +69,7 @@ func (r *PermissionRepository) HasObjectPermission(
     return errs.NewPermissionDeniedError()
 }
 
-func objectOwner(model any, user *entities.User) error {
+func objectOwner(model any, user entities.User) error {
     valueOf := reflect.ValueOf(model)
     if valueOf.Kind() == reflect.Pointer {
         valueOf = valueOf.Elem()
@@ -91,7 +91,7 @@ func objectOwner(model any, user *entities.User) error {
     return errs.NewPermissionDeniedError()
 }
 
-func objectOwnerOrAll(model any, user *entities.User) error {
+func objectOwnerOrAll(model any, user entities.User) error {
     if model == nil {
         return nil
     }
@@ -119,10 +119,10 @@ func objectOwnerOrAll(model any, user *entities.User) error {
     return errs.NewPermissionDeniedError()
 }
 
-func objectNobody(_ any, _ *entities.User) error {
+func objectNobody(_ any, _ entities.User) error {
     return errs.NewPermissionDeniedError()
 }
 
-func objectAnybody(_ any, _ *entities.User) error {
+func objectAnybody(_ any, _ entities.User) error {
     return nil
 }

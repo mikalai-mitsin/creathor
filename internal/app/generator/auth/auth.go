@@ -5,6 +5,7 @@ import (
 
 	authModel "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/entities"
 	authGrpcHandlers "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/handlers/grpc"
+	authHttpHandlers "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/handlers/http"
 	authRepositoriesJwt "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/repositories/jwt"
 	authRepositoriesPosgres "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/repositories/postgres"
 	authServices "github.com/mikalai-mitsin/creathor/internal/app/generator/auth/services"
@@ -38,12 +39,15 @@ func (g *Generator) Sync() error {
 		//UseCase and interfaces
 		authUseCases.NewUseCaseAuth(g.project),
 		authUseCases.NewServiceInterfaceAuth(g.project),
-		//Handlers and interfaces
+		//gRPC Handlers and interfaces
 		authGrpcHandlers.NewInterfaces(g.project),
 		authGrpcHandlers.NewHandler(g.project),
 		authGrpcHandlers.NewMiddlewares(g.project),
 		authGrpcHandlers.NewProto(g.project),
-
+		// HTTP Handlers and interfaces
+		authHttpHandlers.NewInterfaces(g.project),
+		authHttpHandlers.NewHandler(g.project),
+		authHttpHandlers.NewDTOGenerator(g.project),
 		authModel.NewModelPermission(g.project),
 
 		//App constructor

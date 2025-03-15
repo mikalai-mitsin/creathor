@@ -106,10 +106,21 @@ func (a AppAuth) file() *ast.File {
 					a.project.Module,
 				),
 			},
-		})
+		},
+			&ast.ImportSpec{
+				Name: ast.NewIdent("httpHandlers"),
+				Path: &ast.BasicLit{
+					Kind: token.STRING,
+					Value: fmt.Sprintf(
+						`"%s/internal/app/auth/handlers/http"`,
+						a.project.Module,
+					),
+				},
+			})
 	}
 	if a.project.GRPCEnabled {
 		importSpecs = append(importSpecs, &ast.ImportSpec{
+			Name: ast.NewIdent("grpcHandlers"),
 			Path: &ast.BasicLit{
 				Kind: token.STRING,
 				Value: fmt.Sprintf(
@@ -255,31 +266,35 @@ func (a AppAuth) file() *ast.File {
 								},
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "authHandler",
-										},
+										ast.NewIdent("grpcAuthHandler"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "handlers",
-											},
+											X: ast.NewIdent("grpcHandlers"),
 											Sel: &ast.Ident{
 												Name: "AuthServiceServer",
 											},
 										},
 									},
-								}, {
+								},
+								{
 									Names: []*ast.Ident{
-										{
-											Name: "authMiddleware",
-										},
+										ast.NewIdent("httpAuthHandler"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "handlers",
-											},
+											X:   ast.NewIdent("httpHandlers"),
+											Sel: ast.NewIdent("AuthHandler"),
+										},
+									},
+								},
+								{
+									Names: []*ast.Ident{
+										ast.NewIdent("grpcAuthMiddleware"),
+									},
+									Type: &ast.StarExpr{
+										X: &ast.SelectorExpr{
+											X: ast.NewIdent("grpcHandlers"),
 											Sel: &ast.Ident{
 												Name: "AuthMiddleware",
 											},
@@ -329,23 +344,6 @@ func (a AppAuth) file() *ast.File {
 									},
 									Sel: &ast.Ident{
 										Name: "Config",
-									},
-								},
-							},
-						},
-						{
-							Names: []*ast.Ident{
-								{
-									Name: "grpcServer",
-								},
-							},
-							Type: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "grpc",
-									},
-									Sel: &ast.Ident{
-										Name: "Server",
 									},
 								},
 							},
@@ -523,17 +521,13 @@ func (a AppAuth) file() *ast.File {
 					},
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
-							&ast.Ident{
-								Name: "authHandler",
-							},
+							ast.NewIdent("grpcAuthHandler"),
 						},
 						Tok: token.DEFINE,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "handlers",
-									},
+									X: ast.NewIdent("grpcHandlers"),
 									Sel: &ast.Ident{
 										Name: "NewAuthServiceServer",
 									},
@@ -549,17 +543,35 @@ func (a AppAuth) file() *ast.File {
 					},
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
-							&ast.Ident{
-								Name: "authMiddleware",
-							},
+							ast.NewIdent("httpAuthHandler"),
 						},
 						Tok: token.DEFINE,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "handlers",
+									X: ast.NewIdent("httpHandlers"),
+									Sel: &ast.Ident{
+										Name: "NewAuthHandler",
 									},
+								},
+								Args: []ast.Expr{
+									&ast.Ident{
+										Name: "authUseCase",
+									},
+									ast.NewIdent("logger"),
+								},
+							},
+						},
+					},
+					&ast.AssignStmt{
+						Lhs: []ast.Expr{
+							ast.NewIdent("grpcAuthMiddleware"),
+						},
+						Tok: token.DEFINE,
+						Rhs: []ast.Expr{
+							&ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: ast.NewIdent("grpcHandlers"),
 									Sel: &ast.Ident{
 										Name: "NewAuthMiddleware",
 									},
@@ -597,14 +609,6 @@ func (a AppAuth) file() *ast.File {
 										},
 										&ast.KeyValueExpr{
 											Key: &ast.Ident{
-												Name: "grpcServer",
-											},
-											Value: &ast.Ident{
-												Name: "grpcServer",
-											},
-										},
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
 												Name: "logger",
 											},
 											Value: &ast.Ident{
@@ -636,20 +640,16 @@ func (a AppAuth) file() *ast.File {
 											},
 										},
 										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "authHandler",
-											},
-											Value: &ast.Ident{
-												Name: "authHandler",
-											},
+											Key:   ast.NewIdent("grpcAuthHandler"),
+											Value: ast.NewIdent("grpcAuthHandler"),
 										},
 										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "authMiddleware",
-											},
-											Value: &ast.Ident{
-												Name: "authMiddleware",
-											},
+											Key:   ast.NewIdent("grpcAuthMiddleware"),
+											Value: ast.NewIdent("grpcAuthMiddleware"),
+										},
+										&ast.KeyValueExpr{
+											Key:   ast.NewIdent("httpAuthHandler"),
+											Value: ast.NewIdent("httpAuthHandler"),
 										},
 									},
 								},
@@ -661,44 +661,9 @@ func (a AppAuth) file() *ast.File {
 		},
 	}
 	if a.project.HTTPEnabled {
-		importSpecs = append(importSpecs, &ast.ImportSpec{
-			Path: &ast.BasicLit{
-				Kind: token.STRING,
-				Value: fmt.Sprintf(
-					`"%s/internal/pkg/http"`,
-					a.project.Module,
-				),
-			},
-		})
 		decls = append(decls, a.registerHTTP())
 	}
 	if a.project.GRPCEnabled {
-		importSpecs = append(importSpecs, &ast.ImportSpec{
-			Path: &ast.BasicLit{
-				Kind: token.STRING,
-				Value: fmt.Sprintf(
-					`"%s/internal/app/auth/handlers/grpc"`,
-					a.project.Module,
-				),
-			},
-		}, &ast.ImportSpec{
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, a.project.Module),
-			},
-		}, &ast.ImportSpec{
-			Name: &ast.Ident{
-				Name: a.project.ProtoPackage(),
-			},
-			Path: &ast.BasicLit{
-				Kind: token.STRING,
-				Value: fmt.Sprintf(
-					`"%s/pkg/%s/v1"`,
-					a.project.Module,
-					a.project.ProtoPackage(),
-				),
-			},
-		})
 		decls = append(decls, a.registerGRPC())
 	}
 	return &ast.File{
@@ -778,7 +743,7 @@ func (a AppAuth) registerGRPC() *ast.FuncDecl {
 							},
 							&ast.SelectorExpr{
 								X:   ast.NewIdent("a"),
-								Sel: ast.NewIdent("authHandler"),
+								Sel: ast.NewIdent("grpcAuthHandler"),
 							},
 						},
 					},
@@ -793,7 +758,7 @@ func (a AppAuth) registerGRPC() *ast.FuncDecl {
 							&ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("a"),
-									Sel: ast.NewIdent("authMiddleware"),
+									Sel: ast.NewIdent("grpcAuthMiddleware"),
 								},
 								Sel: ast.NewIdent("UnaryServerInterceptor"),
 							},
@@ -886,9 +851,7 @@ func (a AppAuth) registerHTTP() *ast.FuncDecl {
 										X: &ast.Ident{
 											Name: "a",
 										},
-										Sel: ast.NewIdent(
-											"authHandler",
-										),
+										Sel: ast.NewIdent("httpAuthHandler"),
 									},
 									Sel: &ast.Ident{
 										Name: "ChiRouter",

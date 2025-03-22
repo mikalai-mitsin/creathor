@@ -33,33 +33,38 @@ go install github.com/mikalai-mitsin/creathor@latest
 Config example
 
 ```yaml
-name: "example"                    // Service name
-module: "github.com/018bf/example" // Module name
-goVersion: "1.19"                  // go version
-auth: true                         // Generate auth, permissions and users api
-ci: "github"                       // Add `gitlab` or `github` CI configs
-gRPC: true                         // Generate gRPC API
-REST: false                        // RESTful API
-models:
-  - model: "session" // Model name
+name: "example"
+module: "github.com/mikalai-mitsin/example"
+goVersion: "1.22"
+auth: true
+ci: "github"
+gRPC: true
+http: true
+gateway: false
+uptrace: true
+domains:
+  - model: Post
     params:
-      - name: "title"  // Parameter name
-        type: "string" // Parameter type one of "int", "int64", "int32", "int16", "int8", "[]int", "[]int64", "[]int32", "[]int16", "[]int8", "uint", "uint64", "uint32", "uint16", "uint8", "[]uint", "[]uint64", "[]uint32", "[]uint16", "[]uint8", "string", "[]string", "time.Time", "[]time.Time",
-        search: false  // Add field to the search
-      - name: "description"
+      - name: "title"
         type: "string"
-        search: true
-  - model: "equipment"
+      - name: "body"
+        type: "string"
+      - name: "is_private"
+        type: "bool"
+      - name: "tags"
+        type: "[]string"
+      - name: "published_at"
+        type: "time.Time"
+      - name: "author_id"
+        type: "uuid.UUID"
+  - model: Comment
     params:
-      - name: "name"
+      - name: "text"
         type: "string"
-        search: true
-      - name: "repeat"
-        type: "int"
-        search: false
-      - name: "weight"
-        type: "int"
-        search: false
+      - name: "author_id"
+        type: "uuid.UUID"
+      - name: "post_id"
+        type: "uuid.UUID"
 ```
 
 To generate code in the current directory and with default config name, use the command `creathor`

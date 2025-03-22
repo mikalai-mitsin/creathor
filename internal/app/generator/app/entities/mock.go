@@ -126,9 +126,7 @@ func (m *Mock) fill(cl *ast.CompositeLit) {
 
 func (m *Mock) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "mock_entities",
-		},
+		Name: ast.NewIdent("mock_entities"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,

@@ -23,9 +23,7 @@ func NewUseCaseInterfaceAuth(project *configs.Project) *UseCaseInterfaceAuth {
 
 func (i UseCaseInterfaceAuth) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "grpc",
-		},
+		Name: ast.NewIdent("grpc"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -275,49 +273,33 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "AuthUseCase",
-						},
+						Name: ast.NewIdent("AuthUseCase"),
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{
 								List: []*ast.Field{
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "Auth",
-											},
+											ast.NewIdent("Auth"),
 										},
 										Type: &ast.FuncType{
 											Params: &ast.FieldList{
 												List: []*ast.Field{
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "ctx",
-															},
+															ast.NewIdent("ctx"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "context",
-															},
-															Sel: &ast.Ident{
-																Name: "Context",
-															},
+															X:   ast.NewIdent("context"),
+															Sel: ast.NewIdent("Context"),
 														},
 													},
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "token",
-															},
+															ast.NewIdent("token"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "entities",
-															},
-															Sel: &ast.Ident{
-																Name: "Token",
-															},
+															X:   ast.NewIdent("entities"),
+															Sel: ast.NewIdent("Token"),
 														},
 													},
 												},
@@ -333,9 +315,7 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 														},
 													},
 													{
-														Type: &ast.Ident{
-															Name: "error",
-														},
+														Type: ast.NewIdent("error"),
 													},
 												},
 											},

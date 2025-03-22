@@ -175,13 +175,9 @@ func (g *DTOGenerator) dtoStruct() *ast.TypeSpec {
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "ID",
-							},
+							ast.NewIdent("ID"),
 						},
-						Type: &ast.Ident{
-							Name: "uuid.UUID",
-						},
+						Type: ast.NewIdent("uuid.UUID"),
 						Tag: &ast.BasicLit{
 							Kind:  token.STRING,
 							Value: "`json:\"id\"`",
@@ -189,17 +185,11 @@ func (g *DTOGenerator) dtoStruct() *ast.TypeSpec {
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "UpdatedAt",
-							},
+							ast.NewIdent("UpdatedAt"),
 						},
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "time",
-							},
-							Sel: &ast.Ident{
-								Name: "Time",
-							},
+							X:   ast.NewIdent("time"),
+							Sel: ast.NewIdent("Time"),
 						},
 						Tag: &ast.BasicLit{
 							Kind:  token.STRING,
@@ -208,17 +198,11 @@ func (g *DTOGenerator) dtoStruct() *ast.TypeSpec {
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "CreatedAt",
-							},
+							ast.NewIdent("CreatedAt"),
 						},
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "time",
-							},
-							Sel: &ast.Ident{
-								Name: "Time",
-							},
+							X:   ast.NewIdent("time"),
+							Sel: ast.NewIdent("Time"),
 						},
 						Tag: &ast.BasicLit{
 							Kind:  token.STRING,
@@ -339,26 +323,16 @@ func (g *DTOGenerator) dtoConstructor() *ast.FuncDecl {
 		} else {
 			if param.JsonType() == param.Type {
 				elt.Value = &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "entity",
-					},
-					Sel: &ast.Ident{
-						Name: param.GetName(),
-					},
+					X:   ast.NewIdent("entity"),
+					Sel: ast.NewIdent(param.GetName()),
 				}
 			} else {
 				elt.Value = &ast.CallExpr{
-					Fun: &ast.Ident{
-						Name: param.JsonType(),
-					},
+					Fun: ast.NewIdent(param.JsonType()),
 					Args: []ast.Expr{
 						&ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "entity",
-							},
-							Sel: &ast.Ident{
-								Name: param.GetName(),
-							},
+							X:   ast.NewIdent("entity"),
+							Sel: ast.NewIdent(param.GetName()),
 						},
 					},
 				}
@@ -367,25 +341,17 @@ func (g *DTOGenerator) dtoConstructor() *ast.FuncDecl {
 		dto.Elts = append(dto.Elts, elt)
 	}
 	constructor := &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: g.domain.GetHTTPItemDTOConstructorName(),
-		},
+		Name: ast.NewIdent(g.domain.GetHTTPItemDTOConstructorName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "entity",
-							},
+							ast.NewIdent("entity"),
 						},
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "entities",
-							},
-							Sel: &ast.Ident{
-								Name: g.domain.GetMainModel().Name,
-							},
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(g.domain.GetMainModel().Name),
 						},
 					},
 				},
@@ -405,9 +371,7 @@ func (g *DTOGenerator) dtoConstructor() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "dto",
-						},
+						ast.NewIdent("dto"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
@@ -426,55 +390,37 @@ func (g *DTOGenerator) dtoConstructor() *ast.FuncDecl {
 			valueToAppend = ast.NewIdent("param")
 		} else {
 			valueToAppend = &ast.CallExpr{
-				Fun: &ast.Ident{
-					Name: param.PostgresDTOSliceType(),
-				},
+				Fun: ast.NewIdent(param.PostgresDTOSliceType()),
 				Args: []ast.Expr{
 					ast.NewIdent("param"),
 				},
 			}
 		}
 		rang := &ast.RangeStmt{
-			Key: &ast.Ident{
-				Name: "_",
-			},
+			Key:   ast.NewIdent("_"),
 			Value: ast.NewIdent("param"),
 			Tok:   token.DEFINE,
 			X: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "entity",
-				},
-				Sel: &ast.Ident{
-					Name: param.GetName(),
-				},
+				X:   ast.NewIdent("entity"),
+				Sel: ast.NewIdent(param.GetName()),
 			},
 			Body: &ast.BlockStmt{
 				List: []ast.Stmt{
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
 							&ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "dto",
-								},
-								Sel: &ast.Ident{
-									Name: param.GetName(),
-								},
+								X:   ast.NewIdent("dto"),
+								Sel: ast.NewIdent(param.GetName()),
 							},
 						},
 						Tok: token.ASSIGN,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
-								Fun: &ast.Ident{
-									Name: "append",
-								},
+								Fun: ast.NewIdent("append"),
 								Args: []ast.Expr{
 									&ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "dto",
-										},
-										Sel: &ast.Ident{
-											Name: param.GetName(),
-										},
+										X:   ast.NewIdent("dto"),
+										Sel: ast.NewIdent(param.GetName()),
 									},
 									valueToAppend,
 								},
@@ -535,9 +481,7 @@ func (g *DTOGenerator) syncDTOConstructor() error {
 						}
 					}
 					elt := &ast.KeyValueExpr{
-						Key: &ast.Ident{
-							Name: param.GetName(),
-						},
+						Key:   ast.NewIdent(param.GetName()),
 						Value: nil,
 					}
 					if param.IsSlice() {
@@ -547,26 +491,16 @@ func (g *DTOGenerator) syncDTOConstructor() error {
 					} else {
 						if param.PostgresDTOType() == param.Type {
 							elt.Value = &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entity",
-								},
-								Sel: &ast.Ident{
-									Name: param.GetName(),
-								},
+								X:   ast.NewIdent("entity"),
+								Sel: ast.NewIdent(param.GetName()),
 							}
 						} else {
 							elt.Value = &ast.CallExpr{
-								Fun: &ast.Ident{
-									Name: param.PostgresDTOType(),
-								},
+								Fun: ast.NewIdent(param.PostgresDTOType()),
 								Args: []ast.Expr{
 									&ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "entity",
-										},
-										Sel: &ast.Ident{
-											Name: param.GetName(),
-										},
+										X:   ast.NewIdent("entity"),
+										Sel: ast.NewIdent(param.GetName()),
 									},
 								},
 							}
@@ -597,9 +531,7 @@ func (g *DTOGenerator) syncDTOConstructor() error {
 
 func (g *DTOGenerator) astDTOListType() *ast.TypeSpec {
 	return &ast.TypeSpec{
-		Name: &ast.Ident{
-			Name: g.domain.GetHTTPListDTOName(),
-		},
+		Name: ast.NewIdent(g.domain.GetHTTPListDTOName()),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: []*ast.Field{
@@ -608,9 +540,7 @@ func (g *DTOGenerator) astDTOListType() *ast.TypeSpec {
 							ast.NewIdent("Items"),
 						},
 						Type: &ast.ArrayType{
-							Elt: &ast.Ident{
-								Name: g.domain.GetHTTPItemDTOName(),
-							},
+							Elt: ast.NewIdent(g.domain.GetHTTPItemDTOName()),
 						},
 						Tag: &ast.BasicLit{
 							Kind:  token.STRING,
@@ -682,21 +612,15 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 					Type: ast.NewIdent(g.domain.GetHTTPListDTOName()),
 					Elts: []ast.Expr{
 						&ast.KeyValueExpr{
-							Key: &ast.Ident{
-								Name: "Items",
-							},
+							Key: ast.NewIdent("Items"),
 							Value: &ast.CallExpr{
-								Fun: &ast.Ident{
-									Name: "make",
-								},
+								Fun: ast.NewIdent("make"),
 								Args: []ast.Expr{
 									&ast.ArrayType{
 										Elt: ast.NewIdent(g.domain.GetHTTPItemDTOName()),
 									},
 									&ast.CallExpr{
-										Fun: &ast.Ident{
-											Name: "len",
-										},
+										Fun: ast.NewIdent("len"),
 										Args: []ast.Expr{
 											ast.NewIdent(g.domain.GetManyVariableName()),
 										},
@@ -705,21 +629,15 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 							},
 						},
 						&ast.KeyValueExpr{
-							Key: &ast.Ident{
-								Name: "Count",
-							},
-							Value: &ast.Ident{
-								Name: "count",
-							},
+							Key:   ast.NewIdent("Count"),
+							Value: ast.NewIdent("count"),
 						},
 					},
 				},
 			},
 		},
 		&ast.RangeStmt{
-			Key: &ast.Ident{
-				Name: "i",
-			},
+			Key:   ast.NewIdent("i"),
 			Value: ast.NewIdent(g.domain.GetOneVariableName()),
 			Tok:   token.DEFINE,
 			X:     ast.NewIdent(g.domain.GetManyVariableName()),
@@ -727,12 +645,8 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 				List: []ast.Stmt{
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
-							&ast.Ident{
-								Name: "dto",
-							},
-							&ast.Ident{
-								Name: "err",
-							},
+							ast.NewIdent("dto"),
+							ast.NewIdent("err"),
 						},
 						Tok: token.DEFINE,
 						Rhs: []ast.Expr{
@@ -746,13 +660,9 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 					},
 					&ast.IfStmt{
 						Cond: &ast.BinaryExpr{
-							X: &ast.Ident{
-								Name: "err",
-							},
+							X:  ast.NewIdent("err"),
 							Op: token.NEQ,
-							Y: &ast.Ident{
-								Name: "nil",
-							},
+							Y:  ast.NewIdent("nil"),
 						},
 						Body: &ast.BlockStmt{
 							List: []ast.Stmt{
@@ -771,23 +681,15 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 						Lhs: []ast.Expr{
 							&ast.IndexExpr{
 								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "response",
-									},
-									Sel: &ast.Ident{
-										Name: "Items",
-									},
+									X:   ast.NewIdent("response"),
+									Sel: ast.NewIdent("Items"),
 								},
-								Index: &ast.Ident{
-									Name: "i",
-								},
+								Index: ast.NewIdent("i"),
 							},
 						},
 						Tok: token.ASSIGN,
 						Rhs: []ast.Expr{
-							&ast.Ident{
-								Name: "dto",
-							},
+							ast.NewIdent("dto"),
 						},
 					},
 				},
@@ -801,9 +703,7 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 		},
 	}
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: g.domain.GetHTTPListDTOConstructorName(),
-		},
+		Name: ast.NewIdent(g.domain.GetHTTPListDTOConstructorName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -882,9 +782,7 @@ func (g *DTOGenerator) filterDTOStruct() *ast.TypeSpec {
 		List: []*ast.Field{
 			{
 				Names: []*ast.Ident{
-					{
-						Name: "PageSize",
-					},
+					ast.NewIdent("PageSize"),
 				},
 				Type: ast.NewIdent("*uint64"),
 				Tag: &ast.BasicLit{
@@ -894,9 +792,7 @@ func (g *DTOGenerator) filterDTOStruct() *ast.TypeSpec {
 			},
 			{
 				Names: []*ast.Ident{
-					{
-						Name: "PageNumber",
-					},
+					ast.NewIdent("PageNumber"),
 				},
 				Type: ast.NewIdent("*uint64"),
 				Tag: &ast.BasicLit{
@@ -991,48 +887,32 @@ func (g *DTOGenerator) syncFilterDTOStruct() error {
 func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 	exprs := []ast.Expr{
 		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "IDs",
-			},
+			Key:   ast.NewIdent("IDs"),
 			Value: ast.NewIdent("nil"),
 		},
 		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "PageSize",
-			},
+			Key:   ast.NewIdent("PageSize"),
 			Value: ast.NewIdent("nil"),
 		},
 		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "PageNumber",
-			},
+			Key:   ast.NewIdent("PageNumber"),
 			Value: ast.NewIdent("nil"),
 		},
 		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "OrderBy",
-			},
-			Value: &ast.Ident{
-				Name: "nil",
-			},
+			Key:   ast.NewIdent("OrderBy"),
+			Value: ast.NewIdent("nil"),
 		},
 	}
 	if g.domain.SearchEnabled() {
 		exprs = append(exprs, &ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "Search",
-			},
-			Value: &ast.Ident{
-				Name: `""`,
-			},
+			Key:   ast.NewIdent("Search"),
+			Value: ast.NewIdent(`""`),
 		})
 	}
 	stmts := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				&ast.Ident{
-					Name: "filter",
-				},
+				ast.NewIdent("filter"),
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
@@ -1048,21 +928,13 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 					X: &ast.CallExpr{
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "r",
-								},
-								Sel: &ast.Ident{
-									Name: "URL",
-								},
+								X:   ast.NewIdent("r"),
+								Sel: ast.NewIdent("URL"),
 							},
-							Sel: &ast.Ident{
-								Name: "Query",
-							},
+							Sel: ast.NewIdent("Query"),
 						},
 					},
-					Sel: &ast.Ident{
-						Name: "Has",
-					},
+					Sel: ast.NewIdent("Has"),
 				},
 				Args: []ast.Expr{
 					&ast.BasicLit{
@@ -1075,23 +947,15 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 				List: []ast.Stmt{
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
-							&ast.Ident{
-								Name: "pageSize",
-							},
-							&ast.Ident{
-								Name: "err",
-							},
+							ast.NewIdent("pageSize"),
+							ast.NewIdent("err"),
 						},
 						Tok: token.DEFINE,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "strconv",
-									},
-									Sel: &ast.Ident{
-										Name: "Atoi",
-									},
+									X:   ast.NewIdent("strconv"),
+									Sel: ast.NewIdent("Atoi"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
@@ -1099,21 +963,13 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 											X: &ast.CallExpr{
 												Fun: &ast.SelectorExpr{
 													X: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "r",
-														},
-														Sel: &ast.Ident{
-															Name: "URL",
-														},
+														X:   ast.NewIdent("r"),
+														Sel: ast.NewIdent("URL"),
 													},
-													Sel: &ast.Ident{
-														Name: "Query",
-													},
+													Sel: ast.NewIdent("Query"),
 												},
 											},
-											Sel: &ast.Ident{
-												Name: "Get",
-											},
+											Sel: ast.NewIdent("Get"),
 										},
 										Args: []ast.Expr{
 											&ast.BasicLit{
@@ -1128,13 +984,9 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 					},
 					&ast.IfStmt{
 						Cond: &ast.BinaryExpr{
-							X: &ast.Ident{
-								Name: "err",
-							},
+							X:  ast.NewIdent("err"),
 							Op: token.NEQ,
-							Y: &ast.Ident{
-								Name: "nil",
-							},
+							Y:  ast.NewIdent("nil"),
 						},
 						Body: &ast.BlockStmt{
 							List: []ast.Stmt{
@@ -1149,17 +1001,11 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 													Fun: &ast.SelectorExpr{
 														X: &ast.CallExpr{
 															Fun: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "errs",
-																},
-																Sel: &ast.Ident{
-																	Name: "NewInvalidFormError",
-																},
+																X:   ast.NewIdent("errs"),
+																Sel: ast.NewIdent("NewInvalidFormError"),
 															},
 														},
-														Sel: &ast.Ident{
-															Name: "WithParam",
-														},
+														Sel: ast.NewIdent("WithParam"),
 													},
 													Args: []ast.Expr{
 														&ast.BasicLit{
@@ -1172,14 +1018,10 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 														},
 													},
 												},
-												Sel: &ast.Ident{
-													Name: "WithCause",
-												},
+												Sel: ast.NewIdent("WithCause"),
 											},
 											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "err",
-												},
+												ast.NewIdent("err"),
 											},
 										},
 									},
@@ -1190,12 +1032,8 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
 							&ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "filter",
-								},
-								Sel: &ast.Ident{
-									Name: "PageSize",
-								},
+								X:   ast.NewIdent("filter"),
+								Sel: ast.NewIdent("PageSize"),
 							},
 						},
 						Tok: token.ASSIGN,
@@ -1207,13 +1045,9 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
-										Fun: &ast.Ident{
-											Name: "uint64",
-										},
+										Fun: ast.NewIdent("uint64"),
 										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "pageSize",
-											},
+											ast.NewIdent("pageSize"),
 										},
 									},
 								},
@@ -1229,21 +1063,13 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 					X: &ast.CallExpr{
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "r",
-								},
-								Sel: &ast.Ident{
-									Name: "URL",
-								},
+								X:   ast.NewIdent("r"),
+								Sel: ast.NewIdent("URL"),
 							},
-							Sel: &ast.Ident{
-								Name: "Query",
-							},
+							Sel: ast.NewIdent("Query"),
 						},
 					},
-					Sel: &ast.Ident{
-						Name: "Has",
-					},
+					Sel: ast.NewIdent("Has"),
 				},
 				Args: []ast.Expr{
 					&ast.BasicLit{
@@ -1256,23 +1082,15 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 				List: []ast.Stmt{
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
-							&ast.Ident{
-								Name: "pageNumber",
-							},
-							&ast.Ident{
-								Name: "err",
-							},
+							ast.NewIdent("pageNumber"),
+							ast.NewIdent("err"),
 						},
 						Tok: token.DEFINE,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "strconv",
-									},
-									Sel: &ast.Ident{
-										Name: "Atoi",
-									},
+									X:   ast.NewIdent("strconv"),
+									Sel: ast.NewIdent("Atoi"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
@@ -1280,21 +1098,13 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 											X: &ast.CallExpr{
 												Fun: &ast.SelectorExpr{
 													X: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "r",
-														},
-														Sel: &ast.Ident{
-															Name: "URL",
-														},
+														X:   ast.NewIdent("r"),
+														Sel: ast.NewIdent("URL"),
 													},
-													Sel: &ast.Ident{
-														Name: "Query",
-													},
+													Sel: ast.NewIdent("Query"),
 												},
 											},
-											Sel: &ast.Ident{
-												Name: "Get",
-											},
+											Sel: ast.NewIdent("Get"),
 										},
 										Args: []ast.Expr{
 											&ast.BasicLit{
@@ -1309,13 +1119,9 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 					},
 					&ast.IfStmt{
 						Cond: &ast.BinaryExpr{
-							X: &ast.Ident{
-								Name: "err",
-							},
+							X:  ast.NewIdent("err"),
 							Op: token.NEQ,
-							Y: &ast.Ident{
-								Name: "nil",
-							},
+							Y:  ast.NewIdent("nil"),
 						},
 						Body: &ast.BlockStmt{
 							List: []ast.Stmt{
@@ -1330,17 +1136,11 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 													Fun: &ast.SelectorExpr{
 														X: &ast.CallExpr{
 															Fun: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "errs",
-																},
-																Sel: &ast.Ident{
-																	Name: "NewInvalidFormError",
-																},
+																X:   ast.NewIdent("errs"),
+																Sel: ast.NewIdent("NewInvalidFormError"),
 															},
 														},
-														Sel: &ast.Ident{
-															Name: "WithParam",
-														},
+														Sel: ast.NewIdent("WithParam"),
 													},
 													Args: []ast.Expr{
 														&ast.BasicLit{
@@ -1353,14 +1153,10 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 														},
 													},
 												},
-												Sel: &ast.Ident{
-													Name: "WithCause",
-												},
+												Sel: ast.NewIdent("WithCause"),
 											},
 											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "err",
-												},
+												ast.NewIdent("err"),
 											},
 										},
 									},
@@ -1371,12 +1167,8 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
 							&ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "filter",
-								},
-								Sel: &ast.Ident{
-									Name: "PageNumber",
-								},
+								X:   ast.NewIdent("filter"),
+								Sel: ast.NewIdent("PageNumber"),
 							},
 						},
 						Tok: token.ASSIGN,
@@ -1388,13 +1180,9 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
-										Fun: &ast.Ident{
-											Name: "uint64",
-										},
+										Fun: ast.NewIdent("uint64"),
 										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "pageNumber",
-											},
+											ast.NewIdent("pageNumber"),
 										},
 									},
 								},
@@ -1410,21 +1198,13 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 					X: &ast.CallExpr{
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "r",
-								},
-								Sel: &ast.Ident{
-									Name: "URL",
-								},
+								X:   ast.NewIdent("r"),
+								Sel: ast.NewIdent("URL"),
 							},
-							Sel: &ast.Ident{
-								Name: "Query",
-							},
+							Sel: ast.NewIdent("Query"),
 						},
 					},
-					Sel: &ast.Ident{
-						Name: "Has",
-					},
+					Sel: ast.NewIdent("Has"),
 				},
 				Args: []ast.Expr{
 					&ast.BasicLit{
@@ -1438,24 +1218,16 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
 							&ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "filter",
-								},
-								Sel: &ast.Ident{
-									Name: "OrderBy",
-								},
+								X:   ast.NewIdent("filter"),
+								Sel: ast.NewIdent("OrderBy"),
 							},
 						},
 						Tok: token.ASSIGN,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "strings",
-									},
-									Sel: &ast.Ident{
-										Name: "Split",
-									},
+									X:   ast.NewIdent("strings"),
+									Sel: ast.NewIdent("Split"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
@@ -1463,21 +1235,13 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 											X: &ast.CallExpr{
 												Fun: &ast.SelectorExpr{
 													X: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "r",
-														},
-														Sel: &ast.Ident{
-															Name: "URL",
-														},
+														X:   ast.NewIdent("r"),
+														Sel: ast.NewIdent("URL"),
 													},
-													Sel: &ast.Ident{
-														Name: "Query",
-													},
+													Sel: ast.NewIdent("Query"),
 												},
 											},
-											Sel: &ast.Ident{
-												Name: "Get",
-											},
+											Sel: ast.NewIdent("Get"),
 										},
 										Args: []ast.Expr{
 											&ast.BasicLit{
@@ -1503,21 +1267,13 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 					X: &ast.CallExpr{
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "r",
-								},
-								Sel: &ast.Ident{
-									Name: "URL",
-								},
+								X:   ast.NewIdent("r"),
+								Sel: ast.NewIdent("URL"),
 							},
-							Sel: &ast.Ident{
-								Name: "Query",
-							},
+							Sel: ast.NewIdent("Query"),
 						},
 					},
-					Sel: &ast.Ident{
-						Name: "Has",
-					},
+					Sel: ast.NewIdent("Has"),
 				},
 				Args: []ast.Expr{
 					&ast.BasicLit{
@@ -1530,20 +1286,14 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 				List: []ast.Stmt{
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
-							&ast.Ident{
-								Name: "ids",
-							},
+							ast.NewIdent("ids"),
 						},
 						Tok: token.DEFINE,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "strings",
-									},
-									Sel: &ast.Ident{
-										Name: "Split",
-									},
+									X:   ast.NewIdent("strings"),
+									Sel: ast.NewIdent("Split"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
@@ -1551,21 +1301,13 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 											X: &ast.CallExpr{
 												Fun: &ast.SelectorExpr{
 													X: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "r",
-														},
-														Sel: &ast.Ident{
-															Name: "URL",
-														},
+														X:   ast.NewIdent("r"),
+														Sel: ast.NewIdent("URL"),
 													},
-													Sel: &ast.Ident{
-														Name: "Query",
-													},
+													Sel: ast.NewIdent("Query"),
 												},
 											},
-											Sel: &ast.Ident{
-												Name: "Get",
-											},
+											Sel: ast.NewIdent("Get"),
 										},
 										Args: []ast.Expr{
 											&ast.BasicLit{
@@ -1585,49 +1327,31 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
 							&ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "filter",
-								},
-								Sel: &ast.Ident{
-									Name: "IDs",
-								},
+								X:   ast.NewIdent("filter"),
+								Sel: ast.NewIdent("IDs"),
 							},
 						},
 						Tok: token.ASSIGN,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
-								Fun: &ast.Ident{
-									Name: "make",
-								},
+								Fun: ast.NewIdent("make"),
 								Args: []ast.Expr{
 									&ast.ArrayType{
 										Elt: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "uuid",
-											},
-											Sel: &ast.Ident{
-												Name: "UUID",
-											},
+											X:   ast.NewIdent("uuid"),
+											Sel: ast.NewIdent("UUID"),
 										},
 									},
 									&ast.CallExpr{
-										Fun: &ast.Ident{
-											Name: "len",
-										},
+										Fun: ast.NewIdent("len"),
 										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "ids",
-											},
+											ast.NewIdent("ids"),
 										},
 									},
 									&ast.CallExpr{
-										Fun: &ast.Ident{
-											Name: "len",
-										},
+										Fun: ast.NewIdent("len"),
 										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "ids",
-											},
+											ast.NewIdent("ids"),
 										},
 									},
 								},
@@ -1635,49 +1359,31 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 						},
 					},
 					&ast.RangeStmt{
-						Key: &ast.Ident{
-							Name: "i",
-						},
-						Value: &ast.Ident{
-							Name: "id",
-						},
-						Tok: token.DEFINE,
-						X: &ast.Ident{
-							Name: "ids",
-						},
+						Key:   ast.NewIdent("i"),
+						Value: ast.NewIdent("id"),
+						Tok:   token.DEFINE,
+						X:     ast.NewIdent("ids"),
 						Body: &ast.BlockStmt{
 							List: []ast.Stmt{
 								&ast.AssignStmt{
 									Lhs: []ast.Expr{
 										&ast.IndexExpr{
 											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "filter",
-												},
-												Sel: &ast.Ident{
-													Name: "IDs",
-												},
+												X:   ast.NewIdent("filter"),
+												Sel: ast.NewIdent("IDs"),
 											},
-											Index: &ast.Ident{
-												Name: "i",
-											},
+											Index: ast.NewIdent("i"),
 										},
 									},
 									Tok: token.ASSIGN,
 									Rhs: []ast.Expr{
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "uuid",
-												},
-												Sel: &ast.Ident{
-													Name: "UUID",
-												},
+												X:   ast.NewIdent("uuid"),
+												Sel: ast.NewIdent("UUID"),
 											},
 											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "id",
-												},
+												ast.NewIdent("id"),
 											},
 										},
 									},
@@ -1696,21 +1402,13 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 					X: &ast.CallExpr{
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "r",
-								},
-								Sel: &ast.Ident{
-									Name: "URL",
-								},
+								X:   ast.NewIdent("r"),
+								Sel: ast.NewIdent("URL"),
 							},
-							Sel: &ast.Ident{
-								Name: "Query",
-							},
+							Sel: ast.NewIdent("Query"),
 						},
 					},
-					Sel: &ast.Ident{
-						Name: "Has",
-					},
+					Sel: ast.NewIdent("Has"),
 				},
 				Args: []ast.Expr{
 					&ast.BasicLit{
@@ -1724,12 +1422,8 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
 							&ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "filter",
-								},
-								Sel: &ast.Ident{
-									Name: "Search",
-								},
+								X:   ast.NewIdent("filter"),
+								Sel: ast.NewIdent("Search"),
 							},
 						},
 						Tok: token.ASSIGN,
@@ -1739,21 +1433,13 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 									X: &ast.CallExpr{
 										Fun: &ast.SelectorExpr{
 											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "r",
-												},
-												Sel: &ast.Ident{
-													Name: "URL",
-												},
+												X:   ast.NewIdent("r"),
+												Sel: ast.NewIdent("URL"),
 											},
-											Sel: &ast.Ident{
-												Name: "Query",
-											},
+											Sel: ast.NewIdent("Query"),
 										},
 									},
-									Sel: &ast.Ident{
-										Name: "Get",
-									},
+									Sel: ast.NewIdent("Get"),
 								},
 								Args: []ast.Expr{
 									&ast.BasicLit{
@@ -1775,17 +1461,13 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 		},
 	})
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: g.domain.GetHTTPFilterDTOConstructorName(),
-		},
+		Name: ast.NewIdent(g.domain.GetHTTPFilterDTOConstructorName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "r",
-							},
+							ast.NewIdent("r"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
@@ -1849,80 +1531,46 @@ func (g *DTOGenerator) syncFilterDTOConstructor() error {
 func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 	exprs := []ast.Expr{
 		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "PageSize",
-			},
+			Key: ast.NewIdent("PageSize"),
 			Value: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "dto",
-				},
-				Sel: &ast.Ident{
-					Name: "PageSize",
-				},
+				X:   ast.NewIdent("dto"),
+				Sel: ast.NewIdent("PageSize"),
 			},
 		},
 		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "PageNumber",
-			},
+			Key: ast.NewIdent("PageNumber"),
 			Value: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "dto",
-				},
-				Sel: &ast.Ident{
-					Name: "PageNumber",
-				},
+				X:   ast.NewIdent("dto"),
+				Sel: ast.NewIdent("PageNumber"),
 			},
 		},
 		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "OrderBy",
-			},
+			Key: ast.NewIdent("OrderBy"),
 			Value: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "dto",
-				},
-				Sel: &ast.Ident{
-					Name: "OrderBy",
-				},
+				X:   ast.NewIdent("dto"),
+				Sel: ast.NewIdent("OrderBy"),
 			},
 		},
 		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "IDs",
-			},
+			Key: ast.NewIdent("IDs"),
 			Value: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "dto",
-				},
-				Sel: &ast.Ident{
-					Name: "IDs",
-				},
+				X:   ast.NewIdent("dto"),
+				Sel: ast.NewIdent("IDs"),
 			},
 		},
 	}
 	if g.domain.SearchEnabled() {
 		exprs = append(exprs, &ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "Search",
-			},
+			Key: ast.NewIdent("Search"),
 			Value: &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "pointer",
-					},
-					Sel: &ast.Ident{
-						Name: "Pointer",
-					},
+					X:   ast.NewIdent("pointer"),
+					Sel: ast.NewIdent("Pointer"),
 				},
 				Args: []ast.Expr{
 					&ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "dto",
-						},
-						Sel: &ast.Ident{
-							Name: "Search",
-						},
+						X:   ast.NewIdent("dto"),
+						Sel: ast.NewIdent("Search"),
 					},
 				},
 			},
@@ -1933,29 +1581,21 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "dto",
-						},
+						ast.NewIdent("dto"),
 					},
 					Type: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "toEntity",
-		},
+		Name: ast.NewIdent("toEntity"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "entities",
-							},
-							Sel: &ast.Ident{
-								Name: g.domain.GetFilterModel().Name,
-							},
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(g.domain.GetFilterModel().Name),
 						},
 					},
 					{
@@ -1968,17 +1608,13 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "filter",
-						},
+						ast.NewIdent("filter"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CompositeLit{
 							Type: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(g.domain.GetFilterModel().Name),
 							},
 							Elts: exprs,
@@ -2041,13 +1677,9 @@ func (g *DTOGenerator) updateDTOStruct() *ast.TypeSpec {
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "ID",
-							},
+							ast.NewIdent("ID"),
 						},
-						Type: &ast.Ident{
-							Name: "uuid.UUID",
-						},
+						Type: ast.NewIdent("uuid.UUID"),
 						Tag: &ast.BasicLit{
 							Kind:  token.STRING,
 							Value: "`json:\"id\"`",
@@ -2154,9 +1786,7 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 	stmts := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				&ast.Ident{
-					Name: "update",
-				},
+				ast.NewIdent("update"),
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
@@ -2168,29 +1798,19 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 		&ast.IfStmt{
 			Init: &ast.AssignStmt{
 				Lhs: []ast.Expr{
-					&ast.Ident{
-						Name: "err",
-					},
+					ast.NewIdent("err"),
 				},
 				Tok: token.DEFINE,
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "render",
-							},
-							Sel: &ast.Ident{
-								Name: "DecodeJSON",
-							},
+							X:   ast.NewIdent("render"),
+							Sel: ast.NewIdent("DecodeJSON"),
 						},
 						Args: []ast.Expr{
 							&ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "r",
-								},
-								Sel: &ast.Ident{
-									Name: "Body",
-								},
+								X:   ast.NewIdent("r"),
+								Sel: ast.NewIdent("Body"),
 							},
 							&ast.UnaryExpr{
 								Op: token.AND,
@@ -2201,13 +1821,9 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 				},
 			},
 			Cond: &ast.BinaryExpr{
-				X: &ast.Ident{
-					Name: "err",
-				},
+				X:  ast.NewIdent("err"),
 				Op: token.NEQ,
-				Y: &ast.Ident{
-					Name: "nil",
-				},
+				Y:  ast.NewIdent("nil"),
 			},
 			Body: &ast.BlockStmt{
 				List: []ast.Stmt{
@@ -2225,39 +1841,25 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
 				&ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "update",
-					},
-					Sel: &ast.Ident{
-						Name: "ID",
-					},
+					X:   ast.NewIdent("update"),
+					Sel: ast.NewIdent("ID"),
 				},
 			},
 			Tok: token.ASSIGN,
 			Rhs: []ast.Expr{
 				&ast.CallExpr{
 					Fun: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "uuid",
-						},
-						Sel: &ast.Ident{
-							Name: "UUID",
-						},
+						X:   ast.NewIdent("uuid"),
+						Sel: ast.NewIdent("UUID"),
 					},
 					Args: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "chi",
-								},
-								Sel: &ast.Ident{
-									Name: "URLParam",
-								},
+								X:   ast.NewIdent("chi"),
+								Sel: ast.NewIdent("URLParam"),
 							},
 							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "r",
-								},
+								ast.NewIdent("r"),
 								&ast.BasicLit{
 									Kind:  token.STRING,
 									Value: "\"id\"",
@@ -2276,17 +1878,13 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 		},
 	})
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: g.domain.GetHTTPUpdateDTOConstructorName(),
-		},
+		Name: ast.NewIdent(g.domain.GetHTTPUpdateDTOConstructorName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "r",
-							},
+							ast.NewIdent("r"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
@@ -2353,19 +1951,15 @@ func (g *DTOGenerator) updateDTOToEntity() *ast.FuncDecl {
 		exprs = append(exprs, &ast.KeyValueExpr{
 			Key: ast.NewIdent(param.GetName()),
 			Value: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "dto",
-				},
+				X:   ast.NewIdent("dto"),
 				Sel: ast.NewIdent(param.GetName()),
 			},
 		})
 	}
 	model := &ast.CompositeLit{
 		Type: &ast.SelectorExpr{
-			X: ast.NewIdent("entities"),
-			Sel: &ast.Ident{
-				Name: g.domain.GetUpdateModel().Name,
-			},
+			X:   ast.NewIdent("entities"),
+			Sel: ast.NewIdent(g.domain.GetUpdateModel().Name),
 		},
 		Elts: exprs,
 	}
@@ -2374,29 +1968,21 @@ func (g *DTOGenerator) updateDTOToEntity() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "dto",
-						},
+						ast.NewIdent("dto"),
 					},
 					Type: ast.NewIdent(g.domain.GetHTTPUpdateDTOName()),
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "toEntity",
-		},
+		Name: ast.NewIdent("toEntity"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "entities",
-							},
-							Sel: &ast.Ident{
-								Name: g.domain.GetUpdateModel().Name,
-							},
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(g.domain.GetUpdateModel().Name),
 						},
 					},
 					{
@@ -2409,9 +1995,7 @@ func (g *DTOGenerator) updateDTOToEntity() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "update",
-						},
+						ast.NewIdent("update"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
@@ -2573,9 +2157,7 @@ func (g *DTOGenerator) createDTOConstructor() *ast.FuncDecl {
 	stmts := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				&ast.Ident{
-					Name: "create",
-				},
+				ast.NewIdent("create"),
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
@@ -2588,29 +2170,19 @@ func (g *DTOGenerator) createDTOConstructor() *ast.FuncDecl {
 		&ast.IfStmt{
 			Init: &ast.AssignStmt{
 				Lhs: []ast.Expr{
-					&ast.Ident{
-						Name: "err",
-					},
+					ast.NewIdent("err"),
 				},
 				Tok: token.DEFINE,
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "render",
-							},
-							Sel: &ast.Ident{
-								Name: "DecodeJSON",
-							},
+							X:   ast.NewIdent("render"),
+							Sel: ast.NewIdent("DecodeJSON"),
 						},
 						Args: []ast.Expr{
 							&ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "r",
-								},
-								Sel: &ast.Ident{
-									Name: "Body",
-								},
+								X:   ast.NewIdent("r"),
+								Sel: ast.NewIdent("Body"),
 							},
 							&ast.UnaryExpr{
 								Op: token.AND,
@@ -2621,13 +2193,9 @@ func (g *DTOGenerator) createDTOConstructor() *ast.FuncDecl {
 				},
 			},
 			Cond: &ast.BinaryExpr{
-				X: &ast.Ident{
-					Name: "err",
-				},
+				X:  ast.NewIdent("err"),
 				Op: token.NEQ,
-				Y: &ast.Ident{
-					Name: "nil",
-				},
+				Y:  ast.NewIdent("nil"),
 			},
 			Body: &ast.BlockStmt{
 				List: []ast.Stmt{
@@ -2650,17 +2218,13 @@ func (g *DTOGenerator) createDTOConstructor() *ast.FuncDecl {
 		},
 	})
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: g.domain.GetHTTPCreateDTOConstructorName(),
-		},
+		Name: ast.NewIdent(g.domain.GetHTTPCreateDTOConstructorName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "r",
-							},
+							ast.NewIdent("r"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
@@ -2727,9 +2291,7 @@ func (g *DTOGenerator) createDTOToEntity() *ast.FuncDecl {
 		exprs = append(exprs, &ast.KeyValueExpr{
 			Key: ast.NewIdent(param.GetName()),
 			Value: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "dto",
-				},
+				X:   ast.NewIdent("dto"),
 				Sel: ast.NewIdent(param.GetName()),
 			},
 		})
@@ -2739,29 +2301,21 @@ func (g *DTOGenerator) createDTOToEntity() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "dto",
-						},
+						ast.NewIdent("dto"),
 					},
 					Type: ast.NewIdent(g.domain.GetHTTPCreateDTOName()),
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "toEntity",
-		},
+		Name: ast.NewIdent("toEntity"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "entities",
-							},
-							Sel: &ast.Ident{
-								Name: g.domain.GetCreateModel().Name,
-							},
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(g.domain.GetCreateModel().Name),
 						},
 					},
 					{
@@ -2774,17 +2328,13 @@ func (g *DTOGenerator) createDTOToEntity() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "create",
-						},
+						ast.NewIdent("create"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CompositeLit{
 							Type: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
+								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(g.domain.GetCreateModel().Name),
 							},
 							Elts: exprs,

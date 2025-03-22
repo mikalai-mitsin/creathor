@@ -44,9 +44,7 @@ func (u ServiceAuth) Sync() error {
 
 func (u ServiceAuth) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "services",
-		},
+		Name: ast.NewIdent("services"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -82,33 +80,25 @@ func (u ServiceAuth) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "AuthService",
-						},
+						Name: ast.NewIdent("AuthService"),
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "authRepository",
-											},
+											ast.NewIdent("authRepository"),
 										},
 										Type: ast.NewIdent("authRepository"),
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "userRepository",
-											},
+											ast.NewIdent("userRepository"),
 										},
 										Type: ast.NewIdent("userRepository"),
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "logger",
-											},
+											ast.NewIdent("logger"),
 										},
 										Type: ast.NewIdent("logger"),
 									},
@@ -119,33 +109,25 @@ func (u ServiceAuth) file() *ast.File {
 				},
 			},
 			&ast.FuncDecl{
-				Name: &ast.Ident{
-					Name: "NewAuthService",
-				},
+				Name: ast.NewIdent("NewAuthService"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "authRepository",
-									},
+									ast.NewIdent("authRepository"),
 								},
 								Type: ast.NewIdent("authRepository"),
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "userRepository",
-									},
+									ast.NewIdent("userRepository"),
 								},
 								Type: ast.NewIdent("userRepository"),
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "logger",
-									},
+									ast.NewIdent("logger"),
 								},
 								Type: ast.NewIdent("logger"),
 							},
@@ -166,33 +148,19 @@ func (u ServiceAuth) file() *ast.File {
 								&ast.UnaryExpr{
 									Op: token.AND,
 									X: &ast.CompositeLit{
-										Type: &ast.Ident{
-											Name: "AuthService",
-										},
+										Type: ast.NewIdent("AuthService"),
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "authRepository",
-												},
-												Value: &ast.Ident{
-													Name: "authRepository",
-												},
+												Key:   ast.NewIdent("authRepository"),
+												Value: ast.NewIdent("authRepository"),
 											},
 											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "userRepository",
-												},
-												Value: &ast.Ident{
-													Name: "userRepository",
-												},
+												Key:   ast.NewIdent("userRepository"),
+												Value: ast.NewIdent("userRepository"),
 											},
 											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "logger",
-												},
-												Value: &ast.Ident{
-													Name: "logger",
-												},
+												Key:   ast.NewIdent("logger"),
+												Value: ast.NewIdent("logger"),
 											},
 										},
 									},
@@ -207,42 +175,28 @@ func (u ServiceAuth) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "u",
-								},
+								ast.NewIdent("u"),
 							},
-							Type: &ast.Ident{
-								Name: "AuthService",
-							},
+							Type: ast.NewIdent("AuthService"),
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "CreateToken",
-				},
+				Name: ast.NewIdent("CreateToken"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "ctx",
-									},
+									ast.NewIdent("ctx"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
+									X:   ast.NewIdent("context"),
+									Sel: ast.NewIdent("Context"),
 								},
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "login",
-									},
+									ast.NewIdent("login"),
 								},
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
@@ -255,18 +209,12 @@ func (u ServiceAuth) file() *ast.File {
 						List: []*ast.Field{
 							{
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: &ast.Ident{
-										Name: "TokenPair",
-									},
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent("TokenPair"),
 								},
 							},
 							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -275,40 +223,24 @@ func (u ServiceAuth) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "user",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("user"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "u",
-											},
-											Sel: &ast.Ident{
-												Name: "userRepository",
-											},
+											X:   ast.NewIdent("u"),
+											Sel: ast.NewIdent("userRepository"),
 										},
-										Sel: &ast.Ident{
-											Name: "GetByEmail",
-										},
+										Sel: ast.NewIdent("GetByEmail"),
 									},
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "ctx",
-										},
+										ast.NewIdent("ctx"),
 										&ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "login",
-											},
-											Sel: &ast.Ident{
-												Name: "Email",
-											},
+											X:   ast.NewIdent("login"),
+											Sel: ast.NewIdent("Email"),
 										},
 									},
 								},
@@ -316,13 +248,9 @@ func (u ServiceAuth) file() *ast.File {
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
@@ -334,9 +262,7 @@ func (u ServiceAuth) file() *ast.File {
 													Sel: ast.NewIdent("TokenPair"),
 												},
 											},
-											&ast.Ident{
-												Name: "err",
-											},
+											ast.NewIdent("err"),
 										},
 									},
 								},
@@ -345,42 +271,28 @@ func (u ServiceAuth) file() *ast.File {
 						&ast.IfStmt{
 							Init: &ast.AssignStmt{
 								Lhs: []ast.Expr{
-									&ast.Ident{
-										Name: "err",
-									},
+									ast.NewIdent("err"),
 								},
 								Tok: token.DEFINE,
 								Rhs: []ast.Expr{
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "user",
-											},
-											Sel: &ast.Ident{
-												Name: "CheckPassword",
-											},
+											X:   ast.NewIdent("user"),
+											Sel: ast.NewIdent("CheckPassword"),
 										},
 										Args: []ast.Expr{
 											&ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "login",
-												},
-												Sel: &ast.Ident{
-													Name: "Password",
-												},
+												X:   ast.NewIdent("login"),
+												Sel: ast.NewIdent("Password"),
 											},
 										},
 									},
 								},
 							},
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
@@ -392,9 +304,7 @@ func (u ServiceAuth) file() *ast.File {
 													Sel: ast.NewIdent("TokenPair"),
 												},
 											},
-											&ast.Ident{
-												Name: "err",
-											},
+											ast.NewIdent("err"),
 										},
 									},
 								},
@@ -402,49 +312,31 @@ func (u ServiceAuth) file() *ast.File {
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "tokenPair",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("tokenPair"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "u",
-											},
-											Sel: &ast.Ident{
-												Name: "authRepository",
-											},
+											X:   ast.NewIdent("u"),
+											Sel: ast.NewIdent("authRepository"),
 										},
-										Sel: &ast.Ident{
-											Name: "Create",
-										},
+										Sel: ast.NewIdent("Create"),
 									},
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "ctx",
-										},
-										&ast.Ident{
-											Name: "user",
-										},
+										ast.NewIdent("ctx"),
+										ast.NewIdent("user"),
 									},
 								},
 							},
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
@@ -456,9 +348,7 @@ func (u ServiceAuth) file() *ast.File {
 													Sel: ast.NewIdent("TokenPair"),
 												},
 											},
-											&ast.Ident{
-												Name: "err",
-											},
+											ast.NewIdent("err"),
 										},
 									},
 								},
@@ -466,12 +356,8 @@ func (u ServiceAuth) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "tokenPair",
-								},
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("tokenPair"),
+								ast.NewIdent("nil"),
 							},
 						},
 					},
@@ -482,50 +368,32 @@ func (u ServiceAuth) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "u",
-								},
+								ast.NewIdent("u"),
 							},
-							Type: &ast.Ident{
-								Name: "AuthService",
-							},
+							Type: ast.NewIdent("AuthService"),
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "CreateTokenByUser",
-				},
+				Name: ast.NewIdent("CreateTokenByUser"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "ctx",
-									},
+									ast.NewIdent("ctx"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
+									X:   ast.NewIdent("context"),
+									Sel: ast.NewIdent("Context"),
 								},
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "user",
-									},
+									ast.NewIdent("user"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "userEntities",
-									},
-									Sel: &ast.Ident{
-										Name: "User",
-									},
+									X:   ast.NewIdent("userEntities"),
+									Sel: ast.NewIdent("User"),
 								},
 							},
 						},
@@ -534,18 +402,12 @@ func (u ServiceAuth) file() *ast.File {
 						List: []*ast.Field{
 							{
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: &ast.Ident{
-										Name: "TokenPair",
-									},
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent("TokenPair"),
 								},
 							},
 							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -554,49 +416,31 @@ func (u ServiceAuth) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "tokenPair",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("tokenPair"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "u",
-											},
-											Sel: &ast.Ident{
-												Name: "authRepository",
-											},
+											X:   ast.NewIdent("u"),
+											Sel: ast.NewIdent("authRepository"),
 										},
-										Sel: &ast.Ident{
-											Name: "Create",
-										},
+										Sel: ast.NewIdent("Create"),
 									},
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "ctx",
-										},
-										&ast.Ident{
-											Name: "user",
-										},
+										ast.NewIdent("ctx"),
+										ast.NewIdent("user"),
 									},
 								},
 							},
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
@@ -608,9 +452,7 @@ func (u ServiceAuth) file() *ast.File {
 													Sel: ast.NewIdent("TokenPair"),
 												},
 											},
-											&ast.Ident{
-												Name: "err",
-											},
+											ast.NewIdent("err"),
 										},
 									},
 								},
@@ -618,12 +460,8 @@ func (u ServiceAuth) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "tokenPair",
-								},
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("tokenPair"),
+								ast.NewIdent("nil"),
 							},
 						},
 					},
@@ -634,50 +472,32 @@ func (u ServiceAuth) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "u",
-								},
+								ast.NewIdent("u"),
 							},
-							Type: &ast.Ident{
-								Name: "AuthService",
-							},
+							Type: ast.NewIdent("AuthService"),
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "RefreshToken",
-				},
+				Name: ast.NewIdent("RefreshToken"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "ctx",
-									},
+									ast.NewIdent("ctx"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
+									X:   ast.NewIdent("context"),
+									Sel: ast.NewIdent("Context"),
 								},
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "refresh",
-									},
+									ast.NewIdent("refresh"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: &ast.Ident{
-										Name: "Token",
-									},
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent("Token"),
 								},
 							},
 						},
@@ -686,18 +506,12 @@ func (u ServiceAuth) file() *ast.File {
 						List: []*ast.Field{
 							{
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: &ast.Ident{
-										Name: "TokenPair",
-									},
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent("TokenPair"),
 								},
 							},
 							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -706,49 +520,31 @@ func (u ServiceAuth) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "pair",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("pair"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "u",
-											},
-											Sel: &ast.Ident{
-												Name: "authRepository",
-											},
+											X:   ast.NewIdent("u"),
+											Sel: ast.NewIdent("authRepository"),
 										},
-										Sel: &ast.Ident{
-											Name: "RefreshToken",
-										},
+										Sel: ast.NewIdent("RefreshToken"),
 									},
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "ctx",
-										},
-										&ast.Ident{
-											Name: "refresh",
-										},
+										ast.NewIdent("ctx"),
+										ast.NewIdent("refresh"),
 									},
 								},
 							},
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
@@ -760,9 +556,7 @@ func (u ServiceAuth) file() *ast.File {
 													Sel: ast.NewIdent("TokenPair"),
 												},
 											},
-											&ast.Ident{
-												Name: "err",
-											},
+											ast.NewIdent("err"),
 										},
 									},
 								},
@@ -770,12 +564,8 @@ func (u ServiceAuth) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "pair",
-								},
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("pair"),
+								ast.NewIdent("nil"),
 							},
 						},
 					},
@@ -786,50 +576,32 @@ func (u ServiceAuth) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "u",
-								},
+								ast.NewIdent("u"),
 							},
-							Type: &ast.Ident{
-								Name: "AuthService",
-							},
+							Type: ast.NewIdent("AuthService"),
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "ValidateToken",
-				},
+				Name: ast.NewIdent("ValidateToken"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "ctx",
-									},
+									ast.NewIdent("ctx"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
+									X:   ast.NewIdent("context"),
+									Sel: ast.NewIdent("Context"),
 								},
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "access",
-									},
+									ast.NewIdent("access"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: &ast.Ident{
-										Name: "Token",
-									},
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent("Token"),
 								},
 							},
 						},
@@ -837,9 +609,7 @@ func (u ServiceAuth) file() *ast.File {
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -849,53 +619,35 @@ func (u ServiceAuth) file() *ast.File {
 						&ast.IfStmt{
 							Init: &ast.AssignStmt{
 								Lhs: []ast.Expr{
-									&ast.Ident{
-										Name: "err",
-									},
+									ast.NewIdent("err"),
 								},
 								Tok: token.DEFINE,
 								Rhs: []ast.Expr{
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
 											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "u",
-												},
-												Sel: &ast.Ident{
-													Name: "authRepository",
-												},
+												X:   ast.NewIdent("u"),
+												Sel: ast.NewIdent("authRepository"),
 											},
-											Sel: &ast.Ident{
-												Name: "Validate",
-											},
+											Sel: ast.NewIdent("Validate"),
 										},
 										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "ctx",
-											},
-											&ast.Ident{
-												Name: "access",
-											},
+											ast.NewIdent("ctx"),
+											ast.NewIdent("access"),
 										},
 									},
 								},
 							},
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
 									&ast.ReturnStmt{
 										Results: []ast.Expr{
-											&ast.Ident{
-												Name: "err",
-											},
+											ast.NewIdent("err"),
 										},
 									},
 								},
@@ -903,9 +655,7 @@ func (u ServiceAuth) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("nil"),
 							},
 						},
 					},
@@ -916,50 +666,32 @@ func (u ServiceAuth) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "u",
-								},
+								ast.NewIdent("u"),
 							},
-							Type: &ast.Ident{
-								Name: "AuthService",
-							},
+							Type: ast.NewIdent("AuthService"),
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "Auth",
-				},
+				Name: ast.NewIdent("Auth"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "ctx",
-									},
+									ast.NewIdent("ctx"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
+									X:   ast.NewIdent("context"),
+									Sel: ast.NewIdent("Context"),
 								},
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "access",
-									},
+									ast.NewIdent("access"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: &ast.Ident{
-										Name: "Token",
-									},
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent("Token"),
 								},
 							},
 						},
@@ -968,18 +700,12 @@ func (u ServiceAuth) file() *ast.File {
 						List: []*ast.Field{
 							{
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "userEntities",
-									},
-									Sel: &ast.Ident{
-										Name: "User",
-									},
+									X:   ast.NewIdent("userEntities"),
+									Sel: ast.NewIdent("User"),
 								},
 							},
 							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -988,49 +714,31 @@ func (u ServiceAuth) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "userID",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("userID"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "u",
-											},
-											Sel: &ast.Ident{
-												Name: "authRepository",
-											},
+											X:   ast.NewIdent("u"),
+											Sel: ast.NewIdent("authRepository"),
 										},
-										Sel: &ast.Ident{
-											Name: "GetSubject",
-										},
+										Sel: ast.NewIdent("GetSubject"),
 									},
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "ctx",
-										},
-										&ast.Ident{
-											Name: "access",
-										},
+										ast.NewIdent("ctx"),
+										ast.NewIdent("access"),
 									},
 								},
 							},
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
@@ -1042,9 +750,7 @@ func (u ServiceAuth) file() *ast.File {
 													Sel: ast.NewIdent("User"),
 												},
 											},
-											&ast.Ident{
-												Name: "err",
-											},
+											ast.NewIdent("err"),
 										},
 									},
 								},
@@ -1052,46 +758,28 @@ func (u ServiceAuth) file() *ast.File {
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "user",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("user"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "u",
-											},
-											Sel: &ast.Ident{
-												Name: "userRepository",
-											},
+											X:   ast.NewIdent("u"),
+											Sel: ast.NewIdent("userRepository"),
 										},
-										Sel: &ast.Ident{
-											Name: "Get",
-										},
+										Sel: ast.NewIdent("Get"),
 									},
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "ctx",
-										},
+										ast.NewIdent("ctx"),
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "uuid",
-												},
-												Sel: &ast.Ident{
-													Name: "UUID",
-												},
+												X:   ast.NewIdent("uuid"),
+												Sel: ast.NewIdent("UUID"),
 											},
 											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "userID",
-												},
+												ast.NewIdent("userID"),
 											},
 										},
 									},
@@ -1100,13 +788,9 @@ func (u ServiceAuth) file() *ast.File {
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
@@ -1118,9 +802,7 @@ func (u ServiceAuth) file() *ast.File {
 													Sel: ast.NewIdent("User"),
 												},
 											},
-											&ast.Ident{
-												Name: "err",
-											},
+											ast.NewIdent("err"),
 										},
 									},
 								},
@@ -1128,12 +810,8 @@ func (u ServiceAuth) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "user",
-								},
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("user"),
+								ast.NewIdent("nil"),
 							},
 						},
 					},

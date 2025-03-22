@@ -26,9 +26,7 @@ func (m RequestIDMiddleware) filename() string {
 
 func (m RequestIDMiddleware) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "grpc",
-		},
+		Name: ast.NewIdent("grpc"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -64,9 +62,7 @@ func (m RequestIDMiddleware) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "RequestIDMiddleware",
-						},
+						Name: ast.NewIdent("RequestIDMiddleware"),
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{},
 						},
@@ -75,18 +71,14 @@ func (m RequestIDMiddleware) file() *ast.File {
 			},
 			// constructor
 			&ast.FuncDecl{
-				Name: &ast.Ident{
-					Name: "NewRequestIDMiddleware",
-				},
+				Name: ast.NewIdent("NewRequestIDMiddleware"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Type: &ast.StarExpr{
-									X: &ast.Ident{
-										Name: "RequestIDMiddleware",
-									},
+									X: ast.NewIdent("RequestIDMiddleware"),
 								},
 							},
 						},
@@ -99,9 +91,7 @@ func (m RequestIDMiddleware) file() *ast.File {
 								&ast.UnaryExpr{
 									Op: token.AND,
 									X: &ast.CompositeLit{
-										Type: &ast.Ident{
-											Name: "RequestIDMiddleware",
-										},
+										Type: ast.NewIdent("RequestIDMiddleware"),
 									},
 								},
 							},
@@ -115,77 +105,51 @@ func (m RequestIDMiddleware) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "m",
-								},
+								ast.NewIdent("m"),
 							},
 							Type: &ast.StarExpr{
-								X: &ast.Ident{
-									Name: "RequestIDMiddleware",
-								},
+								X: ast.NewIdent("RequestIDMiddleware"),
 							},
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "UnaryServerInterceptor",
-				},
+				Name: ast.NewIdent("UnaryServerInterceptor"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "ctx",
-									},
+									ast.NewIdent("ctx"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
+									X:   ast.NewIdent("context"),
+									Sel: ast.NewIdent("Context"),
 								},
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "req",
-									},
+									ast.NewIdent("req"),
 								},
 								Type: ast.NewIdent("any"),
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "_",
-									},
+									ast.NewIdent("_"),
 								},
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "grpc",
-										},
-										Sel: &ast.Ident{
-											Name: "UnaryServerInfo",
-										},
+										X:   ast.NewIdent("grpc"),
+										Sel: ast.NewIdent("UnaryServerInfo"),
 									},
 								},
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "handler",
-									},
+									ast.NewIdent("handler"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "grpc",
-									},
-									Sel: &ast.Ident{
-										Name: "UnaryHandler",
-									},
+									X:   ast.NewIdent("grpc"),
+									Sel: ast.NewIdent("UnaryHandler"),
 								},
 							},
 						},
@@ -196,9 +160,7 @@ func (m RequestIDMiddleware) file() *ast.File {
 								Type: ast.NewIdent("any"),
 							},
 							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -207,48 +169,30 @@ func (m RequestIDMiddleware) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "newCtx",
-								},
+								ast.NewIdent("newCtx"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "context",
-										},
-										Sel: &ast.Ident{
-											Name: "WithValue",
-										},
+										X:   ast.NewIdent("context"),
+										Sel: ast.NewIdent("WithValue"),
 									},
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "ctx",
-										},
+										ast.NewIdent("ctx"),
 										&ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "log",
-											},
-											Sel: &ast.Ident{
-												Name: "RequestIDKey",
-											},
+											X:   ast.NewIdent("log"),
+											Sel: ast.NewIdent("RequestIDKey"),
 										},
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
 												X: &ast.CallExpr{
 													Fun: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "uuid",
-														},
-														Sel: &ast.Ident{
-															Name: "New",
-														},
+														X:   ast.NewIdent("uuid"),
+														Sel: ast.NewIdent("New"),
 													},
 												},
-												Sel: &ast.Ident{
-													Name: "String",
-												},
+												Sel: ast.NewIdent("String"),
 											},
 										},
 									},
@@ -258,16 +202,10 @@ func (m RequestIDMiddleware) file() *ast.File {
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
 								&ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: "handler",
-									},
+									Fun: ast.NewIdent("handler"),
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "newCtx",
-										},
-										&ast.Ident{
-											Name: "req",
-										},
+										ast.NewIdent("newCtx"),
+										ast.NewIdent("req"),
 									},
 								},
 							},
@@ -281,9 +219,7 @@ func (m RequestIDMiddleware) file() *ast.File {
 
 func (m RequestIDMiddleware) astStruct() *ast.TypeSpec {
 	return &ast.TypeSpec{
-		Name: &ast.Ident{
-			Name: "RequestIDMiddleware",
-		},
+		Name: ast.NewIdent("RequestIDMiddleware"),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{},
 		},
@@ -333,18 +269,14 @@ func (m RequestIDMiddleware) syncStruct() error {
 
 func (m RequestIDMiddleware) astConstructor() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: "NewRequestIDMiddleware",
-		},
+		Name: ast.NewIdent("NewRequestIDMiddleware"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Type: &ast.StarExpr{
-							X: &ast.Ident{
-								Name: "RequestIDMiddleware",
-							},
+							X: ast.NewIdent("RequestIDMiddleware"),
 						},
 					},
 				},
@@ -357,9 +289,7 @@ func (m RequestIDMiddleware) astConstructor() *ast.FuncDecl {
 						&ast.UnaryExpr{
 							Op: token.AND,
 							X: &ast.CompositeLit{
-								Type: &ast.Ident{
-									Name: "RequestIDMiddleware",
-								},
+								Type: ast.NewIdent("RequestIDMiddleware"),
 							},
 						},
 					},
@@ -408,44 +338,30 @@ func (m RequestIDMiddleware) astUnaryServerInterceptorMethod() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "m",
-						},
+						ast.NewIdent("m"),
 					},
 					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: "RequestIDMiddleware",
-						},
+						X: ast.NewIdent("RequestIDMiddleware"),
 					},
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "UnaryServerInterceptor",
-		},
+		Name: ast.NewIdent("UnaryServerInterceptor"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "ctx",
-							},
+							ast.NewIdent("ctx"),
 						},
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "context",
-							},
-							Sel: &ast.Ident{
-								Name: "Context",
-							},
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
 						},
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "req",
-							},
+							ast.NewIdent("req"),
 						},
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{},
@@ -453,34 +369,22 @@ func (m RequestIDMiddleware) astUnaryServerInterceptorMethod() *ast.FuncDecl {
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "_",
-							},
+							ast.NewIdent("_"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "grpc",
-								},
-								Sel: &ast.Ident{
-									Name: "UnaryServerInfo",
-								},
+								X:   ast.NewIdent("grpc"),
+								Sel: ast.NewIdent("UnaryServerInfo"),
 							},
 						},
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "handler",
-							},
+							ast.NewIdent("handler"),
 						},
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "grpc",
-							},
-							Sel: &ast.Ident{
-								Name: "UnaryHandler",
-							},
+							X:   ast.NewIdent("grpc"),
+							Sel: ast.NewIdent("UnaryHandler"),
 						},
 					},
 				},
@@ -493,9 +397,7 @@ func (m RequestIDMiddleware) astUnaryServerInterceptorMethod() *ast.FuncDecl {
 						},
 					},
 					{
-						Type: &ast.Ident{
-							Name: "error",
-						},
+						Type: ast.NewIdent("error"),
 					},
 				},
 			},
@@ -504,48 +406,30 @@ func (m RequestIDMiddleware) astUnaryServerInterceptorMethod() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "newCtx",
-						},
+						ast.NewIdent("newCtx"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "context",
-								},
-								Sel: &ast.Ident{
-									Name: "WithValue",
-								},
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("WithValue"),
 							},
 							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "ctx",
-								},
+								ast.NewIdent("ctx"),
 								&ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "log",
-									},
-									Sel: &ast.Ident{
-										Name: "RequestIDKey",
-									},
+									X:   ast.NewIdent("log"),
+									Sel: ast.NewIdent("RequestIDKey"),
 								},
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "uuid",
-												},
-												Sel: &ast.Ident{
-													Name: "New",
-												},
+												X:   ast.NewIdent("uuid"),
+												Sel: ast.NewIdent("New"),
 											},
 										},
-										Sel: &ast.Ident{
-											Name: "String",
-										},
+										Sel: ast.NewIdent("String"),
 									},
 								},
 							},
@@ -555,16 +439,10 @@ func (m RequestIDMiddleware) astUnaryServerInterceptorMethod() *ast.FuncDecl {
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
 						&ast.CallExpr{
-							Fun: &ast.Ident{
-								Name: "handler",
-							},
+							Fun: ast.NewIdent("handler"),
 							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "newCtx",
-								},
-								&ast.Ident{
-									Name: "req",
-								},
+								ast.NewIdent("newCtx"),
+								ast.NewIdent("req"),
 							},
 						},
 					},

@@ -3,6 +3,7 @@ package errs
 
 import (
 	"encoding/json"
+	"errors"
 	"path"
 	"reflect"
 )
@@ -41,8 +42,8 @@ func (e Error) Error() string {
 }
 
 func (e *Error) Is(tgt error) bool {
-	target, ok := tgt.(*Error)
-	if !ok {
+	var target *Error
+	if !errors.As(tgt, &target) {
 		return false
 	}
 	return reflect.DeepEqual(e, target)

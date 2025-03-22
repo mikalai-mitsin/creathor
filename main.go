@@ -32,7 +32,7 @@ var (
 )
 
 func main() {
-	app := &cli.App{
+	application := &cli.App{
 		Name:    "Creathor",
 		Usage:   "generate stub for service",
 		Version: version,
@@ -55,12 +55,12 @@ func main() {
 		Action: initProject,
 	}
 	strcase.ConfigureAcronym("UUID", "uuid")
-	if err := app.Run(os.Args); err != nil {
+	if err := application.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func initProject(ctx *cli.Context) error {
+func initProject(_ *cli.Context) error {
 	project, err := configs.NewProject(path.Join(destinationPath, configPath))
 	if err != nil {
 		return err

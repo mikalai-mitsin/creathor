@@ -23,9 +23,7 @@ func NewProvider(project *configs.Project) *Provider {
 
 func (u Provider) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "uptrace",
-		},
+		Name: ast.NewIdent("uptrace"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -60,26 +58,18 @@ func (u Provider) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "Provider",
-						},
+						Name: ast.NewIdent("Provider"),
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "config",
-											},
+											ast.NewIdent("config"),
 										},
 										Type: &ast.StarExpr{
 											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "configs",
-												},
-												Sel: &ast.Ident{
-													Name: "Config",
-												},
+												X:   ast.NewIdent("configs"),
+												Sel: ast.NewIdent("Config"),
 											},
 										},
 									},
@@ -94,35 +84,23 @@ func (u Provider) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "p",
-								},
+								ast.NewIdent("p"),
 							},
-							Type: &ast.Ident{
-								Name: "Provider",
-							},
+							Type: ast.NewIdent("Provider"),
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "Stop",
-				},
+				Name: ast.NewIdent("Stop"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "ctx",
-									},
+									ast.NewIdent("ctx"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
+									X:   ast.NewIdent("context"),
+									Sel: ast.NewIdent("Context"),
 								},
 							},
 						},
@@ -130,9 +108,7 @@ func (u Provider) file() *ast.File {
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -143,17 +119,11 @@ func (u Provider) file() *ast.File {
 							Results: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "uptrace",
-										},
-										Sel: &ast.Ident{
-											Name: "Shutdown",
-										},
+										X:   ast.NewIdent("uptrace"),
+										Sel: ast.NewIdent("Shutdown"),
 									},
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "ctx",
-										},
+										ast.NewIdent("ctx"),
 									},
 								},
 							},
@@ -166,35 +136,23 @@ func (u Provider) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "p",
-								},
+								ast.NewIdent("p"),
 							},
-							Type: &ast.Ident{
-								Name: "Provider",
-							},
+							Type: ast.NewIdent("Provider"),
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "Start",
-				},
+				Name: ast.NewIdent("Start"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "_",
-									},
+									ast.NewIdent("_"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
+									X:   ast.NewIdent("context"),
+									Sel: ast.NewIdent("Context"),
 								},
 							},
 						},
@@ -202,9 +160,7 @@ func (u Provider) file() *ast.File {
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -215,72 +171,44 @@ func (u Provider) file() *ast.File {
 							Cond: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "p",
-										},
-										Sel: &ast.Ident{
-											Name: "config",
-										},
+										X:   ast.NewIdent("p"),
+										Sel: ast.NewIdent("config"),
 									},
-									Sel: &ast.Ident{
-										Name: "Otel",
-									},
+									Sel: ast.NewIdent("Otel"),
 								},
-								Sel: &ast.Ident{
-									Name: "Enabled",
-								},
+								Sel: ast.NewIdent("Enabled"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
 									&ast.ExprStmt{
 										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "uptrace",
-												},
-												Sel: &ast.Ident{
-													Name: "ConfigureOpentelemetry",
-												},
+												X:   ast.NewIdent("uptrace"),
+												Sel: ast.NewIdent("ConfigureOpentelemetry"),
 											},
 											Args: []ast.Expr{
 												&ast.CallExpr{
 													Fun: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "uptrace",
-														},
-														Sel: &ast.Ident{
-															Name: "WithDSN",
-														},
+														X:   ast.NewIdent("uptrace"),
+														Sel: ast.NewIdent("WithDSN"),
 													},
 													Args: []ast.Expr{
 														&ast.SelectorExpr{
 															X: &ast.SelectorExpr{
 																X: &ast.SelectorExpr{
-																	X: &ast.Ident{
-																		Name: "p",
-																	},
-																	Sel: &ast.Ident{
-																		Name: "config",
-																	},
+																	X:   ast.NewIdent("p"),
+																	Sel: ast.NewIdent("config"),
 																},
-																Sel: &ast.Ident{
-																	Name: "Otel",
-																},
+																Sel: ast.NewIdent("Otel"),
 															},
-															Sel: &ast.Ident{
-																Name: "URL",
-															},
+															Sel: ast.NewIdent("URL"),
 														},
 													},
 												},
 												&ast.CallExpr{
 													Fun: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "uptrace",
-														},
-														Sel: &ast.Ident{
-															Name: "WithServiceName",
-														},
+														X:   ast.NewIdent("uptrace"),
+														Sel: ast.NewIdent("WithServiceName"),
 													},
 													Args: []ast.Expr{
 														&ast.SelectorExpr{
@@ -291,12 +219,8 @@ func (u Provider) file() *ast.File {
 												},
 												&ast.CallExpr{
 													Fun: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "uptrace",
-														},
-														Sel: &ast.Ident{
-															Name: "WithServiceVersion",
-														},
+														X:   ast.NewIdent("uptrace"),
+														Sel: ast.NewIdent("WithServiceVersion"),
 													},
 													Args: []ast.Expr{
 														&ast.SelectorExpr{
@@ -307,31 +231,19 @@ func (u Provider) file() *ast.File {
 												},
 												&ast.CallExpr{
 													Fun: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "uptrace",
-														},
-														Sel: &ast.Ident{
-															Name: "WithDeploymentEnvironment",
-														},
+														X:   ast.NewIdent("uptrace"),
+														Sel: ast.NewIdent("WithDeploymentEnvironment"),
 													},
 													Args: []ast.Expr{
 														&ast.SelectorExpr{
 															X: &ast.SelectorExpr{
 																X: &ast.SelectorExpr{
-																	X: &ast.Ident{
-																		Name: "p",
-																	},
-																	Sel: &ast.Ident{
-																		Name: "config",
-																	},
+																	X:   ast.NewIdent("p"),
+																	Sel: ast.NewIdent("config"),
 																},
-																Sel: &ast.Ident{
-																	Name: "Otel",
-																},
+																Sel: ast.NewIdent("Otel"),
 															},
-															Sel: &ast.Ident{
-																Name: "Environment",
-															},
+															Sel: ast.NewIdent("Environment"),
 														},
 													},
 												},
@@ -343,35 +255,25 @@ func (u Provider) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("nil"),
 							},
 						},
 					},
 				},
 			},
 			&ast.FuncDecl{
-				Name: &ast.Ident{
-					Name: "NewProvider",
-				},
+				Name: ast.NewIdent("NewProvider"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "config",
-									},
+									ast.NewIdent("config"),
 								},
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "configs",
-										},
-										Sel: &ast.Ident{
-											Name: "Config",
-										},
+										X:   ast.NewIdent("configs"),
+										Sel: ast.NewIdent("Config"),
 									},
 								},
 							},
@@ -381,9 +283,7 @@ func (u Provider) file() *ast.File {
 						List: []*ast.Field{
 							{
 								Type: &ast.StarExpr{
-									X: &ast.Ident{
-										Name: "Provider",
-									},
+									X: ast.NewIdent("Provider"),
 								},
 							},
 						},
@@ -396,17 +296,11 @@ func (u Provider) file() *ast.File {
 								&ast.UnaryExpr{
 									Op: token.AND,
 									X: &ast.CompositeLit{
-										Type: &ast.Ident{
-											Name: "Provider",
-										},
+										Type: ast.NewIdent("Provider"),
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "config",
-												},
-												Value: &ast.Ident{
-													Name: "config",
-												},
+												Key:   ast.NewIdent("config"),
+												Value: ast.NewIdent("config"),
 											},
 										},
 									},

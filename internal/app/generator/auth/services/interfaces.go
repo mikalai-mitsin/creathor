@@ -23,9 +23,7 @@ func NewRepositoryInterfaceAuth(project *configs.Project) *RepositoryInterfaceAu
 
 func (i RepositoryInterfaceAuth) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "services",
-		},
+		Name: ast.NewIdent("services"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Doc: &ast.CommentGroup{
@@ -285,49 +283,33 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "authRepository",
-						},
+						Name: ast.NewIdent("authRepository"),
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{
 								List: []*ast.Field{
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "Create",
-											},
+											ast.NewIdent("Create"),
 										},
 										Type: &ast.FuncType{
 											Params: &ast.FieldList{
 												List: []*ast.Field{
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "ctx",
-															},
+															ast.NewIdent("ctx"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "context",
-															},
-															Sel: &ast.Ident{
-																Name: "Context",
-															},
+															X:   ast.NewIdent("context"),
+															Sel: ast.NewIdent("Context"),
 														},
 													},
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "user",
-															},
+															ast.NewIdent("user"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "userEntities",
-															},
-															Sel: &ast.Ident{
-																Name: "User",
-															},
+															X:   ast.NewIdent("userEntities"),
+															Sel: ast.NewIdent("User"),
 														},
 													},
 												},
@@ -341,9 +323,7 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 														},
 													},
 													{
-														Type: &ast.Ident{
-															Name: "error",
-														},
+														Type: ast.NewIdent("error"),
 													},
 												},
 											},
@@ -351,41 +331,27 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "Validate",
-											},
+											ast.NewIdent("Validate"),
 										},
 										Type: &ast.FuncType{
 											Params: &ast.FieldList{
 												List: []*ast.Field{
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "ctx",
-															},
+															ast.NewIdent("ctx"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "context",
-															},
-															Sel: &ast.Ident{
-																Name: "Context",
-															},
+															X:   ast.NewIdent("context"),
+															Sel: ast.NewIdent("Context"),
 														},
 													},
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "token",
-															},
+															ast.NewIdent("token"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "entities",
-															},
-															Sel: &ast.Ident{
-																Name: "Token",
-															},
+															X:   ast.NewIdent("entities"),
+															Sel: ast.NewIdent("Token"),
 														},
 													},
 												},
@@ -393,9 +359,7 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 											Results: &ast.FieldList{
 												List: []*ast.Field{
 													{
-														Type: &ast.Ident{
-															Name: "error",
-														},
+														Type: ast.NewIdent("error"),
 													},
 												},
 											},
@@ -403,41 +367,27 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "RefreshToken",
-											},
+											ast.NewIdent("RefreshToken"),
 										},
 										Type: &ast.FuncType{
 											Params: &ast.FieldList{
 												List: []*ast.Field{
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "ctx",
-															},
+															ast.NewIdent("ctx"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "context",
-															},
-															Sel: &ast.Ident{
-																Name: "Context",
-															},
+															X:   ast.NewIdent("context"),
+															Sel: ast.NewIdent("Context"),
 														},
 													},
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "token",
-															},
+															ast.NewIdent("token"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "entities",
-															},
-															Sel: &ast.Ident{
-																Name: "Token",
-															},
+															X:   ast.NewIdent("entities"),
+															Sel: ast.NewIdent("Token"),
 														},
 													},
 												},
@@ -451,9 +401,7 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 														},
 													},
 													{
-														Type: &ast.Ident{
-															Name: "error",
-														},
+														Type: ast.NewIdent("error"),
 													},
 												},
 											},
@@ -461,41 +409,27 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "GetSubject",
-											},
+											ast.NewIdent("GetSubject"),
 										},
 										Type: &ast.FuncType{
 											Params: &ast.FieldList{
 												List: []*ast.Field{
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "ctx",
-															},
+															ast.NewIdent("ctx"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "context",
-															},
-															Sel: &ast.Ident{
-																Name: "Context",
-															},
+															X:   ast.NewIdent("context"),
+															Sel: ast.NewIdent("Context"),
 														},
 													},
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "token",
-															},
+															ast.NewIdent("token"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "entities",
-															},
-															Sel: &ast.Ident{
-																Name: "Token",
-															},
+															X:   ast.NewIdent("entities"),
+															Sel: ast.NewIdent("Token"),
 														},
 													},
 												},
@@ -503,14 +437,10 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 											Results: &ast.FieldList{
 												List: []*ast.Field{
 													{
-														Type: &ast.Ident{
-															Name: "string",
-														},
+														Type: ast.NewIdent("string"),
 													},
 													{
-														Type: &ast.Ident{
-															Name: "error",
-														},
+														Type: ast.NewIdent("error"),
 													},
 												},
 											},
@@ -526,41 +456,29 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "userRepository",
-						},
+						Name: ast.NewIdent("userRepository"),
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{
 								List: []*ast.Field{
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "GetByEmail",
-											},
+											ast.NewIdent("GetByEmail"),
 										},
 										Type: &ast.FuncType{
 											Params: &ast.FieldList{
 												List: []*ast.Field{
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "ctx",
-															},
+															ast.NewIdent("ctx"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "context",
-															},
-															Sel: &ast.Ident{
-																Name: "Context",
-															},
+															X:   ast.NewIdent("context"),
+															Sel: ast.NewIdent("Context"),
 														},
 													},
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "email",
-															},
+															ast.NewIdent("email"),
 														},
 														Type: ast.NewIdent("string"),
 													},
@@ -570,18 +488,12 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 												List: []*ast.Field{
 													{
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "userEntities",
-															},
-															Sel: &ast.Ident{
-																Name: "User",
-															},
+															X:   ast.NewIdent("userEntities"),
+															Sel: ast.NewIdent("User"),
 														},
 													},
 													{
-														Type: &ast.Ident{
-															Name: "error",
-														},
+														Type: ast.NewIdent("error"),
 													},
 												},
 											},
@@ -589,33 +501,23 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "Get",
-											},
+											ast.NewIdent("Get"),
 										},
 										Type: &ast.FuncType{
 											Params: &ast.FieldList{
 												List: []*ast.Field{
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "ctx",
-															},
+															ast.NewIdent("ctx"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "context",
-															},
-															Sel: &ast.Ident{
-																Name: "Context",
-															},
+															X:   ast.NewIdent("context"),
+															Sel: ast.NewIdent("Context"),
 														},
 													},
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "id",
-															},
+															ast.NewIdent("id"),
 														},
 														Type: ast.NewIdent("uuid.UUID"),
 													},
@@ -625,18 +527,12 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 												List: []*ast.Field{
 													{
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "userEntities",
-															},
-															Sel: &ast.Ident{
-																Name: "User",
-															},
+															X:   ast.NewIdent("userEntities"),
+															Sel: ast.NewIdent("User"),
 														},
 													},
 													{
-														Type: &ast.Ident{
-															Name: "error",
-														},
+														Type: ast.NewIdent("error"),
 													},
 												},
 											},

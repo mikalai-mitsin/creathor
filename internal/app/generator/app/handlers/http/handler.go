@@ -1504,9 +1504,7 @@ func (h *HandlerGenerator) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "h",
-								},
+								ast.NewIdent("h"),
 							},
 							Type: &ast.StarExpr{
 								X: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
@@ -1514,21 +1512,15 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "ChiRouter",
-				},
+				Name: ast.NewIdent("ChiRouter"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "chi",
-									},
-									Sel: &ast.Ident{
-										Name: "Router",
-									},
+									X:   ast.NewIdent("chi"),
+									Sel: ast.NewIdent("Router"),
 								},
 							},
 						},
@@ -1538,20 +1530,14 @@ func (h *HandlerGenerator) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "router",
-								},
+								ast.NewIdent("router"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "chi",
-										},
-										Sel: &ast.Ident{
-											Name: "NewRouter",
-										},
+										X:   ast.NewIdent("chi"),
+										Sel: ast.NewIdent("NewRouter"),
 									},
 								},
 							},
@@ -1559,12 +1545,8 @@ func (h *HandlerGenerator) file() *ast.File {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "router",
-									},
-									Sel: &ast.Ident{
-										Name: "Route",
-									},
+									X:   ast.NewIdent("router"),
+									Sel: ast.NewIdent("Route"),
 								},
 								Args: []ast.Expr{
 									&ast.BasicLit{
@@ -1577,17 +1559,11 @@ func (h *HandlerGenerator) file() *ast.File {
 												List: []*ast.Field{
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "g",
-															},
+															ast.NewIdent("g"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "chi",
-															},
-															Sel: &ast.Ident{
-																Name: "Router",
-															},
+															X:   ast.NewIdent("chi"),
+															Sel: ast.NewIdent("Router"),
 														},
 													},
 												},
@@ -1598,12 +1574,8 @@ func (h *HandlerGenerator) file() *ast.File {
 												&ast.ExprStmt{
 													X: &ast.CallExpr{
 														Fun: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "g",
-															},
-															Sel: &ast.Ident{
-																Name: "Post",
-															},
+															X:   ast.NewIdent("g"),
+															Sel: ast.NewIdent("Post"),
 														},
 														Args: []ast.Expr{
 															&ast.BasicLit{
@@ -1611,12 +1583,8 @@ func (h *HandlerGenerator) file() *ast.File {
 																Value: "\"/\"",
 															},
 															&ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "h",
-																},
-																Sel: &ast.Ident{
-																	Name: "Create",
-																},
+																X:   ast.NewIdent("h"),
+																Sel: ast.NewIdent("Create"),
 															},
 														},
 													},
@@ -1624,12 +1592,8 @@ func (h *HandlerGenerator) file() *ast.File {
 												&ast.ExprStmt{
 													X: &ast.CallExpr{
 														Fun: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "g",
-															},
-															Sel: &ast.Ident{
-																Name: "Get",
-															},
+															X:   ast.NewIdent("g"),
+															Sel: ast.NewIdent("Get"),
 														},
 														Args: []ast.Expr{
 															&ast.BasicLit{
@@ -1637,12 +1601,8 @@ func (h *HandlerGenerator) file() *ast.File {
 																Value: "\"/\"",
 															},
 															&ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "h",
-																},
-																Sel: &ast.Ident{
-																	Name: "List",
-																},
+																X:   ast.NewIdent("h"),
+																Sel: ast.NewIdent("List"),
 															},
 														},
 													},
@@ -1650,12 +1610,8 @@ func (h *HandlerGenerator) file() *ast.File {
 												&ast.ExprStmt{
 													X: &ast.CallExpr{
 														Fun: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "g",
-															},
-															Sel: &ast.Ident{
-																Name: "Get",
-															},
+															X:   ast.NewIdent("g"),
+															Sel: ast.NewIdent("Get"),
 														},
 														Args: []ast.Expr{
 															&ast.BasicLit{
@@ -1663,12 +1619,8 @@ func (h *HandlerGenerator) file() *ast.File {
 																Value: "\"/{id}\"",
 															},
 															&ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "h",
-																},
-																Sel: &ast.Ident{
-																	Name: "Get",
-																},
+																X:   ast.NewIdent("h"),
+																Sel: ast.NewIdent("Get"),
 															},
 														},
 													},
@@ -1676,12 +1628,8 @@ func (h *HandlerGenerator) file() *ast.File {
 												&ast.ExprStmt{
 													X: &ast.CallExpr{
 														Fun: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "g",
-															},
-															Sel: &ast.Ident{
-																Name: "Patch",
-															},
+															X:   ast.NewIdent("g"),
+															Sel: ast.NewIdent("Patch"),
 														},
 														Args: []ast.Expr{
 															&ast.BasicLit{
@@ -1689,12 +1637,8 @@ func (h *HandlerGenerator) file() *ast.File {
 																Value: "\"/{id}\"",
 															},
 															&ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "h",
-																},
-																Sel: &ast.Ident{
-																	Name: "Update",
-																},
+																X:   ast.NewIdent("h"),
+																Sel: ast.NewIdent("Update"),
 															},
 														},
 													},
@@ -1702,12 +1646,8 @@ func (h *HandlerGenerator) file() *ast.File {
 												&ast.ExprStmt{
 													X: &ast.CallExpr{
 														Fun: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "g",
-															},
-															Sel: &ast.Ident{
-																Name: "Delete",
-															},
+															X:   ast.NewIdent("g"),
+															Sel: ast.NewIdent("Delete"),
 														},
 														Args: []ast.Expr{
 															&ast.BasicLit{
@@ -1715,12 +1655,8 @@ func (h *HandlerGenerator) file() *ast.File {
 																Value: "\"/{id}\"",
 															},
 															&ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "h",
-																},
-																Sel: &ast.Ident{
-																	Name: "Delete",
-																},
+																X:   ast.NewIdent("h"),
+																Sel: ast.NewIdent("Delete"),
 															},
 														},
 													},
@@ -1733,9 +1669,7 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "router",
-								},
+								ast.NewIdent("router"),
 							},
 						},
 					},

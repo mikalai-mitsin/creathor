@@ -12,8 +12,6 @@ import (
 	"path"
 )
 
-const destinationPath = "."
-
 type HandlerGenerator struct {
 	project *configs.Project
 }
@@ -51,9 +49,7 @@ func (h *HandlerGenerator) filename() string {
 func (h *HandlerGenerator) file() *ast.File {
 	return &ast.File{
 		Package: 1,
-		Name: &ast.Ident{
-			Name: "handlers",
-		},
+		Name:    ast.NewIdent("handlers"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -88,31 +84,21 @@ func (h *HandlerGenerator) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "AuthHandler",
-						},
+						Name: ast.NewIdent("AuthHandler"),
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
-												Name: "authUseCase",
-											},
+											ast.NewIdent("authUseCase"),
 										},
-										Type: &ast.Ident{
-											Name: "authUseCase",
-										},
+										Type: ast.NewIdent("authUseCase"),
 									},
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
-												Name: "logger",
-											},
+											ast.NewIdent("logger"),
 										},
-										Type: &ast.Ident{
-											Name: "logger",
-										},
+										Type: ast.NewIdent("logger"),
 									},
 								},
 							},
@@ -121,41 +107,29 @@ func (h *HandlerGenerator) file() *ast.File {
 				},
 			},
 			&ast.FuncDecl{
-				Name: &ast.Ident{
-					Name: "NewAuthHandler",
-				},
+				Name: ast.NewIdent("NewAuthHandler"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
-										Name: "authUseCase",
-									},
+									ast.NewIdent("authUseCase"),
 								},
-								Type: &ast.Ident{
-									Name: "authUseCase",
-								},
+								Type: ast.NewIdent("authUseCase"),
 							},
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
-										Name: "logger",
-									},
+									ast.NewIdent("logger"),
 								},
-								Type: &ast.Ident{
-									Name: "logger",
-								},
+								Type: ast.NewIdent("logger"),
 							},
 						},
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.StarExpr{
-									X: &ast.Ident{
-										Name: "AuthHandler",
-									},
+									X: ast.NewIdent("AuthHandler"),
 								},
 							},
 						},
@@ -168,25 +142,15 @@ func (h *HandlerGenerator) file() *ast.File {
 								&ast.UnaryExpr{
 									Op: token.AND,
 									X: &ast.CompositeLit{
-										Type: &ast.Ident{
-											Name: "AuthHandler",
-										},
+										Type: ast.NewIdent("AuthHandler"),
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "authUseCase",
-												},
-												Value: &ast.Ident{
-													Name: "authUseCase",
-												},
+												Key:   ast.NewIdent("authUseCase"),
+												Value: ast.NewIdent("authUseCase"),
 											},
 											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "logger",
-												},
-												Value: &ast.Ident{
-													Name: "logger",
-												},
+												Key:   ast.NewIdent("logger"),
+												Value: ast.NewIdent("logger"),
 											},
 										},
 									},
@@ -199,55 +163,77 @@ func (h *HandlerGenerator) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
-									Name: "h",
-								},
+								ast.NewIdent("h"),
 							},
 							Type: &ast.StarExpr{
-								X: &ast.Ident{
-									Name: "AuthHandler",
-								},
+								X: ast.NewIdent("AuthHandler"),
 							},
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "ObtainTokenPair",
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// ObtainTokenPair",
+						},
+						{
+							Text: "//",
+						},
+						{
+							Text: "// @Tags auth",
+						},
+						{
+							Text: "// @Accept json",
+						},
+						{
+							Text: "// @Produce json",
+						},
+						{
+							Text: "// @Param form body ObtainTokenDTO true \"Obtain token pair\"",
+						},
+						{
+							Text: "// @Success 200 {object} TokenPairDTO \"Token pair\"",
+						},
+						{
+							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
+						},
+						{
+							Text: "// @Failure 401 {object} errs.Error \"Unauthorized\"",
+						},
+						{
+							Text: "// @Failure 404 {object} errs.Error \"Not found\"",
+						},
+						{
+							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
+						},
+						{
+							Text: "// @Router /api/v1/auth/obtain [POST]",
+						},
+					},
 				},
+				Name: ast.NewIdent("ObtainTokenPair"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
-										Name: "w",
-									},
+									ast.NewIdent("w"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "http",
-									},
-									Sel: &ast.Ident{
-										Name: "ResponseWriter",
-									},
+									X:   ast.NewIdent("http"),
+									Sel: ast.NewIdent("ResponseWriter"),
 								},
 							},
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
-										Name: "r",
-									},
+									ast.NewIdent("r"),
 								},
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "http",
-										},
-										Sel: &ast.Ident{
-											Name: "Request",
-										},
+										X:   ast.NewIdent("http"),
+										Sel: ast.NewIdent("Request"),
 									},
 								},
 							},
@@ -258,59 +244,37 @@ func (h *HandlerGenerator) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "createDTO",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("createDTO"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: "NewObtainTokenDTO",
-									},
+									Fun: ast.NewIdent("NewObtainTokenDTO"),
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "r",
-										},
+										ast.NewIdent("r"),
 									},
 								},
 							},
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
 									&ast.ExprStmt{
 										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "errs",
-												},
-												Sel: &ast.Ident{
-													Name: "RenderToHTTPResponse",
-												},
+												X:   ast.NewIdent("errs"),
+												Sel: ast.NewIdent("RenderToHTTPResponse"),
 											},
 											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "err",
-												},
-												&ast.Ident{
-													Name: "w",
-												},
-												&ast.Ident{
-													Name: "r",
-												},
+												ast.NewIdent("err"),
+												ast.NewIdent("w"),
+												ast.NewIdent("r"),
 											},
 										},
 									},
@@ -320,59 +284,37 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "create",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("create"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "createDTO",
-										},
-										Sel: &ast.Ident{
-											Name: "toEntity",
-										},
+										X:   ast.NewIdent("createDTO"),
+										Sel: ast.NewIdent("toEntity"),
 									},
 								},
 							},
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
 									&ast.ExprStmt{
 										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "errs",
-												},
-												Sel: &ast.Ident{
-													Name: "RenderToHTTPResponse",
-												},
+												X:   ast.NewIdent("errs"),
+												Sel: ast.NewIdent("RenderToHTTPResponse"),
 											},
 											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "err",
-												},
-												&ast.Ident{
-													Name: "w",
-												},
-												&ast.Ident{
-													Name: "r",
-												},
+												ast.NewIdent("err"),
+												ast.NewIdent("w"),
+												ast.NewIdent("r"),
 											},
 										},
 									},
@@ -382,79 +324,49 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "tokenPair",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("tokenPair"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "h",
-											},
-											Sel: &ast.Ident{
-												Name: "authUseCase",
-											},
+											X:   ast.NewIdent("h"),
+											Sel: ast.NewIdent("authUseCase"),
 										},
-										Sel: &ast.Ident{
-											Name: "CreateToken",
-										},
+										Sel: ast.NewIdent("CreateToken"),
 									},
 									Args: []ast.Expr{
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "r",
-												},
-												Sel: &ast.Ident{
-													Name: "Context",
-												},
+												X:   ast.NewIdent("r"),
+												Sel: ast.NewIdent("Context"),
 											},
 										},
-										&ast.Ident{
-											Name: "create",
-										},
+										ast.NewIdent("create"),
 									},
 								},
 							},
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
 									&ast.ExprStmt{
 										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "errs",
-												},
-												Sel: &ast.Ident{
-													Name: "RenderToHTTPResponse",
-												},
+												X:   ast.NewIdent("errs"),
+												Sel: ast.NewIdent("RenderToHTTPResponse"),
 											},
 											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "err",
-												},
-												&ast.Ident{
-													Name: "w",
-												},
-												&ast.Ident{
-													Name: "r",
-												},
+												ast.NewIdent("err"),
+												ast.NewIdent("w"),
+												ast.NewIdent("r"),
 											},
 										},
 									},
@@ -464,59 +376,37 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "response",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("response"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: "NewTokenPairDTO",
-									},
+									Fun: ast.NewIdent("NewTokenPairDTO"),
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "tokenPair",
-										},
+										ast.NewIdent("tokenPair"),
 									},
 								},
 							},
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
 									&ast.ExprStmt{
 										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "errs",
-												},
-												Sel: &ast.Ident{
-													Name: "RenderToHTTPResponse",
-												},
+												X:   ast.NewIdent("errs"),
+												Sel: ast.NewIdent("RenderToHTTPResponse"),
 											},
 											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "err",
-												},
-												&ast.Ident{
-													Name: "w",
-												},
-												&ast.Ident{
-													Name: "r",
-												},
+												ast.NewIdent("err"),
+												ast.NewIdent("w"),
+												ast.NewIdent("r"),
 											},
 										},
 									},
@@ -527,24 +417,14 @@ func (h *HandlerGenerator) file() *ast.File {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "render",
-									},
-									Sel: &ast.Ident{
-										Name: "Status",
-									},
+									X:   ast.NewIdent("render"),
+									Sel: ast.NewIdent("Status"),
 								},
 								Args: []ast.Expr{
-									&ast.Ident{
-										Name: "r",
-									},
+									ast.NewIdent("r"),
 									&ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "http",
-										},
-										Sel: &ast.Ident{
-											Name: "StatusOK",
-										},
+										X:   ast.NewIdent("http"),
+										Sel: ast.NewIdent("StatusOK"),
 									},
 								},
 							},
@@ -552,23 +432,13 @@ func (h *HandlerGenerator) file() *ast.File {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "render",
-									},
-									Sel: &ast.Ident{
-										Name: "JSON",
-									},
+									X:   ast.NewIdent("render"),
+									Sel: ast.NewIdent("JSON"),
 								},
 								Args: []ast.Expr{
-									&ast.Ident{
-										Name: "w",
-									},
-									&ast.Ident{
-										Name: "r",
-									},
-									&ast.Ident{
-										Name: "response",
-									},
+									ast.NewIdent("w"),
+									ast.NewIdent("r"),
+									ast.NewIdent("response"),
 								},
 							},
 						},
@@ -578,55 +448,77 @@ func (h *HandlerGenerator) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
-									Name: "h",
-								},
+								ast.NewIdent("h"),
 							},
 							Type: &ast.StarExpr{
-								X: &ast.Ident{
-									Name: "AuthHandler",
-								},
+								X: ast.NewIdent("AuthHandler"),
 							},
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "RefreshTokenPair",
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// RefreshTokenPair",
+						},
+						{
+							Text: "//",
+						},
+						{
+							Text: "// @Tags auth",
+						},
+						{
+							Text: "// @Accept json",
+						},
+						{
+							Text: "// @Produce json",
+						},
+						{
+							Text: "// @Param form body RefreshTokenDTO true \"Refresh token pair\"",
+						},
+						{
+							Text: "// @Success 200 {object} TokenPairDTO \"Token pair\"",
+						},
+						{
+							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
+						},
+						{
+							Text: "// @Failure 401 {object} errs.Error \"Unauthorized\"",
+						},
+						{
+							Text: "// @Failure 404 {object} errs.Error \"Not found\"",
+						},
+						{
+							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
+						},
+						{
+							Text: "// @Router /api/v1/auth/refresh [POST]",
+						},
+					},
 				},
+				Name: ast.NewIdent("RefreshTokenPair"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
-										Name: "w",
-									},
+									ast.NewIdent("w"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "http",
-									},
-									Sel: &ast.Ident{
-										Name: "ResponseWriter",
-									},
+									X:   ast.NewIdent("http"),
+									Sel: ast.NewIdent("ResponseWriter"),
 								},
 							},
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
-										Name: "r",
-									},
+									ast.NewIdent("r"),
 								},
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "http",
-										},
-										Sel: &ast.Ident{
-											Name: "Request",
-										},
+										X:   ast.NewIdent("http"),
+										Sel: ast.NewIdent("Request"),
 									},
 								},
 							},
@@ -637,59 +529,37 @@ func (h *HandlerGenerator) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "refreshTokenDTO",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("refreshTokenDTO"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: "NewRefreshTokenDTO",
-									},
+									Fun: ast.NewIdent("NewRefreshTokenDTO"),
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "r",
-										},
+										ast.NewIdent("r"),
 									},
 								},
 							},
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
 									&ast.ExprStmt{
 										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "errs",
-												},
-												Sel: &ast.Ident{
-													Name: "RenderToHTTPResponse",
-												},
+												X:   ast.NewIdent("errs"),
+												Sel: ast.NewIdent("RenderToHTTPResponse"),
 											},
 											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "err",
-												},
-												&ast.Ident{
-													Name: "w",
-												},
-												&ast.Ident{
-													Name: "r",
-												},
+												ast.NewIdent("err"),
+												ast.NewIdent("w"),
+												ast.NewIdent("r"),
 											},
 										},
 									},
@@ -699,59 +569,37 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "refreshToken",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("refreshToken"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "refreshTokenDTO",
-										},
-										Sel: &ast.Ident{
-											Name: "toEntity",
-										},
+										X:   ast.NewIdent("refreshTokenDTO"),
+										Sel: ast.NewIdent("toEntity"),
 									},
 								},
 							},
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
 									&ast.ExprStmt{
 										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "errs",
-												},
-												Sel: &ast.Ident{
-													Name: "RenderToHTTPResponse",
-												},
+												X:   ast.NewIdent("errs"),
+												Sel: ast.NewIdent("RenderToHTTPResponse"),
 											},
 											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "err",
-												},
-												&ast.Ident{
-													Name: "w",
-												},
-												&ast.Ident{
-													Name: "r",
-												},
+												ast.NewIdent("err"),
+												ast.NewIdent("w"),
+												ast.NewIdent("r"),
 											},
 										},
 									},
@@ -761,79 +609,49 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "tokenPair",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("tokenPair"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "h",
-											},
-											Sel: &ast.Ident{
-												Name: "authUseCase",
-											},
+											X:   ast.NewIdent("h"),
+											Sel: ast.NewIdent("authUseCase"),
 										},
-										Sel: &ast.Ident{
-											Name: "RefreshToken",
-										},
+										Sel: ast.NewIdent("RefreshToken"),
 									},
 									Args: []ast.Expr{
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "r",
-												},
-												Sel: &ast.Ident{
-													Name: "Context",
-												},
+												X:   ast.NewIdent("r"),
+												Sel: ast.NewIdent("Context"),
 											},
 										},
-										&ast.Ident{
-											Name: "refreshToken",
-										},
+										ast.NewIdent("refreshToken"),
 									},
 								},
 							},
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
 									&ast.ExprStmt{
 										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "errs",
-												},
-												Sel: &ast.Ident{
-													Name: "RenderToHTTPResponse",
-												},
+												X:   ast.NewIdent("errs"),
+												Sel: ast.NewIdent("RenderToHTTPResponse"),
 											},
 											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "err",
-												},
-												&ast.Ident{
-													Name: "w",
-												},
-												&ast.Ident{
-													Name: "r",
-												},
+												ast.NewIdent("err"),
+												ast.NewIdent("w"),
+												ast.NewIdent("r"),
 											},
 										},
 									},
@@ -843,59 +661,37 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "response",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("response"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: "NewTokenPairDTO",
-									},
+									Fun: ast.NewIdent("NewTokenPairDTO"),
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "tokenPair",
-										},
+										ast.NewIdent("tokenPair"),
 									},
 								},
 							},
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
 									&ast.ExprStmt{
 										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "errs",
-												},
-												Sel: &ast.Ident{
-													Name: "RenderToHTTPResponse",
-												},
+												X:   ast.NewIdent("errs"),
+												Sel: ast.NewIdent("RenderToHTTPResponse"),
 											},
 											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "err",
-												},
-												&ast.Ident{
-													Name: "w",
-												},
-												&ast.Ident{
-													Name: "r",
-												},
+												ast.NewIdent("err"),
+												ast.NewIdent("w"),
+												ast.NewIdent("r"),
 											},
 										},
 									},
@@ -906,24 +702,14 @@ func (h *HandlerGenerator) file() *ast.File {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "render",
-									},
-									Sel: &ast.Ident{
-										Name: "Status",
-									},
+									X:   ast.NewIdent("render"),
+									Sel: ast.NewIdent("Status"),
 								},
 								Args: []ast.Expr{
-									&ast.Ident{
-										Name: "r",
-									},
+									ast.NewIdent("r"),
 									&ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "http",
-										},
-										Sel: &ast.Ident{
-											Name: "StatusOK",
-										},
+										X:   ast.NewIdent("http"),
+										Sel: ast.NewIdent("StatusOK"),
 									},
 								},
 							},
@@ -931,23 +717,13 @@ func (h *HandlerGenerator) file() *ast.File {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "render",
-									},
-									Sel: &ast.Ident{
-										Name: "JSON",
-									},
+									X:   ast.NewIdent("render"),
+									Sel: ast.NewIdent("JSON"),
 								},
 								Args: []ast.Expr{
-									&ast.Ident{
-										Name: "w",
-									},
-									&ast.Ident{
-										Name: "r",
-									},
-									&ast.Ident{
-										Name: "response",
-									},
+									ast.NewIdent("w"),
+									ast.NewIdent("r"),
+									ast.NewIdent("response"),
 								},
 							},
 						},
@@ -957,35 +733,25 @@ func (h *HandlerGenerator) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
-									Name: "h",
-								},
+								ast.NewIdent("h"),
 							},
 							Type: &ast.StarExpr{
-								X: &ast.Ident{
-									Name: "AuthHandler",
-								},
+								X: ast.NewIdent("AuthHandler"),
 							},
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "ChiRouter",
-				},
+				Name: ast.NewIdent("ChiRouter"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "chi",
-									},
-									Sel: &ast.Ident{
-										Name: "Router",
-									},
+									X:   ast.NewIdent("chi"),
+									Sel: ast.NewIdent("Router"),
 								},
 							},
 						},
@@ -995,20 +761,14 @@ func (h *HandlerGenerator) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "router",
-								},
+								ast.NewIdent("router"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "chi",
-										},
-										Sel: &ast.Ident{
-											Name: "NewRouter",
-										},
+										X:   ast.NewIdent("chi"),
+										Sel: ast.NewIdent("NewRouter"),
 									},
 								},
 							},
@@ -1016,12 +776,8 @@ func (h *HandlerGenerator) file() *ast.File {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "router",
-									},
-									Sel: &ast.Ident{
-										Name: "Route",
-									},
+									X:   ast.NewIdent("router"),
+									Sel: ast.NewIdent("Route"),
 								},
 								Args: []ast.Expr{
 									&ast.BasicLit{
@@ -1032,19 +788,13 @@ func (h *HandlerGenerator) file() *ast.File {
 										Type: &ast.FuncType{
 											Params: &ast.FieldList{
 												List: []*ast.Field{
-													&ast.Field{
+													{
 														Names: []*ast.Ident{
-															&ast.Ident{
-																Name: "g",
-															},
+															ast.NewIdent("g"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "chi",
-															},
-															Sel: &ast.Ident{
-																Name: "Router",
-															},
+															X:   ast.NewIdent("chi"),
+															Sel: ast.NewIdent("Router"),
 														},
 													},
 												},
@@ -1055,12 +805,8 @@ func (h *HandlerGenerator) file() *ast.File {
 												&ast.ExprStmt{
 													X: &ast.CallExpr{
 														Fun: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "g",
-															},
-															Sel: &ast.Ident{
-																Name: "Post",
-															},
+															X:   ast.NewIdent("g"),
+															Sel: ast.NewIdent("Post"),
 														},
 														Args: []ast.Expr{
 															&ast.BasicLit{
@@ -1068,12 +814,8 @@ func (h *HandlerGenerator) file() *ast.File {
 																Value: "\"/obtain\"",
 															},
 															&ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "h",
-																},
-																Sel: &ast.Ident{
-																	Name: "ObtainTokenPair",
-																},
+																X:   ast.NewIdent("h"),
+																Sel: ast.NewIdent("ObtainTokenPair"),
 															},
 														},
 													},
@@ -1081,12 +823,8 @@ func (h *HandlerGenerator) file() *ast.File {
 												&ast.ExprStmt{
 													X: &ast.CallExpr{
 														Fun: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "g",
-															},
-															Sel: &ast.Ident{
-																Name: "Post",
-															},
+															X:   ast.NewIdent("g"),
+															Sel: ast.NewIdent("Post"),
 														},
 														Args: []ast.Expr{
 															&ast.BasicLit{
@@ -1094,12 +832,8 @@ func (h *HandlerGenerator) file() *ast.File {
 																Value: "\"/refresh\"",
 															},
 															&ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "h",
-																},
-																Sel: &ast.Ident{
-																	Name: "RefreshTokenPair",
-																},
+																X:   ast.NewIdent("h"),
+																Sel: ast.NewIdent("RefreshTokenPair"),
 															},
 														},
 													},
@@ -1112,94 +846,36 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "router",
-								},
+								ast.NewIdent("router"),
 							},
 						},
 					},
 				},
 			},
 		},
-		FileStart: 1,
-		FileEnd:   2737,
 		Imports: []*ast.ImportSpec{
-			&ast.ImportSpec{
+			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: "\"net/http\"",
 				},
 			},
-			&ast.ImportSpec{
+			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: "\"github.com/go-chi/chi/v5\"",
 				},
 			},
-			&ast.ImportSpec{
+			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: "\"github.com/go-chi/render\"",
 				},
 			},
-			&ast.ImportSpec{
+			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: fmt.Sprintf(`"%s/internal/pkg/errs"`, h.project.Module),
-				},
-			},
-		},
-		Comments: []*ast.CommentGroup{
-			&ast.CommentGroup{
-				List: []*ast.Comment{
-					&ast.Comment{
-						Slash: 371,
-						Text:  "// ObtainTokenPair",
-					},
-					&ast.Comment{
-						Slash: 390,
-						Text:  "//",
-					},
-					&ast.Comment{
-						Slash: 393,
-						Text:  "// @Tags auth",
-					},
-					&ast.Comment{
-						Slash: 407,
-						Text:  "// @Accept json",
-					},
-					&ast.Comment{
-						Slash: 423,
-						Text:  "// @Produce json",
-					},
-					&ast.Comment{
-						Slash: 440,
-						Text:  "// @Param form body ObtainTokenDTO true \"Obtain token pair\"",
-					},
-					&ast.Comment{
-						Slash: 500,
-						Text:  "// @Success 201 {object} TokenPairDTO \"Token pair\"",
-					},
-					&ast.Comment{
-						Slash: 551,
-						Text:  "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
-					},
-					&ast.Comment{
-						Slash: 630,
-						Text:  "// @Failure 401 {object} errs.Error \"Unauthorized\"",
-					},
-					&ast.Comment{
-						Slash: 681,
-						Text:  "// @Failure 404 {object} errs.Error \"Not found\"",
-					},
-					&ast.Comment{
-						Slash: 729,
-						Text:  "// @Failure 500 {object} errs.Error \"Internal server error\"",
-					},
-					&ast.Comment{
-						Slash: 789,
-						Text:  "// @Router /api/v1/auth/obtain [POST]",
-					},
 				},
 			},
 		},

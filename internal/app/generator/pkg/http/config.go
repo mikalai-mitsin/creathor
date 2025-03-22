@@ -23,29 +23,21 @@ func NewConfig(project *configs.Project) *Config {
 func (u Config) file() *ast.File {
 	return &ast.File{
 		Package: 1,
-		Name: &ast.Ident{
-			Name: "http",
-		},
+		Name:    ast.NewIdent("http"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "Config",
-						},
+						Name: ast.NewIdent("Config"),
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "Address",
-											},
+											ast.NewIdent("Address"),
 										},
-										Type: &ast.Ident{
-											Name: "string",
-										},
+										Type: ast.NewIdent("string"),
 										Tag: &ast.BasicLit{
 											Kind:  token.STRING,
 											Value: "`toml:\"address\"`",

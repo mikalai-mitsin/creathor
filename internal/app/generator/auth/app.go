@@ -134,9 +134,7 @@ func (a AppAuth) file() *ast.File {
 				Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, a.project.Module),
 			},
 		}, &ast.ImportSpec{
-			Name: &ast.Ident{
-				Name: a.project.ProtoPackage(),
-			},
+			Name: ast.NewIdent(a.project.ProtoPackage()),
 			Path: &ast.BasicLit{
 				Kind: token.STRING,
 				Value: fmt.Sprintf(
@@ -156,111 +154,73 @@ func (a AppAuth) file() *ast.File {
 			Tok: token.TYPE,
 			Specs: []ast.Spec{
 				&ast.TypeSpec{
-					Name: &ast.Ident{
-						Name: "App",
-					},
+					Name: ast.NewIdent("App"),
 					Type: &ast.StructType{
 						Fields: &ast.FieldList{
 							List: []*ast.Field{
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "db",
-										},
+										ast.NewIdent("db"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "sqlx",
-											},
-											Sel: &ast.Ident{
-												Name: "DB",
-											},
+											X:   ast.NewIdent("sqlx"),
+											Sel: ast.NewIdent("DB"),
 										},
 									},
 								},
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "grpcServer",
-										},
+										ast.NewIdent("grpcServer"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "grpc",
-											},
-											Sel: &ast.Ident{
-												Name: "Server",
-											},
+											X:   ast.NewIdent("grpc"),
+											Sel: ast.NewIdent("Server"),
 										},
 									},
 								},
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "logger",
-										},
+										ast.NewIdent("logger"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "log",
-											},
-											Sel: &ast.Ident{
-												Name: "Log",
-											},
+											X:   ast.NewIdent("log"),
+											Sel: ast.NewIdent("Log"),
 										},
 									},
 								},
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "authRepository",
-										},
+										ast.NewIdent("authRepository"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "jwt",
-											},
-											Sel: &ast.Ident{
-												Name: "AuthRepository",
-											},
+											X:   ast.NewIdent("jwt"),
+											Sel: ast.NewIdent("AuthRepository"),
 										},
 									},
 								},
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "authService",
-										},
+										ast.NewIdent("authService"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "services",
-											},
-											Sel: &ast.Ident{
-												Name: "AuthService",
-											},
+											X:   ast.NewIdent("services"),
+											Sel: ast.NewIdent("AuthService"),
 										},
 									},
 								},
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "authUseCase",
-										},
+										ast.NewIdent("authUseCase"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "usecases",
-											},
-											Sel: &ast.Ident{
-												Name: "AuthUseCase",
-											},
+											X:   ast.NewIdent("usecases"),
+											Sel: ast.NewIdent("AuthUseCase"),
 										},
 									},
 								},
@@ -270,10 +230,8 @@ func (a AppAuth) file() *ast.File {
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: ast.NewIdent("grpcHandlers"),
-											Sel: &ast.Ident{
-												Name: "AuthServiceServer",
-											},
+											X:   ast.NewIdent("grpcHandlers"),
+											Sel: ast.NewIdent("AuthServiceServer"),
 										},
 									},
 								},
@@ -294,10 +252,8 @@ func (a AppAuth) file() *ast.File {
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: ast.NewIdent("grpcHandlers"),
-											Sel: &ast.Ident{
-												Name: "AuthMiddleware",
-											},
+											X:   ast.NewIdent("grpcHandlers"),
+											Sel: ast.NewIdent("AuthMiddleware"),
 										},
 									},
 								},
@@ -308,77 +264,51 @@ func (a AppAuth) file() *ast.File {
 			},
 		},
 		&ast.FuncDecl{
-			Name: &ast.Ident{
-				Name: "NewApp",
-			},
+			Name: ast.NewIdent("NewApp"),
 			Type: &ast.FuncType{
 				Params: &ast.FieldList{
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "db",
-								},
+								ast.NewIdent("db"),
 							},
 							Type: &ast.StarExpr{
 								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "sqlx",
-									},
-									Sel: &ast.Ident{
-										Name: "DB",
-									},
+									X:   ast.NewIdent("sqlx"),
+									Sel: ast.NewIdent("DB"),
 								},
 							},
 						},
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "config",
-								},
+								ast.NewIdent("config"),
 							},
 							Type: &ast.StarExpr{
 								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "configs",
-									},
-									Sel: &ast.Ident{
-										Name: "Config",
-									},
+									X:   ast.NewIdent("configs"),
+									Sel: ast.NewIdent("Config"),
 								},
 							},
 						},
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "logger",
-								},
+								ast.NewIdent("logger"),
 							},
 							Type: &ast.StarExpr{
 								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "log",
-									},
-									Sel: &ast.Ident{
-										Name: "Log",
-									},
+									X:   ast.NewIdent("log"),
+									Sel: ast.NewIdent("Log"),
 								},
 							},
 						},
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "clock",
-								},
+								ast.NewIdent("clock"),
 							},
 							Type: &ast.StarExpr{
 								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "clock",
-									},
-									Sel: &ast.Ident{
-										Name: "Clock",
-									},
+									X:   ast.NewIdent("clock"),
+									Sel: ast.NewIdent("Clock"),
 								},
 							},
 						},
@@ -388,9 +318,7 @@ func (a AppAuth) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Type: &ast.StarExpr{
-								X: &ast.Ident{
-									Name: "App",
-								},
+								X: ast.NewIdent("App"),
 							},
 						},
 					},
@@ -400,121 +328,75 @@ func (a AppAuth) file() *ast.File {
 				List: []ast.Stmt{
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
-							&ast.Ident{
-								Name: "userRepository",
-							},
+							ast.NewIdent("userRepository"),
 						},
 						Tok: token.DEFINE,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "postgres",
-									},
-									Sel: &ast.Ident{
-										Name: "NewUserRepository",
-									},
+									X:   ast.NewIdent("postgres"),
+									Sel: ast.NewIdent("NewUserRepository"),
 								},
 								Args: []ast.Expr{
-									&ast.Ident{
-										Name: "db",
-									},
-									&ast.Ident{
-										Name: "logger",
-									},
+									ast.NewIdent("db"),
+									ast.NewIdent("logger"),
 								},
 							},
 						},
 					},
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
-							&ast.Ident{
-								Name: "authRepository",
-							},
+							ast.NewIdent("authRepository"),
 						},
 						Tok: token.DEFINE,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "jwt",
-									},
-									Sel: &ast.Ident{
-										Name: "NewAuthRepository",
-									},
+									X:   ast.NewIdent("jwt"),
+									Sel: ast.NewIdent("NewAuthRepository"),
 								},
 								Args: []ast.Expr{
-									&ast.Ident{
-										Name: "config",
-									},
-									&ast.Ident{
-										Name: "clock",
-									},
-									&ast.Ident{
-										Name: "logger",
-									},
+									ast.NewIdent("config"),
+									ast.NewIdent("clock"),
+									ast.NewIdent("logger"),
 								},
 							},
 						},
 					},
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
-							&ast.Ident{
-								Name: "authService",
-							},
+							ast.NewIdent("authService"),
 						},
 						Tok: token.DEFINE,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "services",
-									},
-									Sel: &ast.Ident{
-										Name: "NewAuthService",
-									},
+									X:   ast.NewIdent("services"),
+									Sel: ast.NewIdent("NewAuthService"),
 								},
 								Args: []ast.Expr{
-									&ast.Ident{
-										Name: "authRepository",
-									},
-									&ast.Ident{
-										Name: "userRepository",
-									},
-									&ast.Ident{
-										Name: "logger",
-									},
+									ast.NewIdent("authRepository"),
+									ast.NewIdent("userRepository"),
+									ast.NewIdent("logger"),
 								},
 							},
 						},
 					},
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
-							&ast.Ident{
-								Name: "authUseCase",
-							},
+							ast.NewIdent("authUseCase"),
 						},
 						Tok: token.DEFINE,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "usecases",
-									},
-									Sel: &ast.Ident{
-										Name: "NewAuthUseCase",
-									},
+									X:   ast.NewIdent("usecases"),
+									Sel: ast.NewIdent("NewAuthUseCase"),
 								},
 								Args: []ast.Expr{
-									&ast.Ident{
-										Name: "authService",
-									},
-									&ast.Ident{
-										Name: "clock",
-									},
-									&ast.Ident{
-										Name: "logger",
-									},
+									ast.NewIdent("authService"),
+									ast.NewIdent("clock"),
+									ast.NewIdent("logger"),
 								},
 							},
 						},
@@ -527,15 +409,11 @@ func (a AppAuth) file() *ast.File {
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: ast.NewIdent("grpcHandlers"),
-									Sel: &ast.Ident{
-										Name: "NewAuthServiceServer",
-									},
+									X:   ast.NewIdent("grpcHandlers"),
+									Sel: ast.NewIdent("NewAuthServiceServer"),
 								},
 								Args: []ast.Expr{
-									&ast.Ident{
-										Name: "authUseCase",
-									},
+									ast.NewIdent("authUseCase"),
 									ast.NewIdent("logger"),
 								},
 							},
@@ -549,15 +427,11 @@ func (a AppAuth) file() *ast.File {
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: ast.NewIdent("httpHandlers"),
-									Sel: &ast.Ident{
-										Name: "NewAuthHandler",
-									},
+									X:   ast.NewIdent("httpHandlers"),
+									Sel: ast.NewIdent("NewAuthHandler"),
 								},
 								Args: []ast.Expr{
-									&ast.Ident{
-										Name: "authUseCase",
-									},
+									ast.NewIdent("authUseCase"),
 									ast.NewIdent("logger"),
 								},
 							},
@@ -571,21 +445,13 @@ func (a AppAuth) file() *ast.File {
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: ast.NewIdent("grpcHandlers"),
-									Sel: &ast.Ident{
-										Name: "NewAuthMiddleware",
-									},
+									X:   ast.NewIdent("grpcHandlers"),
+									Sel: ast.NewIdent("NewAuthMiddleware"),
 								},
 								Args: []ast.Expr{
-									&ast.Ident{
-										Name: "authService",
-									},
-									&ast.Ident{
-										Name: "logger",
-									},
-									&ast.Ident{
-										Name: "config",
-									},
+									ast.NewIdent("authService"),
+									ast.NewIdent("logger"),
+									ast.NewIdent("config"),
 								},
 							},
 						},
@@ -595,49 +461,27 @@ func (a AppAuth) file() *ast.File {
 							&ast.UnaryExpr{
 								Op: token.AND,
 								X: &ast.CompositeLit{
-									Type: &ast.Ident{
-										Name: "App",
-									},
+									Type: ast.NewIdent("App"),
 									Elts: []ast.Expr{
 										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "db",
-											},
-											Value: &ast.Ident{
-												Name: "db",
-											},
+											Key:   ast.NewIdent("db"),
+											Value: ast.NewIdent("db"),
 										},
 										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "logger",
-											},
-											Value: &ast.Ident{
-												Name: "logger",
-											},
+											Key:   ast.NewIdent("logger"),
+											Value: ast.NewIdent("logger"),
 										},
 										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "authRepository",
-											},
-											Value: &ast.Ident{
-												Name: "authRepository",
-											},
+											Key:   ast.NewIdent("authRepository"),
+											Value: ast.NewIdent("authRepository"),
 										},
 										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "authService",
-											},
-											Value: &ast.Ident{
-												Name: "authService",
-											},
+											Key:   ast.NewIdent("authService"),
+											Value: ast.NewIdent("authService"),
 										},
 										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "authUseCase",
-											},
-											Value: &ast.Ident{
-												Name: "authUseCase",
-											},
+											Key:   ast.NewIdent("authUseCase"),
+											Value: ast.NewIdent("authUseCase"),
 										},
 										&ast.KeyValueExpr{
 											Key:   ast.NewIdent("grpcAuthHandler"),
@@ -667,9 +511,7 @@ func (a AppAuth) file() *ast.File {
 		decls = append(decls, a.registerGRPC())
 	}
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "auth",
-		},
+		Name:  ast.NewIdent("auth"),
 		Decls: decls,
 	}
 }
@@ -680,29 +522,21 @@ func (a AppAuth) registerGRPC() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "a",
-						},
+						ast.NewIdent("a"),
 					},
 					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: "App",
-						},
+						X: ast.NewIdent("App"),
 					},
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "RegisterGRPC",
-		},
+		Name: ast.NewIdent("RegisterGRPC"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "grpcServer",
-							},
+							ast.NewIdent("grpcServer"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
@@ -716,9 +550,7 @@ func (a AppAuth) registerGRPC() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.Ident{
-							Name: "error",
-						},
+						Type: ast.NewIdent("error"),
 					},
 				},
 			},
@@ -728,10 +560,8 @@ func (a AppAuth) registerGRPC() *ast.FuncDecl {
 				&ast.ExprStmt{
 					X: &ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X: ast.NewIdent("grpcServer"),
-							Sel: &ast.Ident{
-								Name: "AddHandler",
-							},
+							X:   ast.NewIdent("grpcServer"),
+							Sel: ast.NewIdent("AddHandler"),
 						},
 						Args: []ast.Expr{
 							&ast.UnaryExpr{
@@ -781,38 +611,26 @@ func (a AppAuth) registerHTTP() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "a",
-						},
+						ast.NewIdent("a"),
 					},
 					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: "App",
-						},
+						X: ast.NewIdent("App"),
 					},
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "RegisterHTTP",
-		},
+		Name: ast.NewIdent("RegisterHTTP"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "httpServer",
-							},
+							ast.NewIdent("httpServer"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "http",
-								},
-								Sel: &ast.Ident{
-									Name: "Server",
-								},
+								X:   ast.NewIdent("http"),
+								Sel: ast.NewIdent("Server"),
 							},
 						},
 					},
@@ -821,9 +639,7 @@ func (a AppAuth) registerHTTP() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.Ident{
-							Name: "error",
-						},
+						Type: ast.NewIdent("error"),
 					},
 				},
 			},
@@ -833,12 +649,8 @@ func (a AppAuth) registerHTTP() *ast.FuncDecl {
 				&ast.ExprStmt{
 					X: &ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "httpServer",
-							},
-							Sel: &ast.Ident{
-								Name: "Mount",
-							},
+							X:   ast.NewIdent("httpServer"),
+							Sel: ast.NewIdent("Mount"),
 						},
 						Args: []ast.Expr{
 							&ast.BasicLit{
@@ -848,14 +660,10 @@ func (a AppAuth) registerHTTP() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "a",
-										},
+										X:   ast.NewIdent("a"),
 										Sel: ast.NewIdent("httpAuthHandler"),
 									},
-									Sel: &ast.Ident{
-										Name: "ChiRouter",
-									},
+									Sel: ast.NewIdent("ChiRouter"),
 								},
 							},
 						},
@@ -863,9 +671,7 @@ func (a AppAuth) registerHTTP() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						&ast.Ident{
-							Name: "nil",
-						},
+						ast.NewIdent("nil"),
 					},
 				},
 			},

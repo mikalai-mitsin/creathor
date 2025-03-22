@@ -55,9 +55,7 @@ func (g *DTOGenerator) Sync() error {
 func (g *DTOGenerator) file() *ast.File {
 	return &ast.File{
 		Package: 1,
-		Name: &ast.Ident{
-			Name: "handlers",
-		},
+		Name:    ast.NewIdent("handlers"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -86,35 +84,25 @@ func (g *DTOGenerator) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "TokenPairDTO",
-						},
+						Name: ast.NewIdent("TokenPairDTO"),
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
-												Name: "AccessToken",
-											},
+											ast.NewIdent("AccessToken"),
 										},
-										Type: &ast.Ident{
-											Name: "string",
-										},
+										Type: ast.NewIdent("string"),
 										Tag: &ast.BasicLit{
 											Kind:  token.STRING,
 											Value: "`json:\"access_token\"`",
 										},
 									},
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
-												Name: "RefreshToken",
-											},
+											ast.NewIdent("RefreshToken"),
 										},
-										Type: &ast.Ident{
-											Name: "string",
-										},
+										Type: ast.NewIdent("string"),
 										Tag: &ast.BasicLit{
 											Kind:  token.STRING,
 											Value: "`json:\"refresh_token\"`",
@@ -127,40 +115,28 @@ func (g *DTOGenerator) file() *ast.File {
 				},
 			},
 			&ast.FuncDecl{
-				Name: &ast.Ident{
-					Name: "NewTokenPairDTO",
-				},
+				Name: ast.NewIdent("NewTokenPairDTO"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
-										Name: "entity",
-									},
+									ast.NewIdent("entity"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: &ast.Ident{
-										Name: "TokenPair",
-									},
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent("TokenPair"),
 								},
 							},
 						},
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
-								Type: &ast.Ident{
-									Name: "TokenPairDTO",
-								},
+							{
+								Type: ast.NewIdent("TokenPairDTO"),
 							},
-							&ast.Field{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+							{
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -169,54 +145,34 @@ func (g *DTOGenerator) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "dto",
-								},
+								ast.NewIdent("dto"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CompositeLit{
-									Type: &ast.Ident{
-										Name: "TokenPairDTO",
-									},
+									Type: ast.NewIdent("TokenPairDTO"),
 									Elts: []ast.Expr{
 										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "AccessToken",
-											},
+											Key: ast.NewIdent("AccessToken"),
 											Value: &ast.CallExpr{
 												Fun: &ast.SelectorExpr{
 													X: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "entity",
-														},
-														Sel: &ast.Ident{
-															Name: "Access",
-														},
+														X:   ast.NewIdent("entity"),
+														Sel: ast.NewIdent("Access"),
 													},
-													Sel: &ast.Ident{
-														Name: "String",
-													},
+													Sel: ast.NewIdent("String"),
 												},
 											},
 										},
 										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "RefreshToken",
-											},
+											Key: ast.NewIdent("RefreshToken"),
 											Value: &ast.CallExpr{
 												Fun: &ast.SelectorExpr{
 													X: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "entity",
-														},
-														Sel: &ast.Ident{
-															Name: "Refresh",
-														},
+														X:   ast.NewIdent("entity"),
+														Sel: ast.NewIdent("Refresh"),
 													},
-													Sel: &ast.Ident{
-														Name: "String",
-													},
+													Sel: ast.NewIdent("String"),
 												},
 											},
 										},
@@ -226,12 +182,8 @@ func (g *DTOGenerator) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "dto",
-								},
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("dto"),
+								ast.NewIdent("nil"),
 							},
 						},
 					},
@@ -241,35 +193,25 @@ func (g *DTOGenerator) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "ObtainTokenDTO",
-						},
+						Name: ast.NewIdent("ObtainTokenDTO"),
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
-												Name: "Email",
-											},
+											ast.NewIdent("Email"),
 										},
-										Type: &ast.Ident{
-											Name: "string",
-										},
+										Type: ast.NewIdent("string"),
 										Tag: &ast.BasicLit{
 											Kind:  token.STRING,
 											Value: "`json:\"email\"`",
 										},
 									},
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
-												Name: "Password",
-											},
+											ast.NewIdent("Password"),
 										},
-										Type: &ast.Ident{
-											Name: "string",
-										},
+										Type: ast.NewIdent("string"),
 										Tag: &ast.BasicLit{
 											Kind:  token.STRING,
 											Value: "`json:\"password\"`",
@@ -282,26 +224,18 @@ func (g *DTOGenerator) file() *ast.File {
 				},
 			},
 			&ast.FuncDecl{
-				Name: &ast.Ident{
-					Name: "NewObtainTokenDTO",
-				},
+				Name: ast.NewIdent("NewObtainTokenDTO"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
-										Name: "r",
-									},
+									ast.NewIdent("r"),
 								},
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "http",
-										},
-										Sel: &ast.Ident{
-											Name: "Request",
-										},
+										X:   ast.NewIdent("http"),
+										Sel: ast.NewIdent("Request"),
 									},
 								},
 							},
@@ -309,15 +243,11 @@ func (g *DTOGenerator) file() *ast.File {
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
-								Type: &ast.Ident{
-									Name: "ObtainTokenDTO",
-								},
+							{
+								Type: ast.NewIdent("ObtainTokenDTO"),
 							},
-							&ast.Field{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+							{
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -326,77 +256,53 @@ func (g *DTOGenerator) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "update",
-								},
+								ast.NewIdent("update"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CompositeLit{
-									Type: &ast.Ident{
-										Name: "ObtainTokenDTO",
-									},
+									Type: ast.NewIdent("ObtainTokenDTO"),
 								},
 							},
 						},
 						&ast.IfStmt{
 							Init: &ast.AssignStmt{
 								Lhs: []ast.Expr{
-									&ast.Ident{
-										Name: "err",
-									},
+									ast.NewIdent("err"),
 								},
 								Tok: token.DEFINE,
 								Rhs: []ast.Expr{
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "render",
-											},
-											Sel: &ast.Ident{
-												Name: "DecodeJSON",
-											},
+											X:   ast.NewIdent("render"),
+											Sel: ast.NewIdent("DecodeJSON"),
 										},
 										Args: []ast.Expr{
 											&ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "r",
-												},
-												Sel: &ast.Ident{
-													Name: "Body",
-												},
+												X:   ast.NewIdent("r"),
+												Sel: ast.NewIdent("Body"),
 											},
 											&ast.UnaryExpr{
 												Op: token.AND,
-												X: &ast.Ident{
-													Name: "update",
-												},
+												X:  ast.NewIdent("update"),
 											},
 										},
 									},
 								},
 							},
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
 									&ast.ReturnStmt{
 										Results: []ast.Expr{
 											&ast.CompositeLit{
-												Type: &ast.Ident{
-													Name: "ObtainTokenDTO",
-												},
+												Type: ast.NewIdent("ObtainTokenDTO"),
 											},
-											&ast.Ident{
-												Name: "err",
-											},
+											ast.NewIdent("err"),
 										},
 									},
 								},
@@ -404,12 +310,8 @@ func (g *DTOGenerator) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "update",
-								},
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("update"),
+								ast.NewIdent("nil"),
 							},
 						},
 					},
@@ -418,39 +320,27 @@ func (g *DTOGenerator) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
-									Name: "dto",
-								},
+								ast.NewIdent("dto"),
 							},
-							Type: &ast.Ident{
-								Name: "ObtainTokenDTO",
-							},
+							Type: ast.NewIdent("ObtainTokenDTO"),
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "toEntity",
-				},
+				Name: ast.NewIdent("toEntity"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: &ast.Ident{
-										Name: "Login",
-									},
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent("Login"),
 								},
 							},
-							&ast.Field{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+							{
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -459,46 +349,28 @@ func (g *DTOGenerator) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "login",
-								},
+								ast.NewIdent("login"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CompositeLit{
 									Type: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "entities",
-										},
-										Sel: &ast.Ident{
-											Name: "Login",
-										},
+										X:   ast.NewIdent("entities"),
+										Sel: ast.NewIdent("Login"),
 									},
 									Elts: []ast.Expr{
 										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "Email",
-											},
+											Key: ast.NewIdent("Email"),
 											Value: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "dto",
-												},
-												Sel: &ast.Ident{
-													Name: "Email",
-												},
+												X:   ast.NewIdent("dto"),
+												Sel: ast.NewIdent("Email"),
 											},
 										},
 										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "Password",
-											},
+											Key: ast.NewIdent("Password"),
 											Value: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "dto",
-												},
-												Sel: &ast.Ident{
-													Name: "Password",
-												},
+												X:   ast.NewIdent("dto"),
+												Sel: ast.NewIdent("Password"),
 											},
 										},
 									},
@@ -507,12 +379,8 @@ func (g *DTOGenerator) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "login",
-								},
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("login"),
+								ast.NewIdent("nil"),
 							},
 						},
 					},
@@ -522,21 +390,15 @@ func (g *DTOGenerator) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "RefreshTokenDTO",
-						},
+						Name: ast.NewIdent("RefreshTokenDTO"),
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
-									&ast.Field{
+									{
 										Names: []*ast.Ident{
-											&ast.Ident{
-												Name: "RefreshToken",
-											},
+											ast.NewIdent("RefreshToken"),
 										},
-										Type: &ast.Ident{
-											Name: "string",
-										},
+										Type: ast.NewIdent("string"),
 										Tag: &ast.BasicLit{
 											Kind:  token.STRING,
 											Value: "`json:\"refresh_token\"`",
@@ -549,26 +411,18 @@ func (g *DTOGenerator) file() *ast.File {
 				},
 			},
 			&ast.FuncDecl{
-				Name: &ast.Ident{
-					Name: "NewRefreshTokenDTO",
-				},
+				Name: ast.NewIdent("NewRefreshTokenDTO"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
-										Name: "r",
-									},
+									ast.NewIdent("r"),
 								},
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "http",
-										},
-										Sel: &ast.Ident{
-											Name: "Request",
-										},
+										X:   ast.NewIdent("http"),
+										Sel: ast.NewIdent("Request"),
 									},
 								},
 							},
@@ -576,15 +430,11 @@ func (g *DTOGenerator) file() *ast.File {
 					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
-								Type: &ast.Ident{
-									Name: "RefreshTokenDTO",
-								},
+							{
+								Type: ast.NewIdent("RefreshTokenDTO"),
 							},
-							&ast.Field{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+							{
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -593,77 +443,53 @@ func (g *DTOGenerator) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "dto",
-								},
+								ast.NewIdent("dto"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CompositeLit{
-									Type: &ast.Ident{
-										Name: "RefreshTokenDTO",
-									},
+									Type: ast.NewIdent("RefreshTokenDTO"),
 								},
 							},
 						},
 						&ast.IfStmt{
 							Init: &ast.AssignStmt{
 								Lhs: []ast.Expr{
-									&ast.Ident{
-										Name: "err",
-									},
+									ast.NewIdent("err"),
 								},
 								Tok: token.DEFINE,
 								Rhs: []ast.Expr{
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "render",
-											},
-											Sel: &ast.Ident{
-												Name: "DecodeJSON",
-											},
+											X:   ast.NewIdent("render"),
+											Sel: ast.NewIdent("DecodeJSON"),
 										},
 										Args: []ast.Expr{
 											&ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "r",
-												},
-												Sel: &ast.Ident{
-													Name: "Body",
-												},
+												X:   ast.NewIdent("r"),
+												Sel: ast.NewIdent("Body"),
 											},
 											&ast.UnaryExpr{
 												Op: token.AND,
-												X: &ast.Ident{
-													Name: "dto",
-												},
+												X:  ast.NewIdent("dto"),
 											},
 										},
 									},
 								},
 							},
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
 									&ast.ReturnStmt{
 										Results: []ast.Expr{
 											&ast.CompositeLit{
-												Type: &ast.Ident{
-													Name: "RefreshTokenDTO",
-												},
+												Type: ast.NewIdent("RefreshTokenDTO"),
 											},
-											&ast.Ident{
-												Name: "err",
-											},
+											ast.NewIdent("err"),
 										},
 									},
 								},
@@ -671,12 +497,8 @@ func (g *DTOGenerator) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "dto",
-								},
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("dto"),
+								ast.NewIdent("nil"),
 							},
 						},
 					},
@@ -685,39 +507,27 @@ func (g *DTOGenerator) file() *ast.File {
 			&ast.FuncDecl{
 				Recv: &ast.FieldList{
 					List: []*ast.Field{
-						&ast.Field{
+						{
 							Names: []*ast.Ident{
-								&ast.Ident{
-									Name: "dto",
-								},
+								ast.NewIdent("dto"),
 							},
-							Type: &ast.Ident{
-								Name: "RefreshTokenDTO",
-							},
+							Type: ast.NewIdent("RefreshTokenDTO"),
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "toEntity",
-				},
+				Name: ast.NewIdent("toEntity"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: &ast.Ident{
-										Name: "Token",
-									},
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent("Token"),
 								},
 							},
-							&ast.Field{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+							{
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -726,29 +536,19 @@ func (g *DTOGenerator) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "token",
-								},
+								ast.NewIdent("token"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "entities",
-										},
-										Sel: &ast.Ident{
-											Name: "Token",
-										},
+										X:   ast.NewIdent("entities"),
+										Sel: ast.NewIdent("Token"),
 									},
 									Args: []ast.Expr{
 										&ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "dto",
-											},
-											Sel: &ast.Ident{
-												Name: "RefreshToken",
-											},
+											X:   ast.NewIdent("dto"),
+											Sel: ast.NewIdent("RefreshToken"),
 										},
 									},
 								},
@@ -756,12 +556,8 @@ func (g *DTOGenerator) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "token",
-								},
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("token"),
+								ast.NewIdent("nil"),
 							},
 						},
 					},
@@ -771,19 +567,19 @@ func (g *DTOGenerator) file() *ast.File {
 		FileStart: 1,
 		FileEnd:   1334,
 		Imports: []*ast.ImportSpec{
-			&ast.ImportSpec{
+			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: "\"net/http\"",
 				},
 			},
-			&ast.ImportSpec{
+			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: "\"github.com/go-chi/render\"",
 				},
 			},
-			&ast.ImportSpec{
+			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: fmt.Sprintf(`"%s/internal/app/auth/entities"`, g.project.Module),

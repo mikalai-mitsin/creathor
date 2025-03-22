@@ -289,9 +289,7 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: &ast.Ident{
-					Name: i.domain.GetServiceInterfaceName(),
-				},
+				Name: ast.NewIdent(i.domain.GetServiceInterfaceName()),
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: methods,

@@ -51,13 +51,9 @@ func (m *Perm) perms() *ast.GenDecl {
 		Specs: []ast.Spec{
 			&ast.ValueSpec{
 				Names: []*ast.Ident{
-					{
-						Name: fmt.Sprintf("PermissionID%sList", strcase.ToCamel(m.modelName)),
-					},
+					ast.NewIdent(fmt.Sprintf("PermissionID%sList", strcase.ToCamel(m.modelName))),
 				},
-				Type: &ast.Ident{
-					Name: "PermissionID",
-				},
+				Type: ast.NewIdent("PermissionID"),
 				Values: []ast.Expr{
 					&ast.BasicLit{
 						Kind:  token.STRING,
@@ -67,13 +63,9 @@ func (m *Perm) perms() *ast.GenDecl {
 			},
 			&ast.ValueSpec{
 				Names: []*ast.Ident{
-					{
-						Name: fmt.Sprintf("PermissionID%sDetail", strcase.ToCamel(m.modelName)),
-					},
+					ast.NewIdent(fmt.Sprintf("PermissionID%sDetail", strcase.ToCamel(m.modelName))),
 				},
-				Type: &ast.Ident{
-					Name: "PermissionID",
-				},
+				Type: ast.NewIdent("PermissionID"),
 				Values: []ast.Expr{
 					&ast.BasicLit{
 						Kind:  token.STRING,
@@ -83,13 +75,9 @@ func (m *Perm) perms() *ast.GenDecl {
 			},
 			&ast.ValueSpec{
 				Names: []*ast.Ident{
-					{
-						Name: fmt.Sprintf("PermissionID%sCreate", strcase.ToCamel(m.modelName)),
-					},
+					ast.NewIdent(fmt.Sprintf("PermissionID%sCreate", strcase.ToCamel(m.modelName))),
 				},
-				Type: &ast.Ident{
-					Name: "PermissionID",
-				},
+				Type: ast.NewIdent("PermissionID"),
 				Values: []ast.Expr{
 					&ast.BasicLit{
 						Kind:  token.STRING,
@@ -99,13 +87,9 @@ func (m *Perm) perms() *ast.GenDecl {
 			},
 			&ast.ValueSpec{
 				Names: []*ast.Ident{
-					{
-						Name: fmt.Sprintf("PermissionID%sUpdate", strcase.ToCamel(m.modelName)),
-					},
+					ast.NewIdent(fmt.Sprintf("PermissionID%sUpdate", strcase.ToCamel(m.modelName))),
 				},
-				Type: &ast.Ident{
-					Name: "PermissionID",
-				},
+				Type: ast.NewIdent("PermissionID"),
 				Values: []ast.Expr{
 					&ast.BasicLit{
 						Kind:  token.STRING,
@@ -115,13 +99,9 @@ func (m *Perm) perms() *ast.GenDecl {
 			},
 			&ast.ValueSpec{
 				Names: []*ast.Ident{
-					{
-						Name: fmt.Sprintf("PermissionID%sDelete", strcase.ToCamel(m.modelName)),
-					},
+					ast.NewIdent(fmt.Sprintf("PermissionID%sDelete", strcase.ToCamel(m.modelName))),
 				},
-				Type: &ast.Ident{
-					Name: "PermissionID",
-				},
+				Type: ast.NewIdent("PermissionID"),
 				Values: []ast.Expr{
 					&ast.BasicLit{
 						Kind:  token.STRING,

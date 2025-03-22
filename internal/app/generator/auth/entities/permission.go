@@ -22,20 +22,14 @@ func NewModelPermission(project *configs.Project) *ModelPermission {
 
 func (i ModelPermission) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "entities",
-		},
+		Name: ast.NewIdent("entities"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "PermissionID",
-						},
-						Type: &ast.Ident{
-							Name: "string",
-						},
+						Name: ast.NewIdent("PermissionID"),
+						Type: ast.NewIdent("string"),
 					},
 				},
 			},
@@ -44,27 +38,19 @@ func (i ModelPermission) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "p",
-								},
+								ast.NewIdent("p"),
 							},
-							Type: &ast.Ident{
-								Name: "PermissionID",
-							},
+							Type: ast.NewIdent("PermissionID"),
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "String",
-				},
+				Name: ast.NewIdent("String"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: &ast.Ident{
-									Name: "string",
-								},
+								Type: ast.NewIdent("string"),
 							},
 						},
 					},
@@ -74,13 +60,9 @@ func (i ModelPermission) file() *ast.File {
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
 								&ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: "string",
-									},
+									Fun: ast.NewIdent("string"),
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "p",
-										},
+										ast.NewIdent("p"),
 									},
 								},
 							},
@@ -92,21 +74,15 @@ func (i ModelPermission) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "Permission",
-						},
+						Name: ast.NewIdent("Permission"),
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "ID",
-											},
+											ast.NewIdent("ID"),
 										},
-										Type: &ast.Ident{
-											Name: "PermissionID",
-										},
+										Type: ast.NewIdent("PermissionID"),
 										Tag: &ast.BasicLit{
 											Kind:  token.STRING,
 											Value: "`db:\"id,omitempty\" json:\"id\"   form:\"id\"`",
@@ -114,13 +90,9 @@ func (i ModelPermission) file() *ast.File {
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "Name",
-											},
+											ast.NewIdent("Name"),
 										},
-										Type: &ast.Ident{
-											Name: "string",
-										},
+										Type: ast.NewIdent("string"),
 										Tag: &ast.BasicLit{
 											Kind:  token.STRING,
 											Value: "`db:\"name\"         json:\"name\" form:\"name\"`",
@@ -136,12 +108,8 @@ func (i ModelPermission) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "GroupID",
-						},
-						Type: &ast.Ident{
-							Name: "string",
-						},
+						Name: ast.NewIdent("GroupID"),
+						Type: ast.NewIdent("string"),
 					},
 				},
 			},
@@ -150,13 +118,9 @@ func (i ModelPermission) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							{
-								Name: "GroupIDAdmin",
-							},
+							ast.NewIdent("GroupIDAdmin"),
 						},
-						Type: &ast.Ident{
-							Name: "GroupID",
-						},
+						Type: ast.NewIdent("GroupID"),
 						Values: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
@@ -166,13 +130,9 @@ func (i ModelPermission) file() *ast.File {
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							{
-								Name: "GroupIDUser",
-							},
+							ast.NewIdent("GroupIDUser"),
 						},
-						Type: &ast.Ident{
-							Name: "GroupID",
-						},
+						Type: ast.NewIdent("GroupID"),
 						Values: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
@@ -182,13 +142,9 @@ func (i ModelPermission) file() *ast.File {
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							{
-								Name: "GroupIDGuest",
-							},
+							ast.NewIdent("GroupIDGuest"),
 						},
-						Type: &ast.Ident{
-							Name: "GroupID",
-						},
+						Type: ast.NewIdent("GroupID"),
 						Values: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
@@ -202,21 +158,15 @@ func (i ModelPermission) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "Group",
-						},
+						Name: ast.NewIdent("Group"),
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "ID",
-											},
+											ast.NewIdent("ID"),
 										},
-										Type: &ast.Ident{
-											Name: "GroupID",
-										},
+										Type: ast.NewIdent("GroupID"),
 										Tag: &ast.BasicLit{
 											Kind:  token.STRING,
 											Value: "`db:\"id,omitempty\" json:\"id\"`",
@@ -224,13 +174,9 @@ func (i ModelPermission) file() *ast.File {
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "Name",
-											},
+											ast.NewIdent("Name"),
 										},
-										Type: &ast.Ident{
-											Name: "string",
-										},
+										Type: ast.NewIdent("string"),
 										Tag: &ast.BasicLit{
 											Kind:  token.STRING,
 											Value: "`db:\"name\"         json:\"name\"`",

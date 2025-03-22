@@ -23,9 +23,7 @@ func NewInterfaces(project *configs.Project) *Interfaces {
 
 func (i *Interfaces) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "handlers",
-		},
+		Name: ast.NewIdent("handlers"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Doc: &ast.CommentGroup{
@@ -279,49 +277,33 @@ func (i *Interfaces) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "authUseCase",
-						},
+						Name: ast.NewIdent("authUseCase"),
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{
 								List: []*ast.Field{
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "CreateToken",
-											},
+											ast.NewIdent("CreateToken"),
 										},
 										Type: &ast.FuncType{
 											Params: &ast.FieldList{
 												List: []*ast.Field{
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "ctx",
-															},
+															ast.NewIdent("ctx"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "context",
-															},
-															Sel: &ast.Ident{
-																Name: "Context",
-															},
+															X:   ast.NewIdent("context"),
+															Sel: ast.NewIdent("Context"),
 														},
 													},
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "login",
-															},
+															ast.NewIdent("login"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "entities",
-															},
-															Sel: &ast.Ident{
-																Name: "Login",
-															},
+															X:   ast.NewIdent("entities"),
+															Sel: ast.NewIdent("Login"),
 														},
 													},
 												},
@@ -335,9 +317,7 @@ func (i *Interfaces) file() *ast.File {
 														},
 													},
 													{
-														Type: &ast.Ident{
-															Name: "error",
-														},
+														Type: ast.NewIdent("error"),
 													},
 												},
 											},
@@ -345,41 +325,27 @@ func (i *Interfaces) file() *ast.File {
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "RefreshToken",
-											},
+											ast.NewIdent("RefreshToken"),
 										},
 										Type: &ast.FuncType{
 											Params: &ast.FieldList{
 												List: []*ast.Field{
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "ctx",
-															},
+															ast.NewIdent("ctx"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "context",
-															},
-															Sel: &ast.Ident{
-																Name: "Context",
-															},
+															X:   ast.NewIdent("context"),
+															Sel: ast.NewIdent("Context"),
 														},
 													},
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "refresh",
-															},
+															ast.NewIdent("refresh"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "entities",
-															},
-															Sel: &ast.Ident{
-																Name: "Token",
-															},
+															X:   ast.NewIdent("entities"),
+															Sel: ast.NewIdent("Token"),
 														},
 													},
 												},
@@ -393,9 +359,7 @@ func (i *Interfaces) file() *ast.File {
 														},
 													},
 													{
-														Type: &ast.Ident{
-															Name: "error",
-														},
+														Type: ast.NewIdent("error"),
 													},
 												},
 											},

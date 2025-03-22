@@ -294,9 +294,7 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: &ast.Ident{
-					Name: i.domain.GetUseCaseInterfaceName(),
-				},
+				Name: ast.NewIdent(i.domain.GetUseCaseInterfaceName()),
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: methods,

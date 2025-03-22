@@ -166,9 +166,7 @@ func (f FxContainer) file() *ast.File {
 		)
 	}
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "containers",
-		},
+		Name: ast.NewIdent("containers"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok:   token.IMPORT,
@@ -183,64 +181,36 @@ func (f FxContainer) file() *ast.File {
 func (f FxContainer) toProvide() []ast.Expr {
 	toProvide := []ast.Expr{
 		&ast.SelectorExpr{
-			X: &ast.Ident{
-				Name: "context",
-			},
-			Sel: &ast.Ident{
-				Name: "Background",
-			},
+			X:   ast.NewIdent("context"),
+			Sel: ast.NewIdent("Background"),
 		},
 		&ast.SelectorExpr{
-			X: &ast.Ident{
-				Name: "configs",
-			},
-			Sel: &ast.Ident{
-				Name: "ParseConfig",
-			},
+			X:   ast.NewIdent("configs"),
+			Sel: ast.NewIdent("ParseConfig"),
 		},
 		&ast.SelectorExpr{
-			X: &ast.Ident{
-				Name: "clock",
-			},
-			Sel: &ast.Ident{
-				Name: "NewClock",
-			},
+			X:   ast.NewIdent("clock"),
+			Sel: ast.NewIdent("NewClock"),
 		},
 		&ast.SelectorExpr{
-			X: &ast.Ident{
-				Name: "uuid",
-			},
-			Sel: &ast.Ident{
-				Name: "NewUUIDv4Generator",
-			},
+			X:   ast.NewIdent("uuid"),
+			Sel: ast.NewIdent("NewUUIDv4Generator"),
 		},
 		&ast.SelectorExpr{
-			X: &ast.Ident{
-				Name: "postgres",
-			},
-			Sel: &ast.Ident{
-				Name: "NewDatabase",
-			},
+			X:   ast.NewIdent("postgres"),
+			Sel: ast.NewIdent("NewDatabase"),
 		},
 		&ast.SelectorExpr{
-			X: &ast.Ident{
-				Name: "postgres",
-			},
-			Sel: &ast.Ident{
-				Name: "NewMigrateManager",
-			},
+			X:   ast.NewIdent("postgres"),
+			Sel: ast.NewIdent("NewMigrateManager"),
 		},
 	}
 	if f.project.UptraceEnabled {
 		toProvide = append(
 			toProvide,
 			&ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "uptrace",
-				},
-				Sel: &ast.Ident{
-					Name: "NewProvider",
-				},
+				X:   ast.NewIdent("uptrace"),
+				Sel: ast.NewIdent("NewProvider"),
 			},
 		)
 	}
@@ -270,18 +240,12 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "config",
-								},
+								ast.NewIdent("config"),
 							},
 							Type: &ast.StarExpr{
 								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "configs",
-									},
-									Sel: &ast.Ident{
-										Name: "Config",
-									},
+									X:   ast.NewIdent("configs"),
+									Sel: ast.NewIdent("Config"),
 								},
 							},
 						},
@@ -292,19 +256,13 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 						{
 							Type: &ast.StarExpr{
 								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "log",
-									},
-									Sel: &ast.Ident{
-										Name: "Log",
-									},
+									X:   ast.NewIdent("log"),
+									Sel: ast.NewIdent("Log"),
 								},
 							},
 						},
 						{
-							Type: &ast.Ident{
-								Name: "error",
-							},
+							Type: ast.NewIdent("error"),
 						},
 					},
 				},
@@ -315,21 +273,13 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 						Results: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "log",
-									},
-									Sel: &ast.Ident{
-										Name: "NewLog",
-									},
+									X:   ast.NewIdent("log"),
+									Sel: ast.NewIdent("NewLog"),
 								},
 								Args: []ast.Expr{
 									&ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "config",
-										},
-										Sel: &ast.Ident{
-											Name: "LogLevel",
-										},
+										X:   ast.NewIdent("config"),
+										Sel: ast.NewIdent("LogLevel"),
 									},
 								},
 							},
@@ -343,12 +293,8 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 	exprs := []ast.Expr{
 		&ast.CallExpr{
 			Fun: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "fx",
-				},
-				Sel: &ast.Ident{
-					Name: "WithLogger",
-				},
+				X:   ast.NewIdent("fx"),
+				Sel: ast.NewIdent("WithLogger"),
 			},
 			Args: []ast.Expr{
 				&ast.FuncLit{
@@ -357,18 +303,12 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 							List: []*ast.Field{
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "logger",
-										},
+										ast.NewIdent("logger"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "log",
-											},
-											Sel: &ast.Ident{
-												Name: "Log",
-											},
+											X:   ast.NewIdent("log"),
+											Sel: ast.NewIdent("Log"),
 										},
 									},
 								},
@@ -378,12 +318,8 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 							List: []*ast.Field{
 								{
 									Type: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "fxevent",
-										},
-										Sel: &ast.Ident{
-											Name: "Logger",
-										},
+										X:   ast.NewIdent("fxevent"),
+										Sel: ast.NewIdent("Logger"),
 									},
 								},
 							},
@@ -393,9 +329,7 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									&ast.Ident{
-										Name: "logger",
-									},
+									ast.NewIdent("logger"),
 								},
 							},
 						},
@@ -405,12 +339,8 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 		},
 		&ast.CallExpr{
 			Fun: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "fx",
-				},
-				Sel: &ast.Ident{
-					Name: "Provide",
-				},
+				X:   ast.NewIdent("fx"),
+				Sel: ast.NewIdent("Provide"),
 			},
 			Args: toProvide,
 		},
@@ -418,12 +348,8 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 	if f.project.UptraceEnabled {
 		exprs = append(exprs, &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "fx",
-				},
-				Sel: &ast.Ident{
-					Name: "Invoke",
-				},
+				X:   ast.NewIdent("fx"),
+				Sel: ast.NewIdent("Invoke"),
 			},
 			Args: []ast.Expr{
 				&ast.FuncLit{
@@ -432,50 +358,32 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 							List: []*ast.Field{
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "lifecycle",
-										},
+										ast.NewIdent("lifecycle"),
 									},
 									Type: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "fx",
-										},
-										Sel: &ast.Ident{
-											Name: "Lifecycle",
+										X:   ast.NewIdent("fx"),
+										Sel: ast.NewIdent("Lifecycle"),
+									},
+								},
+								{
+									Names: []*ast.Ident{
+										ast.NewIdent("server"),
+									},
+									Type: &ast.StarExpr{
+										X: &ast.SelectorExpr{
+											X:   ast.NewIdent("uptrace"),
+											Sel: ast.NewIdent("Provider"),
 										},
 									},
 								},
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "server",
-										},
+										ast.NewIdent("config"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "uptrace",
-											},
-											Sel: &ast.Ident{
-												Name: "Provider",
-											},
-										},
-									},
-								},
-								{
-									Names: []*ast.Ident{
-										{
-											Name: "config",
-										},
-									},
-									Type: &ast.StarExpr{
-										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "configs",
-											},
-											Sel: &ast.Ident{
-												Name: "Config",
-											},
+											X:   ast.NewIdent("configs"),
+											Sel: ast.NewIdent("Config"),
 										},
 									},
 								},
@@ -487,48 +395,28 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 							&ast.ExprStmt{
 								X: &ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "lifecycle",
-										},
-										Sel: &ast.Ident{
-											Name: "Append",
-										},
+										X:   ast.NewIdent("lifecycle"),
+										Sel: ast.NewIdent("Append"),
 									},
 									Args: []ast.Expr{
 										&ast.CompositeLit{
 											Type: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "fx",
-												},
-												Sel: &ast.Ident{
-													Name: "Hook",
-												},
+												X:   ast.NewIdent("fx"),
+												Sel: ast.NewIdent("Hook"),
 											},
 											Elts: []ast.Expr{
 												&ast.KeyValueExpr{
-													Key: &ast.Ident{
-														Name: "OnStart",
-													},
+													Key: ast.NewIdent("OnStart"),
 													Value: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "server",
-														},
-														Sel: &ast.Ident{
-															Name: "Start",
-														},
+														X:   ast.NewIdent("server"),
+														Sel: ast.NewIdent("Start"),
 													},
 												},
 												&ast.KeyValueExpr{
-													Key: &ast.Ident{
-														Name: "OnStop",
-													},
+													Key: ast.NewIdent("OnStop"),
 													Value: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "server",
-														},
-														Sel: &ast.Ident{
-															Name: "Stop",
-														},
+														X:   ast.NewIdent("server"),
+														Sel: ast.NewIdent("Stop"),
 													},
 												},
 											},
@@ -544,19 +432,13 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 	}
 	return &ast.ValueSpec{
 		Names: []*ast.Ident{
-			{
-				Name: "FXModule",
-			},
+			ast.NewIdent("FXModule"),
 		},
 		Values: []ast.Expr{
 			&ast.CallExpr{
 				Fun: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "fx",
-					},
-					Sel: &ast.Ident{
-						Name: "Options",
-					},
+					X:   ast.NewIdent("fx"),
+					Sel: ast.NewIdent("Options"),
 				},
 				Args: exprs,
 			},
@@ -639,12 +521,8 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 	args := []ast.Expr{
 		&ast.CallExpr{
 			Fun: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "fx",
-				},
-				Sel: &ast.Ident{
-					Name: "Provide",
-				},
+				X:   ast.NewIdent("fx"),
+				Sel: ast.NewIdent("Provide"),
 			},
 			Args: []ast.Expr{
 				&ast.FuncLit{
@@ -653,9 +531,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 						Results: &ast.FieldList{
 							List: []*ast.Field{
 								{
-									Type: &ast.Ident{
-										Name: "string",
-									},
+									Type: ast.NewIdent("string"),
 								},
 							},
 						},
@@ -664,9 +540,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									&ast.Ident{
-										Name: "config",
-									},
+									ast.NewIdent("config"),
 								},
 							},
 						},
@@ -716,12 +590,8 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 					},
 				},
 				&ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "grpc",
-					},
-					Sel: &ast.Ident{
-						Name: "NewServer",
-					},
+					X:   ast.NewIdent("grpc"),
+					Sel: ast.NewIdent("NewServer"),
 				},
 			},
 		},
@@ -730,12 +600,8 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 	if f.project.Auth {
 		args = append(args, &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "fx",
-				},
-				Sel: &ast.Ident{
-					Name: "Invoke",
-				},
+				X:   ast.NewIdent("fx"),
+				Sel: ast.NewIdent("Invoke"),
 			},
 			Args: []ast.Expr{
 				&ast.FuncLit{
@@ -744,24 +610,16 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 							List: []*ast.Field{
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "lifecycle",
-										},
+										ast.NewIdent("lifecycle"),
 									},
 									Type: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "fx",
-										},
-										Sel: &ast.Ident{
-											Name: "Lifecycle",
-										},
+										X:   ast.NewIdent("fx"),
+										Sel: ast.NewIdent("Lifecycle"),
 									},
 								},
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "app",
-										},
+										ast.NewIdent("app"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
@@ -772,18 +630,12 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 								},
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "server",
-										},
+										ast.NewIdent("server"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "grpc",
-											},
-											Sel: &ast.Ident{
-												Name: "Server",
-											},
+											X:   ast.NewIdent("grpc"),
+											Sel: ast.NewIdent("Server"),
 										},
 									},
 								},
@@ -795,55 +647,37 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 							&ast.ExprStmt{
 								X: &ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "lifecycle",
-										},
-										Sel: &ast.Ident{
-											Name: "Append",
-										},
+										X:   ast.NewIdent("lifecycle"),
+										Sel: ast.NewIdent("Append"),
 									},
 									Args: []ast.Expr{
 										&ast.CompositeLit{
 											Type: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "fx",
-												},
-												Sel: &ast.Ident{
-													Name: "Hook",
-												},
+												X:   ast.NewIdent("fx"),
+												Sel: ast.NewIdent("Hook"),
 											},
 											Elts: []ast.Expr{
 												&ast.KeyValueExpr{
-													Key: &ast.Ident{
-														Name: "OnStart",
-													},
+													Key: ast.NewIdent("OnStart"),
 													Value: &ast.FuncLit{
 														Type: &ast.FuncType{
 															Params: &ast.FieldList{
 																List: []*ast.Field{
-																	&ast.Field{
+																	{
 																		Names: []*ast.Ident{
-																			&ast.Ident{
-																				Name: "_",
-																			},
+																			ast.NewIdent("_"),
 																		},
 																		Type: &ast.SelectorExpr{
-																			X: &ast.Ident{
-																				Name: "context",
-																			},
-																			Sel: &ast.Ident{
-																				Name: "Context",
-																			},
+																			X:   ast.NewIdent("context"),
+																			Sel: ast.NewIdent("Context"),
 																		},
 																	},
 																},
 															},
 															Results: &ast.FieldList{
 																List: []*ast.Field{
-																	&ast.Field{
-																		Type: &ast.Ident{
-																			Name: "error",
-																		},
+																	{
+																		Type: ast.NewIdent("error"),
 																	},
 																},
 															},
@@ -853,45 +687,31 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 																&ast.IfStmt{
 																	Init: &ast.AssignStmt{
 																		Lhs: []ast.Expr{
-																			&ast.Ident{
-																				Name: "err",
-																			},
+																			ast.NewIdent("err"),
 																		},
 																		Tok: token.DEFINE,
 																		Rhs: []ast.Expr{
 																			&ast.CallExpr{
 																				Fun: &ast.SelectorExpr{
-																					X: &ast.Ident{
-																						Name: "app",
-																					},
-																					Sel: &ast.Ident{
-																						Name: "RegisterGRPC",
-																					},
+																					X:   ast.NewIdent("app"),
+																					Sel: ast.NewIdent("RegisterGRPC"),
 																				},
 																				Args: []ast.Expr{
-																					&ast.Ident{
-																						Name: "server",
-																					},
+																					ast.NewIdent("server"),
 																				},
 																			},
 																		},
 																	},
 																	Cond: &ast.BinaryExpr{
-																		X: &ast.Ident{
-																			Name: "err",
-																		},
+																		X:  ast.NewIdent("err"),
 																		Op: token.NEQ,
-																		Y: &ast.Ident{
-																			Name: "nil",
-																		},
+																		Y:  ast.NewIdent("nil"),
 																	},
 																	Body: &ast.BlockStmt{
 																		List: []ast.Stmt{
 																			&ast.ReturnStmt{
 																				Results: []ast.Expr{
-																					&ast.Ident{
-																						Name: "err",
-																					},
+																					ast.NewIdent("err"),
 																				},
 																			},
 																		},
@@ -899,9 +719,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 																},
 																&ast.ReturnStmt{
 																	Results: []ast.Expr{
-																		&ast.Ident{
-																			Name: "nil",
-																		},
+																		ast.NewIdent("nil"),
 																	},
 																},
 															},
@@ -922,12 +740,8 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 	for _, domain := range f.project.Domains {
 		args = append(args, &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "fx",
-				},
-				Sel: &ast.Ident{
-					Name: "Invoke",
-				},
+				X:   ast.NewIdent("fx"),
+				Sel: ast.NewIdent("Invoke"),
 			},
 			Args: []ast.Expr{
 				&ast.FuncLit{
@@ -936,48 +750,32 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 							List: []*ast.Field{
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "lifecycle",
-										},
+										ast.NewIdent("lifecycle"),
 									},
 									Type: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "fx",
-										},
-										Sel: &ast.Ident{
-											Name: "Lifecycle",
-										},
+										X:   ast.NewIdent("fx"),
+										Sel: ast.NewIdent("Lifecycle"),
 									},
 								},
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "app",
-										},
+										ast.NewIdent("app"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: domain.DomainName(),
-											},
+											X:   ast.NewIdent(domain.DomainName()),
 											Sel: ast.NewIdent("App"),
 										},
 									},
 								},
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "server",
-										},
+										ast.NewIdent("server"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "grpc",
-											},
-											Sel: &ast.Ident{
-												Name: "Server",
-											},
+											X:   ast.NewIdent("grpc"),
+											Sel: ast.NewIdent("Server"),
 										},
 									},
 								},
@@ -989,45 +787,29 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 							&ast.ExprStmt{
 								X: &ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "lifecycle",
-										},
-										Sel: &ast.Ident{
-											Name: "Append",
-										},
+										X:   ast.NewIdent("lifecycle"),
+										Sel: ast.NewIdent("Append"),
 									},
 									Args: []ast.Expr{
 										&ast.CompositeLit{
 											Type: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "fx",
-												},
-												Sel: &ast.Ident{
-													Name: "Hook",
-												},
+												X:   ast.NewIdent("fx"),
+												Sel: ast.NewIdent("Hook"),
 											},
 											Elts: []ast.Expr{
 												&ast.KeyValueExpr{
-													Key: &ast.Ident{
-														Name: "OnStart",
-													},
+													Key: ast.NewIdent("OnStart"),
 													Value: &ast.FuncLit{
 														Type: &ast.FuncType{
 															Params: &ast.FieldList{
 																List: []*ast.Field{
 																	{
 																		Names: []*ast.Ident{
-																			{
-																				Name: "_",
-																			},
+																			ast.NewIdent("_"),
 																		},
 																		Type: &ast.SelectorExpr{
-																			X: &ast.Ident{
-																				Name: "context",
-																			},
-																			Sel: &ast.Ident{
-																				Name: "Context",
-																			},
+																			X:   ast.NewIdent("context"),
+																			Sel: ast.NewIdent("Context"),
 																		},
 																	},
 																},
@@ -1035,9 +817,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 															Results: &ast.FieldList{
 																List: []*ast.Field{
 																	{
-																		Type: &ast.Ident{
-																			Name: "error",
-																		},
+																		Type: ast.NewIdent("error"),
 																	},
 																},
 															},
@@ -1047,45 +827,31 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 																&ast.IfStmt{
 																	Init: &ast.AssignStmt{
 																		Lhs: []ast.Expr{
-																			&ast.Ident{
-																				Name: "err",
-																			},
+																			ast.NewIdent("err"),
 																		},
 																		Tok: token.DEFINE,
 																		Rhs: []ast.Expr{
 																			&ast.CallExpr{
 																				Fun: &ast.SelectorExpr{
-																					X: &ast.Ident{
-																						Name: "app",
-																					},
-																					Sel: &ast.Ident{
-																						Name: "RegisterGRPC",
-																					},
+																					X:   ast.NewIdent("app"),
+																					Sel: ast.NewIdent("RegisterGRPC"),
 																				},
 																				Args: []ast.Expr{
-																					&ast.Ident{
-																						Name: "server",
-																					},
+																					ast.NewIdent("server"),
 																				},
 																			},
 																		},
 																	},
 																	Cond: &ast.BinaryExpr{
-																		X: &ast.Ident{
-																			Name: "err",
-																		},
+																		X:  ast.NewIdent("err"),
 																		Op: token.NEQ,
-																		Y: &ast.Ident{
-																			Name: "nil",
-																		},
+																		Y:  ast.NewIdent("nil"),
 																	},
 																	Body: &ast.BlockStmt{
 																		List: []ast.Stmt{
 																			&ast.ReturnStmt{
 																				Results: []ast.Expr{
-																					&ast.Ident{
-																						Name: "err",
-																					},
+																					ast.NewIdent("err"),
 																				},
 																			},
 																		},
@@ -1093,9 +859,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 																},
 																&ast.ReturnStmt{
 																	Results: []ast.Expr{
-																		&ast.Ident{
-																			Name: "nil",
-																		},
+																		ast.NewIdent("nil"),
 																	},
 																},
 															},
@@ -1115,12 +879,8 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 	}
 	args = append(args, &ast.CallExpr{
 		Fun: &ast.SelectorExpr{
-			X: &ast.Ident{
-				Name: "fx",
-			},
-			Sel: &ast.Ident{
-				Name: "Invoke",
-			},
+			X:   ast.NewIdent("fx"),
+			Sel: ast.NewIdent("Invoke"),
 		},
 		Args: []ast.Expr{
 			&ast.FuncLit{
@@ -1129,66 +889,42 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "lifecycle",
-									},
+									ast.NewIdent("lifecycle"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "fx",
-									},
-									Sel: &ast.Ident{
-										Name: "Lifecycle",
-									},
+									X:   ast.NewIdent("fx"),
+									Sel: ast.NewIdent("Lifecycle"),
 								},
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "logger",
-									},
+									ast.NewIdent("logger"),
 								},
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "log",
-										},
-										Sel: &ast.Ident{
-											Name: "Log",
-										},
+										X:   ast.NewIdent("log"),
+										Sel: ast.NewIdent("Log"),
 									},
 								},
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "server",
-									},
+									ast.NewIdent("server"),
 								},
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "grpc",
-										},
-										Sel: &ast.Ident{
-											Name: "Server",
-										},
+										X:   ast.NewIdent("grpc"),
+										Sel: ast.NewIdent("Server"),
 									},
 								},
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "shutdowner",
-									},
+									ast.NewIdent("shutdowner"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "fx",
-									},
-									Sel: &ast.Ident{
-										Name: "Shutdowner",
-									},
+									X:   ast.NewIdent("fx"),
+									Sel: ast.NewIdent("Shutdowner"),
 								},
 							},
 						},
@@ -1199,45 +935,29 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "lifecycle",
-									},
-									Sel: &ast.Ident{
-										Name: "Append",
-									},
+									X:   ast.NewIdent("lifecycle"),
+									Sel: ast.NewIdent("Append"),
 								},
 								Args: []ast.Expr{
 									&ast.CompositeLit{
 										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "fx",
-											},
-											Sel: &ast.Ident{
-												Name: "Hook",
-											},
+											X:   ast.NewIdent("fx"),
+											Sel: ast.NewIdent("Hook"),
 										},
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "OnStart",
-												},
+												Key: ast.NewIdent("OnStart"),
 												Value: &ast.FuncLit{
 													Type: &ast.FuncType{
 														Params: &ast.FieldList{
 															List: []*ast.Field{
 																{
 																	Names: []*ast.Ident{
-																		{
-																			Name: "ctx",
-																		},
+																		ast.NewIdent("ctx"),
 																	},
 																	Type: &ast.SelectorExpr{
-																		X: &ast.Ident{
-																			Name: "context",
-																		},
-																		Sel: &ast.Ident{
-																			Name: "Context",
-																		},
+																		X:   ast.NewIdent("context"),
+																		Sel: ast.NewIdent("Context"),
 																	},
 																},
 															},
@@ -1245,9 +965,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 														Results: &ast.FieldList{
 															List: []*ast.Field{
 																{
-																	Type: &ast.Ident{
-																		Name: "error",
-																	},
+																	Type: ast.NewIdent("error"),
 																},
 															},
 														},
@@ -1264,50 +982,34 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 																			List: []ast.Stmt{
 																				&ast.AssignStmt{
 																					Lhs: []ast.Expr{
-																						&ast.Ident{
-																							Name: "err",
-																						},
+																						ast.NewIdent("err"),
 																					},
 																					Tok: token.DEFINE,
 																					Rhs: []ast.Expr{
 																						&ast.CallExpr{
 																							Fun: &ast.SelectorExpr{
-																								X: &ast.Ident{
-																									Name: "server",
-																								},
-																								Sel: &ast.Ident{
-																									Name: "Start",
-																								},
+																								X:   ast.NewIdent("server"),
+																								Sel: ast.NewIdent("Start"),
 																							},
 																							Args: []ast.Expr{
-																								&ast.Ident{
-																									Name: "ctx",
-																								},
+																								ast.NewIdent("ctx"),
 																							},
 																						},
 																					},
 																				},
 																				&ast.IfStmt{
 																					Cond: &ast.BinaryExpr{
-																						X: &ast.Ident{
-																							Name: "err",
-																						},
+																						X:  ast.NewIdent("err"),
 																						Op: token.NEQ,
-																						Y: &ast.Ident{
-																							Name: "nil",
-																						},
+																						Y:  ast.NewIdent("nil"),
 																					},
 																					Body: &ast.BlockStmt{
 																						List: []ast.Stmt{
 																							&ast.ExprStmt{
 																								X: &ast.CallExpr{
 																									Fun: &ast.SelectorExpr{
-																										X: &ast.Ident{
-																											Name: "logger",
-																										},
-																										Sel: &ast.Ident{
-																											Name: "Error",
-																										},
+																										X:   ast.NewIdent("logger"),
+																										Sel: ast.NewIdent("Error"),
 																									},
 																									Args: []ast.Expr{
 																										&ast.BasicLit{
@@ -1316,21 +1018,15 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 																										},
 																										&ast.CallExpr{
 																											Fun: &ast.SelectorExpr{
-																												X: &ast.Ident{
-																													Name: "log",
-																												},
-																												Sel: &ast.Ident{
-																													Name: "Any",
-																												},
+																												X:   ast.NewIdent("log"),
+																												Sel: ast.NewIdent("Any"),
 																											},
 																											Args: []ast.Expr{
 																												&ast.BasicLit{
 																													Kind:  token.STRING,
 																													Value: `"error"`,
 																												},
-																												&ast.Ident{
-																													Name: "err",
-																												},
+																												ast.NewIdent("err"),
 																											},
 																										},
 																									},
@@ -1338,20 +1034,14 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 																							},
 																							&ast.AssignStmt{
 																								Lhs: []ast.Expr{
-																									&ast.Ident{
-																										Name: "_",
-																									},
+																									ast.NewIdent("_"),
 																								},
 																								Tok: token.ASSIGN,
 																								Rhs: []ast.Expr{
 																									&ast.CallExpr{
 																										Fun: &ast.SelectorExpr{
-																											X: &ast.Ident{
-																												Name: "shutdowner",
-																											},
-																											Sel: &ast.Ident{
-																												Name: "Shutdown",
-																											},
+																											X:   ast.NewIdent("shutdowner"),
+																											Sel: ast.NewIdent("Shutdown"),
 																										},
 																									},
 																								},
@@ -1366,9 +1056,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 															},
 															&ast.ReturnStmt{
 																Results: []ast.Expr{
-																	&ast.Ident{
-																		Name: "nil",
-																	},
+																	ast.NewIdent("nil"),
 																},
 															},
 														},
@@ -1376,16 +1064,10 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 												},
 											},
 											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "OnStop",
-												},
+												Key: ast.NewIdent("OnStop"),
 												Value: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "server",
-													},
-													Sel: &ast.Ident{
-														Name: "Stop",
-													},
+													X:   ast.NewIdent("server"),
+													Sel: ast.NewIdent("Stop"),
 												},
 											},
 										},
@@ -1399,21 +1081,15 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 		},
 	})
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: "NewGRPCContainer",
-		},
+		Name: ast.NewIdent("NewGRPCContainer"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "config",
-							},
+							ast.NewIdent("config"),
 						},
-						Type: &ast.Ident{
-							Name: "string",
-						},
+						Type: ast.NewIdent("string"),
 					},
 				},
 			},
@@ -1422,12 +1098,8 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "fx",
-								},
-								Sel: &ast.Ident{
-									Name: "App",
-								},
+								X:   ast.NewIdent("fx"),
+								Sel: ast.NewIdent("App"),
 							},
 						},
 					},
@@ -1438,20 +1110,14 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "app",
-						},
+						ast.NewIdent("app"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "fx",
-								},
-								Sel: &ast.Ident{
-									Name: "New",
-								},
+								X:   ast.NewIdent("fx"),
+								Sel: ast.NewIdent("New"),
 							},
 							Args: args,
 						},
@@ -1459,9 +1125,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						&ast.Ident{
-							Name: "app",
-						},
+						ast.NewIdent("app"),
 					},
 				},
 			},
@@ -1504,21 +1168,15 @@ func (f FxContainer) syncGrpcContainer() error {
 
 func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: "NewGatewayContainer",
-		},
+		Name: ast.NewIdent("NewGatewayContainer"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "config",
-							},
+							ast.NewIdent("config"),
 						},
-						Type: &ast.Ident{
-							Name: "string",
-						},
+						Type: ast.NewIdent("string"),
 					},
 				},
 			},
@@ -1527,12 +1185,8 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "fx",
-								},
-								Sel: &ast.Ident{
-									Name: "App",
-								},
+								X:   ast.NewIdent("fx"),
+								Sel: ast.NewIdent("App"),
 							},
 						},
 					},
@@ -1543,30 +1197,20 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "app",
-						},
+						ast.NewIdent("app"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "fx",
-								},
-								Sel: &ast.Ident{
-									Name: "New",
-								},
+								X:   ast.NewIdent("fx"),
+								Sel: ast.NewIdent("New"),
 							},
 							Args: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "fx",
-										},
-										Sel: &ast.Ident{
-											Name: "Provide",
-										},
+										X:   ast.NewIdent("fx"),
+										Sel: ast.NewIdent("Provide"),
 									},
 									Args: []ast.Expr{
 										&ast.FuncLit{
@@ -1575,9 +1219,7 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 												Results: &ast.FieldList{
 													List: []*ast.Field{
 														{
-															Type: &ast.Ident{
-																Name: "string",
-															},
+															Type: ast.NewIdent("string"),
 														},
 													},
 												},
@@ -1586,9 +1228,7 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 												List: []ast.Stmt{
 													&ast.ReturnStmt{
 														Results: []ast.Expr{
-															&ast.Ident{
-																Name: "config",
-															},
+															ast.NewIdent("config"),
 														},
 													},
 												},
@@ -1597,24 +1237,14 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 									},
 								},
 								&ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "gateway",
-									},
-									Sel: &ast.Ident{
-										Name: "NewServer",
-									},
+									X:   ast.NewIdent("gateway"),
+									Sel: ast.NewIdent("NewServer"),
 								},
-								&ast.Ident{
-									Name: "FXModule",
-								},
+								ast.NewIdent("FXModule"),
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "fx",
-										},
-										Sel: &ast.Ident{
-											Name: "Invoke",
-										},
+										X:   ast.NewIdent("fx"),
+										Sel: ast.NewIdent("Invoke"),
 									},
 									Args: []ast.Expr{
 										&ast.FuncLit{
@@ -1623,66 +1253,42 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 													List: []*ast.Field{
 														{
 															Names: []*ast.Ident{
-																{
-																	Name: "lifecycle",
-																},
+																ast.NewIdent("lifecycle"),
 															},
 															Type: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "fx",
-																},
-																Sel: &ast.Ident{
-																	Name: "Lifecycle",
-																},
+																X:   ast.NewIdent("fx"),
+																Sel: ast.NewIdent("Lifecycle"),
 															},
 														},
 														{
 															Names: []*ast.Ident{
-																{
-																	Name: "logger",
-																},
+																ast.NewIdent("logger"),
 															},
 															Type: &ast.StarExpr{
 																X: &ast.SelectorExpr{
-																	X: &ast.Ident{
-																		Name: "log",
-																	},
-																	Sel: &ast.Ident{
-																		Name: "Log",
-																	},
+																	X:   ast.NewIdent("log"),
+																	Sel: ast.NewIdent("Log"),
 																},
 															},
 														},
 														{
 															Names: []*ast.Ident{
-																{
-																	Name: "server",
-																},
+																ast.NewIdent("server"),
 															},
 															Type: &ast.StarExpr{
 																X: &ast.SelectorExpr{
-																	X: &ast.Ident{
-																		Name: "gateway",
-																	},
-																	Sel: &ast.Ident{
-																		Name: "Server",
-																	},
+																	X:   ast.NewIdent("gateway"),
+																	Sel: ast.NewIdent("Server"),
 																},
 															},
 														},
 														{
 															Names: []*ast.Ident{
-																{
-																	Name: "shutdowner",
-																},
+																ast.NewIdent("shutdowner"),
 															},
 															Type: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "fx",
-																},
-																Sel: &ast.Ident{
-																	Name: "Shutdowner",
-																},
+																X:   ast.NewIdent("fx"),
+																Sel: ast.NewIdent("Shutdowner"),
 															},
 														},
 													},
@@ -1693,45 +1299,29 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 													&ast.ExprStmt{
 														X: &ast.CallExpr{
 															Fun: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "lifecycle",
-																},
-																Sel: &ast.Ident{
-																	Name: "Append",
-																},
+																X:   ast.NewIdent("lifecycle"),
+																Sel: ast.NewIdent("Append"),
 															},
 															Args: []ast.Expr{
 																&ast.CompositeLit{
 																	Type: &ast.SelectorExpr{
-																		X: &ast.Ident{
-																			Name: "fx",
-																		},
-																		Sel: &ast.Ident{
-																			Name: "Hook",
-																		},
+																		X:   ast.NewIdent("fx"),
+																		Sel: ast.NewIdent("Hook"),
 																	},
 																	Elts: []ast.Expr{
 																		&ast.KeyValueExpr{
-																			Key: &ast.Ident{
-																				Name: "OnStart",
-																			},
+																			Key: ast.NewIdent("OnStart"),
 																			Value: &ast.FuncLit{
 																				Type: &ast.FuncType{
 																					Params: &ast.FieldList{
 																						List: []*ast.Field{
 																							{
 																								Names: []*ast.Ident{
-																									{
-																										Name: "ctx",
-																									},
+																									ast.NewIdent("ctx"),
 																								},
 																								Type: &ast.SelectorExpr{
-																									X: &ast.Ident{
-																										Name: "context",
-																									},
-																									Sel: &ast.Ident{
-																										Name: "Context",
-																									},
+																									X:   ast.NewIdent("context"),
+																									Sel: ast.NewIdent("Context"),
 																								},
 																							},
 																						},
@@ -1739,9 +1329,7 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 																					Results: &ast.FieldList{
 																						List: []*ast.Field{
 																							{
-																								Type: &ast.Ident{
-																									Name: "error",
-																								},
+																								Type: ast.NewIdent("error"),
 																							},
 																						},
 																					},
@@ -1758,50 +1346,34 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 																										List: []ast.Stmt{
 																											&ast.AssignStmt{
 																												Lhs: []ast.Expr{
-																													&ast.Ident{
-																														Name: "err",
-																													},
+																													ast.NewIdent("err"),
 																												},
 																												Tok: token.DEFINE,
 																												Rhs: []ast.Expr{
 																													&ast.CallExpr{
 																														Fun: &ast.SelectorExpr{
-																															X: &ast.Ident{
-																																Name: "server",
-																															},
-																															Sel: &ast.Ident{
-																																Name: "Start",
-																															},
+																															X:   ast.NewIdent("server"),
+																															Sel: ast.NewIdent("Start"),
 																														},
 																														Args: []ast.Expr{
-																															&ast.Ident{
-																																Name: "ctx",
-																															},
+																															ast.NewIdent("ctx"),
 																														},
 																													},
 																												},
 																											},
 																											&ast.IfStmt{
 																												Cond: &ast.BinaryExpr{
-																													X: &ast.Ident{
-																														Name: "err",
-																													},
+																													X:  ast.NewIdent("err"),
 																													Op: token.NEQ,
-																													Y: &ast.Ident{
-																														Name: "nil",
-																													},
+																													Y:  ast.NewIdent("nil"),
 																												},
 																												Body: &ast.BlockStmt{
 																													List: []ast.Stmt{
 																														&ast.ExprStmt{
 																															X: &ast.CallExpr{
 																																Fun: &ast.SelectorExpr{
-																																	X: &ast.Ident{
-																																		Name: "logger",
-																																	},
-																																	Sel: &ast.Ident{
-																																		Name: "Error",
-																																	},
+																																	X:   ast.NewIdent("logger"),
+																																	Sel: ast.NewIdent("Error"),
 																																},
 																																Args: []ast.Expr{
 																																	&ast.BasicLit{
@@ -1810,21 +1382,15 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 																																	},
 																																	&ast.CallExpr{
 																																		Fun: &ast.SelectorExpr{
-																																			X: &ast.Ident{
-																																				Name: "log",
-																																			},
-																																			Sel: &ast.Ident{
-																																				Name: "Any",
-																																			},
+																																			X:   ast.NewIdent("log"),
+																																			Sel: ast.NewIdent("Any"),
 																																		},
 																																		Args: []ast.Expr{
 																																			&ast.BasicLit{
 																																				Kind:  token.STRING,
 																																				Value: `"error"`,
 																																			},
-																																			&ast.Ident{
-																																				Name: "err",
-																																			},
+																																			ast.NewIdent("err"),
 																																		},
 																																	},
 																																},
@@ -1832,20 +1398,14 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 																														},
 																														&ast.AssignStmt{
 																															Lhs: []ast.Expr{
-																																&ast.Ident{
-																																	Name: "_",
-																																},
+																																ast.NewIdent("_"),
 																															},
 																															Tok: token.ASSIGN,
 																															Rhs: []ast.Expr{
 																																&ast.CallExpr{
 																																	Fun: &ast.SelectorExpr{
-																																		X: &ast.Ident{
-																																			Name: "shutdowner",
-																																		},
-																																		Sel: &ast.Ident{
-																																			Name: "Shutdown",
-																																		},
+																																		X:   ast.NewIdent("shutdowner"),
+																																		Sel: ast.NewIdent("Shutdown"),
 																																	},
 																																},
 																															},
@@ -1860,9 +1420,7 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 																						},
 																						&ast.ReturnStmt{
 																							Results: []ast.Expr{
-																								&ast.Ident{
-																									Name: "nil",
-																								},
+																								ast.NewIdent("nil"),
 																							},
 																						},
 																					},
@@ -1885,9 +1443,7 @@ func (f FxContainer) astGatewayContainer() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						&ast.Ident{
-							Name: "app",
-						},
+						ast.NewIdent("app"),
 					},
 				},
 			},
@@ -1930,21 +1486,15 @@ func (f FxContainer) syncGatewayContainer() error {
 
 func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: "NewMigrateContainer",
-		},
+		Name: ast.NewIdent("NewMigrateContainer"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "config",
-							},
+							ast.NewIdent("config"),
 						},
-						Type: &ast.Ident{
-							Name: "string",
-						},
+						Type: ast.NewIdent("string"),
 					},
 				},
 			},
@@ -1953,12 +1503,8 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "fx",
-								},
-								Sel: &ast.Ident{
-									Name: "App",
-								},
+								X:   ast.NewIdent("fx"),
+								Sel: ast.NewIdent("App"),
 							},
 						},
 					},
@@ -1969,30 +1515,20 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "app",
-						},
+						ast.NewIdent("app"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "fx",
-								},
-								Sel: &ast.Ident{
-									Name: "New",
-								},
+								X:   ast.NewIdent("fx"),
+								Sel: ast.NewIdent("New"),
 							},
 							Args: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "fx",
-										},
-										Sel: &ast.Ident{
-											Name: "Provide",
-										},
+										X:   ast.NewIdent("fx"),
+										Sel: ast.NewIdent("Provide"),
 									},
 									Args: []ast.Expr{
 										&ast.FuncLit{
@@ -2001,9 +1537,7 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 												Results: &ast.FieldList{
 													List: []*ast.Field{
 														{
-															Type: &ast.Ident{
-																Name: "string",
-															},
+															Type: ast.NewIdent("string"),
 														},
 													},
 												},
@@ -2012,9 +1546,7 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 												List: []ast.Stmt{
 													&ast.ReturnStmt{
 														Results: []ast.Expr{
-															&ast.Ident{
-																Name: "config",
-															},
+															ast.NewIdent("config"),
 														},
 													},
 												},
@@ -2022,17 +1554,11 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 										},
 									},
 								},
-								&ast.Ident{
-									Name: "FXModule",
-								},
+								ast.NewIdent("FXModule"),
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "fx",
-										},
-										Sel: &ast.Ident{
-											Name: "Invoke",
-										},
+										X:   ast.NewIdent("fx"),
+										Sel: ast.NewIdent("Invoke"),
 									},
 									Args: []ast.Expr{
 										&ast.FuncLit{
@@ -2041,66 +1567,42 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 													List: []*ast.Field{
 														{
 															Names: []*ast.Ident{
-																{
-																	Name: "lifecycle",
-																},
+																ast.NewIdent("lifecycle"),
 															},
 															Type: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "fx",
-																},
-																Sel: &ast.Ident{
-																	Name: "Lifecycle",
-																},
+																X:   ast.NewIdent("fx"),
+																Sel: ast.NewIdent("Lifecycle"),
 															},
 														},
 														{
 															Names: []*ast.Ident{
-																{
-																	Name: "logger",
-																},
+																ast.NewIdent("logger"),
 															},
 															Type: &ast.StarExpr{
 																X: &ast.SelectorExpr{
-																	X: &ast.Ident{
-																		Name: "log",
-																	},
-																	Sel: &ast.Ident{
-																		Name: "Log",
-																	},
+																	X:   ast.NewIdent("log"),
+																	Sel: ast.NewIdent("Log"),
 																},
 															},
 														},
 														{
 															Names: []*ast.Ident{
-																{
-																	Name: "manager",
-																},
+																ast.NewIdent("manager"),
 															},
 															Type: &ast.StarExpr{
 																X: &ast.SelectorExpr{
-																	X: &ast.Ident{
-																		Name: "postgres",
-																	},
-																	Sel: &ast.Ident{
-																		Name: "MigrateManager",
-																	},
+																	X:   ast.NewIdent("postgres"),
+																	Sel: ast.NewIdent("MigrateManager"),
 																},
 															},
 														},
 														{
 															Names: []*ast.Ident{
-																{
-																	Name: "shutdowner",
-																},
+																ast.NewIdent("shutdowner"),
 															},
 															Type: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "fx",
-																},
-																Sel: &ast.Ident{
-																	Name: "Shutdowner",
-																},
+																X:   ast.NewIdent("fx"),
+																Sel: ast.NewIdent("Shutdowner"),
 															},
 														},
 													},
@@ -2111,45 +1613,29 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 													&ast.ExprStmt{
 														X: &ast.CallExpr{
 															Fun: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "lifecycle",
-																},
-																Sel: &ast.Ident{
-																	Name: "Append",
-																},
+																X:   ast.NewIdent("lifecycle"),
+																Sel: ast.NewIdent("Append"),
 															},
 															Args: []ast.Expr{
 																&ast.CompositeLit{
 																	Type: &ast.SelectorExpr{
-																		X: &ast.Ident{
-																			Name: "fx",
-																		},
-																		Sel: &ast.Ident{
-																			Name: "Hook",
-																		},
+																		X:   ast.NewIdent("fx"),
+																		Sel: ast.NewIdent("Hook"),
 																	},
 																	Elts: []ast.Expr{
 																		&ast.KeyValueExpr{
-																			Key: &ast.Ident{
-																				Name: "OnStart",
-																			},
+																			Key: ast.NewIdent("OnStart"),
 																			Value: &ast.FuncLit{
 																				Type: &ast.FuncType{
 																					Params: &ast.FieldList{
 																						List: []*ast.Field{
 																							{
 																								Names: []*ast.Ident{
-																									{
-																										Name: "ctx",
-																									},
+																									ast.NewIdent("ctx"),
 																								},
 																								Type: &ast.SelectorExpr{
-																									X: &ast.Ident{
-																										Name: "context",
-																									},
-																									Sel: &ast.Ident{
-																										Name: "Context",
-																									},
+																									X:   ast.NewIdent("context"),
+																									Sel: ast.NewIdent("Context"),
 																								},
 																							},
 																						},
@@ -2157,9 +1643,7 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 																					Results: &ast.FieldList{
 																						List: []*ast.Field{
 																							{
-																								Type: &ast.Ident{
-																									Name: "error",
-																								},
+																								Type: ast.NewIdent("error"),
 																							},
 																						},
 																					},
@@ -2176,50 +1660,34 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 																										List: []ast.Stmt{
 																											&ast.AssignStmt{
 																												Lhs: []ast.Expr{
-																													&ast.Ident{
-																														Name: "err",
-																													},
+																													ast.NewIdent("err"),
 																												},
 																												Tok: token.DEFINE,
 																												Rhs: []ast.Expr{
 																													&ast.CallExpr{
 																														Fun: &ast.SelectorExpr{
-																															X: &ast.Ident{
-																																Name: "manager",
-																															},
-																															Sel: &ast.Ident{
-																																Name: "Up",
-																															},
+																															X:   ast.NewIdent("manager"),
+																															Sel: ast.NewIdent("Up"),
 																														},
 																														Args: []ast.Expr{
-																															&ast.Ident{
-																																Name: "ctx",
-																															},
+																															ast.NewIdent("ctx"),
 																														},
 																													},
 																												},
 																											},
 																											&ast.IfStmt{
 																												Cond: &ast.BinaryExpr{
-																													X: &ast.Ident{
-																														Name: "err",
-																													},
+																													X:  ast.NewIdent("err"),
 																													Op: token.NEQ,
-																													Y: &ast.Ident{
-																														Name: "nil",
-																													},
+																													Y:  ast.NewIdent("nil"),
 																												},
 																												Body: &ast.BlockStmt{
 																													List: []ast.Stmt{
 																														&ast.ExprStmt{
 																															X: &ast.CallExpr{
 																																Fun: &ast.SelectorExpr{
-																																	X: &ast.Ident{
-																																		Name: "logger",
-																																	},
-																																	Sel: &ast.Ident{
-																																		Name: "Error",
-																																	},
+																																	X:   ast.NewIdent("logger"),
+																																	Sel: ast.NewIdent("Error"),
 																																},
 																																Args: []ast.Expr{
 																																	&ast.BasicLit{
@@ -2228,21 +1696,15 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 																																	},
 																																	&ast.CallExpr{
 																																		Fun: &ast.SelectorExpr{
-																																			X: &ast.Ident{
-																																				Name: "log",
-																																			},
-																																			Sel: &ast.Ident{
-																																				Name: "Any",
-																																			},
+																																			X:   ast.NewIdent("log"),
+																																			Sel: ast.NewIdent("Any"),
 																																		},
 																																		Args: []ast.Expr{
 																																			&ast.BasicLit{
 																																				Kind:  token.STRING,
 																																				Value: `"error"`,
 																																			},
-																																			&ast.Ident{
-																																				Name: "err",
-																																			},
+																																			ast.NewIdent("err"),
 																																		},
 																																	},
 																																},
@@ -2258,29 +1720,21 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 																						},
 																						&ast.AssignStmt{
 																							Lhs: []ast.Expr{
-																								&ast.Ident{
-																									Name: "_",
-																								},
+																								ast.NewIdent("_"),
 																							},
 																							Tok: token.ASSIGN,
 																							Rhs: []ast.Expr{
 																								&ast.CallExpr{
 																									Fun: &ast.SelectorExpr{
-																										X: &ast.Ident{
-																											Name: "shutdowner",
-																										},
-																										Sel: &ast.Ident{
-																											Name: "Shutdown",
-																										},
+																										X:   ast.NewIdent("shutdowner"),
+																										Sel: ast.NewIdent("Shutdown"),
 																									},
 																								},
 																							},
 																						},
 																						&ast.ReturnStmt{
 																							Results: []ast.Expr{
-																								&ast.Ident{
-																									Name: "nil",
-																								},
+																								ast.NewIdent("nil"),
 																							},
 																						},
 																					},
@@ -2303,9 +1757,7 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						&ast.Ident{
-							Name: "app",
-						},
+						ast.NewIdent("app"),
 					},
 				},
 			},
@@ -2350,12 +1802,8 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 	args := []ast.Expr{
 		&ast.CallExpr{
 			Fun: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "fx",
-				},
-				Sel: &ast.Ident{
-					Name: "Provide",
-				},
+				X:   ast.NewIdent("fx"),
+				Sel: ast.NewIdent("Provide"),
 			},
 			Args: []ast.Expr{
 				&ast.FuncLit{
@@ -2364,9 +1812,7 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 						Results: &ast.FieldList{
 							List: []*ast.Field{
 								{
-									Type: &ast.Ident{
-										Name: "string",
-									},
+									Type: ast.NewIdent("string"),
 								},
 							},
 						},
@@ -2375,9 +1821,7 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									&ast.Ident{
-										Name: "config",
-									},
+									ast.NewIdent("config"),
 								},
 							},
 						},
@@ -2427,12 +1871,8 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 					},
 				},
 				&ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "http",
-					},
-					Sel: &ast.Ident{
-						Name: "NewServer",
-					},
+					X:   ast.NewIdent("http"),
+					Sel: ast.NewIdent("NewServer"),
 				},
 			},
 		},
@@ -2441,12 +1881,8 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 	if f.project.Auth {
 		args = append(args, &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "fx",
-				},
-				Sel: &ast.Ident{
-					Name: "Invoke",
-				},
+				X:   ast.NewIdent("fx"),
+				Sel: ast.NewIdent("Invoke"),
 			},
 			Args: []ast.Expr{
 				&ast.FuncLit{
@@ -2455,24 +1891,16 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 							List: []*ast.Field{
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "lifecycle",
-										},
+										ast.NewIdent("lifecycle"),
 									},
 									Type: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "fx",
-										},
-										Sel: &ast.Ident{
-											Name: "Lifecycle",
-										},
+										X:   ast.NewIdent("fx"),
+										Sel: ast.NewIdent("Lifecycle"),
 									},
 								},
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "app",
-										},
+										ast.NewIdent("app"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
@@ -2483,18 +1911,12 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 								},
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "server",
-										},
+										ast.NewIdent("server"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "http",
-											},
-											Sel: &ast.Ident{
-												Name: "Server",
-											},
+											X:   ast.NewIdent("http"),
+											Sel: ast.NewIdent("Server"),
 										},
 									},
 								},
@@ -2506,55 +1928,37 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 							&ast.ExprStmt{
 								X: &ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "lifecycle",
-										},
-										Sel: &ast.Ident{
-											Name: "Append",
-										},
+										X:   ast.NewIdent("lifecycle"),
+										Sel: ast.NewIdent("Append"),
 									},
 									Args: []ast.Expr{
 										&ast.CompositeLit{
 											Type: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "fx",
-												},
-												Sel: &ast.Ident{
-													Name: "Hook",
-												},
+												X:   ast.NewIdent("fx"),
+												Sel: ast.NewIdent("Hook"),
 											},
 											Elts: []ast.Expr{
 												&ast.KeyValueExpr{
-													Key: &ast.Ident{
-														Name: "OnStart",
-													},
+													Key: ast.NewIdent("OnStart"),
 													Value: &ast.FuncLit{
 														Type: &ast.FuncType{
 															Params: &ast.FieldList{
 																List: []*ast.Field{
-																	&ast.Field{
+																	{
 																		Names: []*ast.Ident{
-																			&ast.Ident{
-																				Name: "_",
-																			},
+																			ast.NewIdent("_"),
 																		},
 																		Type: &ast.SelectorExpr{
-																			X: &ast.Ident{
-																				Name: "context",
-																			},
-																			Sel: &ast.Ident{
-																				Name: "Context",
-																			},
+																			X:   ast.NewIdent("context"),
+																			Sel: ast.NewIdent("Context"),
 																		},
 																	},
 																},
 															},
 															Results: &ast.FieldList{
 																List: []*ast.Field{
-																	&ast.Field{
-																		Type: &ast.Ident{
-																			Name: "error",
-																		},
+																	{
+																		Type: ast.NewIdent("error"),
 																	},
 																},
 															},
@@ -2564,45 +1968,31 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 																&ast.IfStmt{
 																	Init: &ast.AssignStmt{
 																		Lhs: []ast.Expr{
-																			&ast.Ident{
-																				Name: "err",
-																			},
+																			ast.NewIdent("err"),
 																		},
 																		Tok: token.DEFINE,
 																		Rhs: []ast.Expr{
 																			&ast.CallExpr{
 																				Fun: &ast.SelectorExpr{
-																					X: &ast.Ident{
-																						Name: "app",
-																					},
-																					Sel: &ast.Ident{
-																						Name: "RegisterHTTP",
-																					},
+																					X:   ast.NewIdent("app"),
+																					Sel: ast.NewIdent("RegisterHTTP"),
 																				},
 																				Args: []ast.Expr{
-																					&ast.Ident{
-																						Name: "server",
-																					},
+																					ast.NewIdent("server"),
 																				},
 																			},
 																		},
 																	},
 																	Cond: &ast.BinaryExpr{
-																		X: &ast.Ident{
-																			Name: "err",
-																		},
+																		X:  ast.NewIdent("err"),
 																		Op: token.NEQ,
-																		Y: &ast.Ident{
-																			Name: "nil",
-																		},
+																		Y:  ast.NewIdent("nil"),
 																	},
 																	Body: &ast.BlockStmt{
 																		List: []ast.Stmt{
 																			&ast.ReturnStmt{
 																				Results: []ast.Expr{
-																					&ast.Ident{
-																						Name: "err",
-																					},
+																					ast.NewIdent("err"),
 																				},
 																			},
 																		},
@@ -2610,9 +2000,7 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 																},
 																&ast.ReturnStmt{
 																	Results: []ast.Expr{
-																		&ast.Ident{
-																			Name: "nil",
-																		},
+																		ast.NewIdent("nil"),
 																	},
 																},
 															},
@@ -2633,12 +2021,8 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 	for _, domain := range f.project.Domains {
 		args = append(args, &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "fx",
-				},
-				Sel: &ast.Ident{
-					Name: "Invoke",
-				},
+				X:   ast.NewIdent("fx"),
+				Sel: ast.NewIdent("Invoke"),
 			},
 			Args: []ast.Expr{
 				&ast.FuncLit{
@@ -2647,48 +2031,32 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 							List: []*ast.Field{
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "lifecycle",
-										},
+										ast.NewIdent("lifecycle"),
 									},
 									Type: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "fx",
-										},
-										Sel: &ast.Ident{
-											Name: "Lifecycle",
-										},
+										X:   ast.NewIdent("fx"),
+										Sel: ast.NewIdent("Lifecycle"),
 									},
 								},
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "app",
-										},
+										ast.NewIdent("app"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: domain.DomainName(),
-											},
+											X:   ast.NewIdent(domain.DomainName()),
 											Sel: ast.NewIdent("App"),
 										},
 									},
 								},
 								{
 									Names: []*ast.Ident{
-										{
-											Name: "server",
-										},
+										ast.NewIdent("server"),
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "http",
-											},
-											Sel: &ast.Ident{
-												Name: "Server",
-											},
+											X:   ast.NewIdent("http"),
+											Sel: ast.NewIdent("Server"),
 										},
 									},
 								},
@@ -2700,45 +2068,29 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 							&ast.ExprStmt{
 								X: &ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "lifecycle",
-										},
-										Sel: &ast.Ident{
-											Name: "Append",
-										},
+										X:   ast.NewIdent("lifecycle"),
+										Sel: ast.NewIdent("Append"),
 									},
 									Args: []ast.Expr{
 										&ast.CompositeLit{
 											Type: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "fx",
-												},
-												Sel: &ast.Ident{
-													Name: "Hook",
-												},
+												X:   ast.NewIdent("fx"),
+												Sel: ast.NewIdent("Hook"),
 											},
 											Elts: []ast.Expr{
 												&ast.KeyValueExpr{
-													Key: &ast.Ident{
-														Name: "OnStart",
-													},
+													Key: ast.NewIdent("OnStart"),
 													Value: &ast.FuncLit{
 														Type: &ast.FuncType{
 															Params: &ast.FieldList{
 																List: []*ast.Field{
 																	{
 																		Names: []*ast.Ident{
-																			{
-																				Name: "_",
-																			},
+																			ast.NewIdent("_"),
 																		},
 																		Type: &ast.SelectorExpr{
-																			X: &ast.Ident{
-																				Name: "context",
-																			},
-																			Sel: &ast.Ident{
-																				Name: "Context",
-																			},
+																			X:   ast.NewIdent("context"),
+																			Sel: ast.NewIdent("Context"),
 																		},
 																	},
 																},
@@ -2746,9 +2098,7 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 															Results: &ast.FieldList{
 																List: []*ast.Field{
 																	{
-																		Type: &ast.Ident{
-																			Name: "error",
-																		},
+																		Type: ast.NewIdent("error"),
 																	},
 																},
 															},
@@ -2758,45 +2108,31 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 																&ast.IfStmt{
 																	Init: &ast.AssignStmt{
 																		Lhs: []ast.Expr{
-																			&ast.Ident{
-																				Name: "err",
-																			},
+																			ast.NewIdent("err"),
 																		},
 																		Tok: token.DEFINE,
 																		Rhs: []ast.Expr{
 																			&ast.CallExpr{
 																				Fun: &ast.SelectorExpr{
-																					X: &ast.Ident{
-																						Name: "app",
-																					},
-																					Sel: &ast.Ident{
-																						Name: "RegisterHTTP",
-																					},
+																					X:   ast.NewIdent("app"),
+																					Sel: ast.NewIdent("RegisterHTTP"),
 																				},
 																				Args: []ast.Expr{
-																					&ast.Ident{
-																						Name: "server",
-																					},
+																					ast.NewIdent("server"),
 																				},
 																			},
 																		},
 																	},
 																	Cond: &ast.BinaryExpr{
-																		X: &ast.Ident{
-																			Name: "err",
-																		},
+																		X:  ast.NewIdent("err"),
 																		Op: token.NEQ,
-																		Y: &ast.Ident{
-																			Name: "nil",
-																		},
+																		Y:  ast.NewIdent("nil"),
 																	},
 																	Body: &ast.BlockStmt{
 																		List: []ast.Stmt{
 																			&ast.ReturnStmt{
 																				Results: []ast.Expr{
-																					&ast.Ident{
-																						Name: "err",
-																					},
+																					ast.NewIdent("err"),
 																				},
 																			},
 																		},
@@ -2804,9 +2140,7 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 																},
 																&ast.ReturnStmt{
 																	Results: []ast.Expr{
-																		&ast.Ident{
-																			Name: "nil",
-																		},
+																		ast.NewIdent("nil"),
 																	},
 																},
 															},
@@ -2826,12 +2160,8 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 	}
 	args = append(args, &ast.CallExpr{
 		Fun: &ast.SelectorExpr{
-			X: &ast.Ident{
-				Name: "fx",
-			},
-			Sel: &ast.Ident{
-				Name: "Invoke",
-			},
+			X:   ast.NewIdent("fx"),
+			Sel: ast.NewIdent("Invoke"),
 		},
 		Args: []ast.Expr{
 			&ast.FuncLit{
@@ -2840,66 +2170,42 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "lifecycle",
-									},
+									ast.NewIdent("lifecycle"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "fx",
-									},
-									Sel: &ast.Ident{
-										Name: "Lifecycle",
-									},
+									X:   ast.NewIdent("fx"),
+									Sel: ast.NewIdent("Lifecycle"),
 								},
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "logger",
-									},
+									ast.NewIdent("logger"),
 								},
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "log",
-										},
-										Sel: &ast.Ident{
-											Name: "Log",
-										},
+										X:   ast.NewIdent("log"),
+										Sel: ast.NewIdent("Log"),
 									},
 								},
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "server",
-									},
+									ast.NewIdent("server"),
 								},
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "http",
-										},
-										Sel: &ast.Ident{
-											Name: "Server",
-										},
+										X:   ast.NewIdent("http"),
+										Sel: ast.NewIdent("Server"),
 									},
 								},
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "shutdowner",
-									},
+									ast.NewIdent("shutdowner"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "fx",
-									},
-									Sel: &ast.Ident{
-										Name: "Shutdowner",
-									},
+									X:   ast.NewIdent("fx"),
+									Sel: ast.NewIdent("Shutdowner"),
 								},
 							},
 						},
@@ -2910,45 +2216,29 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "lifecycle",
-									},
-									Sel: &ast.Ident{
-										Name: "Append",
-									},
+									X:   ast.NewIdent("lifecycle"),
+									Sel: ast.NewIdent("Append"),
 								},
 								Args: []ast.Expr{
 									&ast.CompositeLit{
 										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "fx",
-											},
-											Sel: &ast.Ident{
-												Name: "Hook",
-											},
+											X:   ast.NewIdent("fx"),
+											Sel: ast.NewIdent("Hook"),
 										},
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "OnStart",
-												},
+												Key: ast.NewIdent("OnStart"),
 												Value: &ast.FuncLit{
 													Type: &ast.FuncType{
 														Params: &ast.FieldList{
 															List: []*ast.Field{
 																{
 																	Names: []*ast.Ident{
-																		{
-																			Name: "ctx",
-																		},
+																		ast.NewIdent("ctx"),
 																	},
 																	Type: &ast.SelectorExpr{
-																		X: &ast.Ident{
-																			Name: "context",
-																		},
-																		Sel: &ast.Ident{
-																			Name: "Context",
-																		},
+																		X:   ast.NewIdent("context"),
+																		Sel: ast.NewIdent("Context"),
 																	},
 																},
 															},
@@ -2956,9 +2246,7 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 														Results: &ast.FieldList{
 															List: []*ast.Field{
 																{
-																	Type: &ast.Ident{
-																		Name: "error",
-																	},
+																	Type: ast.NewIdent("error"),
 																},
 															},
 														},
@@ -2975,50 +2263,34 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 																			List: []ast.Stmt{
 																				&ast.AssignStmt{
 																					Lhs: []ast.Expr{
-																						&ast.Ident{
-																							Name: "err",
-																						},
+																						ast.NewIdent("err"),
 																					},
 																					Tok: token.DEFINE,
 																					Rhs: []ast.Expr{
 																						&ast.CallExpr{
 																							Fun: &ast.SelectorExpr{
-																								X: &ast.Ident{
-																									Name: "server",
-																								},
-																								Sel: &ast.Ident{
-																									Name: "Start",
-																								},
+																								X:   ast.NewIdent("server"),
+																								Sel: ast.NewIdent("Start"),
 																							},
 																							Args: []ast.Expr{
-																								&ast.Ident{
-																									Name: "ctx",
-																								},
+																								ast.NewIdent("ctx"),
 																							},
 																						},
 																					},
 																				},
 																				&ast.IfStmt{
 																					Cond: &ast.BinaryExpr{
-																						X: &ast.Ident{
-																							Name: "err",
-																						},
+																						X:  ast.NewIdent("err"),
 																						Op: token.NEQ,
-																						Y: &ast.Ident{
-																							Name: "nil",
-																						},
+																						Y:  ast.NewIdent("nil"),
 																					},
 																					Body: &ast.BlockStmt{
 																						List: []ast.Stmt{
 																							&ast.ExprStmt{
 																								X: &ast.CallExpr{
 																									Fun: &ast.SelectorExpr{
-																										X: &ast.Ident{
-																											Name: "logger",
-																										},
-																										Sel: &ast.Ident{
-																											Name: "Error",
-																										},
+																										X:   ast.NewIdent("logger"),
+																										Sel: ast.NewIdent("Error"),
 																									},
 																									Args: []ast.Expr{
 																										&ast.BasicLit{
@@ -3027,21 +2299,15 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 																										},
 																										&ast.CallExpr{
 																											Fun: &ast.SelectorExpr{
-																												X: &ast.Ident{
-																													Name: "log",
-																												},
-																												Sel: &ast.Ident{
-																													Name: "Any",
-																												},
+																												X:   ast.NewIdent("log"),
+																												Sel: ast.NewIdent("Any"),
 																											},
 																											Args: []ast.Expr{
 																												&ast.BasicLit{
 																													Kind:  token.STRING,
 																													Value: `"error"`,
 																												},
-																												&ast.Ident{
-																													Name: "err",
-																												},
+																												ast.NewIdent("err"),
 																											},
 																										},
 																									},
@@ -3049,20 +2315,14 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 																							},
 																							&ast.AssignStmt{
 																								Lhs: []ast.Expr{
-																									&ast.Ident{
-																										Name: "_",
-																									},
+																									ast.NewIdent("_"),
 																								},
 																								Tok: token.ASSIGN,
 																								Rhs: []ast.Expr{
 																									&ast.CallExpr{
 																										Fun: &ast.SelectorExpr{
-																											X: &ast.Ident{
-																												Name: "shutdowner",
-																											},
-																											Sel: &ast.Ident{
-																												Name: "Shutdown",
-																											},
+																											X:   ast.NewIdent("shutdowner"),
+																											Sel: ast.NewIdent("Shutdown"),
 																										},
 																									},
 																								},
@@ -3077,9 +2337,7 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 															},
 															&ast.ReturnStmt{
 																Results: []ast.Expr{
-																	&ast.Ident{
-																		Name: "nil",
-																	},
+																	ast.NewIdent("nil"),
 																},
 															},
 														},
@@ -3087,16 +2345,10 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 												},
 											},
 											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "OnStop",
-												},
+												Key: ast.NewIdent("OnStop"),
 												Value: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "server",
-													},
-													Sel: &ast.Ident{
-														Name: "Stop",
-													},
+													X:   ast.NewIdent("server"),
+													Sel: ast.NewIdent("Stop"),
 												},
 											},
 										},
@@ -3116,13 +2368,9 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "config",
-							},
+							ast.NewIdent("config"),
 						},
-						Type: &ast.Ident{
-							Name: "string",
-						},
+						Type: ast.NewIdent("string"),
 					},
 				},
 			},
@@ -3131,12 +2379,8 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "fx",
-								},
-								Sel: &ast.Ident{
-									Name: "App",
-								},
+								X:   ast.NewIdent("fx"),
+								Sel: ast.NewIdent("App"),
 							},
 						},
 					},
@@ -3147,20 +2391,14 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "app",
-						},
+						ast.NewIdent("app"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "fx",
-								},
-								Sel: &ast.Ident{
-									Name: "New",
-								},
+								X:   ast.NewIdent("fx"),
+								Sel: ast.NewIdent("New"),
 							},
 							Args: args,
 						},
@@ -3168,9 +2406,7 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						&ast.Ident{
-							Name: "app",
-						},
+						ast.NewIdent("app"),
 					},
 				},
 			},

@@ -15,13 +15,7 @@ CREATE INDEX search_{{ .Config.TableName }}
         USING GIN ({{ .Config.SearchVector }});
 {{- end}}
 
-CREATE TRIGGER update_{{ .Config.TableName }}_updated_at
-    BEFORE UPDATE
-    ON
-        public.{{ .Config.TableName }}
-    FOR EACH ROW
-EXECUTE PROCEDURE update_updated_at_task();
-
+{{- if .Config.Auth }}
 INSERT INTO public.permissions (id, name)
 VALUES ('{{- .Config.KeyName -}}_list', '{{ .Config.ModelName }} list'),
        ('{{- .Config.KeyName -}}_detail', '{{ .Config.ModelName }} detail'),
@@ -42,3 +36,4 @@ VALUES ('admin', '{{- .Config.KeyName -}}_list'),
        ('user', '{{- .Config.KeyName -}}_delete'),
        ('guest', '{{- .Config.KeyName -}}_list'),
        ('guest', '{{- .Config.KeyName -}}_detail');
+{{- end}}

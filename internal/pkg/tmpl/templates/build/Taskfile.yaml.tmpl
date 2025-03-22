@@ -17,10 +17,13 @@ tasks:
 
   lint:
     cmds:
+      - goimports -e -d ./
       - golangci-lint run ./... --timeout 5m0s
 
   clean:
     cmds:
+      - goimports -w ./
+      - golines . -w --ignore-generated
       - golangci-lint run ./... --fix
 
   log:
@@ -37,3 +40,9 @@ tasks:
       - git add .
       - git commit -m "bumped the version number"
       - git flow release finish {{ "{{" }} .tag {{ "}}" }} -f docs/CHANGELOG.md -p --showcommands
+  docs:
+    vars:
+      swaggo_version: v2.0.0-rc4
+    cmds:
+      - go run github.com/swaggo/swag/v2/cmd/swag@{{ "{{" }} .swaggo_version {{ "}}" }}
+      - go run github.com/swaggo/swag/v2/cmd/swag@{{ "{{" }} .swaggo_version {{ "}}" }} init --outputTypes yaml --output api/openapi --generalInfo internal/pkg/http/server.go --v3.1

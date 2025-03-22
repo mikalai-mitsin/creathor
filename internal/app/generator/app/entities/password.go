@@ -67,33 +67,23 @@ func (m *Password) setPasswordMethod() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "m",
-						},
+						ast.NewIdent("m"),
 					},
 					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: "User",
-						},
+						X: ast.NewIdent("User"),
 					},
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "SetPassword",
-		},
+		Name: ast.NewIdent("SetPassword"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "password",
-							},
+							ast.NewIdent("password"),
 						},
-						Type: &ast.Ident{
-							Name: "string",
-						},
+						Type: ast.NewIdent("string"),
 					},
 				},
 			},
@@ -102,44 +92,28 @@ func (m *Password) setPasswordMethod() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "fromPassword",
-						},
-						&ast.Ident{
-							Name: "_",
-						},
+						ast.NewIdent("fromPassword"),
+						ast.NewIdent("_"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "bcrypt",
-								},
-								Sel: &ast.Ident{
-									Name: "GenerateFromPassword",
-								},
+								X:   ast.NewIdent("bcrypt"),
+								Sel: ast.NewIdent("GenerateFromPassword"),
 							},
 							Args: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.ArrayType{
-										Elt: &ast.Ident{
-											Name: "byte",
-										},
+										Elt: ast.NewIdent("byte"),
 									},
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "password",
-										},
+										ast.NewIdent("password"),
 									},
 								},
 								&ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "bcrypt",
-									},
-									Sel: &ast.Ident{
-										Name: "DefaultCost",
-									},
+									X:   ast.NewIdent("bcrypt"),
+									Sel: ast.NewIdent("DefaultCost"),
 								},
 							},
 						},
@@ -148,24 +122,16 @@ func (m *Password) setPasswordMethod() *ast.FuncDecl {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "m",
-							},
-							Sel: &ast.Ident{
-								Name: "Password",
-							},
+							X:   ast.NewIdent("m"),
+							Sel: ast.NewIdent("Password"),
 						},
 					},
 					Tok: token.ASSIGN,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
-							Fun: &ast.Ident{
-								Name: "string",
-							},
+							Fun: ast.NewIdent("string"),
 							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "fromPassword",
-								},
+								ast.NewIdent("fromPassword"),
 							},
 						},
 					},
@@ -181,42 +147,30 @@ func (m *Password) checkPasswordMethod() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "m",
-						},
+						ast.NewIdent("m"),
 					},
 					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: "User",
-						},
+						X: ast.NewIdent("User"),
 					},
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "CheckPassword",
-		},
+		Name: ast.NewIdent("CheckPassword"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "password",
-							},
+							ast.NewIdent("password"),
 						},
-						Type: &ast.Ident{
-							Name: "string",
-						},
+						Type: ast.NewIdent("string"),
 					},
 				},
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.Ident{
-							Name: "error",
-						},
+						Type: ast.NewIdent("error"),
 					},
 				},
 			},
@@ -226,49 +180,33 @@ func (m *Password) checkPasswordMethod() *ast.FuncDecl {
 				&ast.IfStmt{
 					Init: &ast.AssignStmt{
 						Lhs: []ast.Expr{
-							&ast.Ident{
-								Name: "err",
-							},
+							ast.NewIdent("err"),
 						},
 						Tok: token.DEFINE,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "bcrypt",
-									},
-									Sel: &ast.Ident{
-										Name: "CompareHashAndPassword",
-									},
+									X:   ast.NewIdent("bcrypt"),
+									Sel: ast.NewIdent("CompareHashAndPassword"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
 										Fun: &ast.ArrayType{
-											Elt: &ast.Ident{
-												Name: "byte",
-											},
+											Elt: ast.NewIdent("byte"),
 										},
 										Args: []ast.Expr{
 											&ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "m",
-												},
-												Sel: &ast.Ident{
-													Name: "Password",
-												},
+												X:   ast.NewIdent("m"),
+												Sel: ast.NewIdent("Password"),
 											},
 										},
 									},
 									&ast.CallExpr{
 										Fun: &ast.ArrayType{
-											Elt: &ast.Ident{
-												Name: "byte",
-											},
+											Elt: ast.NewIdent("byte"),
 										},
 										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "password",
-											},
+											ast.NewIdent("password"),
 										},
 									},
 								},
@@ -276,13 +214,9 @@ func (m *Password) checkPasswordMethod() *ast.FuncDecl {
 						},
 					},
 					Cond: &ast.BinaryExpr{
-						X: &ast.Ident{
-							Name: "err",
-						},
+						X:  ast.NewIdent("err"),
 						Op: token.NEQ,
-						Y: &ast.Ident{
-							Name: "nil",
-						},
+						Y:  ast.NewIdent("nil"),
 					},
 					Body: &ast.BlockStmt{
 						List: []ast.Stmt{
@@ -290,12 +224,8 @@ func (m *Password) checkPasswordMethod() *ast.FuncDecl {
 								Results: []ast.Expr{
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "errs",
-											},
-											Sel: &ast.Ident{
-												Name: "NewInvalidParameter",
-											},
+											X:   ast.NewIdent("errs"),
+											Sel: ast.NewIdent("NewInvalidParameter"),
 										},
 										Args: []ast.Expr{
 											&ast.BasicLit{
@@ -311,9 +241,7 @@ func (m *Password) checkPasswordMethod() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						&ast.Ident{
-							Name: "nil",
-						},
+						ast.NewIdent("nil"),
 					},
 				},
 			},

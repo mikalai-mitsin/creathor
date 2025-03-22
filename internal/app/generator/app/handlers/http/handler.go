@@ -186,6 +186,52 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 					},
 				},
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// Create",
+						},
+						{
+							Text: "//",
+						},
+						{
+							Text: fmt.Sprintf("// @Summary Create %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Security BearerAuth",
+						},
+						{
+							Text: "// @Accept json",
+						},
+						{
+							Text: "// @Produce json",
+						},
+						{
+							Text: fmt.Sprintf("// @Param form body %s true \"Create %s request\"", h.domain.GetHTTPCreateDTOName(), h.domain.GetOneVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Success 201 {object} %s \"Created %s\"", h.domain.GetHTTPItemDTOName(), h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
+						},
+						{
+							Text: "// @Failure 401 {object} errs.Error \"Unauthorized\"",
+						},
+						{
+							Text: "// @Failure 404 {object} errs.Error \"Not found\"",
+						},
+						{
+							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
+						},
+						{
+							Text: fmt.Sprintf("// @Router /api/v1/%s/ [POST]", h.domain.GetManyVariableName()),
+						},
+					},
+				},
 				Name: ast.NewIdent("Create"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -433,6 +479,52 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 					},
 				},
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// Get",
+						},
+						{
+							Text: "//",
+						},
+						{
+							Text: fmt.Sprintf("// @Summary Get %s by id", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Security BearerAuth",
+						},
+						{
+							Text: "// @Accept json",
+						},
+						{
+							Text: "// @Produce json",
+						},
+						{
+							Text: "// @Param id path string true \"UUID\"",
+						},
+						{
+							Text: fmt.Sprintf("// @Success 200 {object} %s \"Requested %s\"", h.domain.GetHTTPItemDTOName(), h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
+						},
+						{
+							Text: "// @Failure 401 {object} errs.Error \"Unauthorized\"",
+						},
+						{
+							Text: "// @Failure 404 {object} errs.Error \"Not found\"",
+						},
+						{
+							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
+						},
+						{
+							Text: fmt.Sprintf("// @Router /api/v1/%s/{id} [GET]", h.domain.GetManyVariableName()),
+						},
+					},
+				},
 				Name: ast.NewIdent("Get"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -626,6 +718,52 @@ func (h *HandlerGenerator) file() *ast.File {
 							Type: &ast.StarExpr{
 								X: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
 							},
+						},
+					},
+				},
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// List",
+						},
+						{
+							Text: "//",
+						},
+						{
+							Text: fmt.Sprintf("// @Summary List of %s", h.domain.GetManyVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Security BearerAuth",
+						},
+						{
+							Text: "// @Accept json",
+						},
+						{
+							Text: "// @Produce json",
+						},
+						{
+							Text: fmt.Sprintf("// @Param filter query %s true \"Filter of %s\"", h.domain.GetHTTPFilterDTOName(), h.domain.GetManyVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Success 200 {array} %s \"Filtered list of %s\"", h.domain.GetHTTPListDTOName(), h.domain.GetManyVariableName()),
+						},
+						{
+							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
+						},
+						{
+							Text: "// @Failure 401 {object} errs.Error \"Unauthorized\"",
+						},
+						{
+							Text: "// @Failure 404 {object} errs.Error \"Not found\"",
+						},
+						{
+							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
+						},
+						{
+							Text: fmt.Sprintf("// @Router /api/v1/%s/ [GET]", h.domain.GetManyVariableName()),
 						},
 					},
 				},
@@ -878,6 +1016,55 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 					},
 				},
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// Update",
+						},
+						{
+							Text: "//",
+						},
+						{
+							Text: fmt.Sprintf("// @Summary Update %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Security BearerAuth",
+						},
+						{
+							Text: "// @Accept json",
+						},
+						{
+							Text: "// @Produce json",
+						},
+						{
+							Text: "// @Param id path string true \"UUID\"",
+						},
+						{
+							Text: fmt.Sprintf("// @Param form body %s true \"Update %s request\"", h.domain.GetHTTPUpdateDTOName(), h.domain.GetOneVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Success 200 {object} %s \"Updated %s\"", h.domain.GetHTTPItemDTOName(), h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
+						},
+						{
+							Text: "// @Failure 401 {object} errs.Error \"Unauthorized\"",
+						},
+						{
+							Text: "// @Failure 404 {object} errs.Error \"Not found\"",
+						},
+						{
+							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
+						},
+						{
+							Text: fmt.Sprintf("// @Router /api/v1/%s/{id} [PATCH]", h.domain.GetManyVariableName()),
+						},
+					},
+				},
 				Name: ast.NewIdent("Update"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -1125,6 +1312,52 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 					},
 				},
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "// Delete",
+						},
+						{
+							Text: "//",
+						},
+						{
+							Text: fmt.Sprintf("// @Summary Delete %s by id", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+						},
+						{
+							Text: "// @Security BearerAuth",
+						},
+						{
+							Text: "// @Accept json",
+						},
+						{
+							Text: "// @Produce json",
+						},
+						{
+							Text: "// @Param id path string true \"UUID\"",
+						},
+						{
+							Text: "// @Success 204 \"No content\"",
+						},
+						{
+							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
+						},
+						{
+							Text: "// @Failure 401 {object} errs.Error \"Unauthorized\"",
+						},
+						{
+							Text: "// @Failure 404 {object} errs.Error \"Not found\"",
+						},
+						{
+							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
+						},
+						{
+							Text: fmt.Sprintf("// @Router /api/v1/%s/{id} [DELETE]", h.domain.GetManyVariableName()),
+						},
+					},
+				},
 				Name: ast.NewIdent("Delete"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -1271,9 +1504,7 @@ func (h *HandlerGenerator) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "h",
-								},
+								ast.NewIdent("h"),
 							},
 							Type: &ast.StarExpr{
 								X: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
@@ -1281,21 +1512,15 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "ChiRouter",
-				},
+				Name: ast.NewIdent("ChiRouter"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "chi",
-									},
-									Sel: &ast.Ident{
-										Name: "Router",
-									},
+									X:   ast.NewIdent("chi"),
+									Sel: ast.NewIdent("Router"),
 								},
 							},
 						},
@@ -1305,20 +1530,14 @@ func (h *HandlerGenerator) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "router",
-								},
+								ast.NewIdent("router"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "chi",
-										},
-										Sel: &ast.Ident{
-											Name: "NewRouter",
-										},
+										X:   ast.NewIdent("chi"),
+										Sel: ast.NewIdent("NewRouter"),
 									},
 								},
 							},
@@ -1326,12 +1545,8 @@ func (h *HandlerGenerator) file() *ast.File {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "router",
-									},
-									Sel: &ast.Ident{
-										Name: "Route",
-									},
+									X:   ast.NewIdent("router"),
+									Sel: ast.NewIdent("Route"),
 								},
 								Args: []ast.Expr{
 									&ast.BasicLit{
@@ -1344,17 +1559,11 @@ func (h *HandlerGenerator) file() *ast.File {
 												List: []*ast.Field{
 													{
 														Names: []*ast.Ident{
-															{
-																Name: "g",
-															},
+															ast.NewIdent("g"),
 														},
 														Type: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "chi",
-															},
-															Sel: &ast.Ident{
-																Name: "Router",
-															},
+															X:   ast.NewIdent("chi"),
+															Sel: ast.NewIdent("Router"),
 														},
 													},
 												},
@@ -1365,12 +1574,8 @@ func (h *HandlerGenerator) file() *ast.File {
 												&ast.ExprStmt{
 													X: &ast.CallExpr{
 														Fun: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "g",
-															},
-															Sel: &ast.Ident{
-																Name: "Post",
-															},
+															X:   ast.NewIdent("g"),
+															Sel: ast.NewIdent("Post"),
 														},
 														Args: []ast.Expr{
 															&ast.BasicLit{
@@ -1378,12 +1583,8 @@ func (h *HandlerGenerator) file() *ast.File {
 																Value: "\"/\"",
 															},
 															&ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "h",
-																},
-																Sel: &ast.Ident{
-																	Name: "Create",
-																},
+																X:   ast.NewIdent("h"),
+																Sel: ast.NewIdent("Create"),
 															},
 														},
 													},
@@ -1391,12 +1592,8 @@ func (h *HandlerGenerator) file() *ast.File {
 												&ast.ExprStmt{
 													X: &ast.CallExpr{
 														Fun: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "g",
-															},
-															Sel: &ast.Ident{
-																Name: "Get",
-															},
+															X:   ast.NewIdent("g"),
+															Sel: ast.NewIdent("Get"),
 														},
 														Args: []ast.Expr{
 															&ast.BasicLit{
@@ -1404,12 +1601,8 @@ func (h *HandlerGenerator) file() *ast.File {
 																Value: "\"/\"",
 															},
 															&ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "h",
-																},
-																Sel: &ast.Ident{
-																	Name: "List",
-																},
+																X:   ast.NewIdent("h"),
+																Sel: ast.NewIdent("List"),
 															},
 														},
 													},
@@ -1417,12 +1610,8 @@ func (h *HandlerGenerator) file() *ast.File {
 												&ast.ExprStmt{
 													X: &ast.CallExpr{
 														Fun: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "g",
-															},
-															Sel: &ast.Ident{
-																Name: "Get",
-															},
+															X:   ast.NewIdent("g"),
+															Sel: ast.NewIdent("Get"),
 														},
 														Args: []ast.Expr{
 															&ast.BasicLit{
@@ -1430,12 +1619,8 @@ func (h *HandlerGenerator) file() *ast.File {
 																Value: "\"/{id}\"",
 															},
 															&ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "h",
-																},
-																Sel: &ast.Ident{
-																	Name: "Get",
-																},
+																X:   ast.NewIdent("h"),
+																Sel: ast.NewIdent("Get"),
 															},
 														},
 													},
@@ -1443,12 +1628,8 @@ func (h *HandlerGenerator) file() *ast.File {
 												&ast.ExprStmt{
 													X: &ast.CallExpr{
 														Fun: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "g",
-															},
-															Sel: &ast.Ident{
-																Name: "Patch",
-															},
+															X:   ast.NewIdent("g"),
+															Sel: ast.NewIdent("Patch"),
 														},
 														Args: []ast.Expr{
 															&ast.BasicLit{
@@ -1456,12 +1637,8 @@ func (h *HandlerGenerator) file() *ast.File {
 																Value: "\"/{id}\"",
 															},
 															&ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "h",
-																},
-																Sel: &ast.Ident{
-																	Name: "Update",
-																},
+																X:   ast.NewIdent("h"),
+																Sel: ast.NewIdent("Update"),
 															},
 														},
 													},
@@ -1469,12 +1646,8 @@ func (h *HandlerGenerator) file() *ast.File {
 												&ast.ExprStmt{
 													X: &ast.CallExpr{
 														Fun: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "g",
-															},
-															Sel: &ast.Ident{
-																Name: "Delete",
-															},
+															X:   ast.NewIdent("g"),
+															Sel: ast.NewIdent("Delete"),
 														},
 														Args: []ast.Expr{
 															&ast.BasicLit{
@@ -1482,12 +1655,8 @@ func (h *HandlerGenerator) file() *ast.File {
 																Value: "\"/{id}\"",
 															},
 															&ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "h",
-																},
-																Sel: &ast.Ident{
-																	Name: "Delete",
-																},
+																X:   ast.NewIdent("h"),
+																Sel: ast.NewIdent("Delete"),
 															},
 														},
 													},
@@ -1500,9 +1669,7 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "router",
-								},
+								ast.NewIdent("router"),
 							},
 						},
 					},

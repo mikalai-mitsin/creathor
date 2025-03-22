@@ -370,7 +370,7 @@ func (p *Param) ProtoWrapType() string {
 		return "google.protobuf.ListValue"
 	case "[]uint64":
 		return "google.protobuf.ListValue"
-	case "string", "UUID", "uuid", "GroupID", "entities.GroupID":
+	case "string", "UUID", "uuid", "uuid.UUID", "GroupID", "entities.GroupID":
 		return "google.protobuf.StringValue"
 	case "[]string":
 		return "google.protobuf.ListValue"

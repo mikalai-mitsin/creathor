@@ -1,6 +1,8 @@
 module github.com/mikalai-mitsin/creathor
 
-go 1.21
+go 1.22.0
+
+toolchain go1.23.5
 
 require (
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
@@ -17,4 +19,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/stretchr/testify v1.8.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
+	golang.org/x/mod v0.23.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/tools v0.30.0 // indirect
 )

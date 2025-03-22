@@ -25,9 +25,7 @@ func NewModelAuth(project *configs.Project) *ModelAuth {
 
 func (m ModelAuth) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "entities",
-		},
+		Name: ast.NewIdent("entities"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -52,9 +50,7 @@ func (m ModelAuth) file() *ast.File {
 						},
 					},
 					&ast.ImportSpec{
-						Name: &ast.Ident{
-							Name: "validation",
-						},
+						Name: ast.NewIdent("validation"),
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
 							Value: `"github.com/go-ozzo/ozzo-validation/v4"`,
@@ -72,12 +68,8 @@ func (m ModelAuth) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "Token",
-						},
-						Type: &ast.Ident{
-							Name: "string",
-						},
+						Name: ast.NewIdent("Token"),
+						Type: ast.NewIdent("string"),
 					},
 				},
 			},
@@ -86,27 +78,19 @@ func (m ModelAuth) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "t",
-								},
+								ast.NewIdent("t"),
 							},
-							Type: &ast.Ident{
-								Name: "Token",
-							},
+							Type: ast.NewIdent("Token"),
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "String",
-				},
+				Name: ast.NewIdent("String"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: &ast.Ident{
-									Name: "string",
-								},
+								Type: ast.NewIdent("string"),
 							},
 						},
 					},
@@ -116,13 +100,9 @@ func (m ModelAuth) file() *ast.File {
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
 								&ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: "string",
-									},
+									Fun: ast.NewIdent("string"),
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "t",
-										},
+										ast.NewIdent("t"),
 									},
 								},
 							},
@@ -134,21 +114,15 @@ func (m ModelAuth) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "TokenPair",
-						},
+						Name: ast.NewIdent("TokenPair"),
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "Access",
-											},
+											ast.NewIdent("Access"),
 										},
-										Type: &ast.Ident{
-											Name: "Token",
-										},
+										Type: ast.NewIdent("Token"),
 										Tag: &ast.BasicLit{
 											Kind:  token.STRING,
 											Value: "`json:\"access\"  form:\"access\"`",
@@ -156,13 +130,9 @@ func (m ModelAuth) file() *ast.File {
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "Refresh",
-											},
+											ast.NewIdent("Refresh"),
 										},
-										Type: &ast.Ident{
-											Name: "Token",
-										},
+										Type: ast.NewIdent("Token"),
 										Tag: &ast.BasicLit{
 											Kind:  token.STRING,
 											Value: "`json:\"refresh\" form:\"refresh\"`",
@@ -179,29 +149,21 @@ func (m ModelAuth) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "c",
-								},
+								ast.NewIdent("c"),
 							},
 							Type: &ast.StarExpr{
-								X: &ast.Ident{
-									Name: "TokenPair",
-								},
+								X: ast.NewIdent("TokenPair"),
 							},
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "Validate",
-				},
+				Name: ast.NewIdent("Validate"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -210,67 +172,43 @@ func (m ModelAuth) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "validation",
-										},
-										Sel: &ast.Ident{
-											Name: "ValidateStruct",
-										},
+										X:   ast.NewIdent("validation"),
+										Sel: ast.NewIdent("ValidateStruct"),
 									},
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "c",
-										},
+										ast.NewIdent("c"),
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "validation",
-												},
-												Sel: &ast.Ident{
-													Name: "Field",
-												},
+												X:   ast.NewIdent("validation"),
+												Sel: ast.NewIdent("Field"),
 											},
 											Args: []ast.Expr{
 												&ast.UnaryExpr{
 													Op: token.AND,
 													X: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "c",
-														},
-														Sel: &ast.Ident{
-															Name: "Access",
-														},
+														X:   ast.NewIdent("c"),
+														Sel: ast.NewIdent("Access"),
 													},
 												},
 											},
 										},
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "validation",
-												},
-												Sel: &ast.Ident{
-													Name: "Field",
-												},
+												X:   ast.NewIdent("validation"),
+												Sel: ast.NewIdent("Field"),
 											},
 											Args: []ast.Expr{
 												&ast.UnaryExpr{
 													Op: token.AND,
 													X: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "c",
-														},
-														Sel: &ast.Ident{
-															Name: "Refresh",
-														},
+														X:   ast.NewIdent("c"),
+														Sel: ast.NewIdent("Refresh"),
 													},
 												},
 											},
@@ -281,13 +219,9 @@ func (m ModelAuth) file() *ast.File {
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
@@ -295,17 +229,11 @@ func (m ModelAuth) file() *ast.File {
 										Results: []ast.Expr{
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "errs",
-													},
-													Sel: &ast.Ident{
-														Name: "NewFromValidationError",
-													},
+													X:   ast.NewIdent("errs"),
+													Sel: ast.NewIdent("NewFromValidationError"),
 												},
 												Args: []ast.Expr{
-													&ast.Ident{
-														Name: "err",
-													},
+													ast.NewIdent("err"),
 												},
 											},
 										},
@@ -315,9 +243,7 @@ func (m ModelAuth) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("nil"),
 							},
 						},
 					},
@@ -327,21 +253,15 @@ func (m ModelAuth) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "Login",
-						},
+						Name: ast.NewIdent("Login"),
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "Email",
-											},
+											ast.NewIdent("Email"),
 										},
-										Type: &ast.Ident{
-											Name: "string",
-										},
+										Type: ast.NewIdent("string"),
 										Tag: &ast.BasicLit{
 											Kind:  token.STRING,
 											Value: "`json:\"email\"    form:\"email\"`",
@@ -349,13 +269,9 @@ func (m ModelAuth) file() *ast.File {
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "Password",
-											},
+											ast.NewIdent("Password"),
 										},
-										Type: &ast.Ident{
-											Name: "string",
-										},
+										Type: ast.NewIdent("string"),
 										Tag: &ast.BasicLit{
 											Kind:  token.STRING,
 											Value: "`json:\"password\" form:\"password\"`",
@@ -372,29 +288,21 @@ func (m ModelAuth) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "c",
-								},
+								ast.NewIdent("c"),
 							},
 							Type: &ast.StarExpr{
-								X: &ast.Ident{
-									Name: "Login",
-								},
+								X: ast.NewIdent("Login"),
 							},
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "Validate",
-				},
+				Name: ast.NewIdent("Validate"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -403,75 +311,47 @@ func (m ModelAuth) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "validation",
-										},
-										Sel: &ast.Ident{
-											Name: "ValidateStruct",
-										},
+										X:   ast.NewIdent("validation"),
+										Sel: ast.NewIdent("ValidateStruct"),
 									},
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "c",
-										},
+										ast.NewIdent("c"),
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "validation",
-												},
-												Sel: &ast.Ident{
-													Name: "Field",
-												},
+												X:   ast.NewIdent("validation"),
+												Sel: ast.NewIdent("Field"),
 											},
 											Args: []ast.Expr{
 												&ast.UnaryExpr{
 													Op: token.AND,
 													X: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "c",
-														},
-														Sel: &ast.Ident{
-															Name: "Email",
-														},
+														X:   ast.NewIdent("c"),
+														Sel: ast.NewIdent("Email"),
 													},
 												},
 												&ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "is",
-													},
-													Sel: &ast.Ident{
-														Name: "Email",
-													},
+													X:   ast.NewIdent("is"),
+													Sel: ast.NewIdent("Email"),
 												},
 											},
 										},
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "validation",
-												},
-												Sel: &ast.Ident{
-													Name: "Field",
-												},
+												X:   ast.NewIdent("validation"),
+												Sel: ast.NewIdent("Field"),
 											},
 											Args: []ast.Expr{
 												&ast.UnaryExpr{
 													Op: token.AND,
 													X: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "c",
-														},
-														Sel: &ast.Ident{
-															Name: "Password",
-														},
+														X:   ast.NewIdent("c"),
+														Sel: ast.NewIdent("Password"),
 													},
 												},
 											},
@@ -482,13 +362,9 @@ func (m ModelAuth) file() *ast.File {
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
@@ -496,17 +372,11 @@ func (m ModelAuth) file() *ast.File {
 										Results: []ast.Expr{
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "errs",
-													},
-													Sel: &ast.Ident{
-														Name: "NewFromValidationError",
-													},
+													X:   ast.NewIdent("errs"),
+													Sel: ast.NewIdent("NewFromValidationError"),
 												},
 												Args: []ast.Expr{
-													&ast.Ident{
-														Name: "err",
-													},
+													ast.NewIdent("err"),
 												},
 											},
 										},
@@ -516,9 +386,7 @@ func (m ModelAuth) file() *ast.File {
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("nil"),
 							},
 						},
 					},
@@ -529,97 +397,68 @@ func (m ModelAuth) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							{
-								Name: "Guest",
-							},
+							ast.NewIdent("Guest"),
 						},
 						Values: []ast.Expr{
-							&ast.UnaryExpr{
-								Op: token.AND,
-								X: &ast.CompositeLit{
-									Type: ast.NewIdent("userEntities.User"),
-									Elts: []ast.Expr{
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "ID",
-											},
-											Value: &ast.BasicLit{
-												Kind:  token.STRING,
-												Value: `""`,
+							&ast.CompositeLit{
+								Type: ast.NewIdent("userEntities.User"),
+								Elts: []ast.Expr{
+									&ast.KeyValueExpr{
+										Key: ast.NewIdent("ID"),
+										Value: &ast.BasicLit{
+											Kind:  token.STRING,
+											Value: `""`,
+										},
+									},
+									&ast.KeyValueExpr{
+										Key: ast.NewIdent("FirstName"),
+										Value: &ast.BasicLit{
+											Kind:  token.STRING,
+											Value: `""`,
+										},
+									},
+									&ast.KeyValueExpr{
+										Key: ast.NewIdent("LastName"),
+										Value: &ast.BasicLit{
+											Kind:  token.STRING,
+											Value: `""`,
+										},
+									},
+									&ast.KeyValueExpr{
+										Key: ast.NewIdent("Password"),
+										Value: &ast.BasicLit{
+											Kind:  token.STRING,
+											Value: `""`,
+										},
+									},
+									&ast.KeyValueExpr{
+										Key: ast.NewIdent("Email"),
+										Value: &ast.BasicLit{
+											Kind:  token.STRING,
+											Value: `""`,
+										},
+									},
+									&ast.KeyValueExpr{
+										Key: ast.NewIdent("CreatedAt"),
+										Value: &ast.CompositeLit{
+											Type: &ast.SelectorExpr{
+												X:   ast.NewIdent("time"),
+												Sel: ast.NewIdent("Time"),
 											},
 										},
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "FirstName",
-											},
-											Value: &ast.BasicLit{
-												Kind:  token.STRING,
-												Value: `""`,
-											},
-										},
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "LastName",
-											},
-											Value: &ast.BasicLit{
-												Kind:  token.STRING,
-												Value: `""`,
+									},
+									&ast.KeyValueExpr{
+										Key: ast.NewIdent("UpdatedAt"),
+										Value: &ast.CompositeLit{
+											Type: &ast.SelectorExpr{
+												X:   ast.NewIdent("time"),
+												Sel: ast.NewIdent("Time"),
 											},
 										},
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "Password",
-											},
-											Value: &ast.BasicLit{
-												Kind:  token.STRING,
-												Value: `""`,
-											},
-										},
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "Email",
-											},
-											Value: &ast.BasicLit{
-												Kind:  token.STRING,
-												Value: `""`,
-											},
-										},
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "CreatedAt",
-											},
-											Value: &ast.CompositeLit{
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "time",
-													},
-													Sel: &ast.Ident{
-														Name: "Time",
-													},
-												},
-											},
-										},
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "UpdatedAt",
-											},
-											Value: &ast.CompositeLit{
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "time",
-													},
-													Sel: &ast.Ident{
-														Name: "Time",
-													},
-												},
-											},
-										},
-										&ast.KeyValueExpr{
-											Key: &ast.Ident{
-												Name: "GroupID",
-											},
-											Value: ast.NewIdent("userEntities.GroupIDGuest"),
-										},
+									},
+									&ast.KeyValueExpr{
+										Key:   ast.NewIdent("GroupID"),
+										Value: ast.NewIdent("userEntities.GroupIDGuest"),
 									},
 								},
 							},

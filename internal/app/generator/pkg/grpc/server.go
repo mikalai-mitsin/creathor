@@ -23,9 +23,7 @@ func NewServer(project *configs.Project) *Server {
 
 func (u Server) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "grpc",
-		},
+		Name: ast.NewIdent("grpc"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -91,51 +89,35 @@ func (u Server) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "Server",
-						},
+						Name: ast.NewIdent("Server"),
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "logger",
-											},
+											ast.NewIdent("logger"),
 										},
 										Type: &ast.StarExpr{
 											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "log",
-												},
-												Sel: &ast.Ident{
-													Name: "Log",
-												},
+												X:   ast.NewIdent("log"),
+												Sel: ast.NewIdent("Log"),
 											},
 										},
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "server",
-											},
+											ast.NewIdent("server"),
 										},
 										Type: &ast.StarExpr{
 											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "grpc",
-												},
-												Sel: &ast.Ident{
-													Name: "Server",
-												},
+												X:   ast.NewIdent("grpc"),
+												Sel: ast.NewIdent("Server"),
 											},
 										},
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "config",
-											},
+											ast.NewIdent("config"),
 										},
 										Type: &ast.StarExpr{
 											X: ast.NewIdent("Config"),
@@ -143,40 +125,26 @@ func (u Server) file() *ast.File {
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "handlers",
-											},
+											ast.NewIdent("handlers"),
 										},
 										Type: &ast.MapType{
 											Key: &ast.StarExpr{
 												X: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "grpc",
-													},
-													Sel: &ast.Ident{
-														Name: "ServiceDesc",
-													},
+													X:   ast.NewIdent("grpc"),
+													Sel: ast.NewIdent("ServiceDesc"),
 												},
 											},
-											Value: &ast.Ident{
-												Name: "any",
-											},
+											Value: ast.NewIdent("any"),
 										},
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "unaryUseCases",
-											},
+											ast.NewIdent("unaryUseCases"),
 										},
 										Type: &ast.ArrayType{
 											Elt: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "grpc",
-												},
-												Sel: &ast.Ident{
-													Name: "UnaryServerInterceptor",
-												},
+												X:   ast.NewIdent("grpc"),
+												Sel: ast.NewIdent("UnaryServerInterceptor"),
 											},
 										},
 									},
@@ -187,34 +155,24 @@ func (u Server) file() *ast.File {
 				},
 			},
 			&ast.FuncDecl{
-				Name: &ast.Ident{
-					Name: "NewServer",
-				},
+				Name: ast.NewIdent("NewServer"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "logger",
-									},
+									ast.NewIdent("logger"),
 								},
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "log",
-										},
-										Sel: &ast.Ident{
-											Name: "Log",
-										},
+										X:   ast.NewIdent("log"),
+										Sel: ast.NewIdent("Log"),
 									},
 								},
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "config",
-									},
+									ast.NewIdent("config"),
 								},
 								Type: &ast.StarExpr{
 									X: ast.NewIdent("Config"),
@@ -226,9 +184,7 @@ func (u Server) file() *ast.File {
 						List: []*ast.Field{
 							{
 								Type: &ast.StarExpr{
-									X: &ast.Ident{
-										Name: "Server",
-									},
+									X: ast.NewIdent("Server"),
 								},
 							},
 						},
@@ -241,118 +197,70 @@ func (u Server) file() *ast.File {
 								&ast.UnaryExpr{
 									Op: token.AND,
 									X: &ast.CompositeLit{
-										Type: &ast.Ident{
-											Name: "Server",
-										},
+										Type: ast.NewIdent("Server"),
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "logger",
-												},
-												Value: &ast.Ident{
-													Name: "logger",
-												},
+												Key:   ast.NewIdent("logger"),
+												Value: ast.NewIdent("logger"),
 											},
 											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "server",
-												},
-												Value: &ast.Ident{
-													Name: "nil",
-												},
+												Key:   ast.NewIdent("server"),
+												Value: ast.NewIdent("nil"),
 											},
 											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "config",
-												},
-												Value: &ast.Ident{
-													Name: "config",
-												},
+												Key:   ast.NewIdent("config"),
+												Value: ast.NewIdent("config"),
 											},
 											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "handlers",
-												},
+												Key: ast.NewIdent("handlers"),
 												Value: &ast.CompositeLit{
 													Type: &ast.MapType{
 														Key: &ast.StarExpr{
 															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "grpc",
-																},
-																Sel: &ast.Ident{
-																	Name: "ServiceDesc",
-																},
+																X:   ast.NewIdent("grpc"),
+																Sel: ast.NewIdent("ServiceDesc"),
 															},
 														},
-														Value: &ast.Ident{
-															Name: "any",
-														},
+														Value: ast.NewIdent("any"),
 													},
 												},
 											},
 											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "unaryUseCases",
-												},
+												Key: ast.NewIdent("unaryUseCases"),
 												Value: &ast.CompositeLit{
 													Type: &ast.ArrayType{
 														Elt: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "grpc",
-															},
-															Sel: &ast.Ident{
-																Name: "UnaryServerInterceptor",
-															},
+															X:   ast.NewIdent("grpc"),
+															Sel: ast.NewIdent("UnaryServerInterceptor"),
 														},
 													},
 													Elts: []ast.Expr{
-														&ast.Ident{
-															Name: "unaryErrorServerUseCase",
-														},
+														ast.NewIdent("unaryErrorServerUseCase"),
 														&ast.CallExpr{
 															Fun: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "otelgrpc",
-																},
-																Sel: &ast.Ident{
-																	Name: "UnaryServerInterceptor",
-																},
+																X:   ast.NewIdent("otelgrpc"),
+																Sel: ast.NewIdent("UnaryServerInterceptor"),
 															},
 														},
 														&ast.CallExpr{
 															Fun: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "grpc_zap",
-																},
-																Sel: &ast.Ident{
-																	Name: "UnaryServerInterceptor",
-																},
+																X:   ast.NewIdent("grpc_zap"),
+																Sel: ast.NewIdent("UnaryServerInterceptor"),
 															},
 															Args: []ast.Expr{
 																&ast.CallExpr{
 																	Fun: &ast.SelectorExpr{
-																		X: &ast.Ident{
-																			Name: "logger",
-																		},
-																		Sel: &ast.Ident{
-																			Name: "Logger",
-																		},
+																		X:   ast.NewIdent("logger"),
+																		Sel: ast.NewIdent("Logger"),
 																	},
 																},
 																&ast.CallExpr{
 																	Fun: &ast.SelectorExpr{
-																		X: &ast.Ident{
-																			Name: "grpc_zap",
-																		},
-																		Sel: &ast.Ident{
-																			Name: "WithMessageProducer",
-																		},
+																		X:   ast.NewIdent("grpc_zap"),
+																		Sel: ast.NewIdent("WithMessageProducer"),
 																	},
 																	Args: []ast.Expr{
-																		&ast.Ident{
-																			Name: "defaultMessageProducer",
-																		},
+																		ast.NewIdent("defaultMessageProducer"),
 																	},
 																},
 															},
@@ -373,37 +281,25 @@ func (u Server) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "s",
-								},
+								ast.NewIdent("s"),
 							},
 							Type: &ast.StarExpr{
-								X: &ast.Ident{
-									Name: "Server",
-								},
+								X: ast.NewIdent("Server"),
 							},
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "Start",
-				},
+				Name: ast.NewIdent("Start"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "_",
-									},
+									ast.NewIdent("_"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
+									X:   ast.NewIdent("context"),
+									Sel: ast.NewIdent("Context"),
 								},
 							},
 						},
@@ -411,9 +307,7 @@ func (u Server) file() *ast.File {
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -423,43 +317,27 @@ func (u Server) file() *ast.File {
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
 								&ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "s",
-									},
-									Sel: &ast.Ident{
-										Name: "server",
-									},
+									X:   ast.NewIdent("s"),
+									Sel: ast.NewIdent("server"),
 								},
 							},
 							Tok: token.ASSIGN,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "grpc",
-										},
-										Sel: &ast.Ident{
-											Name: "NewServer",
-										},
+										X:   ast.NewIdent("grpc"),
+										Sel: ast.NewIdent("NewServer"),
 									},
 									Args: []ast.Expr{
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "grpc",
-												},
-												Sel: &ast.Ident{
-													Name: "ChainUnaryInterceptor",
-												},
+												X:   ast.NewIdent("grpc"),
+												Sel: ast.NewIdent("ChainUnaryInterceptor"),
 											},
 											Args: []ast.Expr{
 												&ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "s",
-													},
-													Sel: &ast.Ident{
-														Name: "unaryUseCases",
-													},
+													X:   ast.NewIdent("s"),
+													Sel: ast.NewIdent("unaryUseCases"),
 												},
 											},
 											Ellipsis: 1180,
@@ -469,20 +347,12 @@ func (u Server) file() *ast.File {
 							},
 						},
 						&ast.RangeStmt{
-							Key: &ast.Ident{
-								Name: "sd",
-							},
-							Value: &ast.Ident{
-								Name: "ss",
-							},
-							Tok: token.DEFINE,
+							Key:   ast.NewIdent("sd"),
+							Value: ast.NewIdent("ss"),
+							Tok:   token.DEFINE,
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "s",
-								},
-								Sel: &ast.Ident{
-									Name: "handlers",
-								},
+								X:   ast.NewIdent("s"),
+								Sel: ast.NewIdent("handlers"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
@@ -490,24 +360,14 @@ func (u Server) file() *ast.File {
 										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
 												X: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "s",
-													},
-													Sel: &ast.Ident{
-														Name: "server",
-													},
+													X:   ast.NewIdent("s"),
+													Sel: ast.NewIdent("server"),
 												},
-												Sel: &ast.Ident{
-													Name: "RegisterService",
-												},
+												Sel: ast.NewIdent("RegisterService"),
 											},
 											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "sd",
-												},
-												&ast.Ident{
-													Name: "ss",
-												},
+												ast.NewIdent("sd"),
+												ast.NewIdent("ss"),
 											},
 										},
 									},
@@ -517,63 +377,41 @@ func (u Server) file() *ast.File {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "reflection",
-									},
-									Sel: &ast.Ident{
-										Name: "Register",
-									},
+									X:   ast.NewIdent("reflection"),
+									Sel: ast.NewIdent("Register"),
 								},
 								Args: []ast.Expr{
 									&ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "s",
-										},
-										Sel: &ast.Ident{
-											Name: "server",
-										},
+										X:   ast.NewIdent("s"),
+										Sel: ast.NewIdent("server"),
 									},
 								},
 							},
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "healthServer",
-								},
+								ast.NewIdent("healthServer"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "health",
-										},
-										Sel: &ast.Ident{
-											Name: "NewServer",
-										},
+										X:   ast.NewIdent("health"),
+										Sel: ast.NewIdent("NewServer"),
 									},
 								},
 							},
 						},
 						&ast.RangeStmt{
-							Key: &ast.Ident{
-								Name: "service",
-							},
+							Key: ast.NewIdent("service"),
 							Tok: token.DEFINE,
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "s",
-										},
-										Sel: &ast.Ident{
-											Name: "server",
-										},
+										X:   ast.NewIdent("s"),
+										Sel: ast.NewIdent("server"),
 									},
-									Sel: &ast.Ident{
-										Name: "GetServiceInfo",
-									},
+									Sel: ast.NewIdent("GetServiceInfo"),
 								},
 							},
 							Body: &ast.BlockStmt{
@@ -581,24 +419,14 @@ func (u Server) file() *ast.File {
 									&ast.ExprStmt{
 										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "healthServer",
-												},
-												Sel: &ast.Ident{
-													Name: "SetServingStatus",
-												},
+												X:   ast.NewIdent("healthServer"),
+												Sel: ast.NewIdent("SetServingStatus"),
 											},
 											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "service",
-												},
+												ast.NewIdent("service"),
 												&ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "grpc_health_v1",
-													},
-													Sel: &ast.Ident{
-														Name: "HealthCheckResponse_SERVING",
-													},
+													X:   ast.NewIdent("grpc_health_v1"),
+													Sel: ast.NewIdent("HealthCheckResponse_SERVING"),
 												},
 											},
 										},
@@ -609,47 +437,29 @@ func (u Server) file() *ast.File {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "grpc_health_v1",
-									},
-									Sel: &ast.Ident{
-										Name: "RegisterHealthServer",
-									},
+									X:   ast.NewIdent("grpc_health_v1"),
+									Sel: ast.NewIdent("RegisterHealthServer"),
 								},
 								Args: []ast.Expr{
 									&ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "s",
-										},
-										Sel: &ast.Ident{
-											Name: "server",
-										},
+										X:   ast.NewIdent("s"),
+										Sel: ast.NewIdent("server"),
 									},
-									&ast.Ident{
-										Name: "healthServer",
-									},
+									ast.NewIdent("healthServer"),
 								},
 							},
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "listener",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
+								ast.NewIdent("listener"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "net",
-										},
-										Sel: &ast.Ident{
-											Name: "Listen",
-										},
+										X:   ast.NewIdent("net"),
+										Sel: ast.NewIdent("Listen"),
 									},
 									Args: []ast.Expr{
 										&ast.BasicLit{
@@ -658,16 +468,10 @@ func (u Server) file() *ast.File {
 										},
 										&ast.SelectorExpr{
 											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "s",
-												},
-												Sel: &ast.Ident{
-													Name: "config",
-												},
+												X:   ast.NewIdent("s"),
+												Sel: ast.NewIdent("config"),
 											},
-											Sel: &ast.Ident{
-												Name: "Address",
-											},
+											Sel: ast.NewIdent("Address"),
 										},
 									},
 								},
@@ -675,21 +479,15 @@ func (u Server) file() *ast.File {
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "err",
-								},
+								X:  ast.NewIdent("err"),
 								Op: token.NEQ,
-								Y: &ast.Ident{
-									Name: "nil",
-								},
+								Y:  ast.NewIdent("nil"),
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
 									&ast.ReturnStmt{
 										Results: []ast.Expr{
-											&ast.Ident{
-												Name: "err",
-											},
+											ast.NewIdent("err"),
 										},
 									},
 								},
@@ -700,21 +498,13 @@ func (u Server) file() *ast.File {
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "s",
-											},
-											Sel: &ast.Ident{
-												Name: "server",
-											},
+											X:   ast.NewIdent("s"),
+											Sel: ast.NewIdent("server"),
 										},
-										Sel: &ast.Ident{
-											Name: "Serve",
-										},
+										Sel: ast.NewIdent("Serve"),
 									},
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "listener",
-										},
+										ast.NewIdent("listener"),
 									},
 								},
 							},
@@ -727,37 +517,25 @@ func (u Server) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "s",
-								},
+								ast.NewIdent("s"),
 							},
 							Type: &ast.StarExpr{
-								X: &ast.Ident{
-									Name: "Server",
-								},
+								X: ast.NewIdent("Server"),
 							},
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "Stop",
-				},
+				Name: ast.NewIdent("Stop"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "_",
-									},
+									ast.NewIdent("_"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
+									X:   ast.NewIdent("context"),
+									Sel: ast.NewIdent("Context"),
 								},
 							},
 						},
@@ -765,9 +543,7 @@ func (u Server) file() *ast.File {
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -778,24 +554,16 @@ func (u Server) file() *ast.File {
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "s",
-										},
-										Sel: &ast.Ident{
-											Name: "server",
-										},
+										X:   ast.NewIdent("s"),
+										Sel: ast.NewIdent("server"),
 									},
-									Sel: &ast.Ident{
-										Name: "GracefulStop",
-									},
+									Sel: ast.NewIdent("GracefulStop"),
 								},
 							},
 						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("nil"),
 							},
 						},
 					},
@@ -806,50 +574,34 @@ func (u Server) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "s",
-								},
+								ast.NewIdent("s"),
 							},
 							Type: &ast.StarExpr{
-								X: &ast.Ident{
-									Name: "Server",
-								},
+								X: ast.NewIdent("Server"),
 							},
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "AddHandler",
-				},
+				Name: ast.NewIdent("AddHandler"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "sd",
-									},
+									ast.NewIdent("sd"),
 								},
 								Type: &ast.StarExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "grpc",
-										},
-										Sel: &ast.Ident{
-											Name: "ServiceDesc",
-										},
+										X:   ast.NewIdent("grpc"),
+										Sel: ast.NewIdent("ServiceDesc"),
 									},
 								},
 							},
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "ss",
-									},
+									ast.NewIdent("ss"),
 								},
-								Type: &ast.Ident{
-									Name: "any",
-								},
+								Type: ast.NewIdent("any"),
 							},
 						},
 					},
@@ -860,23 +612,15 @@ func (u Server) file() *ast.File {
 							Lhs: []ast.Expr{
 								&ast.IndexExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "s",
-										},
-										Sel: &ast.Ident{
-											Name: "handlers",
-										},
+										X:   ast.NewIdent("s"),
+										Sel: ast.NewIdent("handlers"),
 									},
-									Index: &ast.Ident{
-										Name: "sd",
-									},
+									Index: ast.NewIdent("sd"),
 								},
 							},
 							Tok: token.ASSIGN,
 							Rhs: []ast.Expr{
-								&ast.Ident{
-									Name: "ss",
-								},
+								ast.NewIdent("ss"),
 							},
 						},
 					},
@@ -887,37 +631,25 @@ func (u Server) file() *ast.File {
 					List: []*ast.Field{
 						{
 							Names: []*ast.Ident{
-								{
-									Name: "s",
-								},
+								ast.NewIdent("s"),
 							},
 							Type: &ast.StarExpr{
-								X: &ast.Ident{
-									Name: "Server",
-								},
+								X: ast.NewIdent("Server"),
 							},
 						},
 					},
 				},
-				Name: &ast.Ident{
-					Name: "AddInterceptor",
-				},
+				Name: ast.NewIdent("AddInterceptor"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "usecase",
-									},
+									ast.NewIdent("usecase"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "grpc",
-									},
-									Sel: &ast.Ident{
-										Name: "UnaryServerInterceptor",
-									},
+									X:   ast.NewIdent("grpc"),
+									Sel: ast.NewIdent("UnaryServerInterceptor"),
 								},
 							},
 						},
@@ -928,32 +660,20 @@ func (u Server) file() *ast.File {
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
 								&ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "s",
-									},
-									Sel: &ast.Ident{
-										Name: "unaryUseCases",
-									},
+									X:   ast.NewIdent("s"),
+									Sel: ast.NewIdent("unaryUseCases"),
 								},
 							},
 							Tok: token.ASSIGN,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: "append",
-									},
+									Fun: ast.NewIdent("append"),
 									Args: []ast.Expr{
 										&ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "s",
-											},
-											Sel: &ast.Ident{
-												Name: "unaryUseCases",
-											},
+											X:   ast.NewIdent("s"),
+											Sel: ast.NewIdent("unaryUseCases"),
 										},
-										&ast.Ident{
-											Name: "usecase",
-										},
+										ast.NewIdent("usecase"),
 									},
 								},
 							},

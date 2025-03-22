@@ -2,22 +2,15 @@ package usecases
 
 import (
     "context"
-    "errors"
-    "reflect"
     "testing"
 
     "{{ .Module }}/internal/pkg/errs"
-    "{{ .Module }}/internal/pkg/log"
     "{{ .Module }}/internal/app/{{ .DirName }}/entities"
-    mock_entities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
-    userMockEntities "{{ .Module }}/internal/app/user/entities/mock"
-    userEntities "{{ .Module }}/internal/app/user/entities"
-
+    mockEntities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
     "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
     "github.com/stretchr/testify/assert"
 
-    "{{ .Module }}/internal/pkg/clock"
     "{{ .Module }}/internal/pkg/uuid"
 )
 
@@ -64,7 +57,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
         logger          logger
@@ -78,7 +71,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    *entities.{{ .Config.ModelName }}
+        want    entities.{{ .Config.ModelName }}
         wantErr error
     }{
         {
@@ -104,7 +97,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
             setup: func() {
                 mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Get(ctx, {{ .Config.Variable }}.ID).
-                    Return(nil, errs.NewEntityNotFoundError())
+                    Return(entities.{{ .Config.ModelName }}{}, errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
@@ -114,7 +107,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
                 ctx:         ctx,
                 id:          {{ .Config.Variable }}.ID,
             },
-            want:    nil,
+            want:    entities.{{ .Config.ModelName }}{},
             wantErr: errs.NewEntityNotFoundError(),
         },
     }
@@ -138,22 +131,22 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
-    create := mock_entities.New{{ .Config.CreateTypeName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
+    create := mockEntities.New{{ .Config.CreateTypeName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
         logger          logger
     }
     type args struct {
         ctx    context.Context
-        create *entities.{{ .Config.CreateTypeName }}
+        create entities.{{ .Config.CreateTypeName }}
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *entities.{{ .Config.ModelName }}
+        want    entities.{{ .Config.ModelName }}
         wantErr error
     }{
         {
@@ -177,7 +170,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
             setup: func() {
                 mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Create(ctx, create).
-                    Return(nil, errs.NewUnexpectedBehaviorError("c u"))
+                    Return(entities.{{ .Config.ModelName }}{}, errs.NewUnexpectedBehaviorError("c u"))
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
@@ -187,7 +180,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
                 ctx:    ctx,
                 create: create,
             },
-            want:    nil,
+            want:    entities.{{ .Config.ModelName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("c u"),
         },
     }
@@ -211,22 +204,22 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
-    update := mock_entities.New{{ .Config.UpdateTypeName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
+    update := mockEntities.New{{ .Config.UpdateTypeName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
         logger          logger
     }
     type args struct {
         ctx    context.Context
-        update *entities.{{ .Config.UpdateTypeName }}
+        update entities.{{ .Config.UpdateTypeName }}
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *entities.{{ .Config.ModelName }}
+        want    entities.{{ .Config.ModelName }}
         wantErr error
     }{
         {
@@ -250,7 +243,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
             setup: func() {
                 mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Update(ctx, update).
-                    Return(nil, errs.NewUnexpectedBehaviorError("d 2"))
+                    Return(entities.{{ .Config.ModelName }}{}, errs.NewUnexpectedBehaviorError("d 2"))
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
@@ -260,7 +253,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
                 ctx:    ctx,
                 update: update,
             },
-            want:    nil,
+            want:    entities.{{ .Config.ModelName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("d 2"),
         },
     }
@@ -284,7 +277,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mock_entities.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
         logger          logger
@@ -354,11 +347,11 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    filter := mock_entities.New{{ .Config.FilterTypeName }}(t)
+    filter := mockEntities.New{{ .Config.FilterTypeName }}(t)
     count := faker.New().UInt64Between(2, 20)
-    {{ .Config.ListVariable }} := make([]*entities.{{ .Config.ModelName }}, 0, count)
+    {{ .Config.ListVariable }} := make([]entities.{{ .Config.ModelName }}, 0, count)
     for i := uint64(0); i < count; i++ {
-        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mock_entities.New{{ .Config.ModelName }}(t))
+        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mockEntities.New{{ .Config.ModelName }}(t))
     }
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
@@ -366,14 +359,14 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
     }
     type args struct {
         ctx         context.Context
-        filter      *entities.{{ .Config.FilterTypeName }}
+        filter      entities.{{ .Config.FilterTypeName }}
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    []*entities.{{ .Config.ModelName }}
+        want    []entities.{{ .Config.ModelName }}
         want1   uint64
         wantErr error
     }{

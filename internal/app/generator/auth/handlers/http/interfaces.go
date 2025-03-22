@@ -1,4 +1,4 @@
-package usecases
+package http
 
 import (
 	"bytes"
@@ -13,24 +13,24 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
-type ServiceInterfaceAuth struct {
+type Interfaces struct {
 	project *configs.Project
 }
 
-func NewServiceInterfaceAuth(project *configs.Project) *ServiceInterfaceAuth {
-	return &ServiceInterfaceAuth{project: project}
+func NewInterfaces(project *configs.Project) *Interfaces {
+	return &Interfaces{project: project}
 }
 
-func (i ServiceInterfaceAuth) file() *ast.File {
+func (i *Interfaces) file() *ast.File {
 	return &ast.File{
-		Name: ast.NewIdent("usecases"),
+		Name: ast.NewIdent("handlers"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Doc: &ast.CommentGroup{
 					List: []*ast.Comment{
 						{
 							Slash: token.NoPos,
-							Text:  "//go:generate mockgen -source=interfaces.go -package=usecases -destination=interfaces_mock.go",
+							Text:  "//go:generate mockgen -source=interfaces.go -package=handlers -destination=interfaces_mock.go",
 						},
 					},
 				},
@@ -45,12 +45,6 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: `"time"`,
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
 							Value: fmt.Sprintf(`"%s/internal/app/auth/entities"`, i.project.Module),
 						},
 					},
@@ -58,48 +52,6 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
 							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, i.project.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Name: ast.NewIdent("userEntities"),
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/app/user/entities"`, i.project.Module),
-						},
-					},
-				},
-			},
-			&ast.GenDecl{
-				Doc: &ast.CommentGroup{
-					List: []*ast.Comment{
-						{
-							Text: "// clock - clock interface",
-						},
-					},
-				},
-				Tok: token.TYPE,
-				Specs: []ast.Spec{
-					&ast.TypeSpec{
-						Name: ast.NewIdent("clock"),
-						Type: &ast.InterfaceType{
-							Methods: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Names: []*ast.Ident{
-											ast.NewIdent("Now"),
-										},
-										Type: &ast.FuncType{
-											Results: &ast.FieldList{
-												List: []*ast.Field{
-													{
-														Type: ast.NewIdent("time.Time"),
-													},
-												},
-											},
-										},
-									},
-								},
-							},
 						},
 					},
 				},
@@ -315,10 +267,17 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 				},
 			},
 			&ast.GenDecl{
+				Doc: &ast.CommentGroup{
+					List: []*ast.Comment{
+						{
+							Text: "//authUseCase - domain layer usecase interface",
+						},
+					},
+				},
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: ast.NewIdent("authService"),
+						Name: ast.NewIdent("authUseCase"),
 						Type: &ast.InterfaceType{
 							Methods: &ast.FieldList{
 								List: []*ast.Field{
@@ -345,48 +304,6 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 														Type: &ast.SelectorExpr{
 															X:   ast.NewIdent("entities"),
 															Sel: ast.NewIdent("Login"),
-														},
-													},
-												},
-											},
-											Results: &ast.FieldList{
-												List: []*ast.Field{
-													{
-														Type: &ast.SelectorExpr{
-															X:   ast.NewIdent("entities"),
-															Sel: ast.NewIdent("TokenPair"),
-														},
-													},
-													{
-														Type: ast.NewIdent("error"),
-													},
-												},
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											ast.NewIdent("CreateTokenByUser"),
-										},
-										Type: &ast.FuncType{
-											Params: &ast.FieldList{
-												List: []*ast.Field{
-													{
-														Names: []*ast.Ident{
-															ast.NewIdent("ctx"),
-														},
-														Type: &ast.SelectorExpr{
-															X:   ast.NewIdent("context"),
-															Sel: ast.NewIdent("Context"),
-														},
-													},
-													{
-														Names: []*ast.Ident{
-															ast.NewIdent("user"),
-														},
-														Type: &ast.SelectorExpr{
-															X:   ast.NewIdent("userEntities"),
-															Sel: ast.NewIdent("User"),
 														},
 													},
 												},
@@ -448,84 +365,6 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 											},
 										},
 									},
-									{
-										Names: []*ast.Ident{
-											ast.NewIdent("ValidateToken"),
-										},
-										Type: &ast.FuncType{
-											Params: &ast.FieldList{
-												List: []*ast.Field{
-													{
-														Names: []*ast.Ident{
-															ast.NewIdent("ctx"),
-														},
-														Type: &ast.SelectorExpr{
-															X:   ast.NewIdent("context"),
-															Sel: ast.NewIdent("Context"),
-														},
-													},
-													{
-														Names: []*ast.Ident{
-															ast.NewIdent("access"),
-														},
-														Type: &ast.SelectorExpr{
-															X:   ast.NewIdent("entities"),
-															Sel: ast.NewIdent("Token"),
-														},
-													},
-												},
-											},
-											Results: &ast.FieldList{
-												List: []*ast.Field{
-													{
-														Type: ast.NewIdent("error"),
-													},
-												},
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											ast.NewIdent("Auth"),
-										},
-										Type: &ast.FuncType{
-											Params: &ast.FieldList{
-												List: []*ast.Field{
-													{
-														Names: []*ast.Ident{
-															ast.NewIdent("ctx"),
-														},
-														Type: &ast.SelectorExpr{
-															X:   ast.NewIdent("context"),
-															Sel: ast.NewIdent("Context"),
-														},
-													},
-													{
-														Names: []*ast.Ident{
-															ast.NewIdent("access"),
-														},
-														Type: &ast.SelectorExpr{
-															X:   ast.NewIdent("entities"),
-															Sel: ast.NewIdent("Token"),
-														},
-													},
-												},
-											},
-											Results: &ast.FieldList{
-												List: []*ast.Field{
-													{
-														Type: &ast.SelectorExpr{
-															X:   ast.NewIdent("userEntities"),
-															Sel: ast.NewIdent("User"),
-														},
-													},
-													{
-														Type: ast.NewIdent("error"),
-													},
-												},
-											},
-										},
-									},
 								},
 							},
 						},
@@ -536,9 +375,9 @@ func (i ServiceInterfaceAuth) file() *ast.File {
 	}
 }
 
-func (i ServiceInterfaceAuth) Sync() error {
+func (i *Interfaces) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", "auth", "usecases", "interfaces.go")
+	filename := path.Join("internal", "app", "auth", "handlers", "http", "interfaces.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}

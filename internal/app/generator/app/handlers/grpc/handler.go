@@ -39,9 +39,7 @@ func (h HandlerGenerator) file() *ast.File {
 			},
 		},
 		&ast.ImportSpec{
-			Name: &ast.Ident{
-				Name: h.domain.ProtoModule,
-			},
+			Name: ast.NewIdent(h.domain.ProtoModule),
 			Path: &ast.BasicLit{
 				Kind: token.STRING,
 				Value: fmt.Sprintf(
@@ -55,12 +53,6 @@ func (h HandlerGenerator) file() *ast.File {
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
 				Value: fmt.Sprintf(`"%s/internal/pkg/pointer"`, h.domain.Module),
-			},
-		},
-		&ast.ImportSpec{
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/log"`, h.domain.Module),
 			},
 		},
 		&ast.ImportSpec{
@@ -100,9 +92,7 @@ func (h HandlerGenerator) file() *ast.File {
 		}
 	}
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "handlers",
-		},
+		Name: ast.NewIdent("handlers"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok:   token.IMPORT,
@@ -125,12 +115,8 @@ func (h HandlerGenerator) createParams() []ast.Expr {
 			case param.GRPCType():
 				value = &ast.CallExpr{
 					Fun: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "input",
-						},
-						Sel: &ast.Ident{
-							Name: param.GRPCGetter(),
-						},
+						X:   ast.NewIdent("input"),
+						Sel: ast.NewIdent(param.GRPCGetter()),
 					},
 				}
 			default:
@@ -139,22 +125,16 @@ func (h HandlerGenerator) createParams() []ast.Expr {
 		} else {
 			value = &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "input",
-					},
-					Sel: &ast.Ident{
-						Name: param.GRPCGetter(),
-					},
+					X:   ast.NewIdent("input"),
+					Sel: ast.NewIdent(param.GRPCGetter()),
 				},
 			}
 			switch param.Type {
 			case "time.Time":
 				value = &ast.CallExpr{
 					Fun: &ast.SelectorExpr{
-						X: value,
-						Sel: &ast.Ident{
-							Name: "AsTime",
-						},
+						X:   value,
+						Sel: ast.NewIdent("AsTime"),
 					},
 				}
 			case param.GRPCType():
@@ -177,26 +157,18 @@ func (h HandlerGenerator) createParams() []ast.Expr {
 
 func (h HandlerGenerator) encodeCreate() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: fmt.Sprintf("encode%s", h.domain.GetCreateModel().Name),
-		},
+		Name: ast.NewIdent(fmt.Sprintf("encode%s", h.domain.GetCreateModel().Name)),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "input",
-							},
+							ast.NewIdent("input"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: h.domain.ProtoModule,
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetCreateModel().Name,
-								},
+								X:   ast.NewIdent(h.domain.ProtoModule),
+								Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
 							},
 						},
 					},
@@ -205,13 +177,9 @@ func (h HandlerGenerator) encodeCreate() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
 						},
 					},
 				},
@@ -221,31 +189,22 @@ func (h HandlerGenerator) encodeCreate() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "create",
-						},
+						ast.NewIdent("create"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
-						&ast.UnaryExpr{
-							Op: token.AND,
-							X: &ast.CompositeLit{
-								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
-								},
-								Elts: h.createParams(),
+						&ast.CompositeLit{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
 							},
+							Elts: h.createParams(),
 						},
 					},
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						&ast.Ident{
-							Name: "create",
-						},
+						ast.NewIdent("create"),
 					},
 				},
 			},
@@ -293,21 +252,13 @@ func (h HandlerGenerator) syncEncodeCreate() error {
 		})
 	}
 	rangeStmt := &ast.RangeStmt{
-		Key: &ast.Ident{
-			Name: "_",
-		},
-		Value: &ast.Ident{
-			Name: "param",
-		},
-		Tok: token.DEFINE,
+		Key:   ast.NewIdent("_"),
+		Value: ast.NewIdent("param"),
+		Tok:   token.DEFINE,
 		X: &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "input",
-				},
-				Sel: &ast.Ident{
-					Name: "GetTags",
-				},
+				X:   ast.NewIdent("input"),
+				Sel: ast.NewIdent("GetTags"),
 			},
 		},
 		Body: &ast.BlockStmt{
@@ -315,37 +266,23 @@ func (h HandlerGenerator) syncEncodeCreate() error {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "create",
-							},
-							Sel: &ast.Ident{
-								Name: "Tags",
-							},
+							X:   ast.NewIdent("create"),
+							Sel: ast.NewIdent("Tags"),
 						},
 					},
 					Tok: token.ASSIGN,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
-							Fun: &ast.Ident{
-								Name: "append",
-							},
+							Fun: ast.NewIdent("append"),
 							Args: []ast.Expr{
 								&ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "create",
-									},
-									Sel: &ast.Ident{
-										Name: "Tags",
-									},
+									X:   ast.NewIdent("create"),
+									Sel: ast.NewIdent("Tags"),
 								},
 								&ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: "string",
-									},
+									Fun: ast.NewIdent("string"),
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "param",
-										},
+										ast.NewIdent("param"),
 									},
 								},
 							},
@@ -382,24 +319,16 @@ func (h HandlerGenerator) updateStmts() []*ast.IfStmt {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "update",
-							},
-							Sel: &ast.Ident{
-								Name: param.GetName(),
-							},
+							X:   ast.NewIdent("update"),
+							Sel: ast.NewIdent(param.GetName()),
 						},
 					},
 					Tok: token.ASSIGN,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "pointer",
-								},
-								Sel: &ast.Ident{
-									Name: "Pointer",
-								},
+								X:   ast.NewIdent("pointer"),
+								Sel: ast.NewIdent("Pointer"),
 							},
 							Args: []ast.Expr{
 								&ast.CallExpr{
@@ -424,12 +353,8 @@ func (h HandlerGenerator) updateStmts() []*ast.IfStmt {
 				Args: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "item",
-							},
-							Sel: &ast.Ident{
-								Name: param.GrpcGetFromListValueAs(),
-							},
+							X:   ast.NewIdent("item"),
+							Sel: ast.NewIdent(param.GrpcGetFromListValueAs()),
 						},
 					},
 				},
@@ -441,62 +366,42 @@ func (h HandlerGenerator) updateStmts() []*ast.IfStmt {
 						Specs: []ast.Spec{
 							&ast.ValueSpec{
 								Names: []*ast.Ident{
-									{
-										Name: "params",
-									},
+									ast.NewIdent("params"),
 								},
 								Type: &ast.ArrayType{
-									Elt: &ast.Ident{
-										Name: param.SliceType(),
-									},
+									Elt: ast.NewIdent(param.SliceType()),
 								},
 							},
 						},
 					},
 				},
 				&ast.RangeStmt{
-					Key: &ast.Ident{
-						Name: "_",
-					},
-					Value: &ast.Ident{
-						Name: "item",
-					},
-					Tok: token.DEFINE,
+					Key:   ast.NewIdent("_"),
+					Value: ast.NewIdent("item"),
+					Tok:   token.DEFINE,
 					X: &ast.CallExpr{
 						Fun: &ast.SelectorExpr{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "input",
-									},
-									Sel: &ast.Ident{
-										Name: param.GRPCGetter(),
-									},
+									X:   ast.NewIdent("input"),
+									Sel: ast.NewIdent(param.GRPCGetter()),
 								},
 							},
-							Sel: &ast.Ident{
-								Name: "GetValues",
-							},
+							Sel: ast.NewIdent("GetValues"),
 						},
 					},
 					Body: &ast.BlockStmt{
 						List: []ast.Stmt{
 							&ast.AssignStmt{
 								Lhs: []ast.Expr{
-									&ast.Ident{
-										Name: "params",
-									},
+									ast.NewIdent("params"),
 								},
 								Tok: token.ASSIGN,
 								Rhs: []ast.Expr{
 									&ast.CallExpr{
-										Fun: &ast.Ident{
-											Name: "append",
-										},
+										Fun: ast.NewIdent("append"),
 										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "params",
-											},
+											ast.NewIdent("params"),
 											value,
 										},
 									},
@@ -508,29 +413,19 @@ func (h HandlerGenerator) updateStmts() []*ast.IfStmt {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "update",
-							},
-							Sel: &ast.Ident{
-								Name: param.GetName(),
-							},
+							X:   ast.NewIdent("update"),
+							Sel: ast.NewIdent(param.GetName()),
 						},
 					},
 					Tok: token.ASSIGN,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "pointer",
-								},
-								Sel: &ast.Ident{
-									Name: "Pointer",
-								},
+								X:   ast.NewIdent("pointer"),
+								Sel: ast.NewIdent("Pointer"),
 							},
 							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "params",
-								},
+								ast.NewIdent("params"),
 							},
 						},
 					},
@@ -542,17 +437,11 @@ func (h HandlerGenerator) updateStmts() []*ast.IfStmt {
 				Fun: &ast.SelectorExpr{
 					X: &ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "input",
-							},
-							Sel: &ast.Ident{
-								Name: param.GRPCGetter(),
-							},
+							X:   ast.NewIdent("input"),
+							Sel: ast.NewIdent(param.GRPCGetter()),
 						},
 					},
-					Sel: &ast.Ident{
-						Name: "GetValue",
-					},
+					Sel: ast.NewIdent("GetValue"),
 				},
 			}
 			if strings.TrimPrefix(param.Type, "*") != param.GRPCType() {
@@ -565,24 +454,16 @@ func (h HandlerGenerator) updateStmts() []*ast.IfStmt {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "update",
-							},
-							Sel: &ast.Ident{
-								Name: param.GetName(),
-							},
+							X:   ast.NewIdent("update"),
+							Sel: ast.NewIdent(param.GetName()),
 						},
 					},
 					Tok: token.ASSIGN,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "pointer",
-								},
-								Sel: &ast.Ident{
-									Name: "Pointer",
-								},
+								X:   ast.NewIdent("pointer"),
+								Sel: ast.NewIdent("Pointer"),
 							},
 							Args: []ast.Expr{
 								value,
@@ -596,18 +477,12 @@ func (h HandlerGenerator) updateStmts() []*ast.IfStmt {
 			Cond: &ast.BinaryExpr{
 				X: &ast.CallExpr{
 					Fun: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "input",
-						},
-						Sel: &ast.Ident{
-							Name: param.GRPCGetter(),
-						},
+						X:   ast.NewIdent("input"),
+						Sel: ast.NewIdent(param.GRPCGetter()),
 					},
 				},
 				Op: token.NEQ,
-				Y: &ast.Ident{
-					Name: "nil",
-				},
+				Y:  ast.NewIdent("nil"),
 			},
 			Body: &ast.BlockStmt{
 				List: body,
@@ -621,45 +496,28 @@ func (h HandlerGenerator) encodeUpdate() *ast.FuncDecl {
 	body := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				&ast.Ident{
-					Name: "update",
-				},
+				ast.NewIdent("update"),
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
-				&ast.UnaryExpr{
-					Op: token.AND,
-					X: &ast.CompositeLit{
-						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "entities",
-							},
-							Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
-						},
-						Elts: []ast.Expr{
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "ID",
+				&ast.CompositeLit{
+					Type: &ast.SelectorExpr{
+						X:   ast.NewIdent("entities"),
+						Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
+					},
+					Elts: []ast.Expr{
+						&ast.KeyValueExpr{
+							Key: ast.NewIdent("ID"),
+							Value: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X:   ast.NewIdent("uuid"),
+									Sel: ast.NewIdent("UUID"),
 								},
-								Value: &ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "uuid",
-										},
-										Sel: &ast.Ident{
-											Name: "UUID",
-										},
-									},
-									Args: []ast.Expr{
-										&ast.CallExpr{
-											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "input",
-												},
-												Sel: &ast.Ident{
-													Name: "GetId",
-												},
-											},
+								Args: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X:   ast.NewIdent("input"),
+											Sel: ast.NewIdent("GetId"),
 										},
 									},
 								},
@@ -675,29 +533,21 @@ func (h HandlerGenerator) encodeUpdate() *ast.FuncDecl {
 	}
 	body = append(body, &ast.ReturnStmt{
 		Results: []ast.Expr{
-			&ast.Ident{
-				Name: "update",
-			},
+			ast.NewIdent("update"),
 		},
 	})
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: fmt.Sprintf("encode%s", h.domain.GetUpdateModel().Name),
-		},
+		Name: ast.NewIdent(fmt.Sprintf("encode%s", h.domain.GetUpdateModel().Name)),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "input",
-							},
+							ast.NewIdent("input"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: h.domain.ProtoModule,
-								},
+								X:   ast.NewIdent(h.domain.ProtoModule),
 								Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
 							},
 						},
@@ -707,13 +557,9 @@ func (h HandlerGenerator) encodeUpdate() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
 						},
 					},
 				},
@@ -762,71 +608,40 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 	stmts := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				&ast.Ident{
-					Name: "filter",
-				},
+				ast.NewIdent("filter"),
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
-				&ast.UnaryExpr{
-					Op: token.AND,
-					X: &ast.CompositeLit{
-						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "entities",
-							},
-							Sel: &ast.Ident{
-								Name: h.domain.GetFilterModel().Name,
+				&ast.CompositeLit{
+					Type: &ast.SelectorExpr{
+						X:   ast.NewIdent("entities"),
+						Sel: ast.NewIdent(h.domain.GetFilterModel().Name),
+					},
+					Elts: []ast.Expr{
+						&ast.KeyValueExpr{
+							Key:   ast.NewIdent("IDs"),
+							Value: ast.NewIdent("nil"),
+						},
+						&ast.KeyValueExpr{
+							Key:   ast.NewIdent("PageSize"),
+							Value: ast.NewIdent("nil"),
+						},
+						&ast.KeyValueExpr{
+							Key:   ast.NewIdent("PageNumber"),
+							Value: ast.NewIdent("nil"),
+						},
+						&ast.KeyValueExpr{
+							Key: ast.NewIdent("OrderBy"),
+							Value: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X:   ast.NewIdent("input"),
+									Sel: ast.NewIdent("GetOrderBy"),
+								},
 							},
 						},
-						Elts: []ast.Expr{
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "IDs",
-								},
-								Value: &ast.Ident{
-									Name: "nil",
-								},
-							},
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "PageSize",
-								},
-								Value: &ast.Ident{
-									Name: "nil",
-								},
-							},
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "PageNumber",
-								},
-								Value: &ast.Ident{
-									Name: "nil",
-								},
-							},
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "OrderBy",
-								},
-								Value: &ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "input",
-										},
-										Sel: &ast.Ident{
-											Name: "GetOrderBy",
-										},
-									},
-								},
-							},
-							&ast.KeyValueExpr{
-								Key: &ast.Ident{
-									Name: "Search",
-								},
-								Value: &ast.Ident{
-									Name: "nil",
-								},
-							},
+						&ast.KeyValueExpr{
+							Key:   ast.NewIdent("Search"),
+							Value: ast.NewIdent("nil"),
 						},
 					},
 				},
@@ -836,59 +651,39 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 			Cond: &ast.BinaryExpr{
 				X: &ast.CallExpr{
 					Fun: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "input",
-						},
-						Sel: &ast.Ident{
-							Name: "GetPageSize",
-						},
+						X:   ast.NewIdent("input"),
+						Sel: ast.NewIdent("GetPageSize"),
 					},
 				},
 				Op: token.NEQ,
-				Y: &ast.Ident{
-					Name: "nil",
-				},
+				Y:  ast.NewIdent("nil"),
 			},
 			Body: &ast.BlockStmt{
 				List: []ast.Stmt{
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
 							&ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "filter",
-								},
-								Sel: &ast.Ident{
-									Name: "PageSize",
-								},
+								X:   ast.NewIdent("filter"),
+								Sel: ast.NewIdent("PageSize"),
 							},
 						},
 						Tok: token.ASSIGN,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "pointer",
-									},
-									Sel: &ast.Ident{
-										Name: "Pointer",
-									},
+									X:   ast.NewIdent("pointer"),
+									Sel: ast.NewIdent("Pointer"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
 											X: &ast.CallExpr{
 												Fun: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "input",
-													},
-													Sel: &ast.Ident{
-														Name: "GetPageSize",
-													},
+													X:   ast.NewIdent("input"),
+													Sel: ast.NewIdent("GetPageSize"),
 												},
 											},
-											Sel: &ast.Ident{
-												Name: "GetValue",
-											},
+											Sel: ast.NewIdent("GetValue"),
 										},
 									},
 								},
@@ -902,59 +697,39 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 			Cond: &ast.BinaryExpr{
 				X: &ast.CallExpr{
 					Fun: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "input",
-						},
-						Sel: &ast.Ident{
-							Name: "GetPageNumber",
-						},
+						X:   ast.NewIdent("input"),
+						Sel: ast.NewIdent("GetPageNumber"),
 					},
 				},
 				Op: token.NEQ,
-				Y: &ast.Ident{
-					Name: "nil",
-				},
+				Y:  ast.NewIdent("nil"),
 			},
 			Body: &ast.BlockStmt{
 				List: []ast.Stmt{
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
 							&ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "filter",
-								},
-								Sel: &ast.Ident{
-									Name: "PageNumber",
-								},
+								X:   ast.NewIdent("filter"),
+								Sel: ast.NewIdent("PageNumber"),
 							},
 						},
 						Tok: token.ASSIGN,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "pointer",
-									},
-									Sel: &ast.Ident{
-										Name: "Pointer",
-									},
+									X:   ast.NewIdent("pointer"),
+									Sel: ast.NewIdent("Pointer"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
 											X: &ast.CallExpr{
 												Fun: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "input",
-													},
-													Sel: &ast.Ident{
-														Name: "GetPageNumber",
-													},
+													X:   ast.NewIdent("input"),
+													Sel: ast.NewIdent("GetPageNumber"),
 												},
 											},
-											Sel: &ast.Ident{
-												Name: "GetValue",
-											},
+											Sel: ast.NewIdent("GetValue"),
 										},
 									},
 								},
@@ -965,21 +740,13 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 			},
 		},
 		&ast.RangeStmt{
-			Key: &ast.Ident{
-				Name: "_",
-			},
-			Value: &ast.Ident{
-				Name: "id",
-			},
-			Tok: token.DEFINE,
+			Key:   ast.NewIdent("_"),
+			Value: ast.NewIdent("id"),
+			Tok:   token.DEFINE,
 			X: &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "input",
-					},
-					Sel: &ast.Ident{
-						Name: "GetIds",
-					},
+					X:   ast.NewIdent("input"),
+					Sel: ast.NewIdent("GetIds"),
 				},
 			},
 			Body: &ast.BlockStmt{
@@ -987,42 +754,26 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
 							&ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "filter",
-								},
-								Sel: &ast.Ident{
-									Name: "IDs",
-								},
+								X:   ast.NewIdent("filter"),
+								Sel: ast.NewIdent("IDs"),
 							},
 						},
 						Tok: token.ASSIGN,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
-								Fun: &ast.Ident{
-									Name: "append",
-								},
+								Fun: ast.NewIdent("append"),
 								Args: []ast.Expr{
 									&ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "filter",
-										},
-										Sel: &ast.Ident{
-											Name: "IDs",
-										},
+										X:   ast.NewIdent("filter"),
+										Sel: ast.NewIdent("IDs"),
 									},
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "uuid",
-											},
-											Sel: &ast.Ident{
-												Name: "UUID",
-											},
+											X:   ast.NewIdent("uuid"),
+											Sel: ast.NewIdent("UUID"),
 										},
 										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "id",
-											},
+											ast.NewIdent("id"),
 										},
 									},
 								},
@@ -1038,59 +789,39 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 			Cond: &ast.BinaryExpr{
 				X: &ast.CallExpr{
 					Fun: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "input",
-						},
-						Sel: &ast.Ident{
-							Name: "GetSearch",
-						},
+						X:   ast.NewIdent("input"),
+						Sel: ast.NewIdent("GetSearch"),
 					},
 				},
 				Op: token.NEQ,
-				Y: &ast.Ident{
-					Name: "nil",
-				},
+				Y:  ast.NewIdent("nil"),
 			},
 			Body: &ast.BlockStmt{
 				List: []ast.Stmt{
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
 							&ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "filter",
-								},
-								Sel: &ast.Ident{
-									Name: "Search",
-								},
+								X:   ast.NewIdent("filter"),
+								Sel: ast.NewIdent("Search"),
 							},
 						},
 						Tok: token.ASSIGN,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "pointer",
-									},
-									Sel: &ast.Ident{
-										Name: "Pointer",
-									},
+									X:   ast.NewIdent("pointer"),
+									Sel: ast.NewIdent("Pointer"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
 											X: &ast.CallExpr{
 												Fun: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "input",
-													},
-													Sel: &ast.Ident{
-														Name: "GetSearch",
-													},
+													X:   ast.NewIdent("input"),
+													Sel: ast.NewIdent("GetSearch"),
 												},
 											},
-											Sel: &ast.Ident{
-												Name: "GetValue",
-											},
+											Sel: ast.NewIdent("GetValue"),
 										},
 									},
 								},
@@ -1103,32 +834,22 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 	}
 	stmts = append(stmts, &ast.ReturnStmt{
 		Results: []ast.Expr{
-			&ast.Ident{
-				Name: "filter",
-			},
+			ast.NewIdent("filter"),
 		},
 	})
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: fmt.Sprintf("encode%s", h.domain.GetFilterModel().Name),
-		},
+		Name: ast.NewIdent(fmt.Sprintf("encode%s", h.domain.GetFilterModel().Name)),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "input",
-							},
+							ast.NewIdent("input"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: h.domain.ProtoModule,
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetFilterModel().Name,
-								},
+								X:   ast.NewIdent(h.domain.ProtoModule),
+								Sel: ast.NewIdent(h.domain.GetFilterModel().Name),
 							},
 						},
 					},
@@ -1137,15 +858,9 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetFilterModel().Name,
-								},
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(h.domain.GetFilterModel().Name),
 						},
 					},
 				},
@@ -1192,27 +907,17 @@ func (h HandlerGenerator) syncEncodeFilter() error {
 
 func (h HandlerGenerator) decode() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: fmt.Sprintf("decode%s", h.domain.GetMainModel().Name),
-		},
+		Name: ast.NewIdent(fmt.Sprintf("decode%s", h.domain.GetMainModel().Name)),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "item",
-							},
+							ast.NewIdent("item"),
 						},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetMainModel().Name,
-								},
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 						},
 					},
 				},
@@ -1222,12 +927,8 @@ func (h HandlerGenerator) decode() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: h.domain.ProtoModule,
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetMainModel().Name,
-								},
+								X:   ast.NewIdent(h.domain.ProtoModule),
+								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 							},
 						},
 					},
@@ -1238,9 +939,7 @@ func (h HandlerGenerator) decode() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "response",
-						},
+						ast.NewIdent("response"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
@@ -1248,12 +947,8 @@ func (h HandlerGenerator) decode() *ast.FuncDecl {
 							Op: token.AND,
 							X: &ast.CompositeLit{
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: h.domain.ProtoModule,
-									},
-									Sel: &ast.Ident{
-										Name: h.domain.GetMainModel().Name,
-									},
+									X:   ast.NewIdent(h.domain.ProtoModule),
+									Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 								},
 								Elts: h.modelParams(),
 							},
@@ -1262,9 +957,7 @@ func (h HandlerGenerator) decode() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						&ast.Ident{
-							Name: "response",
-						},
+						ast.NewIdent("response"),
 					},
 				},
 			},
@@ -1277,18 +970,12 @@ func (h HandlerGenerator) modelParams() []ast.Expr {
 	for _, param := range h.domain.GetMainModel().Params {
 		var value ast.Expr
 		value = &ast.SelectorExpr{
-			X: &ast.Ident{
-				Name: "item",
-			},
-			Sel: &ast.Ident{
-				Name: param.GetName(),
-			},
+			X:   ast.NewIdent("item"),
+			Sel: ast.NewIdent(param.GetName()),
 		}
 		if param.Type != param.GRPCType() {
 			value = &ast.CallExpr{
-				Fun: &ast.Ident{
-					Name: param.GRPCType(),
-				},
+				Fun: ast.NewIdent(param.GRPCType()),
 				Args: []ast.Expr{
 					value,
 				},
@@ -1298,38 +985,24 @@ func (h HandlerGenerator) modelParams() []ast.Expr {
 			value = &ast.CallExpr{
 				Fun: &ast.IndexListExpr{
 					X: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "pointer",
-						},
-						Sel: &ast.Ident{
-							Name: "ChangeType",
-						},
+						X:   ast.NewIdent("pointer"),
+						Sel: ast.NewIdent("ChangeType"),
 					},
 					Indices: []ast.Expr{
-						&ast.Ident{
-							Name: param.GRPCSliceType(),
-						},
-						&ast.Ident{
-							Name: param.SliceType(),
-						},
+						ast.NewIdent(param.GRPCSliceType()),
+						ast.NewIdent(param.SliceType()),
 					},
 				},
 				Args: []ast.Expr{
 					&ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "item",
-						},
-						Sel: &ast.Ident{
-							Name: param.GetName(),
-						},
+						X:   ast.NewIdent("item"),
+						Sel: ast.NewIdent(param.GetName()),
 					},
 				},
 			}
 		}
 		exprs = append(exprs, &ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: param.GRPCParam(),
-			},
+			Key:   ast.NewIdent(param.GRPCParam()),
 			Value: value,
 		})
 	}
@@ -1395,40 +1068,26 @@ func (h HandlerGenerator) syncDecodeModel() error {
 
 func (h HandlerGenerator) decodeList() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: fmt.Sprintf("decodeList%s", h.domain.GetMainModel().Name),
-		},
+		Name: ast.NewIdent(fmt.Sprintf("decodeList%s", h.domain.GetMainModel().Name)),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "items",
-							},
+							ast.NewIdent("items"),
 						},
 						Type: &ast.ArrayType{
-							Elt: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: &ast.Ident{
-										Name: h.domain.GetMainModel().Name,
-									},
-								},
+							Elt: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 							},
 						},
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "count",
-							},
+							ast.NewIdent("count"),
 						},
-						Type: &ast.Ident{
-							Name: "uint64",
-						},
+						Type: ast.NewIdent("uint64"),
 					},
 				},
 			},
@@ -1437,12 +1096,8 @@ func (h HandlerGenerator) decodeList() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: h.domain.ProtoModule,
-								},
-								Sel: &ast.Ident{
-									Name: fmt.Sprintf("List%s", h.domain.GetMainModel().Name),
-								},
+								X:   ast.NewIdent(h.domain.ProtoModule),
+								Sel: ast.NewIdent(fmt.Sprintf("List%s", h.domain.GetMainModel().Name)),
 							},
 						},
 					},
@@ -1453,9 +1108,7 @@ func (h HandlerGenerator) decodeList() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "response",
-						},
+						ast.NewIdent("response"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
@@ -1463,32 +1116,20 @@ func (h HandlerGenerator) decodeList() *ast.FuncDecl {
 							Op: token.AND,
 							X: &ast.CompositeLit{
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: h.domain.ProtoModule,
-									},
-									Sel: &ast.Ident{
-										Name: fmt.Sprintf("List%s", h.domain.GetMainModel().Name),
-									},
+									X:   ast.NewIdent(h.domain.ProtoModule),
+									Sel: ast.NewIdent(fmt.Sprintf("List%s", h.domain.GetMainModel().Name)),
 								},
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
-										Key: &ast.Ident{
-											Name: "Items",
-										},
+										Key: ast.NewIdent("Items"),
 										Value: &ast.CallExpr{
-											Fun: &ast.Ident{
-												Name: "make",
-											},
+											Fun: ast.NewIdent("make"),
 											Args: []ast.Expr{
 												&ast.ArrayType{
 													Elt: &ast.StarExpr{
 														X: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: h.domain.ProtoModule,
-															},
-															Sel: &ast.Ident{
-																Name: h.domain.GetMainModel().Name,
-															},
+															X:   ast.NewIdent(h.domain.ProtoModule),
+															Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 														},
 													},
 												},
@@ -1497,25 +1138,17 @@ func (h HandlerGenerator) decodeList() *ast.FuncDecl {
 													Value: "0",
 												},
 												&ast.CallExpr{
-													Fun: &ast.Ident{
-														Name: "len",
-													},
+													Fun: ast.NewIdent("len"),
 													Args: []ast.Expr{
-														&ast.Ident{
-															Name: "items",
-														},
+														ast.NewIdent("items"),
 													},
 												},
 											},
 										},
 									},
 									&ast.KeyValueExpr{
-										Key: &ast.Ident{
-											Name: "Count",
-										},
-										Value: &ast.Ident{
-											Name: "count",
-										},
+										Key:   ast.NewIdent("Count"),
+										Value: ast.NewIdent("count"),
 									},
 								},
 							},
@@ -1523,43 +1156,27 @@ func (h HandlerGenerator) decodeList() *ast.FuncDecl {
 					},
 				},
 				&ast.RangeStmt{
-					Key: &ast.Ident{
-						Name: "_",
-					},
-					Value: &ast.Ident{
-						Name: "item",
-					},
-					Tok: token.DEFINE,
-					X: &ast.Ident{
-						Name: "items",
-					},
+					Key:   ast.NewIdent("_"),
+					Value: ast.NewIdent("item"),
+					Tok:   token.DEFINE,
+					X:     ast.NewIdent("items"),
 					Body: &ast.BlockStmt{
 						List: []ast.Stmt{
 							&ast.AssignStmt{
 								Lhs: []ast.Expr{
 									&ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "response",
-										},
-										Sel: &ast.Ident{
-											Name: "Items",
-										},
+										X:   ast.NewIdent("response"),
+										Sel: ast.NewIdent("Items"),
 									},
 								},
 								Tok: token.ASSIGN,
 								Rhs: []ast.Expr{
 									&ast.CallExpr{
-										Fun: &ast.Ident{
-											Name: "append",
-										},
+										Fun: ast.NewIdent("append"),
 										Args: []ast.Expr{
 											&ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "response",
-												},
-												Sel: &ast.Ident{
-													Name: "Items",
-												},
+												X:   ast.NewIdent("response"),
+												Sel: ast.NewIdent("Items"),
 											},
 											&ast.CallExpr{
 												Fun: &ast.Ident{
@@ -1569,9 +1186,7 @@ func (h HandlerGenerator) decodeList() *ast.FuncDecl {
 													),
 												},
 												Args: []ast.Expr{
-													&ast.Ident{
-														Name: "item",
-													},
+													ast.NewIdent("item"),
 												},
 											},
 										},
@@ -1583,9 +1198,7 @@ func (h HandlerGenerator) decodeList() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						&ast.Ident{
-							Name: "response",
-						},
+						ast.NewIdent("response"),
 					},
 				},
 			},
@@ -1630,9 +1243,7 @@ func (h HandlerGenerator) decodeUpdate() *ast.FuncDecl {
 	stmts := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				&ast.Ident{
-					Name: "result",
-				},
+				ast.NewIdent("result"),
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
@@ -1640,12 +1251,8 @@ func (h HandlerGenerator) decodeUpdate() *ast.FuncDecl {
 					Op: token.AND,
 					X: &ast.CompositeLit{
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: h.domain.ProtoModule,
-							},
-							Sel: &ast.Ident{
-								Name: h.domain.GetUpdateModel().Name,
-							},
+							X:   ast.NewIdent(h.domain.ProtoModule),
+							Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
 						},
 						Elts: h.decodeUpdateParams(),
 					},
@@ -1660,59 +1267,37 @@ func (h HandlerGenerator) decodeUpdate() *ast.FuncDecl {
 		stmts = append(stmts, &ast.IfStmt{
 			Cond: &ast.BinaryExpr{
 				X: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "update",
-					},
-					Sel: &ast.Ident{
-						Name: param.GetName(),
-					},
+					X:   ast.NewIdent("update"),
+					Sel: ast.NewIdent(param.GetName()),
 				},
 				Op: token.NEQ,
-				Y: &ast.Ident{
-					Name: "nil",
-				},
+				Y:  ast.NewIdent("nil"),
 			},
 			Body: &ast.BlockStmt{
 				List: []ast.Stmt{
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
-							&ast.Ident{
-								Name: "params",
-							},
-							&ast.Ident{
-								Name: "err",
-							},
+							ast.NewIdent("params"),
+							ast.NewIdent("err"),
 						},
 						Tok: token.DEFINE,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "structpb",
-									},
-									Sel: &ast.Ident{
-										Name: "NewList",
-									},
+									X:   ast.NewIdent("structpb"),
+									Sel: ast.NewIdent("NewList"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "pointer",
-											},
-											Sel: &ast.Ident{
-												Name: "ToAnySlice",
-											},
+											X:   ast.NewIdent("pointer"),
+											Sel: ast.NewIdent("ToAnySlice"),
 										},
 										Args: []ast.Expr{
 											&ast.StarExpr{
 												X: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "update",
-													},
-													Sel: &ast.Ident{
-														Name: param.GetName(),
-													},
+													X:   ast.NewIdent("update"),
+													Sel: ast.NewIdent(param.GetName()),
 												},
 											},
 										},
@@ -1723,21 +1308,15 @@ func (h HandlerGenerator) decodeUpdate() *ast.FuncDecl {
 					},
 					&ast.IfStmt{
 						Cond: &ast.BinaryExpr{
-							X: &ast.Ident{
-								Name: "err",
-							},
+							X:  ast.NewIdent("err"),
 							Op: token.NEQ,
-							Y: &ast.Ident{
-								Name: "nil",
-							},
+							Y:  ast.NewIdent("nil"),
 						},
 						Body: &ast.BlockStmt{
 							List: []ast.Stmt{
 								&ast.ReturnStmt{
 									Results: []ast.Expr{
-										&ast.Ident{
-											Name: "nil",
-										},
+										ast.NewIdent("nil"),
 									},
 								},
 							},
@@ -1746,19 +1325,13 @@ func (h HandlerGenerator) decodeUpdate() *ast.FuncDecl {
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
 							&ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "result",
-								},
-								Sel: &ast.Ident{
-									Name: param.GRPCParam(),
-								},
+								X:   ast.NewIdent("result"),
+								Sel: ast.NewIdent(param.GRPCParam()),
 							},
 						},
 						Tok: token.ASSIGN,
 						Rhs: []ast.Expr{
-							&ast.Ident{
-								Name: "params",
-							},
+							ast.NewIdent("params"),
 						},
 					},
 				},
@@ -1767,33 +1340,21 @@ func (h HandlerGenerator) decodeUpdate() *ast.FuncDecl {
 	}
 	stmts = append(stmts, &ast.ReturnStmt{
 		Results: []ast.Expr{
-			&ast.Ident{
-				Name: "result",
-			},
+			ast.NewIdent("result"),
 		},
 	})
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: fmt.Sprintf("decode%s", h.domain.GetUpdateModel().Name),
-		},
+		Name: ast.NewIdent(fmt.Sprintf("decode%s", h.domain.GetUpdateModel().Name)),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "update",
-							},
+							ast.NewIdent("update"),
 						},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetUpdateModel().Name,
-								},
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
 						},
 					},
 				},
@@ -1803,12 +1364,8 @@ func (h HandlerGenerator) decodeUpdate() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: h.domain.ProtoModule,
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetUpdateModel().Name,
-								},
+								X:   ast.NewIdent(h.domain.ProtoModule),
+								Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
 							},
 						},
 					},
@@ -1830,12 +1387,8 @@ func (h HandlerGenerator) decodeUpdateParams() []ast.Expr {
 		} else {
 			var v ast.Expr
 			v = &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "update",
-				},
-				Sel: &ast.Ident{
-					Name: param.GetName(),
-				},
+				X:   ast.NewIdent("update"),
+				Sel: ast.NewIdent(param.GetName()),
 			}
 			if strings.HasPrefix(param.Type, "*") {
 				v = &ast.StarExpr{
@@ -1844,9 +1397,7 @@ func (h HandlerGenerator) decodeUpdateParams() []ast.Expr {
 			}
 			if param.GetGRPCWrapperArgumentType() != strings.TrimPrefix(param.Type, "*") {
 				v = &ast.CallExpr{
-					Fun: &ast.Ident{
-						Name: param.GetGRPCWrapperArgumentType(),
-					},
+					Fun:  ast.NewIdent(param.GetGRPCWrapperArgumentType()),
 					Args: []ast.Expr{v},
 				}
 			}
@@ -1856,9 +1407,7 @@ func (h HandlerGenerator) decodeUpdateParams() []ast.Expr {
 			}
 		}
 		exprs = append(exprs, &ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: param.GRPCParam(),
-			},
+			Key:   ast.NewIdent(param.GRPCParam()),
 			Value: value,
 		})
 	}
@@ -1900,17 +1449,13 @@ func (h HandlerGenerator) syncDecodeUpdate() error {
 
 func (h HandlerGenerator) structure() *ast.TypeSpec {
 	return &ast.TypeSpec{
-		Name: &ast.Ident{
-			Name: h.domain.GetGRPCHandlerTypeName(),
-		},
+		Name: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: h.domain.ProtoModule,
-							},
+							X: ast.NewIdent(h.domain.ProtoModule),
 							Sel: &ast.Ident{
 								Name: fmt.Sprintf(
 									"Unimplemented%sServiceServer",
@@ -1921,17 +1466,13 @@ func (h HandlerGenerator) structure() *ast.TypeSpec {
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: h.domain.GetUseCasePrivateVariableName(),
-							},
+							ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
 						},
 						Type: ast.NewIdent(h.domain.GetUseCaseInterfaceName()),
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "logger",
-							},
+							ast.NewIdent("logger"),
 						},
 						Type: ast.NewIdent("logger"),
 					},
@@ -1981,25 +1522,19 @@ func (h HandlerGenerator) syncStruct() error {
 
 func (h HandlerGenerator) constructor() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: fmt.Sprintf("New%s", h.domain.GetGRPCHandlerTypeName()),
-		},
+		Name: ast.NewIdent(fmt.Sprintf("New%s", h.domain.GetGRPCHandlerTypeName())),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: h.domain.GetUseCasePrivateVariableName(),
-							},
+							ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
 						},
 						Type: ast.NewIdent(h.domain.GetUseCaseInterfaceName()),
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "logger",
-							},
+							ast.NewIdent("logger"),
 						},
 						Type: ast.NewIdent("logger"),
 					},
@@ -2030,20 +1565,12 @@ func (h HandlerGenerator) constructor() *ast.FuncDecl {
 								},
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
-										Key: &ast.Ident{
-											Name: h.domain.GetUseCasePrivateVariableName(),
-										},
-										Value: &ast.Ident{
-											Name: h.domain.GetUseCasePrivateVariableName(),
-										},
+										Key:   ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+										Value: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
 									},
 									&ast.KeyValueExpr{
-										Key: &ast.Ident{
-											Name: "logger",
-										},
-										Value: &ast.Ident{
-											Name: "logger",
-										},
+										Key:   ast.NewIdent("logger"),
+										Value: ast.NewIdent("logger"),
 									},
 								},
 							},
@@ -2091,17 +1618,11 @@ func (h HandlerGenerator) syncConstructor() error {
 
 func (h HandlerGenerator) create() *ast.FuncDecl {
 	args := []ast.Expr{
-		&ast.Ident{
-			Name: "ctx",
-		},
+		ast.NewIdent("ctx"),
 		&ast.CallExpr{
-			Fun: &ast.Ident{
-				Name: fmt.Sprintf("encode%s", h.domain.GetCreateModel().Name),
-			},
+			Fun: ast.NewIdent(fmt.Sprintf("encode%s", h.domain.GetCreateModel().Name)),
 			Args: []ast.Expr{
-				&ast.Ident{
-					Name: "input",
-				},
+				ast.NewIdent("input"),
 			},
 		},
 	}
@@ -2110,53 +1631,35 @@ func (h HandlerGenerator) create() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "s",
-						},
+						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: h.domain.GetGRPCHandlerTypeName(),
-						},
+						X: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
 					},
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "Create",
-		},
+		Name: ast.NewIdent("Create"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "ctx",
-							},
+							ast.NewIdent("ctx"),
 						},
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "context",
-							},
-							Sel: &ast.Ident{
-								Name: "Context",
-							},
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
 						},
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "input",
-							},
+							ast.NewIdent("input"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: h.domain.ProtoModule,
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetCreateModel().Name,
-								},
+								X:   ast.NewIdent(h.domain.ProtoModule),
+								Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
 							},
 						},
 					},
@@ -2167,19 +1670,13 @@ func (h HandlerGenerator) create() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: h.domain.ProtoModule,
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetMainModel().Name,
-								},
+								X:   ast.NewIdent(h.domain.ProtoModule),
+								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 							},
 						},
 					},
 					{
-						Type: &ast.Ident{
-							Name: "error",
-						},
+						Type: ast.NewIdent("error"),
 					},
 				},
 			},
@@ -2188,28 +1685,18 @@ func (h HandlerGenerator) create() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "item",
-						},
-						&ast.Ident{
-							Name: "err",
-						},
+						ast.NewIdent("item"),
+						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "s",
-									},
-									Sel: &ast.Ident{
-										Name: h.domain.GetUseCasePrivateVariableName(),
-									},
+									X:   ast.NewIdent("s"),
+									Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
 								},
-								Sel: &ast.Ident{
-									Name: "Create",
-								},
+								Sel: ast.NewIdent("Create"),
 							},
 							Args: args,
 						},
@@ -2217,21 +1704,15 @@ func (h HandlerGenerator) create() *ast.FuncDecl {
 				},
 				&ast.IfStmt{
 					Cond: &ast.BinaryExpr{
-						X: &ast.Ident{
-							Name: "err",
-						},
+						X:  ast.NewIdent("err"),
 						Op: token.NEQ,
-						Y: &ast.Ident{
-							Name: "nil",
-						},
+						Y:  ast.NewIdent("nil"),
 					},
 					Body: &ast.BlockStmt{
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									&ast.Ident{
-										Name: "nil",
-									},
+									ast.NewIdent("nil"),
 									ast.NewIdent("err"),
 								},
 							},
@@ -2241,18 +1722,12 @@ func (h HandlerGenerator) create() *ast.FuncDecl {
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
 						&ast.CallExpr{
-							Fun: &ast.Ident{
-								Name: fmt.Sprintf("decode%s", h.domain.GetMainModel().Name),
-							},
+							Fun: ast.NewIdent(fmt.Sprintf("decode%s", h.domain.GetMainModel().Name)),
 							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "item",
-								},
+								ast.NewIdent("item"),
 							},
 						},
-						&ast.Ident{
-							Name: "nil",
-						},
+						ast.NewIdent("nil"),
 					},
 				},
 			},
@@ -2294,27 +1769,17 @@ func (h HandlerGenerator) syncCreateMethod() error {
 
 func (h HandlerGenerator) get() *ast.FuncDecl {
 	args := []ast.Expr{
-		&ast.Ident{
-			Name: "ctx",
-		},
+		ast.NewIdent("ctx"),
 		&ast.CallExpr{
 			Fun: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "uuid",
-				},
-				Sel: &ast.Ident{
-					Name: "UUID",
-				},
+				X:   ast.NewIdent("uuid"),
+				Sel: ast.NewIdent("UUID"),
 			},
 			Args: []ast.Expr{
 				&ast.CallExpr{
 					Fun: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "input",
-						},
-						Sel: &ast.Ident{
-							Name: "GetId",
-						},
+						X:   ast.NewIdent("input"),
+						Sel: ast.NewIdent("GetId"),
 					},
 				},
 			},
@@ -2325,53 +1790,35 @@ func (h HandlerGenerator) get() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "s",
-						},
+						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: h.domain.GetGRPCHandlerTypeName(),
-						},
+						X: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
 					},
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "Get",
-		},
+		Name: ast.NewIdent("Get"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "ctx",
-							},
+							ast.NewIdent("ctx"),
 						},
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "context",
-							},
-							Sel: &ast.Ident{
-								Name: "Context",
-							},
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
 						},
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "input",
-							},
+							ast.NewIdent("input"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: h.domain.ProtoModule,
-								},
-								Sel: &ast.Ident{
-									Name: fmt.Sprintf("%sGet", h.domain.GetMainModel().Name),
-								},
+								X:   ast.NewIdent(h.domain.ProtoModule),
+								Sel: ast.NewIdent(fmt.Sprintf("%sGet", h.domain.GetMainModel().Name)),
 							},
 						},
 					},
@@ -2382,19 +1829,13 @@ func (h HandlerGenerator) get() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: h.domain.ProtoModule,
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetMainModel().Name,
-								},
+								X:   ast.NewIdent(h.domain.ProtoModule),
+								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 							},
 						},
 					},
 					{
-						Type: &ast.Ident{
-							Name: "error",
-						},
+						Type: ast.NewIdent("error"),
 					},
 				},
 			},
@@ -2403,28 +1844,18 @@ func (h HandlerGenerator) get() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "item",
-						},
-						&ast.Ident{
-							Name: "err",
-						},
+						ast.NewIdent("item"),
+						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "s",
-									},
-									Sel: &ast.Ident{
-										Name: h.domain.GetUseCasePrivateVariableName(),
-									},
+									X:   ast.NewIdent("s"),
+									Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
 								},
-								Sel: &ast.Ident{
-									Name: "Get",
-								},
+								Sel: ast.NewIdent("Get"),
 							},
 							Args: args,
 						},
@@ -2432,21 +1863,15 @@ func (h HandlerGenerator) get() *ast.FuncDecl {
 				},
 				&ast.IfStmt{
 					Cond: &ast.BinaryExpr{
-						X: &ast.Ident{
-							Name: "err",
-						},
+						X:  ast.NewIdent("err"),
 						Op: token.NEQ,
-						Y: &ast.Ident{
-							Name: "nil",
-						},
+						Y:  ast.NewIdent("nil"),
 					},
 					Body: &ast.BlockStmt{
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									&ast.Ident{
-										Name: "nil",
-									},
+									ast.NewIdent("nil"),
 									ast.NewIdent("err"),
 								},
 							},
@@ -2456,18 +1881,12 @@ func (h HandlerGenerator) get() *ast.FuncDecl {
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
 						&ast.CallExpr{
-							Fun: &ast.Ident{
-								Name: fmt.Sprintf("decode%s", h.domain.GetMainModel().Name),
-							},
+							Fun: ast.NewIdent(fmt.Sprintf("decode%s", h.domain.GetMainModel().Name)),
 							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "item",
-								},
+								ast.NewIdent("item"),
 							},
 						},
-						&ast.Ident{
-							Name: "nil",
-						},
+						ast.NewIdent("nil"),
 					},
 				},
 			},
@@ -2510,17 +1929,11 @@ func (h HandlerGenerator) syncGetMethod() error {
 
 func (h HandlerGenerator) list() *ast.FuncDecl {
 	args := []ast.Expr{
-		&ast.Ident{
-			Name: "ctx",
-		},
+		ast.NewIdent("ctx"),
 		&ast.CallExpr{
-			Fun: &ast.Ident{
-				Name: fmt.Sprintf("encode%s", h.domain.GetFilterModel().Name),
-			},
+			Fun: ast.NewIdent(fmt.Sprintf("encode%s", h.domain.GetFilterModel().Name)),
 			Args: []ast.Expr{
-				&ast.Ident{
-					Name: "filter",
-				},
+				ast.NewIdent("filter"),
 			},
 		},
 	}
@@ -2529,53 +1942,35 @@ func (h HandlerGenerator) list() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "s",
-						},
+						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: h.domain.GetGRPCHandlerTypeName(),
-						},
+						X: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
 					},
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "List",
-		},
+		Name: ast.NewIdent("List"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "ctx",
-							},
+							ast.NewIdent("ctx"),
 						},
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "context",
-							},
-							Sel: &ast.Ident{
-								Name: "Context",
-							},
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
 						},
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "filter",
-							},
+							ast.NewIdent("filter"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: h.domain.ProtoModule,
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetFilterModel().Name,
-								},
+								X:   ast.NewIdent(h.domain.ProtoModule),
+								Sel: ast.NewIdent(h.domain.GetFilterModel().Name),
 							},
 						},
 					},
@@ -2586,19 +1981,13 @@ func (h HandlerGenerator) list() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: h.domain.ProtoModule,
-								},
-								Sel: &ast.Ident{
-									Name: fmt.Sprintf("List%s", h.domain.GetMainModel().Name),
-								},
+								X:   ast.NewIdent(h.domain.ProtoModule),
+								Sel: ast.NewIdent(fmt.Sprintf("List%s", h.domain.GetMainModel().Name)),
 							},
 						},
 					},
 					{
-						Type: &ast.Ident{
-							Name: "error",
-						},
+						Type: ast.NewIdent("error"),
 					},
 				},
 			},
@@ -2607,31 +1996,19 @@ func (h HandlerGenerator) list() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "items",
-						},
-						&ast.Ident{
-							Name: "count",
-						},
-						&ast.Ident{
-							Name: "err",
-						},
+						ast.NewIdent("items"),
+						ast.NewIdent("count"),
+						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "s",
-									},
-									Sel: &ast.Ident{
-										Name: h.domain.GetUseCasePrivateVariableName(),
-									},
+									X:   ast.NewIdent("s"),
+									Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
 								},
-								Sel: &ast.Ident{
-									Name: "List",
-								},
+								Sel: ast.NewIdent("List"),
 							},
 							Args: args,
 						},
@@ -2639,21 +2016,15 @@ func (h HandlerGenerator) list() *ast.FuncDecl {
 				},
 				&ast.IfStmt{
 					Cond: &ast.BinaryExpr{
-						X: &ast.Ident{
-							Name: "err",
-						},
+						X:  ast.NewIdent("err"),
 						Op: token.NEQ,
-						Y: &ast.Ident{
-							Name: "nil",
-						},
+						Y:  ast.NewIdent("nil"),
 					},
 					Body: &ast.BlockStmt{
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									&ast.Ident{
-										Name: "nil",
-									},
+									ast.NewIdent("nil"),
 									ast.NewIdent("err"),
 								},
 							},
@@ -2663,21 +2034,13 @@ func (h HandlerGenerator) list() *ast.FuncDecl {
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
 						&ast.CallExpr{
-							Fun: &ast.Ident{
-								Name: fmt.Sprintf("decodeList%s", h.domain.GetMainModel().Name),
-							},
+							Fun: ast.NewIdent(fmt.Sprintf("decodeList%s", h.domain.GetMainModel().Name)),
 							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "items",
-								},
-								&ast.Ident{
-									Name: "count",
-								},
+								ast.NewIdent("items"),
+								ast.NewIdent("count"),
 							},
 						},
-						&ast.Ident{
-							Name: "nil",
-						},
+						ast.NewIdent("nil"),
 					},
 				},
 			},
@@ -2720,17 +2083,11 @@ func (h HandlerGenerator) syncListMethod() error {
 
 func (h HandlerGenerator) update() *ast.FuncDecl {
 	args := []ast.Expr{
-		&ast.Ident{
-			Name: "ctx",
-		},
+		ast.NewIdent("ctx"),
 		&ast.CallExpr{
-			Fun: &ast.Ident{
-				Name: fmt.Sprintf("encode%s", h.domain.GetUpdateModel().Name),
-			},
+			Fun: ast.NewIdent(fmt.Sprintf("encode%s", h.domain.GetUpdateModel().Name)),
 			Args: []ast.Expr{
-				&ast.Ident{
-					Name: "input",
-				},
+				ast.NewIdent("input"),
 			},
 		},
 	}
@@ -2739,53 +2096,35 @@ func (h HandlerGenerator) update() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "s",
-						},
+						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: h.domain.GetGRPCHandlerTypeName(),
-						},
+						X: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
 					},
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "Update",
-		},
+		Name: ast.NewIdent("Update"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "ctx",
-							},
+							ast.NewIdent("ctx"),
 						},
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "context",
-							},
-							Sel: &ast.Ident{
-								Name: "Context",
-							},
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
 						},
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "input",
-							},
+							ast.NewIdent("input"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: h.domain.ProtoModule,
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetUpdateModel().Name,
-								},
+								X:   ast.NewIdent(h.domain.ProtoModule),
+								Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
 							},
 						},
 					},
@@ -2796,19 +2135,13 @@ func (h HandlerGenerator) update() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: h.domain.ProtoModule,
-								},
-								Sel: &ast.Ident{
-									Name: h.domain.GetMainModel().Name,
-								},
+								X:   ast.NewIdent(h.domain.ProtoModule),
+								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 							},
 						},
 					},
 					{
-						Type: &ast.Ident{
-							Name: "error",
-						},
+						Type: ast.NewIdent("error"),
 					},
 				},
 			},
@@ -2817,28 +2150,18 @@ func (h HandlerGenerator) update() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "item",
-						},
-						&ast.Ident{
-							Name: "err",
-						},
+						ast.NewIdent("item"),
+						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "s",
-									},
-									Sel: &ast.Ident{
-										Name: h.domain.GetUseCasePrivateVariableName(),
-									},
+									X:   ast.NewIdent("s"),
+									Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
 								},
-								Sel: &ast.Ident{
-									Name: "Update",
-								},
+								Sel: ast.NewIdent("Update"),
 							},
 							Args: args,
 						},
@@ -2846,21 +2169,15 @@ func (h HandlerGenerator) update() *ast.FuncDecl {
 				},
 				&ast.IfStmt{
 					Cond: &ast.BinaryExpr{
-						X: &ast.Ident{
-							Name: "err",
-						},
+						X:  ast.NewIdent("err"),
 						Op: token.NEQ,
-						Y: &ast.Ident{
-							Name: "nil",
-						},
+						Y:  ast.NewIdent("nil"),
 					},
 					Body: &ast.BlockStmt{
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									&ast.Ident{
-										Name: "nil",
-									},
+									ast.NewIdent("nil"),
 									ast.NewIdent("err"),
 								},
 							},
@@ -2870,18 +2187,12 @@ func (h HandlerGenerator) update() *ast.FuncDecl {
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
 						&ast.CallExpr{
-							Fun: &ast.Ident{
-								Name: fmt.Sprintf("decode%s", h.domain.GetMainModel().Name),
-							},
+							Fun: ast.NewIdent(fmt.Sprintf("decode%s", h.domain.GetMainModel().Name)),
 							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "item",
-								},
+								ast.NewIdent("item"),
 							},
 						},
-						&ast.Ident{
-							Name: "nil",
-						},
+						ast.NewIdent("nil"),
 					},
 				},
 			},
@@ -2924,27 +2235,17 @@ func (h HandlerGenerator) syncUpdateMethod() error {
 
 func (h HandlerGenerator) delete() *ast.FuncDecl {
 	args := []ast.Expr{
-		&ast.Ident{
-			Name: "ctx",
-		},
+		ast.NewIdent("ctx"),
 		&ast.CallExpr{
 			Fun: &ast.SelectorExpr{
-				X: &ast.Ident{
-					Name: "uuid",
-				},
-				Sel: &ast.Ident{
-					Name: "UUID",
-				},
+				X:   ast.NewIdent("uuid"),
+				Sel: ast.NewIdent("UUID"),
 			},
 			Args: []ast.Expr{
 				&ast.CallExpr{
 					Fun: &ast.SelectorExpr{
-						X: &ast.Ident{
-							Name: "input",
-						},
-						Sel: &ast.Ident{
-							Name: "GetId",
-						},
+						X:   ast.NewIdent("input"),
+						Sel: ast.NewIdent("GetId"),
 					},
 				},
 			},
@@ -2955,53 +2256,35 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "s",
-						},
+						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: h.domain.GetGRPCHandlerTypeName(),
-						},
+						X: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
 					},
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "Delete",
-		},
+		Name: ast.NewIdent("Delete"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "ctx",
-							},
+							ast.NewIdent("ctx"),
 						},
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "context",
-							},
-							Sel: &ast.Ident{
-								Name: "Context",
-							},
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
 						},
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "input",
-							},
+							ast.NewIdent("input"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: h.domain.ProtoModule,
-								},
-								Sel: &ast.Ident{
-									Name: fmt.Sprintf("%sDelete", h.domain.GetMainModel().Name),
-								},
+								X:   ast.NewIdent(h.domain.ProtoModule),
+								Sel: ast.NewIdent(fmt.Sprintf("%sDelete", h.domain.GetMainModel().Name)),
 							},
 						},
 					},
@@ -3012,19 +2295,13 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "emptypb",
-								},
-								Sel: &ast.Ident{
-									Name: "Empty",
-								},
+								X:   ast.NewIdent("emptypb"),
+								Sel: ast.NewIdent("Empty"),
 							},
 						},
 					},
 					{
-						Type: &ast.Ident{
-							Name: "error",
-						},
+						Type: ast.NewIdent("error"),
 					},
 				},
 			},
@@ -3034,46 +2311,32 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 				&ast.IfStmt{
 					Init: &ast.AssignStmt{
 						Lhs: []ast.Expr{
-							&ast.Ident{
-								Name: "err",
-							},
+							ast.NewIdent("err"),
 						},
 						Tok: token.DEFINE,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "s",
-										},
-										Sel: &ast.Ident{
-											Name: h.domain.GetUseCasePrivateVariableName(),
-										},
+										X:   ast.NewIdent("s"),
+										Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
 									},
-									Sel: &ast.Ident{
-										Name: "Delete",
-									},
+									Sel: ast.NewIdent("Delete"),
 								},
 								Args: args,
 							},
 						},
 					},
 					Cond: &ast.BinaryExpr{
-						X: &ast.Ident{
-							Name: "err",
-						},
+						X:  ast.NewIdent("err"),
 						Op: token.NEQ,
-						Y: &ast.Ident{
-							Name: "nil",
-						},
+						Y:  ast.NewIdent("nil"),
 					},
 					Body: &ast.BlockStmt{
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									&ast.Ident{
-										Name: "nil",
-									},
+									ast.NewIdent("nil"),
 									ast.NewIdent("err"),
 								},
 							},
@@ -3086,18 +2349,12 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 							Op: token.AND,
 							X: &ast.CompositeLit{
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "emptypb",
-									},
-									Sel: &ast.Ident{
-										Name: "Empty",
-									},
+									X:   ast.NewIdent("emptypb"),
+									Sel: ast.NewIdent("Empty"),
 								},
 							},
 						},
-						&ast.Ident{
-							Name: "nil",
-						},
+						ast.NewIdent("nil"),
 					},
 				},
 			},

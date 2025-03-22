@@ -22,20 +22,14 @@ func NewModelEvent(project *configs.Project) *ModelEvent {
 
 func (m ModelEvent) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "entities",
-		},
+		Name: ast.NewIdent("entities"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "EventOperation",
-						},
-						Type: &ast.Ident{
-							Name: "string",
-						},
+						Name: ast.NewIdent("EventOperation"),
+						Type: ast.NewIdent("string"),
 					},
 				},
 			},
@@ -44,13 +38,9 @@ func (m ModelEvent) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							{
-								Name: "EventTypeCreated",
-							},
+							ast.NewIdent("EventTypeCreated"),
 						},
-						Type: &ast.Ident{
-							Name: "EventOperation",
-						},
+						Type: ast.NewIdent("EventOperation"),
 						Values: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
@@ -60,13 +50,9 @@ func (m ModelEvent) file() *ast.File {
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							{
-								Name: "EventTypeUpdated",
-							},
+							ast.NewIdent("EventTypeUpdated"),
 						},
-						Type: &ast.Ident{
-							Name: "EventOperation",
-						},
+						Type: ast.NewIdent("EventOperation"),
 						Values: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
@@ -76,13 +62,9 @@ func (m ModelEvent) file() *ast.File {
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							{
-								Name: "EventTypeDeleted",
-							},
+							ast.NewIdent("EventTypeDeleted"),
 						},
-						Type: &ast.Ident{
-							Name: "EventOperation",
-						},
+						Type: ast.NewIdent("EventOperation"),
 						Values: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
@@ -96,21 +78,15 @@ func (m ModelEvent) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "Event",
-						},
+						Name: ast.NewIdent("Event"),
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "Operation",
-											},
+											ast.NewIdent("Operation"),
 										},
-										Type: &ast.Ident{
-											Name: "EventOperation",
-										},
+										Type: ast.NewIdent("EventOperation"),
 										Tag: &ast.BasicLit{
 											Kind:  token.STRING,
 											Value: "`json:\"operation\"`",
@@ -118,9 +94,7 @@ func (m ModelEvent) file() *ast.File {
 									},
 									{
 										Names: []*ast.Ident{
-											{
-												Name: "Message",
-											},
+											ast.NewIdent("Message"),
 										},
 										Type: ast.NewIdent("string"),
 										Tag: &ast.BasicLit{

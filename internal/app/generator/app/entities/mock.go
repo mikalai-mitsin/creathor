@@ -50,11 +50,9 @@ func (m *Mock) constructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: m.typeSpec.Name,
-							},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: m.typeSpec.Name,
 						},
 					},
 				},
@@ -78,7 +76,7 @@ func (m *Mock) constructor() *ast.FuncDecl {
 	}
 }
 
-func (m *Mock) model() *ast.UnaryExpr {
+func (m *Mock) model() *ast.CompositeLit {
 	cl := &ast.CompositeLit{
 		Type: &ast.SelectorExpr{
 			X:   ast.NewIdent("entities"),
@@ -89,10 +87,7 @@ func (m *Mock) model() *ast.UnaryExpr {
 	for _, kv := range m.values() {
 		cl.Elts = append(cl.Elts, kv)
 	}
-	return &ast.UnaryExpr{
-		Op: token.AND,
-		X:  cl,
-	}
+	return cl
 }
 
 func (m *Mock) values() []*ast.KeyValueExpr {
@@ -131,9 +126,7 @@ func (m *Mock) fill(cl *ast.CompositeLit) {
 
 func (m *Mock) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "mock_entities",
-		},
+		Name: ast.NewIdent("mock_entities"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,

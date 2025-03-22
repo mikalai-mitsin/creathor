@@ -55,9 +55,7 @@ func (a App) file() *ast.File {
 		decls = append(decls, a.registerGRPC())
 	}
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: a.domain.DirName(),
-		},
+		Name:  ast.NewIdent(a.domain.DirName()),
 		Decls: decls,
 	}
 }
@@ -181,89 +179,57 @@ func (a App) constructor() *ast.FuncDecl {
 	args := []*ast.Field{
 		{
 			Names: []*ast.Ident{
-				{
-					Name: "db",
-				},
+				ast.NewIdent("db"),
 			},
 			Type: &ast.StarExpr{
 				X: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "sqlx",
-					},
-					Sel: &ast.Ident{
-						Name: "DB",
-					},
+					X:   ast.NewIdent("sqlx"),
+					Sel: ast.NewIdent("DB"),
 				},
 			},
 		},
 		{
 			Names: []*ast.Ident{
-				{
-					Name: "logger",
-				},
+				ast.NewIdent("logger"),
 			},
 			Type: &ast.StarExpr{
 				X: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "log",
-					},
-					Sel: &ast.Ident{
-						Name: "Log",
-					},
+					X:   ast.NewIdent("log"),
+					Sel: ast.NewIdent("Log"),
 				},
 			},
 		},
 		{
 			Names: []*ast.Ident{
-				{
-					Name: "clock",
-				},
+				ast.NewIdent("clock"),
 			},
 			Type: &ast.StarExpr{
 				X: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "clock",
-					},
-					Sel: &ast.Ident{
-						Name: "Clock",
-					},
+					X:   ast.NewIdent("clock"),
+					Sel: ast.NewIdent("Clock"),
 				},
 			},
 		},
 		{
 			Names: []*ast.Ident{
-				{
-					Name: "uuidGenerator",
-				},
+				ast.NewIdent("uuidGenerator"),
 			},
 			Type: &ast.StarExpr{
 				X: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "uuid",
-					},
-					Sel: &ast.Ident{
-						Name: "UUIDv4Generator",
-					},
+					X:   ast.NewIdent("uuid"),
+					Sel: ast.NewIdent("UUIDv4Generator"),
 				},
 			},
 		},
 	}
 	exprs := []ast.Expr{
 		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "db",
-			},
-			Value: &ast.Ident{
-				Name: "db",
-			},
+			Key:   ast.NewIdent("db"),
+			Value: ast.NewIdent("db"),
 		},
 		&ast.KeyValueExpr{
-			Key: &ast.Ident{
-				Name: "logger",
-			},
-			Value: &ast.Ident{
-				Name: "logger",
-			},
+			Key:   ast.NewIdent("logger"),
+			Value: ast.NewIdent("logger"),
 		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent(a.domain.GetRepositoryPrivateVariableName()),
@@ -288,18 +254,12 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "postgres",
-							},
+							X:   ast.NewIdent("postgres"),
 							Sel: ast.NewIdent(a.domain.GetRepositoryConstructorName()),
 						},
 						Args: []ast.Expr{
-							&ast.Ident{
-								Name: "db",
-							},
-							&ast.Ident{
-								Name: "logger",
-							},
+							ast.NewIdent("db"),
+							ast.NewIdent("logger"),
 						},
 					},
 				},
@@ -312,22 +272,14 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "services",
-							},
+							X:   ast.NewIdent("services"),
 							Sel: ast.NewIdent(a.domain.GetServiceConstructorName()),
 						},
 						Args: []ast.Expr{
 							ast.NewIdent(a.domain.GetRepositoryPrivateVariableName()),
-							&ast.Ident{
-								Name: "clock",
-							},
-							&ast.Ident{
-								Name: "logger",
-							},
-							&ast.Ident{
-								Name: "uuidGenerator",
-							},
+							ast.NewIdent("clock"),
+							ast.NewIdent("logger"),
+							ast.NewIdent("uuidGenerator"),
 						},
 					},
 				},
@@ -342,16 +294,12 @@ func (a App) constructor() *ast.FuncDecl {
 		Rhs: []ast.Expr{
 			&ast.CallExpr{
 				Fun: &ast.SelectorExpr{
-					X: &ast.Ident{
-						Name: "usecases",
-					},
+					X:   ast.NewIdent("usecases"),
 					Sel: ast.NewIdent(a.domain.GetUseCaseConstructorName()),
 				},
 				Args: []ast.Expr{
 					ast.NewIdent(a.domain.GetServicePrivateVariableName()),
-					&ast.Ident{
-						Name: "logger",
-					},
+					ast.NewIdent("logger"),
 				},
 			},
 		},
@@ -371,9 +319,7 @@ func (a App) constructor() *ast.FuncDecl {
 					},
 					Args: []ast.Expr{
 						ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
-						&ast.Ident{
-							Name: "logger",
-						},
+						ast.NewIdent("logger"),
 					},
 				},
 			},
@@ -397,9 +343,7 @@ func (a App) constructor() *ast.FuncDecl {
 					},
 					Args: []ast.Expr{
 						ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
-						&ast.Ident{
-							Name: "logger",
-						},
+						ast.NewIdent("logger"),
 					},
 				},
 			},
@@ -415,9 +359,7 @@ func (a App) constructor() *ast.FuncDecl {
 			&ast.UnaryExpr{
 				Op: token.AND,
 				X: &ast.CompositeLit{
-					Type: &ast.Ident{
-						Name: "App",
-					},
+					Type: ast.NewIdent("App"),
 					Elts: exprs,
 				},
 			},
@@ -449,35 +391,23 @@ func (a App) structure() *ast.GenDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "db",
-						},
+						ast.NewIdent("db"),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "sqlx",
-							},
-							Sel: &ast.Ident{
-								Name: "DB",
-							},
+							X:   ast.NewIdent("sqlx"),
+							Sel: ast.NewIdent("DB"),
 						},
 					},
 				},
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "logger",
-						},
+						ast.NewIdent("logger"),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "log",
-							},
-							Sel: &ast.Ident{
-								Name: "Log",
-							},
+							X:   ast.NewIdent("log"),
+							Sel: ast.NewIdent("Log"),
 						},
 					},
 				},
@@ -487,9 +417,7 @@ func (a App) structure() *ast.GenDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "postgres",
-							},
+							X:   ast.NewIdent("postgres"),
 							Sel: ast.NewIdent(a.domain.GetRepositoryTypeName()),
 						},
 					},
@@ -500,9 +428,7 @@ func (a App) structure() *ast.GenDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "services",
-							},
+							X:   ast.NewIdent("services"),
 							Sel: ast.NewIdent(a.domain.GetServiceTypeName()),
 						},
 					},
@@ -513,9 +439,7 @@ func (a App) structure() *ast.GenDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "usecases",
-							},
+							X:   ast.NewIdent("usecases"),
 							Sel: ast.NewIdent(a.domain.GetUseCaseTypeName()),
 						},
 					},
@@ -553,9 +477,7 @@ func (a App) structure() *ast.GenDecl {
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: &ast.Ident{
-					Name: "App",
-				},
+				Name: ast.NewIdent("App"),
 				Type: structType,
 			},
 		},
@@ -582,9 +504,7 @@ func (a App) registerGRPC() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "grpcServer",
-							},
+							ast.NewIdent("grpcServer"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
@@ -608,10 +528,8 @@ func (a App) registerGRPC() *ast.FuncDecl {
 				&ast.ExprStmt{
 					X: &ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X: ast.NewIdent("grpcServer"),
-							Sel: &ast.Ident{
-								Name: "AddHandler",
-							},
+							X:   ast.NewIdent("grpcServer"),
+							Sel: ast.NewIdent("AddHandler"),
 						},
 						Args: []ast.Expr{
 							&ast.UnaryExpr{
@@ -644,38 +562,26 @@ func (a App) registerHTTP() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "a",
-						},
+						ast.NewIdent("a"),
 					},
 					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: "App",
-						},
+						X: ast.NewIdent("App"),
 					},
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "RegisterHTTP",
-		},
+		Name: ast.NewIdent("RegisterHTTP"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "httpServer",
-							},
+							ast.NewIdent("httpServer"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "http",
-								},
-								Sel: &ast.Ident{
-									Name: "Server",
-								},
+								X:   ast.NewIdent("http"),
+								Sel: ast.NewIdent("Server"),
 							},
 						},
 					},
@@ -684,9 +590,7 @@ func (a App) registerHTTP() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.Ident{
-							Name: "error",
-						},
+						Type: ast.NewIdent("error"),
 					},
 				},
 			},
@@ -696,31 +600,23 @@ func (a App) registerHTTP() *ast.FuncDecl {
 				&ast.ExprStmt{
 					X: &ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "httpServer",
-							},
-							Sel: &ast.Ident{
-								Name: "Mount",
-							},
+							X:   ast.NewIdent("httpServer"),
+							Sel: ast.NewIdent("Mount"),
 						},
 						Args: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
-								Value: fmt.Sprintf(`"/%s/"`, a.domain.GetManyVariableName()),
+								Value: fmt.Sprintf(`"/api/v1/%s/"`, a.domain.GetManyVariableName()),
 							},
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "a",
-										},
+										X: ast.NewIdent("a"),
 										Sel: ast.NewIdent(
 											a.domain.GetHTTPHandlerPrivateVariableName(),
 										),
 									},
-									Sel: &ast.Ident{
-										Name: "ChiRouter",
-									},
+									Sel: ast.NewIdent("ChiRouter"),
 								},
 							},
 						},
@@ -728,9 +624,7 @@ func (a App) registerHTTP() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						&ast.Ident{
-							Name: "nil",
-						},
+						ast.NewIdent("nil"),
 					},
 				},
 			},

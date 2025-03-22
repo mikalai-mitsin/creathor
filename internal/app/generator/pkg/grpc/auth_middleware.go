@@ -26,9 +26,7 @@ func (m AuthMiddleware) filename() string {
 
 func (m AuthMiddleware) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "grpc",
-		},
+		Name: ast.NewIdent("grpc"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -87,12 +85,8 @@ func (m AuthMiddleware) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: &ast.Ident{
-							Name: "ctxKey",
-						},
-						Type: &ast.Ident{
-							Name: "int",
-						},
+						Name: ast.NewIdent("ctxKey"),
+						Type: ast.NewIdent("int"),
 					},
 				},
 			},
@@ -101,18 +95,12 @@ func (m AuthMiddleware) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							{
-								Name: "UserKey",
-							},
+							ast.NewIdent("UserKey"),
 						},
-						Type: &ast.Ident{
-							Name: "ctxKey",
-						},
+						Type: ast.NewIdent("ctxKey"),
 						Values: []ast.Expr{
 							&ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "iota",
-								},
+								X:  ast.NewIdent("iota"),
 								Op: token.ADD,
 								Y: &ast.BasicLit{
 									Kind:  token.INT,
@@ -128,9 +116,7 @@ func (m AuthMiddleware) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							{
-								Name: "headerAuthorize",
-							},
+							ast.NewIdent("headerAuthorize"),
 						},
 						Values: []ast.Expr{
 							&ast.BasicLit{
@@ -141,9 +127,7 @@ func (m AuthMiddleware) file() *ast.File {
 					},
 					&ast.ValueSpec{
 						Names: []*ast.Ident{
-							{
-								Name: "expectedScheme",
-							},
+							ast.NewIdent("expectedScheme"),
 						},
 						Values: []ast.Expr{
 							&ast.BasicLit{
@@ -155,25 +139,17 @@ func (m AuthMiddleware) file() *ast.File {
 				},
 			},
 			&ast.FuncDecl{
-				Name: &ast.Ident{
-					Name: "AuthFromMD",
-				},
+				Name: ast.NewIdent("AuthFromMD"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "ctx",
-									},
+									ast.NewIdent("ctx"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "context",
-									},
-									Sel: &ast.Ident{
-										Name: "Context",
-									},
+									X:   ast.NewIdent("context"),
+									Sel: ast.NewIdent("Context"),
 								},
 							},
 						},
@@ -181,14 +157,10 @@ func (m AuthMiddleware) file() *ast.File {
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
-								Type: &ast.Ident{
-									Name: "string",
-								},
+								Type: ast.NewIdent("string"),
 							},
 							{
-								Type: &ast.Ident{
-									Name: "error",
-								},
+								Type: ast.NewIdent("error"),
 							},
 						},
 					},
@@ -197,9 +169,7 @@ func (m AuthMiddleware) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "val",
-								},
+								ast.NewIdent("val"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
@@ -207,36 +177,24 @@ func (m AuthMiddleware) file() *ast.File {
 									Fun: &ast.SelectorExpr{
 										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "metautils",
-												},
-												Sel: &ast.Ident{
-													Name: "ExtractIncoming",
-												},
+												X:   ast.NewIdent("metautils"),
+												Sel: ast.NewIdent("ExtractIncoming"),
 											},
 											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "ctx",
-												},
+												ast.NewIdent("ctx"),
 											},
 										},
-										Sel: &ast.Ident{
-											Name: "Get",
-										},
+										Sel: ast.NewIdent("Get"),
 									},
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "headerAuthorize",
-										},
+										ast.NewIdent("headerAuthorize"),
 									},
 								},
 							},
 						},
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X: &ast.Ident{
-									Name: "val",
-								},
+								X:  ast.NewIdent("val"),
 								Op: token.EQL,
 								Y: &ast.BasicLit{
 									Kind:  token.STRING,
@@ -253,21 +211,13 @@ func (m AuthMiddleware) file() *ast.File {
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "status",
-													},
-													Sel: &ast.Ident{
-														Name: "Errorf",
-													},
+													X:   ast.NewIdent("status"),
+													Sel: ast.NewIdent("Errorf"),
 												},
 												Args: []ast.Expr{
 													&ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "codes",
-														},
-														Sel: &ast.Ident{
-															Name: "Unauthenticated",
-														},
+														X:   ast.NewIdent("codes"),
+														Sel: ast.NewIdent("Unauthenticated"),
 													},
 													&ast.BinaryExpr{
 														X: &ast.BasicLit{
@@ -275,9 +225,7 @@ func (m AuthMiddleware) file() *ast.File {
 															Value: `"Request unauthenticated with "`,
 														},
 														Op: token.ADD,
-														Y: &ast.Ident{
-															Name: "expectedScheme",
-														},
+														Y:  ast.NewIdent("expectedScheme"),
 													},
 												},
 											},
@@ -288,25 +236,17 @@ func (m AuthMiddleware) file() *ast.File {
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "splits",
-								},
+								ast.NewIdent("splits"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "strings",
-										},
-										Sel: &ast.Ident{
-											Name: "SplitN",
-										},
+										X:   ast.NewIdent("strings"),
+										Sel: ast.NewIdent("SplitN"),
 									},
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "val",
-										},
+										ast.NewIdent("val"),
 										&ast.BasicLit{
 											Kind:  token.STRING,
 											Value: `" "`,
@@ -322,13 +262,9 @@ func (m AuthMiddleware) file() *ast.File {
 						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
 								X: &ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: "len",
-									},
+									Fun: ast.NewIdent("len"),
 									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "splits",
-										},
+										ast.NewIdent("splits"),
 									},
 								},
 								Op: token.LSS,
@@ -347,21 +283,13 @@ func (m AuthMiddleware) file() *ast.File {
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "status",
-													},
-													Sel: &ast.Ident{
-														Name: "Errorf",
-													},
+													X:   ast.NewIdent("status"),
+													Sel: ast.NewIdent("Errorf"),
 												},
 												Args: []ast.Expr{
 													&ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "codes",
-														},
-														Sel: &ast.Ident{
-															Name: "Unauthenticated",
-														},
+														X:   ast.NewIdent("codes"),
+														Sel: ast.NewIdent("Unauthenticated"),
 													},
 													&ast.BasicLit{
 														Kind:  token.STRING,
@@ -379,26 +307,18 @@ func (m AuthMiddleware) file() *ast.File {
 								Op: token.NOT,
 								X: &ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "strings",
-										},
-										Sel: &ast.Ident{
-											Name: "EqualFold",
-										},
+										X:   ast.NewIdent("strings"),
+										Sel: ast.NewIdent("EqualFold"),
 									},
 									Args: []ast.Expr{
 										&ast.IndexExpr{
-											X: &ast.Ident{
-												Name: "splits",
-											},
+											X: ast.NewIdent("splits"),
 											Index: &ast.BasicLit{
 												Kind:  token.INT,
 												Value: "0",
 											},
 										},
-										&ast.Ident{
-											Name: "expectedScheme",
-										},
+										ast.NewIdent("expectedScheme"),
 									},
 								},
 							},
@@ -412,21 +332,13 @@ func (m AuthMiddleware) file() *ast.File {
 											},
 											&ast.CallExpr{
 												Fun: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "status",
-													},
-													Sel: &ast.Ident{
-														Name: "Errorf",
-													},
+													X:   ast.NewIdent("status"),
+													Sel: ast.NewIdent("Errorf"),
 												},
 												Args: []ast.Expr{
 													&ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "codes",
-														},
-														Sel: &ast.Ident{
-															Name: "Unauthenticated",
-														},
+														X:   ast.NewIdent("codes"),
+														Sel: ast.NewIdent("Unauthenticated"),
 													},
 													&ast.BinaryExpr{
 														X: &ast.BasicLit{
@@ -434,9 +346,7 @@ func (m AuthMiddleware) file() *ast.File {
 															Value: `"Request unauthenticated with "`,
 														},
 														Op: token.ADD,
-														Y: &ast.Ident{
-															Name: "expectedScheme",
-														},
+														Y:  ast.NewIdent("expectedScheme"),
 													},
 												},
 											},
@@ -448,17 +358,13 @@ func (m AuthMiddleware) file() *ast.File {
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
 								&ast.IndexExpr{
-									X: &ast.Ident{
-										Name: "splits",
-									},
+									X: ast.NewIdent("splits"),
 									Index: &ast.BasicLit{
 										Kind:  token.INT,
 										Value: "1",
 									},
 								},
-								&ast.Ident{
-									Name: "nil",
-								},
+								ast.NewIdent("nil"),
 							},
 						},
 					},
@@ -470,25 +376,19 @@ func (m AuthMiddleware) file() *ast.File {
 
 func (m AuthMiddleware) astStruct() *ast.TypeSpec {
 	return &ast.TypeSpec{
-		Name: &ast.Ident{
-			Name: "AuthMiddleware",
-		},
+		Name: ast.NewIdent("AuthMiddleware"),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "logger",
-							},
+							ast.NewIdent("logger"),
 						},
 						Type: ast.NewIdent("Logger"),
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "authUseCase",
-							},
+							ast.NewIdent("authUseCase"),
 						},
 						Type: ast.NewIdent("AuthUseCase"),
 					},
@@ -541,25 +441,19 @@ func (m AuthMiddleware) syncStruct() error {
 
 func (m AuthMiddleware) astConstructor() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: &ast.Ident{
-			Name: "NewAuthMiddleware",
-		},
+		Name: ast.NewIdent("NewAuthMiddleware"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "authUseCase",
-							},
+							ast.NewIdent("authUseCase"),
 						},
 						Type: ast.NewIdent("AuthUseCase"),
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "logger",
-							},
+							ast.NewIdent("logger"),
 						},
 						Type: ast.NewIdent("Logger"),
 					},
@@ -569,9 +463,7 @@ func (m AuthMiddleware) astConstructor() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Type: &ast.StarExpr{
-							X: &ast.Ident{
-								Name: "AuthMiddleware",
-							},
+							X: ast.NewIdent("AuthMiddleware"),
 						},
 					},
 				},
@@ -584,25 +476,15 @@ func (m AuthMiddleware) astConstructor() *ast.FuncDecl {
 						&ast.UnaryExpr{
 							Op: token.AND,
 							X: &ast.CompositeLit{
-								Type: &ast.Ident{
-									Name: "AuthMiddleware",
-								},
+								Type: ast.NewIdent("AuthMiddleware"),
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
-										Key: &ast.Ident{
-											Name: "authUseCase",
-										},
-										Value: &ast.Ident{
-											Name: "authUseCase",
-										},
+										Key:   ast.NewIdent("authUseCase"),
+										Value: ast.NewIdent("authUseCase"),
 									},
 									&ast.KeyValueExpr{
-										Key: &ast.Ident{
-											Name: "logger",
-										},
-										Value: &ast.Ident{
-											Name: "logger",
-										},
+										Key:   ast.NewIdent("logger"),
+										Value: ast.NewIdent("logger"),
 									},
 								},
 							},
@@ -653,37 +535,25 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "m",
-						},
+						ast.NewIdent("m"),
 					},
 					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: "AuthMiddleware",
-						},
+						X: ast.NewIdent("AuthMiddleware"),
 					},
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "Auth",
-		},
+		Name: ast.NewIdent("Auth"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "ctx",
-							},
+							ast.NewIdent("ctx"),
 						},
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "context",
-							},
-							Sel: &ast.Ident{
-								Name: "Context",
-							},
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
 						},
 					},
 				},
@@ -692,18 +562,12 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "context",
-							},
-							Sel: &ast.Ident{
-								Name: "Context",
-							},
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
 						},
 					},
 					{
-						Type: &ast.Ident{
-							Name: "error",
-						},
+						Type: ast.NewIdent("error"),
 					},
 				},
 			},
@@ -716,17 +580,11 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 						Specs: []ast.Spec{
 							&ast.ValueSpec{
 								Names: []*ast.Ident{
-									{
-										Name: "token",
-									},
+									ast.NewIdent("token"),
 								},
 								Type: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "entities",
-									},
-									Sel: &ast.Ident{
-										Name: "Token",
-									},
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent("Token"),
 								},
 							},
 						},
@@ -734,36 +592,24 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 				},
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "stringToken",
-						},
-						&ast.Ident{
-							Name: "err",
-						},
+						ast.NewIdent("stringToken"),
+						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
-							Fun: &ast.Ident{
-								Name: "AuthFromMD",
-							},
+							Fun: ast.NewIdent("AuthFromMD"),
 							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "ctx",
-								},
+								ast.NewIdent("ctx"),
 							},
 						},
 					},
 				},
 				&ast.IfStmt{
 					Cond: &ast.BinaryExpr{
-						X: &ast.Ident{
-							Name: "err",
-						},
+						X:  ast.NewIdent("err"),
 						Op: token.NEQ,
-						Y: &ast.Ident{
-							Name: "nil",
-						},
+						Y:  ast.NewIdent("nil"),
 					},
 					Body: &ast.BlockStmt{
 						List: []ast.Stmt{
@@ -771,33 +617,19 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 								Results: []ast.Expr{
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "context",
-											},
-											Sel: &ast.Ident{
-												Name: "WithValue",
-											},
+											X:   ast.NewIdent("context"),
+											Sel: ast.NewIdent("WithValue"),
 										},
 										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "ctx",
-											},
-											&ast.Ident{
-												Name: "UserKey",
-											},
+											ast.NewIdent("ctx"),
+											ast.NewIdent("UserKey"),
 											&ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "entities",
-												},
-												Sel: &ast.Ident{
-													Name: "Guest",
-												},
+												X:   ast.NewIdent("entities"),
+												Sel: ast.NewIdent("Guest"),
 											},
 										},
 									},
-									&ast.Ident{
-										Name: "nil",
-									},
+									ast.NewIdent("nil"),
 								},
 							},
 						},
@@ -805,9 +637,7 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 				},
 				&ast.IfStmt{
 					Cond: &ast.BinaryExpr{
-						X: &ast.Ident{
-							Name: "stringToken",
-						},
+						X:  ast.NewIdent("stringToken"),
 						Op: token.EQL,
 						Y: &ast.BasicLit{
 							Kind:  token.STRING,
@@ -820,33 +650,19 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 								Results: []ast.Expr{
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "context",
-											},
-											Sel: &ast.Ident{
-												Name: "WithValue",
-											},
+											X:   ast.NewIdent("context"),
+											Sel: ast.NewIdent("WithValue"),
 										},
 										Args: []ast.Expr{
-											&ast.Ident{
-												Name: "ctx",
-											},
-											&ast.Ident{
-												Name: "UserKey",
-											},
+											ast.NewIdent("ctx"),
+											ast.NewIdent("UserKey"),
 											&ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "entities",
-												},
-												Sel: &ast.Ident{
-													Name: "Guest",
-												},
+												X:   ast.NewIdent("entities"),
+												Sel: ast.NewIdent("Guest"),
 											},
 										},
 									},
-									&ast.Ident{
-										Name: "nil",
-									},
+									ast.NewIdent("nil"),
 								},
 							},
 						},
@@ -854,82 +670,54 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 				},
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "token",
-						},
+						ast.NewIdent("token"),
 					},
 					Tok: token.ASSIGN,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "entities",
-								},
-								Sel: &ast.Ident{
-									Name: "Token",
-								},
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent("Token"),
 							},
 							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "stringToken",
-								},
+								ast.NewIdent("stringToken"),
 							},
 						},
 					},
 				},
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "user",
-						},
-						&ast.Ident{
-							Name: "err",
-						},
+						ast.NewIdent("user"),
+						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "m",
-									},
-									Sel: &ast.Ident{
-										Name: "authUseCase",
-									},
+									X:   ast.NewIdent("m"),
+									Sel: ast.NewIdent("authUseCase"),
 								},
-								Sel: &ast.Ident{
-									Name: "Auth",
-								},
+								Sel: ast.NewIdent("Auth"),
 							},
 							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "ctx",
-								},
-								&ast.Ident{
-									Name: "token",
-								},
+								ast.NewIdent("ctx"),
+								ast.NewIdent("token"),
 							},
 						},
 					},
 				},
 				&ast.IfStmt{
 					Cond: &ast.BinaryExpr{
-						X: &ast.Ident{
-							Name: "err",
-						},
+						X:  ast.NewIdent("err"),
 						Op: token.NEQ,
-						Y: &ast.Ident{
-							Name: "nil",
-						},
+						Y:  ast.NewIdent("nil"),
 					},
 					Body: &ast.BlockStmt{
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									&ast.Ident{
-										Name: "nil",
-									},
+									ast.NewIdent("nil"),
 									ast.NewIdent("err"),
 								},
 							},
@@ -938,43 +726,27 @@ func (m AuthMiddleware) astAuthMethod() *ast.FuncDecl {
 				},
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "newCtx",
-						},
+						ast.NewIdent("newCtx"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "context",
-								},
-								Sel: &ast.Ident{
-									Name: "WithValue",
-								},
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("WithValue"),
 							},
 							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "ctx",
-								},
-								&ast.Ident{
-									Name: "UserKey",
-								},
-								&ast.Ident{
-									Name: "user",
-								},
+								ast.NewIdent("ctx"),
+								ast.NewIdent("UserKey"),
+								ast.NewIdent("user"),
 							},
 						},
 					},
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						&ast.Ident{
-							Name: "newCtx",
-						},
-						&ast.Ident{
-							Name: "nil",
-						},
+						ast.NewIdent("newCtx"),
+						ast.NewIdent("nil"),
 					},
 				},
 			},
@@ -1021,77 +793,51 @@ func (m AuthMiddleware) astUnaryServerInterceptorMethod() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						{
-							Name: "m",
-						},
+						ast.NewIdent("m"),
 					},
 					Type: &ast.StarExpr{
-						X: &ast.Ident{
-							Name: "AuthMiddleware",
-						},
+						X: ast.NewIdent("AuthMiddleware"),
 					},
 				},
 			},
 		},
-		Name: &ast.Ident{
-			Name: "UnaryServerInterceptor",
-		},
+		Name: ast.NewIdent("UnaryServerInterceptor"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "ctx",
-							},
+							ast.NewIdent("ctx"),
 						},
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "context",
-							},
-							Sel: &ast.Ident{
-								Name: "Context",
-							},
+							X:   ast.NewIdent("context"),
+							Sel: ast.NewIdent("Context"),
 						},
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "req",
-							},
+							ast.NewIdent("req"),
 						},
 						Type: ast.NewIdent("any"),
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "_",
-							},
+							ast.NewIdent("_"),
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "grpc",
-								},
-								Sel: &ast.Ident{
-									Name: "UnaryServerInfo",
-								},
+								X:   ast.NewIdent("grpc"),
+								Sel: ast.NewIdent("UnaryServerInfo"),
 							},
 						},
 					},
 					{
 						Names: []*ast.Ident{
-							{
-								Name: "handler",
-							},
+							ast.NewIdent("handler"),
 						},
 						Type: &ast.SelectorExpr{
-							X: &ast.Ident{
-								Name: "grpc",
-							},
-							Sel: &ast.Ident{
-								Name: "UnaryHandler",
-							},
+							X:   ast.NewIdent("grpc"),
+							Sel: ast.NewIdent("UnaryHandler"),
 						},
 					},
 				},
@@ -1102,9 +848,7 @@ func (m AuthMiddleware) astUnaryServerInterceptorMethod() *ast.FuncDecl {
 						Type: ast.NewIdent("any"),
 					},
 					{
-						Type: &ast.Ident{
-							Name: "error",
-						},
+						Type: ast.NewIdent("error"),
 					},
 				},
 			},
@@ -1113,52 +857,34 @@ func (m AuthMiddleware) astUnaryServerInterceptorMethod() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						&ast.Ident{
-							Name: "newCtx",
-						},
-						&ast.Ident{
-							Name: "err",
-						},
+						ast.NewIdent("newCtx"),
+						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X: &ast.Ident{
-									Name: "m",
-								},
-								Sel: &ast.Ident{
-									Name: "Auth",
-								},
+								X:   ast.NewIdent("m"),
+								Sel: ast.NewIdent("Auth"),
 							},
 							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "ctx",
-								},
+								ast.NewIdent("ctx"),
 							},
 						},
 					},
 				},
 				&ast.IfStmt{
 					Cond: &ast.BinaryExpr{
-						X: &ast.Ident{
-							Name: "err",
-						},
+						X:  ast.NewIdent("err"),
 						Op: token.NEQ,
-						Y: &ast.Ident{
-							Name: "nil",
-						},
+						Y:  ast.NewIdent("nil"),
 					},
 					Body: &ast.BlockStmt{
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
-									&ast.Ident{
-										Name: "nil",
-									},
-									&ast.Ident{
-										Name: "err",
-									},
+									ast.NewIdent("nil"),
+									ast.NewIdent("err"),
 								},
 							},
 						},
@@ -1167,16 +893,10 @@ func (m AuthMiddleware) astUnaryServerInterceptorMethod() *ast.FuncDecl {
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
 						&ast.CallExpr{
-							Fun: &ast.Ident{
-								Name: "handler",
-							},
+							Fun: ast.NewIdent("handler"),
 							Args: []ast.Expr{
-								&ast.Ident{
-									Name: "newCtx",
-								},
-								&ast.Ident{
-									Name: "req",
-								},
+								ast.NewIdent("newCtx"),
+								ast.NewIdent("req"),
 							},
 						},
 					},

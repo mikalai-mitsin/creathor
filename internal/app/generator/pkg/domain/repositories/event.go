@@ -36,50 +36,34 @@ func (i RepositoryInterfaceEvent) astInterface() *ast.GenDecl {
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: &ast.Ident{
-					Name: "EventRepository",
-				},
+				Name: ast.NewIdent("EventRepository"),
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									{
-										Name: "Send",
-									},
+									ast.NewIdent("Send"),
 								},
 								Type: &ast.FuncType{
 									Params: &ast.FieldList{
 										List: []*ast.Field{
 											{
 												Names: []*ast.Ident{
-													{
-														Name: "ctx",
-													},
+													ast.NewIdent("ctx"),
 												},
 												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "context",
-													},
-													Sel: &ast.Ident{
-														Name: "Context",
-													},
+													X:   ast.NewIdent("context"),
+													Sel: ast.NewIdent("Context"),
 												},
 											},
 											{
 												Names: []*ast.Ident{
-													{
-														Name: "event",
-													},
+													ast.NewIdent("event"),
 												},
 												Type: &ast.StarExpr{
 													X: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "entities",
-														},
-														Sel: &ast.Ident{
-															Name: "Event",
-														},
+														X:   ast.NewIdent("entities"),
+														Sel: ast.NewIdent("Event"),
 													},
 												},
 											},
@@ -88,9 +72,7 @@ func (i RepositoryInterfaceEvent) astInterface() *ast.GenDecl {
 									Results: &ast.FieldList{
 										List: []*ast.Field{
 											{
-												Type: &ast.Ident{
-													Name: "error",
-												},
+												Type: ast.NewIdent("error"),
 											},
 										},
 									},
@@ -106,9 +88,7 @@ func (i RepositoryInterfaceEvent) astInterface() *ast.GenDecl {
 
 func (i RepositoryInterfaceEvent) file() *ast.File {
 	return &ast.File{
-		Name: &ast.Ident{
-			Name: "repositories",
-		},
+		Name: ast.NewIdent("repositories"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,

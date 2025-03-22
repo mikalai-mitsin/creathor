@@ -24,7 +24,7 @@ func NewEventRepository(
 	return &EventRepository{producer: producer, logger: logger, topic: config.Kafka.Topic}
 }
 
-func (r *EventRepository) Send(_ context.Context, event *entities.Event) error {
+func (r *EventRepository) Send(_ context.Context, event entities.Event) error {
 	data, err := json.Marshal(event)
 	if err != nil {
 		return err

@@ -32,7 +32,7 @@ var (
 )
 
 func main() {
-	app := &cli.App{
+	application := &cli.App{
 		Name:    "Creathor",
 		Usage:   "generate stub for service",
 		Version: version,
@@ -55,12 +55,12 @@ func main() {
 		Action: initProject,
 	}
 	strcase.ConfigureAcronym("UUID", "uuid")
-	if err := app.Run(os.Args); err != nil {
+	if err := application.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func initProject(ctx *cli.Context) error {
+func initProject(_ *cli.Context) error {
 	project, err := configs.NewProject(path.Join(destinationPath, configPath))
 	if err != nil {
 		return err
@@ -108,7 +108,7 @@ func postInit(project *configs.Project) error {
 	fmt.Println("post init...")
 	var errb bytes.Buffer
 	if project.GRPCEnabled {
-		bufUpdate := exec.Command("buf", "mod", "update")
+		bufUpdate := exec.Command("buf", "dep", "update")
 		bufUpdate.Dir = path.Join(destinationPath, "api", "proto")
 		bufUpdate.Stderr = &errb
 		fmt.Println(strings.Join(bufUpdate.Args, " "))
@@ -123,13 +123,7 @@ func postInit(project *configs.Project) error {
 			fmt.Println(errb.String())
 		}
 	}
-	goLines := exec.Command("golines", ".", "-w", "--ignore-generated")
-	goLines.Dir = destinationPath
-	fmt.Println(strings.Join(goLines.Args, " "))
-	if err := goLines.Run(); err != nil {
-		fmt.Println(errb.String())
-	}
-	clean := exec.Command("golangci-lint", "run", "./...", "--fix")
+	clean := exec.Command("task", "clean")
 	clean.Dir = destinationPath
 	fmt.Println(strings.Join(clean.Args, " "))
 	if err := clean.Run(); err != nil {

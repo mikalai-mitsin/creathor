@@ -2,8 +2,40 @@
 ## [Unreleased]
 
 
-<a name="0.5.0"></a>
-## [0.5.0] - 2024-12-09
+<a name="v0.6.0"></a>
+## [v0.6.0] - 2025-03-22
+### Fear
+- update config for readme
+- use ast constructor
+
+### Feat
+- add http handlers
+- add http register to auth app
+- fix auth tests
+- use auth with values
+- fix uuid in proto file
+- fix tests
+- fix json decode
+- remove required validation for bools
+- fix tests
+- fix tests
+- replace pointers with value in grpc handlers
+- replace pointers with value in services
+- replace pointers with value in repositories
+- fix update
+- fill many dto to entity
+- fill filter dto to entity
+- fill update dto to entity
+- fill create dto to entity
+- fill dto constructors
+- add api prefix
+- add bearer and task file
+- add swagger annotation to server
+- add swagger annotation
+
+
+<a name="v0.5.0"></a>
+## [v0.5.0] - 2024-12-09
 ### Chore
 - clean
 
@@ -391,8 +423,9 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/0.5.0...HEAD
-[0.5.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.8...0.5.0
+[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.6.0...HEAD
+[v0.6.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.5.0...v0.6.0
+[v0.5.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.8...v0.5.0
 [v0.4.8]: https://github.com/mikalai-mitsin/creathor/compare/vv0.5.0...v0.4.8
 [vv0.5.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.7...vv0.5.0
 [v0.4.7]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.6...v0.4.7

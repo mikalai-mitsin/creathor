@@ -30,7 +30,7 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 					List: []*ast.Comment{
 						{
 							Slash: token.NoPos,
-							Text:  "//go:generate mockgen -source=interfaces.go -package=services -destination=interfaces_mock.go",
+							Text:  "//go:generate mockgen -source=auth_interfaces.go -package=services -destination=auth_interfaces_mock.go",
 						},
 					},
 				},
@@ -550,7 +550,7 @@ func (i RepositoryInterfaceAuth) file() *ast.File {
 
 func (i RepositoryInterfaceAuth) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", "auth", "services", "interfaces.go")
+	filename := path.Join("internal", "app", "auth", "services", "auth_interfaces.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}

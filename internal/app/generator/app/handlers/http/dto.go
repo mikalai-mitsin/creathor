@@ -28,7 +28,7 @@ func (g *DTOGenerator) filename() string {
 		g.domain.DirName(),
 		"handlers",
 		"http",
-		"dto.go",
+		fmt.Sprintf("%s_dto.go", g.domain.SnakeName()),
 	)
 }
 

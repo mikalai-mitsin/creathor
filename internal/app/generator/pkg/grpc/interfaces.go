@@ -333,7 +333,7 @@ func (i UseCaseInterfaceAuth) file() *ast.File {
 
 func (i UseCaseInterfaceAuth) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "pkg", "grpc", "interfaces.go")
+	filename := path.Join("internal", "pkg", "grpc", "auth_interfaces.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}

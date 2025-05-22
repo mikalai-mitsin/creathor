@@ -908,9 +908,6 @@ func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 	var columns []ast.Expr
 	var values []ast.Expr
 	for _, param := range r.domain.GetMainModel().Params {
-		if param.GetName() == "ID" {
-			continue
-		}
 		columns = append(columns, &ast.BasicLit{
 			Kind:  token.STRING,
 			Value: fmt.Sprintf(`"%s"`, param.Tag()),

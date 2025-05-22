@@ -24,7 +24,7 @@ func NewInterfacesGenerator(domain *domain.Domain) *InterfacesGenerator {
 
 func (i InterfacesGenerator) Sync() error {
 	fileset := token.NewFileSet()
-	filename := filepath.Join("internal", "app", i.domain.DirName(), "services", "interfaces.go")
+	filename := filepath.Join("internal", "app", i.domain.DirName(), "services", fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()))
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err
@@ -93,7 +93,7 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text:  "//go:generate mockgen -source=interfaces.go -package=services -destination=interfaces_mock.go",
+					Text:  fmt.Sprintf("//go:generate mockgen -source=%s_interfaces.go -package=services -destination=%s_interfaces_mock.go", i.domain.SnakeName(), i.domain.SnakeName()),
 				},
 			},
 		},

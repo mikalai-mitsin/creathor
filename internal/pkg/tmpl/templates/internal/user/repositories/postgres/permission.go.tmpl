@@ -85,7 +85,7 @@ func objectOwner(model any, user entities.User) error {
     if modelID.Kind() == reflect.Pointer {
         modelID = modelID.Elem()
     }
-    if modelID.String() == string(user.ID) || modelUserID.String() == string(user.ID) {
+    if modelID.String() == user.ID.String() || modelUserID.String() == user.ID.String() {
         return nil
     }
     return errs.NewPermissionDeniedError()
@@ -113,7 +113,7 @@ func objectOwnerOrAll(model any, user entities.User) error {
     if modelID.Kind() == reflect.Pointer {
         modelID = modelID.Elem()
     }
-    if modelID.String() == string(user.ID) || modelUserID.String() == string(user.ID) {
+    if modelID.String() == user.ID.String() || modelUserID.String() == user.ID.String() {
         return nil
     }
     return errs.NewPermissionDeniedError()

@@ -28,7 +28,7 @@ func (g *DTOGenerator) filename() string {
 		"auth",
 		"handlers",
 		"http",
-		"dto.go",
+		"auth_dto.go",
 	)
 }
 

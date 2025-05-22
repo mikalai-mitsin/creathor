@@ -170,6 +170,10 @@ func (m *Domain) GetManyVariableName() string {
 	return inflection.Plural(m.GetOneVariableName())
 }
 
+func (m *Domain) GetHTTPPath() string {
+	return strcase.ToSnake(inflection.Plural(m.GetOneVariableName()))
+}
+
 func (m *Domain) GetGRPCHandlerPrivateVariableName() string {
 	return fmt.Sprintf("grpc%sHandler", strcase.ToCamel(m.Config.Model))
 }

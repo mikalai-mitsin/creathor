@@ -277,7 +277,7 @@ func TestPermissionRepository_HasPermission(t *testing.T) {
                 Message: "Unexpected behavior.",
                 Params: errs.Params{
                     {Key: "error", Value: "error"},
-                    {Key: "user_id", Value: string(user.ID)},
+                    {Key: "user_id", Value: user.ID.String()},
                     {Key: "permission_id", Value: "user_list"},
                 },
             },

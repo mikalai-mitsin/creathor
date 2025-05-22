@@ -30,7 +30,7 @@ func (i *Interfaces) file() *ast.File {
 					List: []*ast.Comment{
 						{
 							Slash: token.NoPos,
-							Text:  "//go:generate mockgen -source=interfaces.go -package=handlers -destination=interfaces_mock.go",
+							Text:  "//go:generate mockgen -source=auth_interfaces.go -package=handlers -destination=auth_interfaces_mock.go",
 						},
 					},
 				},
@@ -377,7 +377,7 @@ func (i *Interfaces) file() *ast.File {
 
 func (i *Interfaces) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", "auth", "handlers", "grpc", "interfaces.go")
+	filename := path.Join("internal", "app", "auth", "handlers", "grpc", "auth_interfaces.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}

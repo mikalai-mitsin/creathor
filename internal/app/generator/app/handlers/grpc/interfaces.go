@@ -29,7 +29,7 @@ func (i InterfacesGenerator) Sync() error {
 		i.domain.DirName(),
 		"handlers",
 		"grpc",
-		"interfaces.go",
+		fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()),
 	)
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
@@ -85,7 +85,7 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text:  "//go:generate mockgen -source=interfaces.go -package=handlers -destination=interfaces_mock.go",
+					Text:  fmt.Sprintf("//go:generate mockgen -source=%s_interfaces.go -package=handlers -destination=%s_interfaces_mock.go", i.domain.SnakeName(), i.domain.SnakeName()),
 				},
 			},
 		},

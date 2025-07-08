@@ -21,10 +21,10 @@ import (
 )
 
 type Generator struct {
-	domain *domain.Domain
+	domain *domain.App
 }
 
-func NewGenerator(d *domain.Domain) *Generator {
+func NewGenerator(d *domain.App) *Generator {
 	return &Generator{domain: d}
 }
 

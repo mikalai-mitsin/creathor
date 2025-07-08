@@ -17,11 +17,11 @@ CREATE INDEX search_{{ .Config.TableName }}
 
 {{- if .Config.Auth }}
 INSERT INTO public.permissions (id, name)
-VALUES ('{{- .Config.KeyName -}}_list', '{{ .Config.ModelName }} list'),
-       ('{{- .Config.KeyName -}}_detail', '{{ .Config.ModelName }} detail'),
-       ('{{- .Config.KeyName -}}_create', '{{ .Config.ModelName }} create'),
-       ('{{- .Config.KeyName -}}_update', '{{ .Config.ModelName }} update'),
-       ('{{- .Config.KeyName -}}_delete', '{{ .Config.ModelName }} delete');
+VALUES ('{{- .Config.KeyName -}}_list', '{{ .Config.EntityName }} list'),
+       ('{{- .Config.KeyName -}}_detail', '{{ .Config.EntityName }} detail'),
+       ('{{- .Config.KeyName -}}_create', '{{ .Config.EntityName }} create'),
+       ('{{- .Config.KeyName -}}_update', '{{ .Config.EntityName }} update'),
+       ('{{- .Config.KeyName -}}_delete', '{{ .Config.EntityName }} delete');
 
 INSERT INTO public.group_permissions (group_id, permission_id)
 VALUES ('admin', '{{- .Config.KeyName -}}_list'),

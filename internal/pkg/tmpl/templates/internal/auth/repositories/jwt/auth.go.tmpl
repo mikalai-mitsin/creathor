@@ -68,7 +68,7 @@ func NewAuthRepository(
 }
 
 func (r *AuthRepository) Create(_ context.Context, user userEntities.User) (entities.TokenPair, error) {
-    pair := r.createPair(string(user.ID))
+    pair := r.createPair(user.ID.String())
     return pair, nil
 }
 

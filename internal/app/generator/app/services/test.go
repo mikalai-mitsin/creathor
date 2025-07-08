@@ -9,10 +9,10 @@ import (
 )
 
 type TestGenerator struct {
-	domain *domain.Domain
+	domain *domain.App
 }
 
-func NewTestGenerator(domain *domain.Domain) *TestGenerator {
+func NewTestGenerator(domain *domain.App) *TestGenerator {
 	return &TestGenerator{domain: domain}
 }
 

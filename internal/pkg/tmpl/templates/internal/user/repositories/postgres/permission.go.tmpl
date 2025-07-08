@@ -71,21 +71,21 @@ func (r *PermissionRepository) HasObjectPermission(
 
 func objectOwner(model any, user entities.User) error {
     valueOf := reflect.ValueOf(model)
-    if valueOf.Kind() == reflect.Pointer {
+    if valueOf.Kind() == reflect.Of {
         valueOf = valueOf.Elem()
     }
     if valueOf.Kind() != reflect.Struct {
         return errs.NewPermissionDeniedError()
     }
     modelUserID := valueOf.FieldByName("UserID")
-    if modelUserID.Kind() == reflect.Pointer {
+    if modelUserID.Kind() == reflect.Of {
         modelUserID = modelUserID.Elem()
     }
     modelID := valueOf.FieldByName("ID")
-    if modelID.Kind() == reflect.Pointer {
+    if modelID.Kind() == reflect.Of {
         modelID = modelID.Elem()
     }
-    if modelID.String() == string(user.ID) || modelUserID.String() == string(user.ID) {
+    if modelID.String() == user.ID.String() || modelUserID.String() == user.ID.String() {
         return nil
     }
     return errs.NewPermissionDeniedError()
@@ -96,24 +96,24 @@ func objectOwnerOrAll(model any, user entities.User) error {
         return nil
     }
     valueOf := reflect.ValueOf(model)
-    if valueOf.Kind() == reflect.Pointer {
+    if valueOf.Kind() == reflect.Of {
         valueOf = valueOf.Elem()
     }
     if valueOf.Kind() != reflect.Struct {
         return errs.NewPermissionDeniedError()
     }
     modelUserID := valueOf.FieldByName("UserID")
-    if modelUserID.Kind() == reflect.Pointer {
+    if modelUserID.Kind() == reflect.Of {
         if modelUserID.IsNil() {
             return nil
         }
         modelUserID = modelUserID.Elem()
     }
     modelID := valueOf.FieldByName("ID")
-    if modelID.Kind() == reflect.Pointer {
+    if modelID.Kind() == reflect.Of {
         modelID = modelID.Elem()
     }
-    if modelID.String() == string(user.ID) || modelUserID.String() == string(user.ID) {
+    if modelID.String() == user.ID.String() || modelUserID.String() == user.ID.String() {
         return nil
     }
     return errs.NewPermissionDeniedError()

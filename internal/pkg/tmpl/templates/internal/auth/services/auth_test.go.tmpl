@@ -43,7 +43,7 @@ func TestAuthService_Auth(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                mockAuthRepository.EXPECT().GetSubject(ctx, entities.Token("mytoken")).Return(string(user.ID), nil).Times(1)
+                mockAuthRepository.EXPECT().GetSubject(ctx, entities.Token("mytoken")).Return(user.ID.String(), nil).Times(1)
                 mockUserRepository.EXPECT().Get(ctx, user.ID).Return(user, nil).Times(1)
             },
             fields: fields{
@@ -81,7 +81,7 @@ func TestAuthService_Auth(t *testing.T) {
         {
             name: "user not found",
             setup: func() {
-                mockAuthRepository.EXPECT().GetSubject(ctx, entities.Token("mytoken")).Return(string(user.ID), nil).Times(1)
+                mockAuthRepository.EXPECT().GetSubject(ctx, entities.Token("mytoken")).Return(user.ID.String(), nil).Times(1)
                 mockUserRepository.EXPECT().Get(ctx, user.ID).Return(userEntities.User{}, errs.NewEntityNotFoundError()).Times(1)
             },
             fields: fields{

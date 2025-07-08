@@ -1,24 +1,105 @@
 package uuid
 
-import "github.com/google/uuid"
+import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/google/uuid"
+	"github.com/mikalai-mitsin/example/internal/pkg/errs"
+	"strings"
+)
 
-type UUID string
+type UUID uuid.UUID
 
 func NewUUID() UUID {
-    return UUID(uuid.New().String())
+	return UUID(uuid.Must(uuid.NewV7()))
 }
 
-
-func (uuid UUID) String() string {
-    return string(uuid)
+func MustParse(id string) UUID {
+	return UUID(uuid.MustParse(id))
 }
 
-type UUIDv4Generator struct{}
-
-func NewUUIDv4Generator() *UUIDv4Generator {
-	return &UUIDv4Generator{}
+func (id UUID) Validate() error {
+	if err := uuid.Validate(id.String()); err != nil {
+		return errs.NewInvalidParameter("invalid format").WithCause(err)
+	}
+	return nil
 }
 
-func (m *UUIDv4Generator) NewUUID() UUID {
-	return UUID(uuid.New().String())
+func (id UUID) IsEmpty() bool {
+	return id == UUID{}
+}
+
+func (id UUID) String() string {
+	return uuid.UUID(id).String()
+}
+
+type UUIDv7Generator struct{}
+
+func NewUUIDv7Generator() *UUIDv7Generator {
+	return &UUIDv7Generator{}
+}
+
+func (m *UUIDv7Generator) NewUUID() UUID {
+	return UUID(uuid.Must(uuid.NewV7()))
+}
+
+var Required = validation.By(func(value any) error {
+	switch id := value.(type) {
+	case UUID:
+		if id.IsEmpty() {
+			return errs.NewInvalidParameter("cannot be blank")
+		}
+		return nil
+	case *UUID:
+		if id == nil {
+			if id.IsEmpty() {
+				return errs.NewInvalidParameter("cannot be blank")
+			}
+		} else {
+			return nil
+		}
+	default:
+		return errs.NewInvalidParameter("invalid type, must be UUID or *UUID")
+	}
+	return nil
+})
+
+func (id *UUID) UnmarshalJSON(b []byte) error {
+	str := strings.Trim(string(b), `"`)
+	parsed, err := uuid.Parse(str)
+	if err != nil {
+		return err
+	}
+	*id = UUID(parsed)
+	return nil
+}
+
+func (id UUID) MarshalJSON() ([]byte, error) {
+	return json.Marshal(id.String())
+}
+
+func (id *UUID) Scan(src any) error {
+	switch v := src.(type) {
+	case string:
+		parsed, err := uuid.Parse(v)
+		if err != nil {
+			return err
+		}
+		*id = UUID(parsed)
+		return nil
+	case []byte:
+		parsed, err := uuid.ParseBytes(v)
+		if err != nil {
+			return err
+		}
+		*id = UUID(parsed)
+		return nil
+	}
+	return errs.NewUnexpectedBehaviorError(fmt.Sprintf("cannot scan type %T into UUID", src))
+}
+
+func (id UUID) Value() (driver.Value, error) {
+	return id.String(), nil
 }

@@ -14,10 +14,10 @@ import (
 )
 
 type App struct {
-	domain *domain.Domain
+	domain *domain.App
 }
 
-func NewApp(domain *domain.Domain) *App {
+func NewApp(domain *domain.App) *App {
 	return &App{domain: domain}
 }
 
@@ -217,7 +217,7 @@ func (a App) constructor() *ast.FuncDecl {
 			Type: &ast.StarExpr{
 				X: &ast.SelectorExpr{
 					X:   ast.NewIdent("uuid"),
-					Sel: ast.NewIdent("UUIDv4Generator"),
+					Sel: ast.NewIdent("UUIDv7Generator"),
 				},
 			},
 		},
@@ -606,7 +606,7 @@ func (a App) registerHTTP() *ast.FuncDecl {
 						Args: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
-								Value: fmt.Sprintf(`"/api/v1/%s/"`, a.domain.GetManyVariableName()),
+								Value: fmt.Sprintf(`"/api/v1/%s/"`, a.domain.GetHTTPPath()),
 							},
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{

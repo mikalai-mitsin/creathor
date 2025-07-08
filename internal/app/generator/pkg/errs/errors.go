@@ -622,7 +622,7 @@ func (i Errors) file() *ast.File {
 										ast.NewIdent("ErrorCodeNotFound"),
 										&ast.BasicLit{
 											Kind:  token.STRING,
-											Value: `"Entity not found."`,
+											Value: `"Name not found."`,
 										},
 									},
 								},

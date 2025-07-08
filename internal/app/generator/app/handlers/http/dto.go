@@ -14,10 +14,10 @@ import (
 )
 
 type DTOGenerator struct {
-	domain *domain.Domain
+	domain *domain.App
 }
 
-func NewDTOGenerator(domain *domain.Domain) *DTOGenerator {
+func NewDTOGenerator(domain *domain.App) *DTOGenerator {
 	return &DTOGenerator{domain: domain}
 }
 
@@ -28,7 +28,7 @@ func (g *DTOGenerator) filename() string {
 		g.domain.DirName(),
 		"handlers",
 		"http",
-		"dto.go",
+		fmt.Sprintf("%s_dto.go", g.domain.SnakeName()),
 	)
 }
 
@@ -1041,7 +1041,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X:   ast.NewIdent("pointer"),
-									Sel: ast.NewIdent("Pointer"),
+									Sel: ast.NewIdent("Of"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
@@ -1176,7 +1176,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X:   ast.NewIdent("pointer"),
-									Sel: ast.NewIdent("Pointer"),
+									Sel: ast.NewIdent("Of"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
@@ -1380,7 +1380,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
 												X:   ast.NewIdent("uuid"),
-												Sel: ast.NewIdent("UUID"),
+												Sel: ast.NewIdent("MustParse"),
 											},
 											Args: []ast.Expr{
 												ast.NewIdent("id"),
@@ -1565,7 +1565,7 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 			Value: &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
 					X:   ast.NewIdent("pointer"),
-					Sel: ast.NewIdent("Pointer"),
+					Sel: ast.NewIdent("Of"),
 				},
 				Args: []ast.Expr{
 					&ast.SelectorExpr{
@@ -1850,7 +1850,7 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 				&ast.CallExpr{
 					Fun: &ast.SelectorExpr{
 						X:   ast.NewIdent("uuid"),
-						Sel: ast.NewIdent("UUID"),
+						Sel: ast.NewIdent("MustParse"),
 					},
 					Args: []ast.Expr{
 						&ast.CallExpr{

@@ -10,10 +10,10 @@ import (
 )
 
 type ProtoGenerator struct {
-	domain *domain.Domain
+	domain *domain.App
 }
 
-func NewProtoGenerator(domain *domain.Domain) *ProtoGenerator {
+func NewProtoGenerator(domain *domain.App) *ProtoGenerator {
 	return &ProtoGenerator{domain: domain}
 }
 

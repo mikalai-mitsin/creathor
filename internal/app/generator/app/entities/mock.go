@@ -18,10 +18,10 @@ import (
 type Mock struct {
 	typeSpec *ast.TypeSpec
 	fileName string
-	domain   *mods.Domain
+	domain   *mods.App
 }
 
-func NewMock(typeSpec *ast.TypeSpec, fileName string, domain *mods.Domain) *Mock {
+func NewMock(typeSpec *ast.TypeSpec, fileName string, domain *mods.App) *Mock {
 	return &Mock{typeSpec: typeSpec, fileName: fileName, domain: domain}
 }
 

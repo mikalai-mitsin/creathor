@@ -152,7 +152,7 @@ func TestPermissionRepository_objectOwner(t *testing.T) {
                 model: struct {
                     ID *string
                 }{
-                    ID: pointer.Pointer("asd-241"),
+                    ID: pointer.Of("asd-241"),
                 },
                 user: entities.User{ID: "asd-241"},
             },
@@ -277,7 +277,7 @@ func TestPermissionRepository_HasPermission(t *testing.T) {
                 Message: "Unexpected behavior.",
                 Params: errs.Params{
                     {Key: "error", Value: "error"},
-                    {Key: "user_id", Value: string(user.ID)},
+                    {Key: "user_id", Value: user.ID.String()},
                     {Key: "permission_id", Value: "user_list"},
                 },
             },
@@ -433,7 +433,7 @@ func TestPermissionRepository_objectOwnerOrAll(t *testing.T) {
                 model: struct {
                     ID *string
                 }{
-                    ID: pointer.Pointer("asd-241"),
+                    ID: pointer.Of("asd-241"),
                 },
                 user: entities.User{ID: "asd-241"},
             },

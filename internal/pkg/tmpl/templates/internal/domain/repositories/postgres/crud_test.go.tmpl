@@ -64,17 +64,17 @@ func TestNew{{ .Config.RepositoryTypeName }}(t *testing.T) {
 }
 
 func Test{{ .Config.RepositoryTypeName }}_Create(t *testing.T) {
-    db, mock, err := postgres.NewMockPostgreSQL(t)
+    mockDB, mock, err := postgres.NewMockPostgreSQL(t)
     if err != nil {
         t.Fatal(err)
         return
     }
-    defer db.Close()
+    defer mockDB.Close()
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mockLogger := NewMocklogger(ctrl)
-    query := "INSERT INTO public.{{ .TableName }} (created_at,updated_at,{{- range $i, $value := .Config.Params }}{{if $i}},{{end}}{{ $value.Tag }}{{- end }}) VALUES ($1,$2,{{ range $i, $value := .Config.Params }}{{if $i}},{{end}}${{ add $i 3}}{{- end }})"
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
+    query := "INSERT INTO public.{{ .TableName }} (id,created_at,updated_at,{{- range $i, $value := .Config.Params }}{{if $i}},{{end}}{{ $value.Tag }}{{- end }}) VALUES ($1,$2,$3,{{ range $i, $value := .Config.Params }}{{if $i}},{{end}}${{ add $i 4}}{{- end }})"
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
     ctx := context.Background()
     type fields struct {
         database *sqlx.DB
@@ -82,7 +82,7 @@ func Test{{ .Config.RepositoryTypeName }}_Create(t *testing.T) {
     }
     type args struct {
         ctx  context.Context
-        {{ .Config.Variable }} entities.{{ .Config.ModelName }}
+        {{ .Config.Variable }} entities.{{ .Config.EntityName }}
     }
     tests := []struct {
         name    string
@@ -96,6 +96,7 @@ func Test{{ .Config.RepositoryTypeName }}_Create(t *testing.T) {
             setup: func() {
                 mock.ExpectExec(query).
                     WithArgs(
+                        {{ $.Config.Variable }}.ID,
                         {{ $.Config.Variable }}.UpdatedAt,
                         {{ $.Config.Variable }}.CreatedAt,
 {{- range $value := .Config.Params }}
@@ -109,7 +110,7 @@ func Test{{ .Config.RepositoryTypeName }}_Create(t *testing.T) {
                      					WillReturnResult(sqlmock.NewResult(0, 1))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
@@ -123,6 +124,7 @@ func Test{{ .Config.RepositoryTypeName }}_Create(t *testing.T) {
             setup: func() {
                 mock.ExpectExec(query).
                     WithArgs(
+                        {{ $.Config.Variable }}.ID,
                         {{ $.Config.Variable }}.UpdatedAt,
                         {{ $.Config.Variable }}.CreatedAt,
 {{- range $value := .Config.Params }}
@@ -136,7 +138,7 @@ func Test{{ .Config.RepositoryTypeName }}_Create(t *testing.T) {
                     WillReturnError(errors.New("test error"))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
@@ -160,17 +162,17 @@ func Test{{ .Config.RepositoryTypeName }}_Create(t *testing.T) {
 }
 
 func Test{{ .Config.RepositoryTypeName }}_Get(t *testing.T) {
-    db, mock, err := postgres.NewMockPostgreSQL(t)
+    mockDB, mock, err := postgres.NewMockPostgreSQL(t)
     if err != nil {
         t.Fatal(err)
         return
     }
-    defer db.Close()
+    defer mockDB.Close()
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mockLogger := NewMocklogger(ctrl)
     query := "SELECT {{ .TableName }}.id, {{ .TableName }}.created_at, {{ .TableName }}.updated_at{{ range $key, $value := .Config.Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }} WHERE id = $1 LIMIT 1"
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
     ctx := context.Background()
     type fields struct {
         database *sqlx.DB
@@ -185,17 +187,17 @@ func Test{{ .Config.RepositoryTypeName }}_Get(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .Config.ModelName }}
+        want    entities.{{ .Config.EntityName }}
         wantErr error
     }{
         {
             name: "ok",
             setup: func() {
-                rows := new{{ .Config.ModelName }}Rows(t, []entities.{{ .Config.ModelName }}{ {{- .Config.Variable -}} })
+                rows := new{{ .Config.EntityName }}Rows(t, []entities.{{ .Config.EntityName }}{ {{- .Config.Variable -}} })
                 mock.ExpectQuery(query).WithArgs({{ .Config.Variable }}.ID).WillReturnRows(rows)
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
@@ -211,16 +213,16 @@ func Test{{ .Config.RepositoryTypeName }}_Get(t *testing.T) {
                 mock.ExpectQuery(query).WithArgs({{ .Config.Variable }}.ID).WillReturnError(errors.New("test error"))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
                 ctx: context.Background(),
                 id:  {{ .Config.Variable }}.ID,
             },
-            want:  entities.{{ .Config.ModelName }}{},
+            want:  entities.{{ .Config.EntityName }}{},
             wantErr: errs.FromPostgresError(errors.New("test error")).
-                WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
+                WithParam("{{ .Config.KeyName }}_id", {{ .Config.Variable }}.ID.String()),
         },
         {
             name: "not found",
@@ -228,15 +230,15 @@ func Test{{ .Config.RepositoryTypeName }}_Get(t *testing.T) {
                 mock.ExpectQuery(query).WithArgs({{ .Config.Variable }}.ID).WillReturnError(sql.ErrNoRows)
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
                 ctx: context.Background(),
                 id:  {{ .Config.Variable }}.ID,
             },
-            want:  entities.{{ .Config.ModelName }}{},
-            wantErr: errs.NewEntityNotFoundError().WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
+            want:  entities.{{ .Config.EntityName }}{},
+            wantErr: errs.NewEntityNotFoundError().WithParam("{{ .Config.KeyName }}_id", {{ .Config.Variable }}.ID.String()),
         },
     }
     for _, tt := range tests {
@@ -254,23 +256,23 @@ func Test{{ .Config.RepositoryTypeName }}_Get(t *testing.T) {
 }
 
 func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
-    db, mock, err := postgres.NewMockPostgreSQL(t)
+    mockDB, mock, err := postgres.NewMockPostgreSQL(t)
     if err != nil {
         t.Fatal(err)
         return
     }
-    defer db.Close()
+    defer mockDB.Close()
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    var {{ .Config.ListVariable }} []entities.{{ .Config.ModelName }}
+    var {{ .Config.ListVariable }} []entities.{{ .Config.EntityName }}
     for i := 0; i < faker.New().IntBetween(2, 20); i++ {
-        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mockEntities.New{{ .Config.ModelName }}(t))
+        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mockEntities.New{{ .Config.EntityName }}(t))
     }
     filter := entities.{{ .Config.FilterTypeName }}{
-		PageSize:   pointer.Pointer(uint64(10)),
-		PageNumber: pointer.Pointer(uint64(2)),
+		PageSize:   pointer.Of(uint64(10)),
+		PageNumber: pointer.Of(uint64(2)),
 		Search:     nil,
 		OrderBy:    []string{"id ASC"},
 		IDs:        nil,
@@ -289,17 +291,17 @@ func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    []entities.{{ .Config.ModelName }}
+        want    []entities.{{ .Config.EntityName }}
         wantErr error
     }{
         {
             name: "ok",
             setup: func() {
                 mock.ExpectQuery(query).
-                    WillReturnRows(new{{ .Config.ModelName }}Rows(t, {{ .Config.ListVariable }}))
+                    WillReturnRows(new{{ .Config.EntityName }}Rows(t, {{ .Config.ListVariable }}))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
@@ -315,7 +317,7 @@ func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
                 mock.ExpectQuery(query).WillReturnError(errors.New("test error"))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
@@ -336,7 +338,7 @@ func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
                     WillReturnError(errors.New("test error"))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
@@ -362,16 +364,16 @@ func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
 }
 
 func Test{{ .Config.RepositoryTypeName }}_Update(t *testing.T) {
-    db, mock, err := postgres.NewMockPostgreSQL(t)
+    mockDB, mock, err := postgres.NewMockPostgreSQL(t)
     if err != nil {
         t.Fatal(err)
         return
     }
-    defer db.Close()
+    defer mockDB.Close()
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mockLogger := NewMocklogger(ctrl)
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
     query := `UPDATE public.{{ .TableName }} SET created_at = $1, updated_at = $2, {{ range $i, $value := .Config.Params }}{{if $i}}, {{end}}{{ $value.Tag }} = ${{ add $i 3}}{{- end }} WHERE id = ${{ add (len $.Config.Params) 3 }}`
     ctx := context.Background()
     type fields struct {
@@ -380,7 +382,7 @@ func Test{{ .Config.RepositoryTypeName }}_Update(t *testing.T) {
     }
     type args struct {
         ctx  context.Context
-        {{ .Config.Variable }} entities.{{ .Config.ModelName }}
+        {{ .Config.Variable }} entities.{{ .Config.EntityName }}
     }
     tests := []struct {
         name    string
@@ -408,7 +410,7 @@ func Test{{ .Config.RepositoryTypeName }}_Update(t *testing.T) {
                     WillReturnResult(sqlmock.NewResult(0, 1))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
@@ -436,14 +438,14 @@ func Test{{ .Config.RepositoryTypeName }}_Update(t *testing.T) {
                     WillReturnResult(sqlmock.NewResult(0, 0))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
                 ctx:  ctx,
                 {{ .Config.Variable }}: {{ .Config.Variable }},
             },
-            wantErr: errs.NewEntityNotFoundError().WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
+            wantErr: errs.NewEntityNotFoundError().WithParam("{{ .Config.KeyName }}_id", {{ .Config.Variable }}.ID.String()),
         },
         {
             name: "database error",
@@ -464,14 +466,14 @@ func Test{{ .Config.RepositoryTypeName }}_Update(t *testing.T) {
                     WillReturnError(errors.New("test error"))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
                 ctx:  ctx,
                 {{ .Config.Variable }}: {{ .Config.Variable }},
             },
-            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
+            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .Config.KeyName }}_id", {{ .Config.Variable }}.ID.String()),
         },
         {
             name: "unexpected error",
@@ -492,14 +494,14 @@ func Test{{ .Config.RepositoryTypeName }}_Update(t *testing.T) {
                     WillReturnError(errors.New("test error"))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
                 ctx:  ctx,
                 {{ .Config.Variable }}: {{ .Config.Variable }},
             },
-            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
+            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .Config.KeyName }}_id", {{ .Config.Variable }}.ID.String()),
         },
         {
             name: "result error",
@@ -520,14 +522,14 @@ func Test{{ .Config.RepositoryTypeName }}_Update(t *testing.T) {
                     WillReturnResult(sqlmock.NewErrorResult(errors.New("test error")))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
                 ctx:  ctx,
                 {{ .Config.Variable }}: {{ .Config.Variable }},
             },
-            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
+            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .Config.KeyName }}_id", {{ .Config.Variable }}.ID.String()),
         },
     }
     for _, tt := range tests {
@@ -544,16 +546,16 @@ func Test{{ .Config.RepositoryTypeName }}_Update(t *testing.T) {
 }
 
 func Test{{ .Config.RepositoryTypeName }}_Delete(t *testing.T) {
-    db, mock, err := postgres.NewMockPostgreSQL(t)
+    mockDB, mock, err := postgres.NewMockPostgreSQL(t)
     if err != nil {
         t.Fatal(err)
         return
     }
-    defer db.Close()
+    defer mockDB.Close()
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mockLogger := NewMocklogger(ctrl)
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
     type fields struct {
         database *sqlx.DB
         logger   logger
@@ -572,7 +574,7 @@ func Test{{ .Config.RepositoryTypeName }}_Delete(t *testing.T) {
         {
             name: "ok",
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             setup: func() {
@@ -594,14 +596,14 @@ func Test{{ .Config.RepositoryTypeName }}_Delete(t *testing.T) {
                     WillReturnResult(sqlmock.NewResult(0, 0))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
                 ctx: context.Background(),
                 id:  {{ .Config.Variable }}.ID,
             },
-            wantErr: errs.NewEntityNotFoundError().WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
+            wantErr: errs.NewEntityNotFoundError().WithParam("{{ .Config.KeyName }}_id", {{ .Config.Variable }}.ID.String()),
         },
         {
             name: "database error",
@@ -611,14 +613,14 @@ func Test{{ .Config.RepositoryTypeName }}_Delete(t *testing.T) {
                     WillReturnError(errors.New("test error"))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
                 ctx: context.Background(),
                 id:  {{ .Config.Variable }}.ID,
             },
-            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
+            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .Config.KeyName }}_id", {{ .Config.Variable }}.ID.String()),
         },
         {
             name: "result error",
@@ -628,14 +630,14 @@ func Test{{ .Config.RepositoryTypeName }}_Delete(t *testing.T) {
                     WillReturnResult(sqlmock.NewErrorResult(errors.New("test error")))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
                 logger: mockLogger,
             },
             args: args{
                 ctx: context.Background(),
                 id:  {{ .Config.Variable }}.ID,
             },
-            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .Config.KeyName }}_id", string({{ .Config.Variable }}.ID)),
+            wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .Config.KeyName }}_id", {{ .Config.Variable }}.ID.String()),
         },
     }
     for _, tt := range tests {
@@ -652,12 +654,12 @@ func Test{{ .Config.RepositoryTypeName }}_Delete(t *testing.T) {
 }
 
 func Test{{ .Config.RepositoryTypeName }}_Count(t *testing.T) {
-    db, mock, err := postgres.NewMockPostgreSQL(t)
+    mockDB, mock, err := postgres.NewMockPostgreSQL(t)
     if err != nil {
         t.Fatal(err)
         return
     }
-    defer db.Close()
+    defer mockDB.Close()
     query := "SELECT count(id) FROM public.{{ .TableName }}"
     ctx := context.Background()
     filter := entities.{{ .Config.FilterTypeName }}{}
@@ -685,7 +687,7 @@ func Test{{ .Config.RepositoryTypeName }}_Count(t *testing.T) {
                         AddRow(1))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
             },
             args: args{
                 ctx:    ctx,
@@ -702,7 +704,7 @@ func Test{{ .Config.RepositoryTypeName }}_Count(t *testing.T) {
                         AddRow("one"))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
             },
             args: args{
                 ctx:    ctx,
@@ -722,7 +724,7 @@ func Test{{ .Config.RepositoryTypeName }}_Count(t *testing.T) {
                     WillReturnError(errors.New("test error"))
             },
             fields: fields{
-                database: db,
+                database: mockDB,
             },
             args: args{
                 ctx:    ctx,
@@ -746,7 +748,7 @@ func Test{{ .Config.RepositoryTypeName }}_Count(t *testing.T) {
     }
 }
 
-func new{{ .Config.ModelName }}Rows(t *testing.T, {{ .Config.ListVariable }} []entities.{{ .Config.ModelName }}) *sqlmock.Rows {
+func new{{ .Config.EntityName }}Rows(t *testing.T, {{ .Config.ListVariable }} []entities.{{ .Config.EntityName }}) *sqlmock.Rows {
     t.Helper()
     rows := sqlmock.NewRows([]string{
         "id",

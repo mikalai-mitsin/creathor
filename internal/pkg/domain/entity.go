@@ -6,17 +6,17 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
-type ModelType uint8
+type EntityType uint8
 
 const (
-	ModelTypeMain = iota
-	ModelTypeCreate
-	ModelTypeUpdate
-	ModelTypeFilter
+	EntityTypeMain = iota
+	EntityTypeCreate
+	EntityTypeUpdate
+	EntityTypeFilter
 )
 
-type Model struct {
-	Type       ModelType
+type Entity struct {
+	Type       EntityType
 	Name       string
 	Variable   string
 	Params     []*configs.Param // FIXME: replace with own type
@@ -24,21 +24,21 @@ type Model struct {
 	Mock       bool
 }
 
-func NewCreateModel(modelConfig *configs.DomainConfig) *Model {
-	return &Model{
-		Type:       ModelTypeCreate,
-		Name:       modelConfig.CreateTypeName(),
+func NewCreateEntity(entityConfig configs.AppConfig) *Entity {
+	return &Entity{
+		Type:       EntityTypeCreate,
+		Name:       entityConfig.CreateTypeName(),
 		Variable:   "create",
-		Params:     modelConfig.Params,
+		Params:     entityConfig.Params,
 		Validation: true,
 		Mock:       true,
 	}
 }
 
-func NewUpdateModel(modelConfig *configs.DomainConfig) *Model {
-	model := &Model{
-		Type:     ModelTypeUpdate,
-		Name:     modelConfig.UpdateTypeName(),
+func NewUpdateEntity(entityConfig configs.AppConfig) *Entity {
+	model := &Entity{
+		Type:     EntityTypeUpdate,
+		Name:     entityConfig.UpdateTypeName(),
 		Variable: "update",
 		Params: []*configs.Param{
 			{
@@ -49,7 +49,7 @@ func NewUpdateModel(modelConfig *configs.DomainConfig) *Model {
 		Validation: true,
 		Mock:       true,
 	}
-	for _, param := range modelConfig.Params {
+	for _, param := range entityConfig.Params {
 		model.Params = append(model.Params, &configs.Param{
 			Name: param.GetName(),
 			Type: fmt.Sprintf("*%s", param.Type),
@@ -58,10 +58,10 @@ func NewUpdateModel(modelConfig *configs.DomainConfig) *Model {
 	return model
 }
 
-func NewMainModel(modelConfig *configs.DomainConfig) *Model {
-	model := &Model{
-		Type:     ModelTypeMain,
-		Name:     modelConfig.ModelName(),
+func NewMainEntity(modelConfig configs.AppConfig) *Entity {
+	model := &Entity{
+		Type:     EntityTypeMain,
+		Name:     modelConfig.EntityName(),
 		Variable: modelConfig.Variable(),
 		Params: []*configs.Param{
 			{
@@ -87,9 +87,9 @@ func NewMainModel(modelConfig *configs.DomainConfig) *Model {
 	return model
 }
 
-func NewFilterModel(modelConfig *configs.DomainConfig) *Model {
-	model := &Model{
-		Type:     ModelTypeFilter,
+func NewFilterEntity(modelConfig configs.AppConfig) *Entity {
+	model := &Entity{
+		Type:     EntityTypeFilter,
 		Name:     modelConfig.FilterTypeName(),
 		Variable: "filter",
 		Params: []*configs.Param{

@@ -15,10 +15,10 @@ import (
 )
 
 type HandlerGenerator struct {
-	domain *domain.Domain
+	domain *domain.App
 }
 
-func NewHandlerGenerator(domain *domain.Domain) *HandlerGenerator {
+func NewHandlerGenerator(domain *domain.App) *HandlerGenerator {
 	return &HandlerGenerator{
 		domain: domain,
 	}
@@ -328,7 +328,7 @@ func (h HandlerGenerator) updateStmts() []*ast.IfStmt {
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X:   ast.NewIdent("pointer"),
-								Sel: ast.NewIdent("Pointer"),
+								Sel: ast.NewIdent("Of"),
 							},
 							Args: []ast.Expr{
 								&ast.CallExpr{
@@ -422,7 +422,7 @@ func (h HandlerGenerator) updateStmts() []*ast.IfStmt {
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X:   ast.NewIdent("pointer"),
-								Sel: ast.NewIdent("Pointer"),
+								Sel: ast.NewIdent("Of"),
 							},
 							Args: []ast.Expr{
 								ast.NewIdent("params"),
@@ -463,7 +463,7 @@ func (h HandlerGenerator) updateStmts() []*ast.IfStmt {
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X:   ast.NewIdent("pointer"),
-								Sel: ast.NewIdent("Pointer"),
+								Sel: ast.NewIdent("Of"),
 							},
 							Args: []ast.Expr{
 								value,
@@ -672,7 +672,7 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X:   ast.NewIdent("pointer"),
-									Sel: ast.NewIdent("Pointer"),
+									Sel: ast.NewIdent("Of"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
@@ -718,7 +718,7 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X:   ast.NewIdent("pointer"),
-									Sel: ast.NewIdent("Pointer"),
+									Sel: ast.NewIdent("Of"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
@@ -810,7 +810,7 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X:   ast.NewIdent("pointer"),
-									Sel: ast.NewIdent("Pointer"),
+									Sel: ast.NewIdent("Of"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{

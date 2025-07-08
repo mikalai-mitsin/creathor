@@ -2,6 +2,7 @@ package entities
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -16,10 +17,10 @@ import (
 type Validate struct {
 	typeSpec *ast.TypeSpec
 	fileName string
-	domain   *mods.Domain
+	domain   *mods.App
 }
 
-func NewValidate(typeSpec *ast.TypeSpec, fileName string, domain *mods.Domain) *Validate {
+func NewValidate(typeSpec *ast.TypeSpec, fileName string, domain *mods.App) *Validate {
 	return &Validate{typeSpec: typeSpec, fileName: fileName, domain: domain}
 }
 func (m *Validate) Sync() error {
@@ -107,39 +108,97 @@ func (m *Validate) checker(name *ast.Ident, typeName ast.Expr) *ast.CallExpr {
 			},
 		},
 	}
-	if _, ok := typeName.(*ast.StarExpr); !ok {
-		if ident, ok := typeName.(*ast.Ident); ok && ident.String() == "bool" {
-			return call
+	switch en := m.typeSpec.Name.String(); {
+	case strings.HasSuffix(en, "Filter"):
+		if strings.Contains(strings.ToLower(name.String()), "email") {
+			call.Args = append(call.Args, &ast.SelectorExpr{
+				X:   ast.NewIdent("is"),
+				Sel: ast.NewIdent("EmailFormat"),
+			})
 		}
-		call.Args = append(call.Args, &ast.SelectorExpr{
-			X:   ast.NewIdent("validation"),
-			Sel: ast.NewIdent("Required"),
+		orderBy := make([]ast.Expr, 0, len(m.domain.GetMainModel().Params))
+		for _, param := range m.domain.GetMainModel().Params {
+			orderBy = append(
+				orderBy,
+				&ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s.%s ASC"`, m.domain.TableName(), param.Tag()),
+				},
+				&ast.BasicLit{
+					Kind:  token.STRING,
+					Value: fmt.Sprintf(`"%s.%s DESC"`, m.domain.TableName(), param.Tag()),
+				},
+			)
+		}
+		call.Args = append(call.Args, &ast.CallExpr{
+			Fun: &ast.SelectorExpr{
+				X:   ast.NewIdent("validation"),
+				Sel: ast.NewIdent("Each"),
+			},
+			Args: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: ast.NewIdent("validation"),
+
+						Sel: ast.NewIdent("In"),
+					},
+					Args: orderBy,
+				},
+			},
 		})
+	case strings.HasSuffix(en, "Update"):
+		if name.String() == "ID" {
+			call.Args = append(call.Args, &ast.SelectorExpr{
+				X:   ast.NewIdent("validation"),
+				Sel: ast.NewIdent("Required"),
+			})
+		}
+		if strings.Contains(strings.ToLower(name.String()), "email") {
+			call.Args = append(call.Args, &ast.SelectorExpr{
+				X:   ast.NewIdent("is"),
+				Sel: ast.NewIdent("EmailFormat"),
+			})
+		}
+	case strings.HasSuffix(en, "Create"):
+		if _, ok := typeName.(*ast.StarExpr); !ok {
+			if ident, ok := typeName.(*ast.Ident); ok && ident.String() == "bool" {
+				return call
+			}
+			call.Args = append(call.Args, &ast.SelectorExpr{
+				X:   ast.NewIdent("validation"),
+				Sel: ast.NewIdent("Required"),
+			})
+		}
+		if ident, ok := typeName.(*ast.Ident); ok && strings.Contains(ident.String(), "uuid") {
+			call.Args = append(call.Args, &ast.SelectorExpr{
+				X:   ast.NewIdent("uuid"),
+				Sel: ast.NewIdent("Required"),
+			})
+		}
+		if strings.Contains(strings.ToLower(name.String()), "email") {
+			call.Args = append(call.Args, &ast.SelectorExpr{
+				X:   ast.NewIdent("is"),
+				Sel: ast.NewIdent("EmailFormat"),
+			})
+		}
+	default:
+		if _, ok := typeName.(*ast.StarExpr); !ok {
+			if ident, ok := typeName.(*ast.Ident); ok && ident.String() == "bool" {
+				return call
+			}
+			call.Args = append(call.Args, &ast.SelectorExpr{
+				X:   ast.NewIdent("validation"),
+				Sel: ast.NewIdent("Required"),
+			})
+		}
+		if strings.Contains(strings.ToLower(name.String()), "email") {
+			call.Args = append(call.Args, &ast.SelectorExpr{
+				X:   ast.NewIdent("is"),
+				Sel: ast.NewIdent("EmailFormat"),
+			})
+		}
 	}
-	if ident, ok := typeName.(*ast.Ident); ok && ident.String() == "uuid.UUID" {
-		call.Args = append(call.Args, &ast.SelectorExpr{
-			X:   ast.NewIdent("is"),
-			Sel: ast.NewIdent("UUID"),
-		})
-	}
-	//if !strings.HasPrefix(param.Type, "*") {
-	//	call.Args = append(call.Args, &ast.SelectorExpr{
-	//		X:   ast.NewIdent("validation"),
-	//		Sel: ast.NewIdent("Required"),
-	//	})
-	//}
-	//if strings.ToLower(param.Type) == "uuid" {
-	//	call.Args = append(call.Args, &ast.SelectorExpr{
-	//		X:   ast.NewIdent("is"),
-	//		Sel: ast.NewIdent("UUID"),
-	//	})
-	//}
-	if strings.Contains(strings.ToLower(name.String()), "email") {
-		call.Args = append(call.Args, &ast.SelectorExpr{
-			X:   ast.NewIdent("is"),
-			Sel: ast.NewIdent("EmailFormat"),
-		})
-	}
+
 	return call
 }
 

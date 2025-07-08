@@ -17,7 +17,7 @@ import (
 type Structure struct {
 	fileName string
 	name     string
-	domain   *mods.Domain
+	domain   *mods.App
 	params   []*ast.Field
 }
 
@@ -25,7 +25,7 @@ func NewStructure(
 	fileName string,
 	name string,
 	params []*ast.Field,
-	domain *mods.Domain,
+	domain *mods.App,
 ) *Structure {
 	return &Structure{
 		fileName: fileName,

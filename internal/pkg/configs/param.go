@@ -306,7 +306,9 @@ func (p *Param) PostgresDTOType() string {
 	case "[]string":
 		return "pq.StringArray"
 	case "uuid", "uuid.UUID", "UUID", "entities.GroupID", "GroupID":
-		return "string"
+		return "uuid.UUID"
+	case "*uuid", "*uuid.UUID", "*UUID", "*entities.GroupID", "*GroupID":
+		return "*uuid.UUID"
 	case "time.Time":
 		return "time.Time"
 	case "time.Duration":

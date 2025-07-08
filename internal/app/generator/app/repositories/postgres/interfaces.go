@@ -15,10 +15,10 @@ import (
 )
 
 type InterfacesGenerator struct {
-	domain *domain.Domain
+	domain *domain.App
 }
 
-func NewInterfacesGenerator(domain *domain.Domain) *InterfacesGenerator {
+func NewInterfacesGenerator(domain *domain.App) *InterfacesGenerator {
 	return &InterfacesGenerator{domain: domain}
 }
 
@@ -30,7 +30,7 @@ func (r InterfacesGenerator) Sync() error {
 		r.domain.DirName(),
 		"repositories",
 		"postgres",
-		"interfaces.go",
+		fmt.Sprintf("%s_interfaces.go", r.domain.SnakeName()),
 	)
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
@@ -79,7 +79,7 @@ func (r InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text:  "//go:generate mockgen -source=interfaces.go -package=postgres -destination=interfaces_mock.go",
+					Text:  fmt.Sprintf("//go:generate mockgen -source=%s_interfaces.go -package=postgres -destination=%s_interfaces_mock.go", r.domain.SnakeName(), r.domain.SnakeName()),
 				},
 			},
 		},

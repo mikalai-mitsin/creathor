@@ -79,17 +79,17 @@ func initProject(_ *cli.Context) error {
 			return err
 		}
 	}
-	for _, m := range project.Domains {
-		d := &domain.Domain{
+	for _, m := range project.Apps {
+		d := &domain.App{
 			Config:      m,
-			Name:        m.Model,
+			Name:        m.Name,
 			Module:      project.Module,
 			ProtoModule: project.ProtoPackage(),
-			Entities: []*domain.Model{
-				domain.NewMainModel(m),
-				domain.NewFilterModel(m),
-				domain.NewCreateModel(m),
-				domain.NewUpdateModel(m),
+			Entities: []*domain.Entity{
+				domain.NewMainEntity(m),
+				domain.NewFilterEntity(m),
+				domain.NewCreateEntity(m),
+				domain.NewUpdateEntity(m),
 			},
 			Auth: project.Auth,
 		}

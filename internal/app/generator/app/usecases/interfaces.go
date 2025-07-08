@@ -14,16 +14,16 @@ import (
 )
 
 type InterfacesGenerator struct {
-	domain *domain.Domain
+	domain *domain.App
 }
 
-func NewInterfacesGenerator(domain *domain.Domain) *InterfacesGenerator {
+func NewInterfacesGenerator(domain *domain.App) *InterfacesGenerator {
 	return &InterfacesGenerator{domain: domain}
 }
 
 func (i InterfacesGenerator) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", i.domain.DirName(), "usecases", "interfaces.go")
+	filename := path.Join("internal", "app", i.domain.DirName(), "usecases", fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()))
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err
@@ -79,7 +79,7 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text:  "//go:generate mockgen -source=interfaces.go -package=usecases -destination=interfaces_mock.go",
+					Text:  fmt.Sprintf("//go:generate mockgen -source=%s_interfaces.go -package=usecases -destination=%s_interfaces_mock.go", i.domain.SnakeName(), i.domain.SnakeName()),
 				},
 			},
 		},

@@ -16,7 +16,7 @@ message {{ .Config.CreateTypeName }} {
 {{- end }}
 }
 
-message {{ .Config.ModelName }}Get {
+message {{ .Config.EntityName }}Get {
   string id = 1;
 }
 
@@ -27,7 +27,7 @@ message {{ .Config.UpdateTypeName }} {
 {{- end }}
 }
 
-message {{ .Config.ModelName }} {
+message {{ .Config.EntityName }} {
   string id = 1;
   google.protobuf.Timestamp updated_at = 2;
   google.protobuf.Timestamp created_at = 3;
@@ -36,12 +36,12 @@ message {{ .Config.ModelName }} {
 {{- end }}
 }
 
-message List{{ .Config.ModelName }} {
-  repeated {{ .Config.ModelName }} items = 1;
+message List{{ .Config.EntityName }} {
+  repeated {{ .Config.EntityName }} items = 1;
   uint64 count = 2;
 }
 
-message {{ .Config.ModelName }}Delete {
+message {{ .Config.EntityName }}Delete {
   string id = 1;
 }
 
@@ -55,26 +55,26 @@ message {{ .Config.FilterTypeName }} {
 {{- end }}
 }
 
-service {{ .Config.ModelName }}Service {
-  rpc Create({{ .Config.ProtoPackage }}.v1.{{ .Config.CreateTypeName }}) returns ({{ .Config.ProtoPackage }}.v1.{{ .Config.ModelName }}) {
+service {{ .Config.EntityName }}Service {
+  rpc Create({{ .Config.ProtoPackage }}.v1.{{ .Config.CreateTypeName }}) returns ({{ .Config.ProtoPackage }}.v1.{{ .Config.EntityName }}) {
     option (google.api.http) = {
       post: "/api/v1/{{ .Config.RESTHandlerPath }}"
       body: "*"
     };
   }
-  rpc Get({{ .Config.ProtoPackage }}.v1.{{ .Config.ModelName}}Get) returns ({{ .Config.ProtoPackage }}.v1.{{ .Config.ModelName }}) {
+  rpc Get({{ .Config.ProtoPackage }}.v1.{{ .Config.EntityName}}Get) returns ({{ .Config.ProtoPackage }}.v1.{{ .Config.EntityName }}) {
     option (google.api.http) = {get: "/api/v1/{{ .Config.RESTHandlerPath }}/{id}"};
   }
-  rpc Update({{ .Config.ProtoPackage }}.v1.{{ .Config.UpdateTypeName }}) returns ({{ .Config.ProtoPackage }}.v1.{{ .Config.ModelName }}) {
+  rpc Update({{ .Config.ProtoPackage }}.v1.{{ .Config.UpdateTypeName }}) returns ({{ .Config.ProtoPackage }}.v1.{{ .Config.EntityName }}) {
     option (google.api.http) = {
       patch: "/api/v1/{{ .Config.RESTHandlerPath }}/{id}"
       body: "*"
     };
   }
-  rpc Delete({{ .Config.ProtoPackage }}.v1.{{ .Config.ModelName }}Delete) returns (google.protobuf.Empty) {
+  rpc Delete({{ .Config.ProtoPackage }}.v1.{{ .Config.EntityName }}Delete) returns (google.protobuf.Empty) {
     option (google.api.http) = {delete: "/api/v1/{{ .Config.RESTHandlerPath }}/{id}"};
   }
-  rpc List({{ .Config.ProtoPackage }}.v1.{{ .Config.FilterTypeName }}) returns ({{ .Config.ProtoPackage }}.v1.List{{ .Config.ModelName }}) {
+  rpc List({{ .Config.ProtoPackage }}.v1.{{ .Config.FilterTypeName }}) returns ({{ .Config.ProtoPackage }}.v1.List{{ .Config.EntityName }}) {
     option (google.api.http) = {get: "/api/v1/{{ .Config.RESTHandlerPath }}"};
   }
 }

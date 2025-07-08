@@ -21,10 +21,10 @@ import (
 type Perm struct {
 	modelName string
 	fileName  string
-	domain    *mods.Domain
+	domain    *mods.App
 }
 
-func NewPerm(modelName string, fileName string, domain *mods.Domain) *Perm {
+func NewPerm(modelName string, fileName string, domain *mods.App) *Perm {
 	return &Perm{modelName: modelName, fileName: fileName, domain: domain}
 }
 
@@ -43,7 +43,7 @@ func (m *Perm) perms() *ast.GenDecl {
 		Doc: &ast.CommentGroup{
 			List: []*ast.Comment{
 				{
-					Text: "// Model permissions.",
+					Text: "// Name permissions.",
 				},
 			},
 		},
@@ -148,7 +148,7 @@ func (m *Perm) fill(file *ast.File) {
 	ast.Inspect(file, func(node ast.Node) bool {
 		if genDecl, ok := node.(*ast.GenDecl); ok && genDecl.Doc != nil {
 			contains := slices.ContainsFunc(genDecl.Doc.List, func(comment *ast.Comment) bool {
-				return comment.Text == "// Model permissions."
+				return comment.Text == "// Name permissions."
 			})
 			if contains {
 				perms = genDecl

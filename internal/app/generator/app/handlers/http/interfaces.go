@@ -14,10 +14,10 @@ import (
 )
 
 type InterfacesGenerator struct {
-	domain *domain.Domain
+	domain *domain.App
 }
 
-func NewInterfacesGenerator(domain *domain.Domain) *InterfacesGenerator {
+func NewInterfacesGenerator(domain *domain.App) *InterfacesGenerator {
 	return &InterfacesGenerator{domain: domain}
 }
 

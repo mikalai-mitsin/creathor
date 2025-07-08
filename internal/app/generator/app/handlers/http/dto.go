@@ -14,10 +14,10 @@ import (
 )
 
 type DTOGenerator struct {
-	domain *domain.Domain
+	domain *domain.App
 }
 
-func NewDTOGenerator(domain *domain.Domain) *DTOGenerator {
+func NewDTOGenerator(domain *domain.App) *DTOGenerator {
 	return &DTOGenerator{domain: domain}
 }
 
@@ -1041,7 +1041,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X:   ast.NewIdent("pointer"),
-									Sel: ast.NewIdent("Pointer"),
+									Sel: ast.NewIdent("Of"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
@@ -1176,7 +1176,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X:   ast.NewIdent("pointer"),
-									Sel: ast.NewIdent("Pointer"),
+									Sel: ast.NewIdent("Of"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
@@ -1565,7 +1565,7 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 			Value: &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
 					X:   ast.NewIdent("pointer"),
-					Sel: ast.NewIdent("Pointer"),
+					Sel: ast.NewIdent("Of"),
 				},
 				Args: []ast.Expr{
 					&ast.SelectorExpr{

@@ -14,10 +14,10 @@ import (
 )
 
 type App struct {
-	domain *domain.Domain
+	domain *domain.App
 }
 
-func NewApp(domain *domain.Domain) *App {
+func NewApp(domain *domain.App) *App {
 	return &App{domain: domain}
 }
 

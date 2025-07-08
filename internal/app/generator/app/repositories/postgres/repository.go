@@ -19,10 +19,10 @@ import (
 )
 
 type RepositoryGenerator struct {
-	domain *domain.Domain
+	domain *domain.App
 }
 
-func NewRepositoryGenerator(domain *domain.Domain) *RepositoryGenerator {
+func NewRepositoryGenerator(domain *domain.App) *RepositoryGenerator {
 	return &RepositoryGenerator{domain: domain}
 }
 
@@ -1446,7 +1446,7 @@ func (r RepositoryGenerator) listMethod() *ast.FuncDecl {
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
 											X:   ast.NewIdent("pointer"),
-											Sel: ast.NewIdent("Pointer"),
+											Sel: ast.NewIdent("Of"),
 										},
 										Args: []ast.Expr{
 											ast.NewIdent("pageSize"),
@@ -2494,10 +2494,7 @@ func (r RepositoryGenerator) getMethod() *ast.FuncDecl {
 												),
 											},
 											&ast.CallExpr{
-												Fun: ast.NewIdent("string"),
-												Args: []ast.Expr{
-													ast.NewIdent("id"),
-												},
+												Fun: ast.NewIdent("id.String"),
 											},
 										},
 									},

@@ -16,10 +16,10 @@ import (
 const destinationPath = "."
 
 type HandlerGenerator struct {
-	domain *domain.Domain
+	domain *domain.App
 }
 
-func NewHandlerGenerator(domain *domain.Domain) *HandlerGenerator {
+func NewHandlerGenerator(domain *domain.App) *HandlerGenerator {
 	return &HandlerGenerator{
 		domain: domain,
 	}

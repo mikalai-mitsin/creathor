@@ -57,7 +57,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
         logger          logger
@@ -71,7 +71,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .Config.ModelName }}
+        want    entities.{{ .Config.EntityName }}
         wantErr error
     }{
         {
@@ -93,11 +93,11 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
             wantErr: nil,
         },
         {
-            name: "{{ .Config.ModelName }} not found",
+            name: "{{ .Config.EntityName }} not found",
             setup: func() {
                 mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Get(ctx, {{ .Config.Variable }}.ID).
-                    Return(entities.{{ .Config.ModelName }}{}, errs.NewEntityNotFoundError())
+                    Return(entities.{{ .Config.EntityName }}{}, errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
@@ -107,7 +107,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
                 ctx:         ctx,
                 id:          {{ .Config.Variable }}.ID,
             },
-            want:    entities.{{ .Config.ModelName }}{},
+            want:    entities.{{ .Config.EntityName }}{},
             wantErr: errs.NewEntityNotFoundError(),
         },
     }
@@ -131,7 +131,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
     create := mockEntities.New{{ .Config.CreateTypeName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
@@ -146,7 +146,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .Config.ModelName }}
+        want    entities.{{ .Config.EntityName }}
         wantErr error
     }{
         {
@@ -170,7 +170,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
             setup: func() {
                 mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Create(ctx, create).
-                    Return(entities.{{ .Config.ModelName }}{}, errs.NewUnexpectedBehaviorError("c u"))
+                    Return(entities.{{ .Config.EntityName }}{}, errs.NewUnexpectedBehaviorError("c u"))
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
@@ -180,7 +180,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
                 ctx:    ctx,
                 create: create,
             },
-            want:    entities.{{ .Config.ModelName }}{},
+            want:    entities.{{ .Config.EntityName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("c u"),
         },
     }
@@ -204,7 +204,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
     update := mockEntities.New{{ .Config.UpdateTypeName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
@@ -219,7 +219,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .Config.ModelName }}
+        want    entities.{{ .Config.EntityName }}
         wantErr error
     }{
         {
@@ -243,7 +243,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
             setup: func() {
                 mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Update(ctx, update).
-                    Return(entities.{{ .Config.ModelName }}{}, errs.NewUnexpectedBehaviorError("d 2"))
+                    Return(entities.{{ .Config.EntityName }}{}, errs.NewUnexpectedBehaviorError("d 2"))
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
@@ -253,7 +253,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
                 ctx:    ctx,
                 update: update,
             },
-            want:    entities.{{ .Config.ModelName }}{},
+            want:    entities.{{ .Config.EntityName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("d 2"),
         },
     }
@@ -277,7 +277,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
         logger          logger
@@ -349,9 +349,9 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
     ctx := context.Background()
     filter := mockEntities.New{{ .Config.FilterTypeName }}(t)
     count := faker.New().UInt64Between(2, 20)
-    {{ .Config.ListVariable }} := make([]entities.{{ .Config.ModelName }}, 0, count)
+    {{ .Config.ListVariable }} := make([]entities.{{ .Config.EntityName }}, 0, count)
     for i := uint64(0); i < count; i++ {
-        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mockEntities.New{{ .Config.ModelName }}(t))
+        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mockEntities.New{{ .Config.EntityName }}(t))
     }
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
@@ -366,7 +366,7 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    []entities.{{ .Config.ModelName }}
+        want    []entities.{{ .Config.EntityName }}
         want1   uint64
         wantErr error
     }{

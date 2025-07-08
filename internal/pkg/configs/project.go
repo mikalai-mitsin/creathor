@@ -11,19 +11,19 @@ import (
 )
 
 type Project struct {
-	Name           string          `yaml:"name"`
-	Module         string          `yaml:"module"`
-	GoVersion      string          `yaml:"goVersion"`
-	Auth           bool            `yaml:"auth"`
-	CI             string          `yaml:"ci"`
-	Domains        []*DomainConfig `yaml:"domains"`
-	GRPCEnabled    bool            `yaml:"gRPC"`
-	GatewayEnabled bool            `yaml:"gateway"`
-	MakeEnabled    bool            `yaml:"make"`
-	TaskEnabled    bool            `yaml:"task"`
-	UptraceEnabled bool            `yaml:"uptrace"`
-	KafkaEnabled   bool            `yaml:"kafka"`
-	HTTPEnabled    bool            `yaml:"http"`
+	Name           string      `yaml:"name"`
+	Module         string      `yaml:"module"`
+	GoVersion      string      `yaml:"goVersion"`
+	Auth           bool        `yaml:"auth"`
+	CI             string      `yaml:"ci"`
+	Apps           []AppConfig `yaml:"apps"`
+	GRPCEnabled    bool        `yaml:"gRPC"`
+	GatewayEnabled bool        `yaml:"gateway"`
+	MakeEnabled    bool        `yaml:"make"`
+	TaskEnabled    bool        `yaml:"task"`
+	UptraceEnabled bool        `yaml:"uptrace"`
+	KafkaEnabled   bool        `yaml:"kafka"`
+	HTTPEnabled    bool        `yaml:"http"`
 }
 
 func NewProject(configPath string) (*Project, error) {
@@ -33,7 +33,7 @@ func NewProject(configPath string) (*Project, error) {
 		GoVersion:      "1.20",
 		Auth:           true,
 		CI:             "github",
-		Domains:        nil,
+		Apps:           nil,
 		GRPCEnabled:    true,
 		GatewayEnabled: false,
 		MakeEnabled:    false,
@@ -49,8 +49,8 @@ func NewProject(configPath string) (*Project, error) {
 		log.Fatalf("error: %v", err)
 	}
 	if project.Auth {
-		project.Domains = append(project.Domains, &DomainConfig{
-			Model:        "user",
+		project.Apps = append(project.Apps, AppConfig{
+			Name:         "user",
 			Module:       project.Module,
 			ProjectName:  project.Name,
 			ProtoPackage: project.ProtoPackage(),
@@ -68,14 +68,15 @@ func NewProject(configPath string) (*Project, error) {
 			KafkaEnabled:   project.KafkaEnabled,
 		})
 	}
-	for _, domain := range project.Domains {
-		domain.Module = project.Module
-		domain.Auth = project.Auth
-		domain.ProjectName = project.Name
-		domain.ProtoPackage = project.ProtoPackage()
-		domain.GRPCEnabled = project.GRPCEnabled
-		domain.HTTPEnabled = project.HTTPEnabled
-		domain.GatewayEnabled = project.GatewayEnabled
+	for i, entity := range project.Apps {
+		entity.Module = project.Module
+		entity.Auth = project.Auth
+		entity.ProjectName = project.Name
+		entity.ProtoPackage = project.ProtoPackage()
+		entity.GRPCEnabled = project.GRPCEnabled
+		entity.HTTPEnabled = project.HTTPEnabled
+		entity.GatewayEnabled = project.GatewayEnabled
+		project.Apps[i] = entity
 	}
 	return project, nil
 }
@@ -88,7 +89,7 @@ func (p *Project) Validate() error {
 		validation.Field(&p.GoVersion, validation.Required),
 		validation.Field(&p.Auth, validation.Required),
 		validation.Field(&p.CI),
-		validation.Field(&p.Domains),
+		validation.Field(&p.Apps),
 		validation.Field(&p.GRPCEnabled),
 	)
 	if err != nil {

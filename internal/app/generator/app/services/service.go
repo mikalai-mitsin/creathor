@@ -15,10 +15,10 @@ import (
 )
 
 type ServiceGenerator struct {
-	domain *domain.Domain
+	domain *domain.App
 }
 
-func NewServiceGenerator(domain *domain.Domain) *ServiceGenerator {
+func NewServiceGenerator(domain *domain.App) *ServiceGenerator {
 	return &ServiceGenerator{domain: domain}
 }
 

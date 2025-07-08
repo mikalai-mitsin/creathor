@@ -66,7 +66,7 @@ func Test{{ .Config.ServiceTypeName }}_Get(t *testing.T) {
     mock{{ .Config.RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
         logger           logger
@@ -80,7 +80,7 @@ func Test{{ .Config.ServiceTypeName }}_Get(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .Config.ModelName }}
+        want    entities.{{ .Config.EntityName }}
         wantErr error
     }{
         {
@@ -100,9 +100,9 @@ func Test{{ .Config.ServiceTypeName }}_Get(t *testing.T) {
             wantErr: nil,
         },
         {
-            name: "{{ .Config.ModelName }} not found",
+            name: "{{ .Config.EntityName }} not found",
             setup: func() {
-                mock{{ .Config.RepositoryTypeName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return(entities.{{ .Config.ModelName }}{}, errs.NewEntityNotFoundError())
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return(entities.{{ .Config.EntityName }}{}, errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
@@ -112,7 +112,7 @@ func Test{{ .Config.ServiceTypeName }}_Get(t *testing.T) {
                 ctx: ctx,
                 id:  {{ .Config.Variable }}.ID,
             },
-            want:    entities.{{ .Config.ModelName }}{},
+            want:    entities.{{ .Config.EntityName }}{},
             wantErr: errs.NewEntityNotFoundError(),
         },
     }
@@ -136,10 +136,10 @@ func Test{{ .Config.ServiceTypeName }}_List(t *testing.T) {
     mock{{ .Config.RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    var {{ .Config.ListVariable }} []entities.{{ .Config.ModelName }}
+    var {{ .Config.ListVariable }} []entities.{{ .Config.EntityName }}
     count := faker.New().UInt64Between(2, 20)
     for i := uint64(0); i < count; i++ {
-        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mockEntities.New{{ .Config.ModelName }}(t))
+        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mockEntities.New{{ .Config.EntityName }}(t))
     }
     filter := mockEntities.New{{ .Config.FilterTypeName }}(t)
     type fields struct {
@@ -155,7 +155,7 @@ func Test{{ .Config.ServiceTypeName }}_List(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    []entities.{{ .Config.ModelName }}
+        want    []entities.{{ .Config.EntityName }}
         want1   uint64
         wantErr error
     }{
@@ -180,7 +180,7 @@ func Test{{ .Config.ServiceTypeName }}_List(t *testing.T) {
         {
             name: "list error",
             setup: func() {
-                mock{{ .Config.RepositoryTypeName }}.EXPECT().List(ctx, filter).Return([]entities.{{ .Config.ModelName }}{}, errs.NewUnexpectedBehaviorError("test error"))
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().List(ctx, filter).Return([]entities.{{ .Config.EntityName }}{}, errs.NewUnexpectedBehaviorError("test error"))
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
@@ -253,7 +253,7 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .Config.ModelName }}
+        want    entities.{{ .Config.EntityName }}
         wantErr error
     }{
         {
@@ -264,7 +264,7 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
                 mock{{ .Config.RepositoryTypeName }}.EXPECT().
                     Create(
                         ctx,
-                        entities.{{ .Config.ModelName }}{
+                        entities.{{ .Config.EntityName }}{
                             ID: uuid.UUID("test"),
 {{- range $key, $value := .Config.Params }}
                             {{ $value.GetName }}: create.{{ $value.GetName }},
@@ -285,7 +285,7 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
                 ctx: ctx,
                 create: create,
             },
-            want: entities.{{ .Config.ModelName }}{
+            want: entities.{{ .Config.EntityName }}{
                 ID: uuid.UUID("test"),
 {{- range $key, $value := .Config.Params }}
                 {{ $value.GetName }}: create.{{ $value.GetName }},
@@ -303,7 +303,7 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
                 mock{{ .Config.RepositoryTypeName }}.EXPECT().
                     Create(
                         ctx,
-                        entities.{{ .Config.ModelName }}{
+                        entities.{{ .Config.EntityName }}{
                             ID: uuid.UUID("test 2"),
 {{- range $key, $value := .Config.Params }}
                             {{ $value.GetName }}: create.{{ $value.GetName }},
@@ -324,7 +324,7 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
                 ctx: ctx,
                 create: create,
             },
-            want:    entities.{{ .Config.ModelName }}{},
+            want:    entities.{{ .Config.EntityName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("test error"),
         },
         {
@@ -341,7 +341,7 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
                 ctx: ctx,
                 create: entities.{{ .Config.CreateTypeName }}{},
             },
-            want: entities.{{ .Config.ModelName }}{},
+            want: entities.{{ .Config.EntityName }}{},
             wantErr: errs.NewInvalidFormError().WithParams(
 {{- range $key, $value := .Config.Params }}
 {{- if ne $value.Type "bool"}}
@@ -373,11 +373,11 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
     mock{{ .Config.RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
     mockClock := NewMockclock(ctrl)
     update := mockEntities.New{{ .Config.UpdateTypeName }}(t)
     now := time.Now().UTC()
-    updated{{ .Config.ModelName }} := entities.{{ .Config.ModelName }} {
+    updated{{ .Config.EntityName }} := entities.{{ .Config.EntityName }} {
         ID:         {{ .Config.Variable }}.ID,
         CreatedAt:  {{ .Config.Variable }}.CreatedAt,
         UpdatedAt:  now,
@@ -399,7 +399,7 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .Config.ModelName }}
+        want    entities.{{ .Config.EntityName }}
         wantErr error
     }{
         {
@@ -409,7 +409,7 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
                 mock{{ .Config.RepositoryTypeName }}.EXPECT().
                     Get(ctx, update.ID).Return({{ .Config.Variable }}, nil)
                 mock{{ .Config.RepositoryTypeName }}.EXPECT().
-                    Update(ctx, updated{{ .Config.ModelName }}).Return(nil)
+                    Update(ctx, updated{{ .Config.EntityName }}).Return(nil)
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
@@ -420,7 +420,7 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
                 ctx: ctx,
                 update: update,
             },
-            want:    updated{{ .Config.ModelName }},
+            want:    updated{{ .Config.EntityName }},
             wantErr: nil,
         },
         {
@@ -431,7 +431,7 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
                     Get(ctx, update.ID).
                     Return({{ .Config.Variable }}, nil)
                 mock{{ .Config.RepositoryTypeName }}.EXPECT().
-                    Update(ctx, updated{{ .Config.ModelName }}).
+                    Update(ctx, updated{{ .Config.EntityName }}).
                     Return(errs.NewUnexpectedBehaviorError("test error"))
             },
             fields: fields{
@@ -443,13 +443,13 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
                 ctx: ctx,
                 update: update,
             },
-            want:    entities.{{ .Config.ModelName }}{},
+            want:    entities.{{ .Config.EntityName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("test error"),
         },
         {
-            name: "{{ .Config.ModelName }} not found",
+            name: "{{ .Config.EntityName }} not found",
             setup: func() {
-                mock{{ .Config.RepositoryTypeName }}.EXPECT().Get(ctx, update.ID).Return(entities.{{ .Config.ModelName }}{}, errs.NewEntityNotFoundError())
+                mock{{ .Config.RepositoryTypeName }}.EXPECT().Get(ctx, update.ID).Return(entities.{{ .Config.EntityName }}{}, errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
@@ -460,7 +460,7 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
                 ctx: ctx,
                 update: update,
             },
-            want:    entities.{{ .Config.ModelName }}{},
+            want:    entities.{{ .Config.EntityName }}{},
             wantErr: errs.NewEntityNotFoundError(),
         },
         {
@@ -478,7 +478,7 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
                     ID: uuid.UUID("baduuid"),
                 },
             },
-            want: entities.{{ .Config.ModelName }}{},
+            want: entities.{{ .Config.EntityName }}{},
             wantErr: errs.NewInvalidFormError().WithParam("id", "must be a valid UUID"),
         },
     }
@@ -503,7 +503,7 @@ func Test{{ .Config.ServiceTypeName }}_Delete(t *testing.T) {
     mock{{ .Config.RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.ModelName }}(t)
+    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
         logger           logger
@@ -537,7 +537,7 @@ func Test{{ .Config.ServiceTypeName }}_Delete(t *testing.T) {
             wantErr: nil,
         },
         {
-            name: "{{ .Config.ModelName }} not found",
+            name: "{{ .Config.EntityName }} not found",
             setup: func() {
                 mock{{ .Config.RepositoryTypeName }}.EXPECT().
                     Delete(ctx, {{ .Config.Variable }}.ID).

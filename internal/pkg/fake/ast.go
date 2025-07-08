@@ -144,7 +144,7 @@ func Value(t ast.Expr) ast.Expr {
 			fake = &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
 					X:   ast.NewIdent("pointer"),
-					Sel: ast.NewIdent("Pointer"),
+					Sel: ast.NewIdent("Of"),
 				},
 				Args: []ast.Expr{
 					&ast.CompositeLit{
@@ -162,7 +162,7 @@ func Value(t ast.Expr) ast.Expr {
 			fake = &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
 					X:   ast.NewIdent("pointer"),
-					Sel: ast.NewIdent("Pointer"),
+					Sel: ast.NewIdent("Of"),
 				},
 				Args: []ast.Expr{baseValue(x)},
 			}
@@ -203,7 +203,7 @@ func Email(t ast.Expr) ast.Expr {
 		fake = &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
 				X:   ast.NewIdent("pointer"),
-				Sel: ast.NewIdent("Pointer"),
+				Sel: ast.NewIdent("Of"),
 			},
 			Args: []ast.Expr{baseEmail()},
 		}

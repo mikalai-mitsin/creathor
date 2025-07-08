@@ -13,10 +13,10 @@ import (
 )
 
 type Password struct {
-	domain *mods.Domain
+	domain *mods.App
 }
 
-func NewPassword(domain *mods.Domain) *Password {
+func NewPassword(domain *mods.App) *Password {
 	return &Password{domain: domain}
 }
 

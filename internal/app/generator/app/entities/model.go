@@ -29,11 +29,11 @@ func astType(t string) ast.Expr {
 }
 
 type Model struct {
-	model  *domain.Model
-	domain *domain.Domain
+	model  *domain.Entity
+	domain *domain.App
 }
 
-func NewModel(model *domain.Model, domain *domain.Domain) *Model {
+func NewModel(model *domain.Entity, domain *domain.App) *Model {
 	return &Model{
 		model:  model,
 		domain: domain,

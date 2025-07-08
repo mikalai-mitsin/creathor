@@ -16,10 +16,10 @@ import (
 type Validate struct {
 	typeSpec *ast.TypeSpec
 	fileName string
-	domain   *mods.Domain
+	domain   *mods.App
 }
 
-func NewValidate(typeSpec *ast.TypeSpec, fileName string, domain *mods.Domain) *Validate {
+func NewValidate(typeSpec *ast.TypeSpec, fileName string, domain *mods.App) *Validate {
 	return &Validate{typeSpec: typeSpec, fileName: fileName, domain: domain}
 }
 func (m *Validate) Sync() error {

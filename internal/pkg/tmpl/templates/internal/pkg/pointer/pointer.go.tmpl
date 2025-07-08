@@ -2,7 +2,7 @@ package pointer
 
 import con "golang.org/x/exp/constraints"
 
-func Pointer[T any](v T) *T {
+func Of[T any](v T) *T {
     return &v
 }
 

@@ -15,10 +15,10 @@ import (
 )
 
 type UseCaseGenerator struct {
-	domain *domain.Domain
+	domain *domain.App
 }
 
-func NewUseCaseGenerator(domain *domain.Domain) *UseCaseGenerator {
+func NewUseCaseGenerator(domain *domain.App) *UseCaseGenerator {
 	return &UseCaseGenerator{domain: domain}
 }
 

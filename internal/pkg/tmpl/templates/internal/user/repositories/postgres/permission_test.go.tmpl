@@ -152,7 +152,7 @@ func TestPermissionRepository_objectOwner(t *testing.T) {
                 model: struct {
                     ID *string
                 }{
-                    ID: pointer.Pointer("asd-241"),
+                    ID: pointer.Of("asd-241"),
                 },
                 user: entities.User{ID: "asd-241"},
             },
@@ -433,7 +433,7 @@ func TestPermissionRepository_objectOwnerOrAll(t *testing.T) {
                 model: struct {
                     ID *string
                 }{
-                    ID: pointer.Pointer("asd-241"),
+                    ID: pointer.Of("asd-241"),
                 },
                 user: entities.User{ID: "asd-241"},
             },

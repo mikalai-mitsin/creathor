@@ -150,7 +150,7 @@ func (f FxContainer) file() *ast.File {
 			},
 		})
 	}
-	for _, modelConfig := range f.project.Domains {
+	for _, modelConfig := range f.project.Apps {
 		imports = append(
 			imports,
 			&ast.ImportSpec{
@@ -159,7 +159,7 @@ func (f FxContainer) file() *ast.File {
 					Value: fmt.Sprintf(
 						`"%s/internal/app/%s"`,
 						f.project.Module,
-						modelConfig.DomainName(),
+						modelConfig.AppName(),
 					),
 				},
 			},
@@ -220,11 +220,11 @@ func (f FxContainer) toProvide() []ast.Expr {
 			Sel: ast.NewIdent("NewApp"),
 		})
 	}
-	for _, model := range f.project.Domains {
+	for _, model := range f.project.Apps {
 		toProvide = append(
 			toProvide,
 			&ast.SelectorExpr{
-				X:   ast.NewIdent(model.DomainAlias()),
+				X:   ast.NewIdent(model.AppAlias()),
 				Sel: ast.NewIdent("NewApp"),
 			},
 		)
@@ -737,7 +737,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 			},
 		})
 	}
-	for _, domain := range f.project.Domains {
+	for _, domain := range f.project.Apps {
 		args = append(args, &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
 				X:   ast.NewIdent("fx"),
@@ -763,7 +763,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X:   ast.NewIdent(domain.DomainName()),
+											X:   ast.NewIdent(domain.AppName()),
 											Sel: ast.NewIdent("App"),
 										},
 									},
@@ -2018,7 +2018,7 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 			},
 		})
 	}
-	for _, domain := range f.project.Domains {
+	for _, domain := range f.project.Apps {
 		args = append(args, &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
 				X:   ast.NewIdent("fx"),
@@ -2044,7 +2044,7 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X:   ast.NewIdent(domain.DomainName()),
+											X:   ast.NewIdent(domain.AppName()),
 											Sel: ast.NewIdent("App"),
 										},
 									},

@@ -2,8 +2,8 @@
 ## [Unreleased]
 
 
-<a name="0.6.1"></a>
-## [0.6.1] - 2025-07-08
+<a name="v0.6.1"></a>
+## [v0.6.1] - 2025-07-08
 ### Feat
 - use real uuid
 - add validation to order by
@@ -431,8 +431,8 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/0.6.1...HEAD
-[0.6.1]: https://github.com/mikalai-mitsin/creathor/compare/v0.6.0...0.6.1
+[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.6.1...HEAD
+[v0.6.1]: https://github.com/mikalai-mitsin/creathor/compare/v0.6.0...v0.6.1
 [v0.6.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.5.0...v0.6.0
 [v0.5.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.4.8...v0.5.0
 [v0.4.8]: https://github.com/mikalai-mitsin/creathor/compare/vv0.5.0...v0.4.8

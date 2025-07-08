@@ -563,7 +563,7 @@ func (h *HandlerGenerator) file() *ast.File {
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X:   ast.NewIdent("uuid"),
-										Sel: ast.NewIdent("UUID"),
+										Sel: ast.NewIdent("MustParse"),
 									},
 									Args: []ast.Expr{
 										&ast.CallExpr{
@@ -1396,7 +1396,7 @@ func (h *HandlerGenerator) file() *ast.File {
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X:   ast.NewIdent("uuid"),
-										Sel: ast.NewIdent("UUID"),
+										Sel: ast.NewIdent("MustParse"),
 									},
 									Args: []ast.Expr{
 										&ast.CallExpr{

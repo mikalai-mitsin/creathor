@@ -1380,7 +1380,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
 												X:   ast.NewIdent("uuid"),
-												Sel: ast.NewIdent("UUID"),
+												Sel: ast.NewIdent("MustParse"),
 											},
 											Args: []ast.Expr{
 												ast.NewIdent("id"),
@@ -1850,7 +1850,7 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 				&ast.CallExpr{
 					Fun: &ast.SelectorExpr{
 						X:   ast.NewIdent("uuid"),
-						Sel: ast.NewIdent("UUID"),
+						Sel: ast.NewIdent("MustParse"),
 					},
 					Args: []ast.Expr{
 						&ast.CallExpr{

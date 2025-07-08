@@ -113,7 +113,7 @@ func (r RepositoryGenerator) dtoStruct() *ast.TypeSpec {
 						Names: []*ast.Ident{
 							ast.NewIdent("ID"),
 						},
-						Type: ast.NewIdent("string"),
+						Type: ast.NewIdent("uuid.UUID"),
 						Tag: &ast.BasicLit{
 							Kind:  token.STRING,
 							Value: "`db:\"id,omitempty\"`",

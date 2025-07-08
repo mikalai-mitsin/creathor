@@ -260,12 +260,12 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
             name: "ok",
             setup: func() {
                 mockClock.EXPECT().Now().Return(now)
-                mockUUID.EXPECT().NewUUID().Return(uuid.UUID("test"))
+                mockUUID.EXPECT().NewUUID().Return(uuid.MustParse("00000000-0000-0000-0000-000000000001"))
                 mock{{ .Config.RepositoryTypeName }}.EXPECT().
                     Create(
                         ctx,
                         entities.{{ .Config.EntityName }}{
-                            ID: uuid.UUID("test"),
+                            ID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 {{- range $key, $value := .Config.Params }}
                             {{ $value.GetName }}: create.{{ $value.GetName }},
 {{- end }}
@@ -286,7 +286,7 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
                 create: create,
             },
             want: entities.{{ .Config.EntityName }}{
-                ID: uuid.UUID("test"),
+                ID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 {{- range $key, $value := .Config.Params }}
                 {{ $value.GetName }}: create.{{ $value.GetName }},
 {{- end }}
@@ -299,12 +299,12 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
             name: "unexpected behavior",
             setup: func() {
                 mockClock.EXPECT().Now().Return(now)
-                mockUUID.EXPECT().NewUUID().Return(uuid.UUID("test 2"))
+                mockUUID.EXPECT().NewUUID().Return(uuid.MustParse("00000000-0000-0000-0000-000000000002"))
                 mock{{ .Config.RepositoryTypeName }}.EXPECT().
                     Create(
                         ctx,
                         entities.{{ .Config.EntityName }}{
-                            ID: uuid.UUID("test 2"),
+                            ID: uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 {{- range $key, $value := .Config.Params }}
                             {{ $value.GetName }}: create.{{ $value.GetName }},
 {{- end }}
@@ -462,24 +462,6 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
             },
             want:    entities.{{ .Config.EntityName }}{},
             wantErr: errs.NewEntityNotFoundError(),
-        },
-        {
-            name: "invalid",
-            setup: func() {
-            },
-            fields: fields{
-                {{ .Config.RepositoryVariableName }}: mock{{ .Config.RepositoryTypeName }},
-                clock:            mockClock,
-                logger: mockLogger,
-            },
-            args: args{
-                ctx: ctx,
-                update: entities.{{ .Config.UpdateTypeName }}{
-                    ID: uuid.UUID("baduuid"),
-                },
-            },
-            want: entities.{{ .Config.EntityName }}{},
-            wantErr: errs.NewInvalidFormError().WithParam("id", "must be a valid UUID"),
         },
     }
     for _, tt := range tests {

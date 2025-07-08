@@ -154,6 +154,7 @@ func (f FxContainer) file() *ast.File {
 		imports = append(
 			imports,
 			&ast.ImportSpec{
+				Name: ast.NewIdent(modelConfig.AppAlias()),
 				Path: &ast.BasicLit{
 					Kind: token.STRING,
 					Value: fmt.Sprintf(
@@ -194,7 +195,7 @@ func (f FxContainer) toProvide() []ast.Expr {
 		},
 		&ast.SelectorExpr{
 			X:   ast.NewIdent("uuid"),
-			Sel: ast.NewIdent("NewUUIDv4Generator"),
+			Sel: ast.NewIdent("NewUUIDv7Generator"),
 		},
 		&ast.SelectorExpr{
 			X:   ast.NewIdent("postgres"),
@@ -763,7 +764,7 @@ func (f FxContainer) astGrpcContainer() *ast.FuncDecl {
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X:   ast.NewIdent(domain.AppName()),
+											X:   ast.NewIdent(domain.AppAlias()),
 											Sel: ast.NewIdent("App"),
 										},
 									},
@@ -2044,7 +2045,7 @@ func (f FxContainer) astHttpContainer() *ast.FuncDecl {
 									},
 									Type: &ast.StarExpr{
 										X: &ast.SelectorExpr{
-											X:   ast.NewIdent(domain.AppName()),
+											X:   ast.NewIdent(domain.AppAlias()),
 											Sel: ast.NewIdent("App"),
 										},
 									},

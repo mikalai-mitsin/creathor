@@ -217,7 +217,7 @@ func (a App) constructor() *ast.FuncDecl {
 			Type: &ast.StarExpr{
 				X: &ast.SelectorExpr{
 					X:   ast.NewIdent("uuid"),
-					Sel: ast.NewIdent("UUIDv4Generator"),
+					Sel: ast.NewIdent("UUIDv7Generator"),
 				},
 			},
 		},

@@ -116,12 +116,6 @@ func (m *Validate) checker(name *ast.Ident, typeName ast.Expr) *ast.CallExpr {
 				Sel: ast.NewIdent("EmailFormat"),
 			})
 		}
-		if ident, ok := typeName.(*ast.Ident); ok && ident.String() == "uuid.UUID" {
-			call.Args = append(call.Args, &ast.SelectorExpr{
-				X:   ast.NewIdent("is"),
-				Sel: ast.NewIdent("UUID"),
-			})
-		}
 		orderBy := make([]ast.Expr, 0, len(m.domain.GetMainModel().Params))
 		for _, param := range m.domain.GetMainModel().Params {
 			orderBy = append(
@@ -159,18 +153,6 @@ func (m *Validate) checker(name *ast.Ident, typeName ast.Expr) *ast.CallExpr {
 				Sel: ast.NewIdent("Required"),
 			})
 		}
-		if ident, ok := typeName.(*ast.Ident); ok && ident.String() == "uuid.UUID" {
-			call.Args = append(call.Args, &ast.SelectorExpr{
-				X:   ast.NewIdent("is"),
-				Sel: ast.NewIdent("UUID"),
-			})
-		}
-		if ident, ok := typeName.(*ast.Ident); ok && ident.String() == "uuid.UUID" {
-			call.Args = append(call.Args, &ast.SelectorExpr{
-				X:   ast.NewIdent("is"),
-				Sel: ast.NewIdent("UUID"),
-			})
-		}
 		if strings.Contains(strings.ToLower(name.String()), "email") {
 			call.Args = append(call.Args, &ast.SelectorExpr{
 				X:   ast.NewIdent("is"),
@@ -187,10 +169,10 @@ func (m *Validate) checker(name *ast.Ident, typeName ast.Expr) *ast.CallExpr {
 				Sel: ast.NewIdent("Required"),
 			})
 		}
-		if ident, ok := typeName.(*ast.Ident); ok && ident.String() == "uuid.UUID" {
+		if ident, ok := typeName.(*ast.Ident); ok && strings.Contains(ident.String(), "uuid") {
 			call.Args = append(call.Args, &ast.SelectorExpr{
-				X:   ast.NewIdent("is"),
-				Sel: ast.NewIdent("UUID"),
+				X:   ast.NewIdent("uuid"),
+				Sel: ast.NewIdent("Required"),
 			})
 		}
 		if strings.Contains(strings.ToLower(name.String()), "email") {
@@ -207,12 +189,6 @@ func (m *Validate) checker(name *ast.Ident, typeName ast.Expr) *ast.CallExpr {
 			call.Args = append(call.Args, &ast.SelectorExpr{
 				X:   ast.NewIdent("validation"),
 				Sel: ast.NewIdent("Required"),
-			})
-		}
-		if ident, ok := typeName.(*ast.Ident); ok && ident.String() == "uuid.UUID" {
-			call.Args = append(call.Args, &ast.SelectorExpr{
-				X:   ast.NewIdent("is"),
-				Sel: ast.NewIdent("UUID"),
 			})
 		}
 		if strings.Contains(strings.ToLower(name.String()), "email") {

@@ -359,7 +359,7 @@ func (a App) constructor() *ast.FuncDecl {
 			&ast.UnaryExpr{
 				Op: token.AND,
 				X: &ast.CompositeLit{
-					Type: ast.NewIdent("BaseEntity"),
+					Type: ast.NewIdent("App"),
 					Elts: exprs,
 				},
 			},
@@ -375,7 +375,7 @@ func (a App) constructor() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Type: &ast.StarExpr{
-							X: ast.NewIdent("BaseEntity"),
+							X: ast.NewIdent("App"),
 						},
 					},
 				},
@@ -477,7 +477,7 @@ func (a App) structure() *ast.GenDecl {
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: ast.NewIdent("BaseEntity"),
+				Name: ast.NewIdent("App"),
 				Type: structType,
 			},
 		},
@@ -493,7 +493,7 @@ func (a App) registerGRPC() *ast.FuncDecl {
 						ast.NewIdent("a"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent("BaseEntity"),
+						X: ast.NewIdent("App"),
 					},
 				},
 			},
@@ -565,7 +565,7 @@ func (a App) registerHTTP() *ast.FuncDecl {
 						ast.NewIdent("a"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent("BaseEntity"),
+						X: ast.NewIdent("App"),
 					},
 				},
 			},

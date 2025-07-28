@@ -23,6 +23,10 @@ type App struct {
 	Auth        bool
 }
 
+func (m *App) AppName() string {
+	return m.Config.AppName()
+}
+
 type BaseEntity struct {
 	Config      configs.EntityConfig
 	Name        string

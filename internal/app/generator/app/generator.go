@@ -2,6 +2,9 @@ package app
 
 import (
 	"bytes"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/repositories/postgres"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/services"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/usecases"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -14,9 +17,6 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/entities"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/handlers/grpc"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/handlers/http"
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/repositories/postgres"
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/services"
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/usecases"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 )
 
@@ -29,8 +29,9 @@ func NewGenerator(d *app.App) *Generator {
 }
 
 func (g *Generator) Sync() error {
+	domainGenerators := []generator.Generator{NewApp(g.domain)}
 	for _, entity := range g.domain.Entities {
-		domainGenerators := []generator.Generator{
+		domainGenerators = append(domainGenerators,
 			usecases.NewInterfacesGenerator(entity),
 			usecases.NewUseCaseGenerator(entity),
 			usecases.NewTestGenerator(entity),
@@ -42,9 +43,7 @@ func (g *Generator) Sync() error {
 			postgres.NewInterfacesGenerator(entity),
 			postgres.NewRepositoryGenerator(entity),
 			postgres.NewTestGenerator(entity),
-
-			NewApp(entity),
-		}
+		)
 		if g.domain.Config.HTTPEnabled {
 			domainGenerators = append(
 				domainGenerators,
@@ -65,11 +64,6 @@ func (g *Generator) Sync() error {
 		for _, baseEntity := range entity.Entities {
 			domainGenerators = append(domainGenerators, entities.NewModel(baseEntity, entity))
 		}
-		for _, domainGenerator := range domainGenerators {
-			if err := domainGenerator.Sync(); err != nil {
-				return err
-			}
-		}
 		if g.domain.Auth && entity.CamelName() != "User" {
 			if err := addPermission(entity.PermissionIDList(), "objectAnybody"); err != nil {
 				return err
@@ -86,6 +80,11 @@ func (g *Generator) Sync() error {
 			if err := addPermission(entity.PermissionIDDelete(), "objectAnybody"); err != nil {
 				return err
 			}
+		}
+	}
+	for _, domainGenerator := range domainGenerators {
+		if err := domainGenerator.Sync(); err != nil {
+			return err
 		}
 	}
 	return nil

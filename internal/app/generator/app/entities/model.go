@@ -8,7 +8,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 )
 
 func astType(t string) ast.Expr {
@@ -29,11 +29,11 @@ func astType(t string) ast.Expr {
 }
 
 type Model struct {
-	model  *domain.Entity
-	domain *domain.App
+	model  *app.Entity
+	domain *app.BaseEntity
 }
 
-func NewModel(model *domain.Entity, domain *domain.App) *Model {
+func NewModel(model *app.Entity, domain *app.BaseEntity) *Model {
 	return &Model{
 		model:  model,
 		domain: domain,

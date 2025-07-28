@@ -10,6 +10,27 @@ import (
 )
 
 type AppConfig struct {
+	Name           string         `json:"name" yaml:"name"`
+	Module         string         `json:"module"        yaml:"module"`
+	ProjectName    string         `json:"project_name"  yaml:"projectName"`
+	ProtoPackage   string         `json:"proto_package" yaml:"protoPackage"`
+	Auth           bool           `json:"auth" yaml:"auth"`
+	HTTPEnabled    bool           `                     yaml:"http"`
+	GRPCEnabled    bool           `                     yaml:"gRPC"`
+	GatewayEnabled bool           `                     yaml:"gateway"`
+	KafkaEnabled   bool           `                     yaml:"kafka"`
+	Entities       []EntityConfig `json:"entities" yaml:"entities"`
+}
+
+func (m *AppConfig) AppName() string {
+	return strcase.ToSnake(m.Name)
+}
+
+func (m *AppConfig) AppAlias() string {
+	return strcase.ToLowerCamel(m.Name)
+}
+
+type EntityConfig struct {
 	Name           string   `json:"name" yaml:"name"`
 	Module         string   `json:"module"        yaml:"module"`
 	ProjectName    string   `json:"project_name"  yaml:"projectName"`
@@ -22,7 +43,7 @@ type AppConfig struct {
 	KafkaEnabled   bool     `                     yaml:"kafka"`
 }
 
-func (m *AppConfig) Validate() error {
+func (m *EntityConfig) Validate() error {
 	err := validation.ValidateStruct(
 		m,
 		validation.Field(&m.Name, validation.Required),
@@ -37,7 +58,7 @@ func (m *AppConfig) Validate() error {
 	return nil
 }
 
-func (m *AppConfig) SearchEnabled() bool {
+func (m *EntityConfig) SearchEnabled() bool {
 	for _, param := range m.Params {
 		if param.Search {
 			return true
@@ -46,7 +67,7 @@ func (m *AppConfig) SearchEnabled() bool {
 	return false
 }
 
-func (m *AppConfig) SearchVector() string {
+func (m *EntityConfig) SearchVector() string {
 	var params []string
 	for _, param := range m.Params {
 		if param.Search {
@@ -57,134 +78,134 @@ func (m *AppConfig) SearchVector() string {
 	return vector
 }
 
-func (m *AppConfig) Variable() string {
+func (m *EntityConfig) Variable() string {
 	return strcase.ToLowerCamel(m.Name)
 }
 
-func (m *AppConfig) ListVariable() string {
+func (m *EntityConfig) ListVariable() string {
 	return strcase.ToLowerCamel(fmt.Sprintf("list%s", strcase.ToCamel(inflection.Plural(m.Name))))
 }
 
-func (m *AppConfig) EntityName() string {
+func (m *EntityConfig) EntityName() string {
 	return strcase.ToCamel(m.Name)
 }
 
-func (m *AppConfig) AppName() string {
+func (m *EntityConfig) AppName() string {
 	return strcase.ToSnake(m.Name)
 }
 
-func (m *AppConfig) AppAlias() string {
+func (m *EntityConfig) AppAlias() string {
 	return strcase.ToLowerCamel(m.Name)
 }
 
-func (m *AppConfig) CamelCase() string {
+func (m *EntityConfig) CamelCase() string {
 	return strcase.ToCamel(m.Name)
 }
 
-func (m *AppConfig) ServiceTypeName() string {
+func (m *EntityConfig) ServiceTypeName() string {
 	return fmt.Sprintf("%sService", strcase.ToCamel(m.Name))
 }
 
-func (m *AppConfig) GRPCHandlerTypeName() string {
+func (m *EntityConfig) GRPCHandlerTypeName() string {
 	return fmt.Sprintf("%sServiceServer", strcase.ToCamel(m.Name))
 }
 
-func (m *AppConfig) RESTHandlerTypeName() string {
+func (m *EntityConfig) RESTHandlerTypeName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Name))
 }
 
-func (m *AppConfig) GatewayHandlerTypeName() string {
+func (m *EntityConfig) GatewayHandlerTypeName() string {
 	return fmt.Sprintf("Register%sServiceHandlerFromEndpoint", strcase.ToCamel(m.Name))
 }
 
-func (m *AppConfig) RESTHandlerPath() string {
+func (m *EntityConfig) RESTHandlerPath() string {
 	return strcase.ToSnake(inflection.Plural(m.Name))
 }
 
-func (m *AppConfig) RESTHandlerVariableName() string {
+func (m *EntityConfig) RESTHandlerVariableName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToLowerCamel(m.Name))
 }
 
-func (m *AppConfig) GRPCHandlerVariableName() string {
+func (m *EntityConfig) GRPCHandlerVariableName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToLowerCamel(m.Name))
 }
 
-func (m *AppConfig) ServiceVariableName() string {
+func (m *EntityConfig) ServiceVariableName() string {
 	return fmt.Sprintf("%sService", strcase.ToLowerCamel(m.Name))
 }
 
-func (m *AppConfig) UseCaseTypeName() string {
+func (m *EntityConfig) UseCaseTypeName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Name))
 }
 
-func (m *AppConfig) UseCaseVariableName() string {
+func (m *EntityConfig) UseCaseVariableName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToLowerCamel(m.Name))
 }
 
-func (m *AppConfig) RepositoryTypeName() string {
+func (m *EntityConfig) RepositoryTypeName() string {
 	return fmt.Sprintf("%sRepository", strcase.ToCamel(m.Name))
 }
 
-func (m *AppConfig) RepositoryVariableName() string {
+func (m *EntityConfig) RepositoryVariableName() string {
 	return fmt.Sprintf("%sRepository", strcase.ToLowerCamel(m.Name))
 }
 
-func (m *AppConfig) FilterTypeName() string {
+func (m *EntityConfig) FilterTypeName() string {
 	return fmt.Sprintf("%sFilter", strcase.ToCamel(m.Name))
 }
 
-func (m *AppConfig) UpdateTypeName() string {
+func (m *EntityConfig) UpdateTypeName() string {
 	return fmt.Sprintf("%sUpdate", strcase.ToCamel(m.Name))
 }
 
-func (m *AppConfig) CreateTypeName() string {
+func (m *EntityConfig) CreateTypeName() string {
 	return fmt.Sprintf("%sCreate", strcase.ToCamel(m.Name))
 }
 
-func (m *AppConfig) PostgresDTOTypeName() string {
+func (m *EntityConfig) PostgresDTOTypeName() string {
 	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.Name))
 }
 
-func (m *AppConfig) PostgresDTOListTypeName() string {
+func (m *EntityConfig) PostgresDTOListTypeName() string {
 	return fmt.Sprintf("%sListDTO", strcase.ToCamel(m.Name))
 }
 
-func (m *AppConfig) KeyName() string {
+func (m *EntityConfig) KeyName() string {
 	return strcase.ToSnake(m.Name)
 }
 
-func (m *AppConfig) SnakeName() string {
+func (m *EntityConfig) SnakeName() string {
 	return strcase.ToSnake(m.Name)
 }
 
-func (m *AppConfig) ProtoFileName() string {
+func (m *EntityConfig) ProtoFileName() string {
 	return fmt.Sprintf("%s.proto", m.SnakeName())
 }
 
-func (m *AppConfig) MockFileName() string {
+func (m *EntityConfig) MockFileName() string {
 	return fmt.Sprintf("%s_mock.go", m.SnakeName())
 }
 
-func (m *AppConfig) TableName() string {
+func (m *EntityConfig) TableName() string {
 	return strcase.ToSnake(inflection.Plural(m.Name))
 }
 
-func (m *AppConfig) PermissionIDList() string {
+func (m *EntityConfig) PermissionIDList() string {
 	return fmt.Sprintf("PermissionID%sList", m.EntityName())
 }
 
-func (m *AppConfig) PermissionIDDetail() string {
+func (m *EntityConfig) PermissionIDDetail() string {
 	return fmt.Sprintf("PermissionID%sDetail", m.EntityName())
 }
 
-func (m *AppConfig) PermissionIDCreate() string {
+func (m *EntityConfig) PermissionIDCreate() string {
 	return fmt.Sprintf("PermissionID%sCreate", m.EntityName())
 }
 
-func (m *AppConfig) PermissionIDUpdate() string {
+func (m *EntityConfig) PermissionIDUpdate() string {
 	return fmt.Sprintf("PermissionID%sUpdate", m.EntityName())
 }
 
-func (m *AppConfig) PermissionIDDelete() string {
+func (m *EntityConfig) PermissionIDDelete() string {
 	return fmt.Sprintf("PermissionID%sDelete", m.EntityName())
 }

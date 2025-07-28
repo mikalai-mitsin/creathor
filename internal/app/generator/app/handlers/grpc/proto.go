@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 )
 
 type ProtoGenerator struct {
-	domain *domain.App
+	domain *app.BaseEntity
 }
 
-func NewProtoGenerator(domain *domain.App) *ProtoGenerator {
+func NewProtoGenerator(domain *app.BaseEntity) *ProtoGenerator {
 	return &ProtoGenerator{domain: domain}
 }
 

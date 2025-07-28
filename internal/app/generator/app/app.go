@@ -10,20 +10,20 @@ import (
 	"os"
 	"path"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 )
 
 type App struct {
-	domain *domain.App
+	app *app.BaseEntity
 }
 
-func NewApp(domain *domain.App) *App {
-	return &App{domain: domain}
+func NewApp(domain *app.BaseEntity) *App {
+	return &App{app: domain}
 }
 
 func (a App) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", a.domain.DirName(), "app.go")
+	filename := path.Join("internal", "app", a.app.AppName(), "app.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err
@@ -48,14 +48,14 @@ func (a App) file() *ast.File {
 		a.structure(),
 		a.constructor(),
 	}
-	if a.domain.Config.HTTPEnabled {
+	if a.app.Config.HTTPEnabled {
 		decls = append(decls, a.registerHTTP())
 	}
-	if a.domain.Config.GRPCEnabled {
+	if a.app.Config.GRPCEnabled {
 		decls = append(decls, a.registerGRPC())
 	}
 	return &ast.File{
-		Name:  ast.NewIdent(a.domain.DirName()),
+		Name:  ast.NewIdent(a.app.AppName()),
 		Decls: decls,
 	}
 }
@@ -67,8 +67,8 @@ func (a App) imports() *ast.GenDecl {
 				Kind: token.STRING,
 				Value: fmt.Sprintf(
 					`"%s/internal/app/%s/usecases"`,
-					a.domain.Module,
-					a.domain.DirName(),
+					a.app.Module,
+					a.app.AppName(),
 				),
 			},
 		},
@@ -77,8 +77,8 @@ func (a App) imports() *ast.GenDecl {
 				Kind: token.STRING,
 				Value: fmt.Sprintf(
 					`"%s/internal/app/%s/repositories/postgres"`,
-					a.domain.Module,
-					a.domain.DirName(),
+					a.app.Module,
+					a.app.AppName(),
 				),
 			},
 		},
@@ -87,39 +87,39 @@ func (a App) imports() *ast.GenDecl {
 				Kind: token.STRING,
 				Value: fmt.Sprintf(
 					`"%s/internal/app/%s/services"`,
-					a.domain.Module,
-					a.domain.DirName(),
+					a.app.Module,
+					a.app.AppName(),
 				),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, a.domain.Module),
+				Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, a.app.Module),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, a.domain.Module),
+				Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, a.app.Module),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/http"`, a.domain.Module),
+				Value: fmt.Sprintf(`"%s/internal/pkg/http"`, a.app.Module),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/log"`, a.domain.Module),
+				Value: fmt.Sprintf(`"%s/internal/pkg/log"`, a.app.Module),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, a.domain.Module),
+				Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, a.app.Module),
 			},
 		},
 		&ast.ImportSpec{
@@ -129,20 +129,20 @@ func (a App) imports() *ast.GenDecl {
 			},
 		},
 	}
-	if a.domain.Config.HTTPEnabled {
+	if a.app.Config.HTTPEnabled {
 		specs = append(specs, &ast.ImportSpec{
 			Name: ast.NewIdent("httpHandlers"),
 			Path: &ast.BasicLit{
 				Kind: token.STRING,
 				Value: fmt.Sprintf(
 					`"%s/internal/app/%s/handlers/http"`,
-					a.domain.Module,
-					a.domain.DirName(),
+					a.app.Module,
+					a.app.AppName(),
 				),
 			},
 		})
 	}
-	if a.domain.Config.GRPCEnabled {
+	if a.app.Config.GRPCEnabled {
 		specs = append(
 			specs,
 			&ast.ImportSpec{
@@ -151,18 +151,18 @@ func (a App) imports() *ast.GenDecl {
 					Kind: token.STRING,
 					Value: fmt.Sprintf(
 						`"%s/internal/app/%s/handlers/grpc"`,
-						a.domain.Module,
-						a.domain.DirName(),
+						a.app.Module,
+						a.app.AppName(),
 					),
 				},
 			}, &ast.ImportSpec{
-				Name: ast.NewIdent(a.domain.ProtoModule),
+				Name: ast.NewIdent(a.app.ProtoModule),
 				Path: &ast.BasicLit{
 					Kind: token.STRING,
 					Value: fmt.Sprintf(
 						`"%s/pkg/%s/v1"`,
-						a.domain.Module,
-						a.domain.ProtoModule,
+						a.app.Module,
+						a.app.ProtoModule,
 					),
 				},
 			},
@@ -232,30 +232,30 @@ func (a App) constructor() *ast.FuncDecl {
 			Value: ast.NewIdent("logger"),
 		},
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(a.domain.GetRepositoryPrivateVariableName()),
-			Value: ast.NewIdent(a.domain.GetRepositoryPrivateVariableName()),
+			Key:   ast.NewIdent(a.app.GetRepositoryPrivateVariableName()),
+			Value: ast.NewIdent(a.app.GetRepositoryPrivateVariableName()),
 		},
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(a.domain.GetServicePrivateVariableName()),
-			Value: ast.NewIdent(a.domain.GetServicePrivateVariableName()),
+			Key:   ast.NewIdent(a.app.GetServicePrivateVariableName()),
+			Value: ast.NewIdent(a.app.GetServicePrivateVariableName()),
 		},
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
-			Value: ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
+			Key:   ast.NewIdent(a.app.GetUseCasePrivateVariableName()),
+			Value: ast.NewIdent(a.app.GetUseCasePrivateVariableName()),
 		},
 	}
 	body := &ast.BlockStmt{
 		List: []ast.Stmt{
 			&ast.AssignStmt{
 				Lhs: []ast.Expr{
-					ast.NewIdent(a.domain.GetRepositoryPrivateVariableName()),
+					ast.NewIdent(a.app.GetRepositoryPrivateVariableName()),
 				},
 				Tok: token.DEFINE,
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
 							X:   ast.NewIdent("postgres"),
-							Sel: ast.NewIdent(a.domain.GetRepositoryConstructorName()),
+							Sel: ast.NewIdent(a.app.GetRepositoryConstructorName()),
 						},
 						Args: []ast.Expr{
 							ast.NewIdent("db"),
@@ -266,17 +266,17 @@ func (a App) constructor() *ast.FuncDecl {
 			},
 			&ast.AssignStmt{
 				Lhs: []ast.Expr{
-					ast.NewIdent(a.domain.GetServicePrivateVariableName()),
+					ast.NewIdent(a.app.GetServicePrivateVariableName()),
 				},
 				Tok: token.DEFINE,
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
 							X:   ast.NewIdent("services"),
-							Sel: ast.NewIdent(a.domain.GetServiceConstructorName()),
+							Sel: ast.NewIdent(a.app.GetServiceConstructorName()),
 						},
 						Args: []ast.Expr{
-							ast.NewIdent(a.domain.GetRepositoryPrivateVariableName()),
+							ast.NewIdent(a.app.GetRepositoryPrivateVariableName()),
 							ast.NewIdent("clock"),
 							ast.NewIdent("logger"),
 							ast.NewIdent("uuidGenerator"),
@@ -288,69 +288,69 @@ func (a App) constructor() *ast.FuncDecl {
 	}
 	body.List = append(body.List, &ast.AssignStmt{
 		Lhs: []ast.Expr{
-			ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
+			ast.NewIdent(a.app.GetUseCasePrivateVariableName()),
 		},
 		Tok: token.DEFINE,
 		Rhs: []ast.Expr{
 			&ast.CallExpr{
 				Fun: &ast.SelectorExpr{
 					X:   ast.NewIdent("usecases"),
-					Sel: ast.NewIdent(a.domain.GetUseCaseConstructorName()),
+					Sel: ast.NewIdent(a.app.GetUseCaseConstructorName()),
 				},
 				Args: []ast.Expr{
-					ast.NewIdent(a.domain.GetServicePrivateVariableName()),
+					ast.NewIdent(a.app.GetServicePrivateVariableName()),
 					ast.NewIdent("logger"),
 				},
 			},
 		},
 	})
 
-	if a.domain.Config.HTTPEnabled {
+	if a.app.Config.HTTPEnabled {
 		body.List = append(body.List, &ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
+				ast.NewIdent(a.app.GetHTTPHandlerPrivateVariableName()),
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
 				&ast.CallExpr{
 					Fun: &ast.SelectorExpr{
 						X:   ast.NewIdent("httpHandlers"),
-						Sel: ast.NewIdent(a.domain.GetHTTPHandlerConstructorName()),
+						Sel: ast.NewIdent(a.app.GetHTTPHandlerConstructorName()),
 					},
 					Args: []ast.Expr{
-						ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
+						ast.NewIdent(a.app.GetUseCasePrivateVariableName()),
 						ast.NewIdent("logger"),
 					},
 				},
 			},
 		})
 		exprs = append(exprs, &ast.KeyValueExpr{
-			Key:   ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
-			Value: ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
+			Key:   ast.NewIdent(a.app.GetHTTPHandlerPrivateVariableName()),
+			Value: ast.NewIdent(a.app.GetHTTPHandlerPrivateVariableName()),
 		})
 	}
-	if a.domain.Config.GRPCEnabled {
+	if a.app.Config.GRPCEnabled {
 		body.List = append(body.List, &ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
+				ast.NewIdent(a.app.GetGRPCHandlerPrivateVariableName()),
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
 				&ast.CallExpr{
 					Fun: &ast.SelectorExpr{
 						X:   ast.NewIdent("grpcHandlers"),
-						Sel: ast.NewIdent(a.domain.GetGRPCHandlerConstructorName()),
+						Sel: ast.NewIdent(a.app.GetGRPCHandlerConstructorName()),
 					},
 					Args: []ast.Expr{
-						ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
+						ast.NewIdent(a.app.GetUseCasePrivateVariableName()),
 						ast.NewIdent("logger"),
 					},
 				},
 			},
 		})
 		exprs = append(exprs, &ast.KeyValueExpr{
-			Key:   ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
-			Value: ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
+			Key:   ast.NewIdent(a.app.GetGRPCHandlerPrivateVariableName()),
+			Value: ast.NewIdent(a.app.GetGRPCHandlerPrivateVariableName()),
 		})
 	}
 
@@ -359,7 +359,7 @@ func (a App) constructor() *ast.FuncDecl {
 			&ast.UnaryExpr{
 				Op: token.AND,
 				X: &ast.CompositeLit{
-					Type: ast.NewIdent("App"),
+					Type: ast.NewIdent("BaseEntity"),
 					Elts: exprs,
 				},
 			},
@@ -375,7 +375,7 @@ func (a App) constructor() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Type: &ast.StarExpr{
-							X: ast.NewIdent("App"),
+							X: ast.NewIdent("BaseEntity"),
 						},
 					},
 				},
@@ -413,62 +413,62 @@ func (a App) structure() *ast.GenDecl {
 				},
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent(a.domain.GetRepositoryPrivateVariableName()),
+						ast.NewIdent(a.app.GetRepositoryPrivateVariableName()),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("postgres"),
-							Sel: ast.NewIdent(a.domain.GetRepositoryTypeName()),
+							Sel: ast.NewIdent(a.app.GetRepositoryTypeName()),
 						},
 					},
 				},
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent(a.domain.GetServicePrivateVariableName()),
+						ast.NewIdent(a.app.GetServicePrivateVariableName()),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("services"),
-							Sel: ast.NewIdent(a.domain.GetServiceTypeName()),
+							Sel: ast.NewIdent(a.app.GetServiceTypeName()),
 						},
 					},
 				},
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent(a.domain.GetUseCasePrivateVariableName()),
+						ast.NewIdent(a.app.GetUseCasePrivateVariableName()),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("usecases"),
-							Sel: ast.NewIdent(a.domain.GetUseCaseTypeName()),
+							Sel: ast.NewIdent(a.app.GetUseCaseTypeName()),
 						},
 					},
 				},
 			},
 		},
 	}
-	if a.domain.Config.HTTPEnabled {
+	if a.app.Config.HTTPEnabled {
 		structType.Fields.List = append(structType.Fields.List, &ast.Field{
 			Names: []*ast.Ident{
-				ast.NewIdent(a.domain.GetHTTPHandlerPrivateVariableName()),
+				ast.NewIdent(a.app.GetHTTPHandlerPrivateVariableName()),
 			},
 			Type: &ast.StarExpr{
 				X: &ast.SelectorExpr{
 					X:   ast.NewIdent("httpHandlers"),
-					Sel: ast.NewIdent(a.domain.GetHTTPHandlerTypeName()),
+					Sel: ast.NewIdent(a.app.GetHTTPHandlerTypeName()),
 				},
 			},
 		})
 	}
-	if a.domain.Config.GRPCEnabled {
+	if a.app.Config.GRPCEnabled {
 		structType.Fields.List = append(structType.Fields.List, &ast.Field{
 			Names: []*ast.Ident{
-				ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
+				ast.NewIdent(a.app.GetGRPCHandlerPrivateVariableName()),
 			},
 			Type: &ast.StarExpr{
 				X: &ast.SelectorExpr{
 					X:   ast.NewIdent("grpcHandlers"),
-					Sel: ast.NewIdent(a.domain.GetGRPCHandlerTypeName()),
+					Sel: ast.NewIdent(a.app.GetGRPCHandlerTypeName()),
 				},
 			},
 		})
@@ -477,7 +477,7 @@ func (a App) structure() *ast.GenDecl {
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: ast.NewIdent("App"),
+				Name: ast.NewIdent("BaseEntity"),
 				Type: structType,
 			},
 		},
@@ -493,7 +493,7 @@ func (a App) registerGRPC() *ast.FuncDecl {
 						ast.NewIdent("a"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent("App"),
+						X: ast.NewIdent("BaseEntity"),
 					},
 				},
 			},
@@ -535,13 +535,13 @@ func (a App) registerGRPC() *ast.FuncDecl {
 							&ast.UnaryExpr{
 								Op: token.AND,
 								X: &ast.SelectorExpr{
-									X:   ast.NewIdent(a.domain.ProtoModule),
-									Sel: ast.NewIdent(a.domain.GetGRPCServiceDescriptionName()),
+									X:   ast.NewIdent(a.app.ProtoModule),
+									Sel: ast.NewIdent(a.app.GetGRPCServiceDescriptionName()),
 								},
 							},
 							&ast.SelectorExpr{
 								X:   ast.NewIdent("a"),
-								Sel: ast.NewIdent(a.domain.GetGRPCHandlerPrivateVariableName()),
+								Sel: ast.NewIdent(a.app.GetGRPCHandlerPrivateVariableName()),
 							},
 						},
 					},
@@ -565,7 +565,7 @@ func (a App) registerHTTP() *ast.FuncDecl {
 						ast.NewIdent("a"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent("App"),
+						X: ast.NewIdent("BaseEntity"),
 					},
 				},
 			},
@@ -606,14 +606,14 @@ func (a App) registerHTTP() *ast.FuncDecl {
 						Args: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
-								Value: fmt.Sprintf(`"/api/v1/%s/"`, a.domain.GetHTTPPath()),
+								Value: fmt.Sprintf(`"/api/v1/%s/"`, a.app.GetHTTPPath()),
 							},
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X: ast.NewIdent("a"),
 										Sel: ast.NewIdent(
-											a.domain.GetHTTPHandlerPrivateVariableName(),
+											a.app.GetHTTPHandlerPrivateVariableName(),
 										),
 									},
 									Sel: ast.NewIdent("ChiRouter"),

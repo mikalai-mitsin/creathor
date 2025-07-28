@@ -17,73 +17,75 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/repositories/postgres"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/services"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/usecases"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 )
 
 type Generator struct {
-	domain *domain.App
+	domain *app.App
 }
 
-func NewGenerator(d *domain.App) *Generator {
+func NewGenerator(d *app.App) *Generator {
 	return &Generator{domain: d}
 }
 
 func (g *Generator) Sync() error {
-	domainGenerators := []generator.Generator{
-		usecases.NewInterfacesGenerator(g.domain),
-		usecases.NewUseCaseGenerator(g.domain),
-		usecases.NewTestGenerator(g.domain),
+	for _, entity := range g.domain.Entities {
+		domainGenerators := []generator.Generator{
+			usecases.NewInterfacesGenerator(entity),
+			usecases.NewUseCaseGenerator(entity),
+			usecases.NewTestGenerator(entity),
 
-		services.NewInterfacesGenerator(g.domain),
-		services.NewServiceGenerator(g.domain),
-		services.NewTestGenerator(g.domain),
+			services.NewInterfacesGenerator(entity),
+			services.NewServiceGenerator(entity),
+			services.NewTestGenerator(entity),
 
-		postgres.NewInterfacesGenerator(g.domain),
-		postgres.NewRepositoryGenerator(g.domain),
-		postgres.NewTestGenerator(g.domain),
+			postgres.NewInterfacesGenerator(entity),
+			postgres.NewRepositoryGenerator(entity),
+			postgres.NewTestGenerator(entity),
 
-		NewApp(g.domain),
-	}
-	if g.domain.Config.HTTPEnabled {
-		domainGenerators = append(
-			domainGenerators,
-			http.NewDTOGenerator(g.domain),
-			http.NewHandlerGenerator(g.domain),
-			http.NewInterfacesGenerator(g.domain),
-		)
-	}
-	if g.domain.Config.GRPCEnabled {
-		domainGenerators = append(
-			domainGenerators,
-			grpc.NewProtoGenerator(g.domain),
-			grpc.NewInterfacesGenerator(g.domain),
-			grpc.NewHandlerGenerator(g.domain),
-			grpc.NewTestGenerator(g.domain),
-		)
-	}
-	for _, model := range g.domain.Entities {
-		domainGenerators = append(domainGenerators, entities.NewModel(model, g.domain))
-	}
-	for _, domainGenerator := range domainGenerators {
-		if err := domainGenerator.Sync(); err != nil {
-			return err
+			NewApp(entity),
 		}
-	}
-	if g.domain.Auth && g.domain.CamelName() != "User" {
-		if err := addPermission(g.domain.PermissionIDList(), "objectAnybody"); err != nil {
-			return err
+		if g.domain.Config.HTTPEnabled {
+			domainGenerators = append(
+				domainGenerators,
+				http.NewDTOGenerator(entity),
+				http.NewHandlerGenerator(entity),
+				http.NewInterfacesGenerator(entity),
+			)
 		}
-		if err := addPermission(g.domain.PermissionIDDetail(), "objectAnybody"); err != nil {
-			return err
+		if g.domain.Config.GRPCEnabled {
+			domainGenerators = append(
+				domainGenerators,
+				grpc.NewProtoGenerator(entity),
+				grpc.NewInterfacesGenerator(entity),
+				grpc.NewHandlerGenerator(entity),
+				grpc.NewTestGenerator(entity),
+			)
 		}
-		if err := addPermission(g.domain.PermissionIDCreate(), "objectAnybody"); err != nil {
-			return err
+		for _, baseEntity := range entity.Entities {
+			domainGenerators = append(domainGenerators, entities.NewModel(baseEntity, entity))
 		}
-		if err := addPermission(g.domain.PermissionIDUpdate(), "objectAnybody"); err != nil {
-			return err
+		for _, domainGenerator := range domainGenerators {
+			if err := domainGenerator.Sync(); err != nil {
+				return err
+			}
 		}
-		if err := addPermission(g.domain.PermissionIDDelete(), "objectAnybody"); err != nil {
-			return err
+		if g.domain.Auth && entity.CamelName() != "User" {
+			if err := addPermission(entity.PermissionIDList(), "objectAnybody"); err != nil {
+				return err
+			}
+			if err := addPermission(entity.PermissionIDDetail(), "objectAnybody"); err != nil {
+				return err
+			}
+			if err := addPermission(entity.PermissionIDCreate(), "objectAnybody"); err != nil {
+				return err
+			}
+			if err := addPermission(entity.PermissionIDUpdate(), "objectAnybody"); err != nil {
+				return err
+			}
+			if err := addPermission(entity.PermissionIDDelete(), "objectAnybody"); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

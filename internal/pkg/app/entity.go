@@ -1,4 +1,4 @@
-package domain
+package app
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ type Entity struct {
 	Mock       bool
 }
 
-func NewCreateEntity(entityConfig configs.AppConfig) *Entity {
+func NewCreateEntity(entityConfig configs.EntityConfig) *Entity {
 	return &Entity{
 		Type:       EntityTypeCreate,
 		Name:       entityConfig.CreateTypeName(),
@@ -35,7 +35,7 @@ func NewCreateEntity(entityConfig configs.AppConfig) *Entity {
 	}
 }
 
-func NewUpdateEntity(entityConfig configs.AppConfig) *Entity {
+func NewUpdateEntity(entityConfig configs.EntityConfig) *Entity {
 	model := &Entity{
 		Type:     EntityTypeUpdate,
 		Name:     entityConfig.UpdateTypeName(),
@@ -58,7 +58,7 @@ func NewUpdateEntity(entityConfig configs.AppConfig) *Entity {
 	return model
 }
 
-func NewMainEntity(modelConfig configs.AppConfig) *Entity {
+func NewMainEntity(modelConfig configs.EntityConfig) *Entity {
 	model := &Entity{
 		Type:     EntityTypeMain,
 		Name:     modelConfig.EntityName(),
@@ -87,7 +87,7 @@ func NewMainEntity(modelConfig configs.AppConfig) *Entity {
 	return model
 }
 
-func NewFilterEntity(modelConfig configs.AppConfig) *Entity {
+func NewFilterEntity(modelConfig configs.EntityConfig) *Entity {
 	model := &Entity{
 		Type:     EntityTypeFilter,
 		Name:     modelConfig.FilterTypeName(),

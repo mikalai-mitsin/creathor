@@ -11,14 +11,14 @@ import (
 	"path"
 	"strings"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 )
 
 type HandlerGenerator struct {
-	domain *domain.App
+	domain *app.BaseEntity
 }
 
-func NewHandlerGenerator(domain *domain.App) *HandlerGenerator {
+func NewHandlerGenerator(domain *app.BaseEntity) *HandlerGenerator {
 	return &HandlerGenerator{
 		domain: domain,
 	}
@@ -103,7 +103,7 @@ func (h HandlerGenerator) file() *ast.File {
 }
 
 func (h HandlerGenerator) filename() string {
-	return path.Join("internal", "app", h.domain.DirName(), "handlers", "grpc", h.domain.FileName())
+	return path.Join("internal", "app", h.domain.AppName(), "handlers", "grpc", h.domain.FileName())
 }
 
 func (h HandlerGenerator) createParams() []ast.Expr {

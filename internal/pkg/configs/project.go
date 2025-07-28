@@ -50,33 +50,51 @@ func NewProject(configPath string) (*Project, error) {
 	}
 	if project.Auth {
 		project.Apps = append(project.Apps, AppConfig{
-			Name:         "user",
-			Module:       project.Module,
-			ProjectName:  project.Name,
-			ProtoPackage: project.ProtoPackage(),
-			Auth:         project.Auth,
-			Params: []*Param{
-				{Name: "FirstName", Type: "string", Search: true},
-				{Name: "LastName", Type: "string", Search: true},
-				{Name: "Password", Type: "string", Search: false},
-				{Name: "Email", Type: "string", Search: true},
-				{Name: "GroupID", Type: "entities.GroupID", Search: false},
-			},
+			Name:           "users",
+			ProjectName:    project.Name,
+			ProtoPackage:   project.ProtoPackage(),
+			Auth:           project.Auth,
 			HTTPEnabled:    project.HTTPEnabled,
 			GRPCEnabled:    project.GRPCEnabled,
 			GatewayEnabled: project.GatewayEnabled,
 			KafkaEnabled:   project.KafkaEnabled,
+			Entities: []EntityConfig{
+				{
+					Name:         "user",
+					Module:       project.Module,
+					ProjectName:  project.Name,
+					ProtoPackage: project.ProtoPackage(),
+					Auth:         project.Auth,
+					Params: []*Param{
+						{Name: "FirstName", Type: "string", Search: true},
+						{Name: "LastName", Type: "string", Search: true},
+						{Name: "Password", Type: "string", Search: false},
+						{Name: "Email", Type: "string", Search: true},
+						{Name: "GroupID", Type: "entities.GroupID", Search: false},
+					},
+				},
+			},
 		})
 	}
-	for i, entity := range project.Apps {
-		entity.Module = project.Module
-		entity.Auth = project.Auth
-		entity.ProjectName = project.Name
-		entity.ProtoPackage = project.ProtoPackage()
-		entity.GRPCEnabled = project.GRPCEnabled
-		entity.HTTPEnabled = project.HTTPEnabled
-		entity.GatewayEnabled = project.GatewayEnabled
-		project.Apps[i] = entity
+	for i, app := range project.Apps {
+		app.Module = project.Module
+		app.Auth = project.Auth
+		app.ProjectName = project.Name
+		app.ProtoPackage = project.ProtoPackage()
+		app.GRPCEnabled = project.GRPCEnabled
+		app.HTTPEnabled = project.HTTPEnabled
+		app.GatewayEnabled = project.GatewayEnabled
+		for i2, entity := range app.Entities {
+			entity.Module = project.Module
+			entity.Auth = project.Auth
+			entity.ProjectName = project.Name
+			entity.ProtoPackage = project.ProtoPackage()
+			entity.GRPCEnabled = project.GRPCEnabled
+			entity.HTTPEnabled = project.HTTPEnabled
+			entity.GatewayEnabled = project.GatewayEnabled
+			app.Entities[i2] = entity
+		}
+		project.Apps[i] = app
 	}
 	return project, nil
 }

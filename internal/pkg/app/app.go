@@ -1,4 +1,4 @@
-package domain
+package app
 
 import (
 	"fmt"
@@ -19,23 +19,33 @@ type App struct {
 	Name        string
 	Module      string
 	ProtoModule string
-	Entities    []*Entity
+	Entities    []*BaseEntity
 	Auth        bool
 }
 
-func (m *App) SnakeName() string {
+type BaseEntity struct {
+	Config      configs.EntityConfig
+	Name        string
+	Module      string
+	ProtoModule string
+	Entities    []*Entity
+	Auth        bool
+	AppConfig   *configs.AppConfig
+}
+
+func (m *BaseEntity) SnakeName() string {
 	return strcase.ToSnake(m.Name)
 }
 
-func (m *App) FileName() string {
+func (m *BaseEntity) FileName() string {
 	return fmt.Sprintf("%s.go", m.SnakeName())
 }
 
-func (m *App) TestFileName() string {
+func (m *BaseEntity) TestFileName() string {
 	return fmt.Sprintf("%s_test.go", m.SnakeName())
 }
 
-func (m *App) MigrationUpFileName() string {
+func (m *BaseEntity) MigrationUpFileName() string {
 	last, err := lastMigration()
 	if err != nil {
 		return ""
@@ -43,7 +53,7 @@ func (m *App) MigrationUpFileName() string {
 	return fmt.Sprintf("%06d_%s.up.sql", last+1, m.TableName())
 }
 
-func (m *App) MigrationDownFileName() string {
+func (m *BaseEntity) MigrationDownFileName() string {
 	last, err := lastMigration()
 	if err != nil {
 		return ""
@@ -71,23 +81,23 @@ func lastMigration() (int, error) {
 	return index, nil
 }
 
-func (m *App) CamelName() string {
+func (m *BaseEntity) CamelName() string {
 	return strcase.ToCamel(m.Name)
 }
 
-func (m *App) LowerCamelName() string {
+func (m *BaseEntity) LowerCamelName() string {
 	return strcase.ToLowerCamel(m.Name)
 }
 
-func (m *App) DirName() string {
-	return m.SnakeName()
+func (m *BaseEntity) AppName() string {
+	return m.AppConfig.AppName()
 }
 
-func (m *App) EntitiesImportPath() string {
-	return fmt.Sprintf(`"%s/internal/app/%s/entities"`, m.Module, m.DirName())
+func (m *BaseEntity) EntitiesImportPath() string {
+	return fmt.Sprintf(`"%s/internal/app/%s/entities"`, m.Module, m.AppName())
 }
 
-func (m *App) GetMainModel() *Entity {
+func (m *BaseEntity) GetMainModel() *Entity {
 	index := slices.IndexFunc(
 		m.Entities,
 		func(model *Entity) bool { return model.Type == EntityTypeMain },
@@ -98,18 +108,18 @@ func (m *App) GetMainModel() *Entity {
 	return nil
 }
 
-func (m *App) TableName() string {
+func (m *BaseEntity) TableName() string {
 	return strcase.ToSnake(inflection.Plural(m.Name))
 }
 
-func (m *App) SearchEnabled() bool {
+func (m *BaseEntity) SearchEnabled() bool {
 	return slices.ContainsFunc(
 		m.GetMainModel().Params,
 		func(param *configs.Param) bool { return param.Search },
 	)
 }
 
-func (m *App) GetCreateModel() *Entity {
+func (m *BaseEntity) GetCreateModel() *Entity {
 	index := slices.IndexFunc(
 		m.Entities,
 		func(model *Entity) bool { return model.Type == EntityTypeCreate },
@@ -120,7 +130,7 @@ func (m *App) GetCreateModel() *Entity {
 	return nil
 }
 
-func (m *App) GetUpdateModel() *Entity {
+func (m *BaseEntity) GetUpdateModel() *Entity {
 	index := slices.IndexFunc(
 		m.Entities,
 		func(model *Entity) bool { return model.Type == EntityTypeUpdate },
@@ -131,7 +141,7 @@ func (m *App) GetUpdateModel() *Entity {
 	return nil
 }
 
-func (m *App) GetFilterModel() *Entity {
+func (m *BaseEntity) GetFilterModel() *Entity {
 	index := slices.IndexFunc(
 		m.Entities,
 		func(model *Entity) bool { return model.Type == EntityTypeFilter },
@@ -142,163 +152,163 @@ func (m *App) GetFilterModel() *Entity {
 	return nil
 }
 
-func (m *App) PermissionIDCreate() string {
+func (m *BaseEntity) PermissionIDCreate() string {
 	return fmt.Sprintf("PermissionID%sCreate", strcase.ToCamel(m.CamelName()))
 }
 
-func (m *App) PermissionIDUpdate() string {
+func (m *BaseEntity) PermissionIDUpdate() string {
 	return fmt.Sprintf("PermissionID%sUpdate", m.CamelName())
 }
 
-func (m *App) PermissionIDDelete() string {
+func (m *BaseEntity) PermissionIDDelete() string {
 	return fmt.Sprintf("PermissionID%sDelete", m.CamelName())
 }
 
-func (m *App) PermissionIDDetail() string {
+func (m *BaseEntity) PermissionIDDetail() string {
 	return fmt.Sprintf("PermissionID%sDetail", m.CamelName())
 }
 
-func (m *App) PermissionIDList() string {
+func (m *BaseEntity) PermissionIDList() string {
 	return fmt.Sprintf("PermissionID%sList", m.CamelName())
 }
 
-func (m *App) GetOneVariableName() string {
+func (m *BaseEntity) GetOneVariableName() string {
 	return strcase.ToLowerCamel(m.Config.Name)
 }
 
-func (m *App) GetManyVariableName() string {
+func (m *BaseEntity) GetManyVariableName() string {
 	return inflection.Plural(m.GetOneVariableName())
 }
 
-func (m *App) GetHTTPPath() string {
+func (m *BaseEntity) GetHTTPPath() string {
 	return strcase.ToSnake(inflection.Plural(m.GetOneVariableName()))
 }
 
-func (m *App) GetGRPCHandlerPrivateVariableName() string {
+func (m *BaseEntity) GetGRPCHandlerPrivateVariableName() string {
 	return fmt.Sprintf("grpc%sHandler", strcase.ToCamel(m.Config.Name))
 }
 
-func (m *App) GetGRPCHandlerPublicVariableName() string {
+func (m *BaseEntity) GetGRPCHandlerPublicVariableName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Config.Name))
 }
 
-func (m *App) GetGRPCHandlerTypeName() string {
+func (m *BaseEntity) GetGRPCHandlerTypeName() string {
 	return fmt.Sprintf("%sServiceServer", strcase.ToCamel(m.Config.Name))
 }
 
-func (m *App) GetGRPCHandlerConstructorName() string {
+func (m *BaseEntity) GetGRPCHandlerConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetGRPCHandlerTypeName())
 }
 
-func (m *App) GetGRPCServiceDescriptionName() string {
+func (m *BaseEntity) GetGRPCServiceDescriptionName() string {
 	return fmt.Sprintf("%sService_ServiceDesc", strcase.ToCamel(m.Config.Name))
 }
 
-func (m *App) GetHTTPHandlerConstructorName() string {
+func (m *BaseEntity) GetHTTPHandlerConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetHTTPHandlerTypeName())
 }
 
-func (m *App) GetHTTPHandlerTypeName() string {
+func (m *BaseEntity) GetHTTPHandlerTypeName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Config.Name))
 }
 
-func (m *App) GetHTTPHandlerPrivateVariableName() string {
+func (m *BaseEntity) GetHTTPHandlerPrivateVariableName() string {
 	return fmt.Sprintf("http%sHandler", strcase.ToCamel(m.Config.Name))
 }
 
-func (m *App) GetHTTPItemDTOName() string {
+func (m *BaseEntity) GetHTTPItemDTOName() string {
 	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.GetMainModel().Name))
 }
-func (m *App) GetHTTPItemDTOConstructorName() string {
+func (m *BaseEntity) GetHTTPItemDTOConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetHTTPItemDTOName())
 }
 
-func (m *App) GetHTTPUpdateDTOName() string {
+func (m *BaseEntity) GetHTTPUpdateDTOName() string {
 	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.GetUpdateModel().Name))
 }
-func (m *App) GetHTTPUpdateDTOConstructorName() string {
+func (m *BaseEntity) GetHTTPUpdateDTOConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetHTTPUpdateDTOName())
 }
 
-func (m *App) GetHTTPCreateDTOName() string {
+func (m *BaseEntity) GetHTTPCreateDTOName() string {
 	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.GetCreateModel().Name))
 }
-func (m *App) GetHTTPCreateDTOConstructorName() string {
+func (m *BaseEntity) GetHTTPCreateDTOConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetHTTPCreateDTOName())
 }
 
-func (m *App) GetHTTPListDTOName() string {
+func (m *BaseEntity) GetHTTPListDTOName() string {
 	return fmt.Sprintf("%sListDTO", strcase.ToCamel(m.GetMainModel().Name))
 }
 
-func (m *App) GetHTTPListDTOConstructorName() string {
+func (m *BaseEntity) GetHTTPListDTOConstructorName() string {
 	return fmt.Sprintf("New%s", strcase.ToCamel(m.GetHTTPListDTOName()))
 }
 
-func (m *App) GetUseCasePrivateVariableName() string {
+func (m *BaseEntity) GetUseCasePrivateVariableName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToLowerCamel(m.Config.Name))
 }
 
-func (m *App) GetUseCasePublicVariableName() string {
+func (m *BaseEntity) GetUseCasePublicVariableName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Config.Name))
 }
 
-func (m *App) GetUseCaseTypeName() string {
+func (m *BaseEntity) GetUseCaseTypeName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Config.Name))
 }
 
-func (m *App) GetUseCaseInterfaceName() string {
+func (m *BaseEntity) GetUseCaseInterfaceName() string {
 	return fmt.Sprintf("%sUseCase", strcase.ToLowerCamel(m.Config.Name))
 }
 
-func (m *App) GetUseCaseConstructorName() string {
+func (m *BaseEntity) GetUseCaseConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetUseCaseTypeName())
 }
 
-func (m *App) GetServicePrivateVariableName() string {
+func (m *BaseEntity) GetServicePrivateVariableName() string {
 	return fmt.Sprintf("%sService", strcase.ToLowerCamel(m.Config.Name))
 }
 
-func (m *App) GetServicePublicVariableName() string {
+func (m *BaseEntity) GetServicePublicVariableName() string {
 	return fmt.Sprintf("%sService", strcase.ToCamel(m.Config.Name))
 }
 
-func (m *App) GetServiceTypeName() string {
+func (m *BaseEntity) GetServiceTypeName() string {
 	return fmt.Sprintf("%sService", strcase.ToCamel(m.Config.Name))
 }
 
-func (m *App) GetServiceInterfaceName() string {
+func (m *BaseEntity) GetServiceInterfaceName() string {
 	return fmt.Sprintf("%sService", strcase.ToLowerCamel(m.Config.Name))
 }
 
-func (m *App) GetServiceConstructorName() string {
+func (m *BaseEntity) GetServiceConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetServiceTypeName())
 }
 
-func (m *App) GetRepositoryPrivateVariableName() string {
+func (m *BaseEntity) GetRepositoryPrivateVariableName() string {
 	return fmt.Sprintf("%sRepository", strcase.ToLowerCamel(m.Config.Name))
 }
 
-func (m *App) GetRepositoryPublicVariableName() string {
+func (m *BaseEntity) GetRepositoryPublicVariableName() string {
 	return fmt.Sprintf("%sRepository", strcase.ToCamel(m.Config.Name))
 }
 
-func (m *App) GetRepositoryTypeName() string {
+func (m *BaseEntity) GetRepositoryTypeName() string {
 	return fmt.Sprintf("%sRepository", strcase.ToCamel(m.Config.Name))
 }
 
-func (m *App) GetRepositoryInterfaceName() string {
+func (m *BaseEntity) GetRepositoryInterfaceName() string {
 	return fmt.Sprintf("%sRepository", strcase.ToLowerCamel(m.Config.Name))
 }
 
-func (m *App) GetRepositoryConstructorName() string {
+func (m *BaseEntity) GetRepositoryConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetRepositoryTypeName())
 }
 
-func (m *App) GetHTTPFilterDTOName() string {
+func (m *BaseEntity) GetHTTPFilterDTOName() string {
 	return fmt.Sprintf("%sFilterDTO", strcase.ToCamel(m.Config.Name))
 }
 
-func (m *App) GetHTTPFilterDTOConstructorName() string {
+func (m *BaseEntity) GetHTTPFilterDTOConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetHTTPFilterDTOName())
 }

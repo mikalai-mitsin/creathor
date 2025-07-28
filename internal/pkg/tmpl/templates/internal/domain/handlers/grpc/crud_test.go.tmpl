@@ -4,8 +4,8 @@ import (
     "context"
     "{{ .Module }}/internal/pkg/errs"
 
-    "{{ .Module }}/internal/app/{{ .DirName }}/entities"
-    mockEntities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
+    "{{ .Module }}/internal/app/{{ .AppName }}/entities"
+    mockEntities "{{ .Module }}/internal/app/{{ .AppName }}/entities/mock"
     "{{ .Module }}/internal/pkg/pointer"
     "{{ .Module }}/internal/pkg/uuid"
     {{ .Config.ProtoPackage }} "{{ .Module }}/pkg/{{ .Config.ProtoPackage }}/v1"

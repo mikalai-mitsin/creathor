@@ -13,14 +13,14 @@ import (
     "testing"
 
     "{{ .Module }}/internal/pkg/errs"
-    mockEntities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
+    mockEntities "{{ .Module }}/internal/app/{{ .AppName }}/entities/mock"
     "{{ .Module }}/internal/pkg/postgres"
     "github.com/DATA-DOG/go-sqlmock"
     "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
     "github.com/stretchr/testify/assert"
 
-    "{{ .Module }}/internal/app/{{ .DirName }}/entities"
+    "{{ .Module }}/internal/app/{{ .AppName }}/entities"
     "{{ .Module }}/internal/pkg/pointer"
     "{{ .Module }}/internal/pkg/uuid"
     "github.com/jmoiron/sqlx"

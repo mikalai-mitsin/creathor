@@ -11,14 +11,14 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 )
 
 type UseCaseGenerator struct {
-	domain *domain.App
+	domain *app.BaseEntity
 }
 
-func NewUseCaseGenerator(domain *domain.App) *UseCaseGenerator {
+func NewUseCaseGenerator(domain *app.BaseEntity) *UseCaseGenerator {
 	return &UseCaseGenerator{domain: domain}
 }
 
@@ -52,7 +52,7 @@ func (i UseCaseGenerator) Sync() error {
 }
 
 func (i UseCaseGenerator) filename() string {
-	return filepath.Join("internal", "app", i.domain.DirName(), "usecases", i.domain.FileName())
+	return filepath.Join("internal", "app", i.domain.AppName(), "usecases", i.domain.FileName())
 }
 
 func (i UseCaseGenerator) structure() *ast.TypeSpec {

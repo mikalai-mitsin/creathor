@@ -10,16 +10,16 @@ import (
 	"os"
 	"path"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 )
 
 const destinationPath = "."
 
 type HandlerGenerator struct {
-	domain *domain.App
+	domain *app.BaseEntity
 }
 
-func NewHandlerGenerator(domain *domain.App) *HandlerGenerator {
+func NewHandlerGenerator(domain *app.BaseEntity) *HandlerGenerator {
 	return &HandlerGenerator{
 		domain: domain,
 	}
@@ -46,7 +46,7 @@ func (h *HandlerGenerator) Sync() error {
 }
 
 func (h *HandlerGenerator) filename() string {
-	return path.Join("internal", "app", h.domain.DirName(), "handlers", "http", h.domain.FileName())
+	return path.Join("internal", "app", h.domain.AppName(), "handlers", "http", h.domain.FileName())
 }
 
 func (h *HandlerGenerator) file() *ast.File {

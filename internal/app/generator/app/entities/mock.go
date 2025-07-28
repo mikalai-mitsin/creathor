@@ -10,7 +10,7 @@ import (
 	"os"
 	"path"
 
-	mods "github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	mods "github.com/mikalai-mitsin/creathor/internal/pkg/app"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/fake"
 )
@@ -18,10 +18,10 @@ import (
 type Mock struct {
 	typeSpec *ast.TypeSpec
 	fileName string
-	domain   *mods.App
+	domain   *mods.BaseEntity
 }
 
-func NewMock(typeSpec *ast.TypeSpec, fileName string, domain *mods.App) *Mock {
+func NewMock(typeSpec *ast.TypeSpec, fileName string, domain *mods.BaseEntity) *Mock {
 	return &Mock{typeSpec: typeSpec, fileName: fileName, domain: domain}
 }
 
@@ -175,7 +175,7 @@ func (m *Mock) file() *ast.File {
 
 func (m *Mock) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", m.domain.DirName(), "entities", "mock", m.fileName)
+	filename := path.Join("internal", "app", m.domain.AppName(), "entities", "mock", m.fileName)
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err

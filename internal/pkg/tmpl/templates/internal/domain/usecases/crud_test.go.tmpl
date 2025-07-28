@@ -5,8 +5,8 @@ import (
     "testing"
 
     "{{ .Module }}/internal/pkg/errs"
-    "{{ .Module }}/internal/app/{{ .DirName }}/entities"
-    mockEntities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
+    "{{ .Module }}/internal/app/{{ .AppName }}/entities"
+    mockEntities "{{ .Module }}/internal/app/{{ .AppName }}/entities/mock"
     "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
     "github.com/stretchr/testify/assert"

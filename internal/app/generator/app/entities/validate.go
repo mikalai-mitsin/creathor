@@ -11,21 +11,21 @@ import (
 	"path"
 	"strings"
 
-	mods "github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	mods "github.com/mikalai-mitsin/creathor/internal/pkg/app"
 )
 
 type Validate struct {
 	typeSpec *ast.TypeSpec
 	fileName string
-	domain   *mods.App
+	domain   *mods.BaseEntity
 }
 
-func NewValidate(typeSpec *ast.TypeSpec, fileName string, domain *mods.App) *Validate {
+func NewValidate(typeSpec *ast.TypeSpec, fileName string, domain *mods.BaseEntity) *Validate {
 	return &Validate{typeSpec: typeSpec, fileName: fileName, domain: domain}
 }
 func (m *Validate) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", m.domain.DirName(), "entities", m.fileName)
+	filename := path.Join("internal", "app", m.domain.AppName(), "entities", m.fileName)
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err

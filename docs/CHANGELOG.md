@@ -2,6 +2,19 @@
 ## [Unreleased]
 
 
+<a name="v0.7.1"></a>
+## [v0.7.1] - 2025-08-03
+### Ci
+- update builds
+
+### Feat
+- update githib ci
+- remove ids filter
+- add gitignore
+- update go version
+- add docs to post init tasks
+
+
 <a name="v0.7.0"></a>
 ## [v0.7.0] - 2025-08-03
 ### Docs
@@ -448,7 +461,8 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.1...HEAD
+[v0.7.1]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.6.1...v0.7.0
 [v0.6.1]: https://github.com/mikalai-mitsin/creathor/compare/v0.6.0...v0.6.1
 [v0.6.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.5.0...v0.6.0

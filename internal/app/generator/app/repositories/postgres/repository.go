@@ -1494,62 +1494,6 @@ func (r RepositoryGenerator) listMethod() *ast.FuncDecl {
 				r.search(),
 				&ast.IfStmt{
 					Cond: &ast.BinaryExpr{
-						X: &ast.CallExpr{
-							Fun: ast.NewIdent("len"),
-							Args: []ast.Expr{
-								&ast.SelectorExpr{
-									X:   ast.NewIdent("filter"),
-									Sel: ast.NewIdent("IDs"),
-								},
-							},
-						},
-						Op: token.GTR,
-						Y: &ast.BasicLit{
-							Kind:  token.INT,
-							Value: "0",
-						},
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.AssignStmt{
-								Lhs: []ast.Expr{
-									ast.NewIdent("q"),
-								},
-								Tok: token.ASSIGN,
-								Rhs: []ast.Expr{
-									&ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X:   ast.NewIdent("q"),
-											Sel: ast.NewIdent("Where"),
-										},
-										Args: []ast.Expr{
-											&ast.CompositeLit{
-												Type: &ast.SelectorExpr{
-													X:   ast.NewIdent("sq"),
-													Sel: ast.NewIdent("Eq"),
-												},
-												Elts: []ast.Expr{
-													&ast.KeyValueExpr{
-														Key: &ast.BasicLit{
-															Kind:  token.STRING,
-															Value: `"id"`,
-														},
-														Value: &ast.SelectorExpr{
-															X:   ast.NewIdent("filter"),
-															Sel: ast.NewIdent("IDs"),
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-				&ast.IfStmt{
-					Cond: &ast.BinaryExpr{
 						X: &ast.BinaryExpr{
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("filter"),
@@ -1974,62 +1918,6 @@ func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 					},
 				},
 				r.search(),
-				&ast.IfStmt{
-					Cond: &ast.BinaryExpr{
-						X: &ast.CallExpr{
-							Fun: ast.NewIdent("len"),
-							Args: []ast.Expr{
-								&ast.SelectorExpr{
-									X:   ast.NewIdent("filter"),
-									Sel: ast.NewIdent("IDs"),
-								},
-							},
-						},
-						Op: token.GTR,
-						Y: &ast.BasicLit{
-							Kind:  token.INT,
-							Value: "0",
-						},
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.AssignStmt{
-								Lhs: []ast.Expr{
-									ast.NewIdent("q"),
-								},
-								Tok: token.ASSIGN,
-								Rhs: []ast.Expr{
-									&ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X:   ast.NewIdent("q"),
-											Sel: ast.NewIdent("Where"),
-										},
-										Args: []ast.Expr{
-											&ast.CompositeLit{
-												Type: &ast.SelectorExpr{
-													X:   ast.NewIdent("sq"),
-													Sel: ast.NewIdent("Eq"),
-												},
-												Elts: []ast.Expr{
-													&ast.KeyValueExpr{
-														Key: &ast.BasicLit{
-															Kind:  token.STRING,
-															Value: `"id"`,
-														},
-														Value: &ast.SelectorExpr{
-															X:   ast.NewIdent("filter"),
-															Sel: ast.NewIdent("IDs"),
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						ast.NewIdent("query"),

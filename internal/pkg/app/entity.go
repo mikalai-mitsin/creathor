@@ -113,11 +113,6 @@ func NewFilterEntity(modelConfig configs.EntityConfig) *Entity {
 				Type:   "[]string",
 				Search: false,
 			},
-			{
-				Name:   "IDs",
-				Type:   "[]uuid.UUID",
-				Search: false,
-			},
 		},
 		Validation: true,
 		Mock:       true,

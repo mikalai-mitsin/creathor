@@ -594,7 +594,7 @@ func (a App) registerHTTP() *ast.FuncDecl {
 					Args: []ast.Expr{
 						&ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"/api/v1/%s/"`, entity.GetHTTPPath()),
+							Value: fmt.Sprintf(`"/api/v1/%s/%s"`, a.app.AppName(), entity.GetHTTPPath()),
 						},
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{

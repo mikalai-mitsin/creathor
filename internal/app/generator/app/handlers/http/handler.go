@@ -228,7 +228,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /api/v1/%s/ [POST]", h.domain.GetHTTPPath()),
+							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/ [POST]", h.domain.AppName(), h.domain.GetHTTPPath()),
 						},
 					},
 				},
@@ -521,7 +521,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /api/v1/%s/{id} [GET]", h.domain.GetHTTPPath()),
+							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/{id} [GET]", h.domain.AppName(), h.domain.GetHTTPPath()),
 						},
 					},
 				},
@@ -763,7 +763,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /api/v1/%s/ [GET]", h.domain.GetHTTPPath()),
+							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/ [GET]", h.domain.AppName(), h.domain.GetHTTPPath()),
 						},
 					},
 				},
@@ -1061,7 +1061,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /api/v1/%s/{id} [PATCH]", h.domain.GetHTTPPath()),
+							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/{id} [PATCH]", h.domain.AppName(), h.domain.GetHTTPPath()),
 						},
 					},
 				},
@@ -1354,7 +1354,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /api/v1/%s/{id} [DELETE]", h.domain.GetHTTPPath()),
+							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/{id} [DELETE]", h.domain.AppName(), h.domain.GetHTTPPath()),
 						},
 					},
 				},

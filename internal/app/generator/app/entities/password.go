@@ -9,20 +9,20 @@ import (
 	"os"
 	"path"
 
-	mods "github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	mods "github.com/mikalai-mitsin/creathor/internal/pkg/app"
 )
 
 type Password struct {
-	domain *mods.App
+	domain *mods.BaseEntity
 }
 
-func NewPassword(domain *mods.App) *Password {
+func NewPassword(domain *mods.BaseEntity) *Password {
 	return &Password{domain: domain}
 }
 
 func (m *Password) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", m.domain.DirName(), "entities", m.domain.FileName())
+	filename := path.Join("internal", "app", m.domain.AppName(), "entities", m.domain.DirName(), m.domain.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err

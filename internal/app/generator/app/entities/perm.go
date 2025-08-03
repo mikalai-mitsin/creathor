@@ -11,7 +11,7 @@ import (
 	"path"
 	"path/filepath"
 
-	mods "github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	mods "github.com/mikalai-mitsin/creathor/internal/pkg/app"
 
 	"golang.org/x/exp/slices"
 
@@ -20,12 +20,11 @@ import (
 
 type Perm struct {
 	modelName string
-	fileName  string
-	domain    *mods.App
+	domain    *mods.BaseEntity
 }
 
-func NewPerm(modelName string, fileName string, domain *mods.App) *Perm {
-	return &Perm{modelName: modelName, fileName: fileName, domain: domain}
+func NewPerm(modelName string, domain *mods.BaseEntity) *Perm {
+	return &Perm{modelName: modelName, domain: domain}
 }
 
 func (m *Perm) file() *ast.File {
@@ -117,9 +116,10 @@ func (m *Perm) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
-		"user",
+		"users",
 		"entities",
-		fmt.Sprintf("permission_%s", m.fileName),
+		"permission",
+		fmt.Sprintf("permission_%s", m.domain.FileName()),
 	)
 }
 

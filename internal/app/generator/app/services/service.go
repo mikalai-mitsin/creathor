@@ -11,14 +11,14 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 )
 
 type ServiceGenerator struct {
-	domain *domain.App
+	domain *app.BaseEntity
 }
 
-func NewServiceGenerator(domain *domain.App) *ServiceGenerator {
+func NewServiceGenerator(domain *app.BaseEntity) *ServiceGenerator {
 	return &ServiceGenerator{domain: domain}
 }
 
@@ -57,7 +57,7 @@ func (u ServiceGenerator) Sync() error {
 }
 
 func (u ServiceGenerator) filename() string {
-	return filepath.Join("internal", "app", u.domain.DirName(), "services", u.domain.FileName())
+	return filepath.Join("internal", "app", u.domain.AppName(), "services", u.domain.DirName(), u.domain.FileName())
 }
 
 func (u ServiceGenerator) file() *ast.File {

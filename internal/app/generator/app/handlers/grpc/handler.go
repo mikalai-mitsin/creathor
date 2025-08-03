@@ -11,14 +11,14 @@ import (
 	"path"
 	"strings"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 )
 
 type HandlerGenerator struct {
-	domain *domain.App
+	domain *app.BaseEntity
 }
 
-func NewHandlerGenerator(domain *domain.App) *HandlerGenerator {
+func NewHandlerGenerator(domain *app.BaseEntity) *HandlerGenerator {
 	return &HandlerGenerator{
 		domain: domain,
 	}
@@ -103,7 +103,7 @@ func (h HandlerGenerator) file() *ast.File {
 }
 
 func (h HandlerGenerator) filename() string {
-	return path.Join("internal", "app", h.domain.DirName(), "handlers", "grpc", h.domain.FileName())
+	return path.Join("internal", "app", h.domain.AppName(), "handlers", "grpc", h.domain.DirName(), h.domain.FileName())
 }
 
 func (h HandlerGenerator) createParams() []ast.Expr {
@@ -139,11 +139,18 @@ func (h HandlerGenerator) createParams() []ast.Expr {
 				}
 			case param.GRPCType():
 			default:
-				value = &ast.CallExpr{
-					Fun: ast.NewIdent(param.Type),
-					Args: []ast.Expr{
-						value,
-					},
+				if param.IsID() {
+					value = &ast.CallExpr{
+						Fun:  ast.NewIdent("uuid.MustParse"),
+						Args: []ast.Expr{value},
+					}
+				} else {
+					value = &ast.CallExpr{
+						Fun: ast.NewIdent(param.Type),
+						Args: []ast.Expr{
+							value,
+						},
+					}
 				}
 			}
 		}
@@ -444,9 +451,15 @@ func (h HandlerGenerator) updateStmts() []*ast.IfStmt {
 					Sel: ast.NewIdent("GetValue"),
 				},
 			}
-			if strings.TrimPrefix(param.Type, "*") != param.GRPCType() {
+			if !param.IsID() && strings.TrimPrefix(param.Type, "*") != param.GRPCType() {
 				value = &ast.CallExpr{
 					Fun:  ast.NewIdent(strings.TrimPrefix(param.Type, "*")),
+					Args: []ast.Expr{value},
+				}
+			}
+			if param.IsID() {
+				value = &ast.CallExpr{
+					Fun:  ast.NewIdent("uuid.MustParse"),
 					Args: []ast.Expr{value},
 				}
 			}
@@ -511,7 +524,7 @@ func (h HandlerGenerator) encodeUpdate() *ast.FuncDecl {
 							Value: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X:   ast.NewIdent("uuid"),
-									Sel: ast.NewIdent("UUID"),
+									Sel: ast.NewIdent("MustParse"),
 								},
 								Args: []ast.Expr{
 									&ast.CallExpr{
@@ -770,7 +783,7 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
 											X:   ast.NewIdent("uuid"),
-											Sel: ast.NewIdent("UUID"),
+											Sel: ast.NewIdent("MustParse"),
 										},
 										Args: []ast.Expr{
 											ast.NewIdent("id"),
@@ -998,6 +1011,17 @@ func (h HandlerGenerator) modelParams() []ast.Expr {
 						X:   ast.NewIdent("item"),
 						Sel: ast.NewIdent(param.GetName()),
 					},
+				},
+			}
+		}
+		if param.IsID() {
+			value = &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.SelectorExpr{
+						X:   ast.NewIdent("item"),
+						Sel: ast.NewIdent(param.GetName()),
+					},
+					Sel: ast.NewIdent("String"),
 				},
 			}
 		}
@@ -1401,6 +1425,17 @@ func (h HandlerGenerator) decodeUpdateParams() []ast.Expr {
 					Args: []ast.Expr{v},
 				}
 			}
+			if param.IsID() {
+				v = &ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent("update"),
+							Sel: ast.NewIdent(param.GetName()),
+						},
+						Sel: ast.NewIdent("String"),
+					},
+				}
+			}
 			value = &ast.CallExpr{
 				Fun:  ast.NewIdent(param.GetGRPCWrapper()),
 				Args: []ast.Expr{v},
@@ -1773,7 +1808,7 @@ func (h HandlerGenerator) get() *ast.FuncDecl {
 		&ast.CallExpr{
 			Fun: &ast.SelectorExpr{
 				X:   ast.NewIdent("uuid"),
-				Sel: ast.NewIdent("UUID"),
+				Sel: ast.NewIdent("MustParse"),
 			},
 			Args: []ast.Expr{
 				&ast.CallExpr{
@@ -2239,7 +2274,7 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 		&ast.CallExpr{
 			Fun: &ast.SelectorExpr{
 				X:   ast.NewIdent("uuid"),
-				Sel: ast.NewIdent("UUID"),
+				Sel: ast.NewIdent("MustParse"),
 			},
 			Args: []ast.Expr{
 				&ast.CallExpr{

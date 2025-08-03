@@ -26,7 +26,7 @@ func TestEventRepository_Send(t *testing.T) {
 	logger := mock_log.NewMocklogger(ctrl)
 	config := configs.NewMockConfig(t)
 	ctx := context.Background()
-	event := mockEntities.NewEvent(t)
+	event := entities.NewMockEvent(t)
 	type fields struct {
 		producer sarama.SyncProducer
 		logger   logger

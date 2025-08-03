@@ -13,16 +13,16 @@ import (
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 
 	"github.com/iancoleman/strcase"
 )
 
 type RepositoryGenerator struct {
-	domain *domain.App
+	domain *app.BaseEntity
 }
 
-func NewRepositoryGenerator(domain *domain.App) *RepositoryGenerator {
+func NewRepositoryGenerator(domain *app.BaseEntity) *RepositoryGenerator {
 	return &RepositoryGenerator{domain: domain}
 }
 
@@ -38,9 +38,9 @@ func (r RepositoryGenerator) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
-		r.domain.DirName(),
+		r.domain.AppName(),
 		"repositories",
-		"postgres",
+		r.domain.DirName(),
 		r.domain.FileName(),
 	)
 }
@@ -4000,9 +4000,9 @@ func (r RepositoryGenerator) syncTest() error {
 			destinationPath,
 			"internal",
 			"app",
-			r.domain.DirName(),
+			r.domain.AppName(),
 			"repositories",
-			"postgres",
+			r.domain.DirName(),
 			r.domain.TestFileName(),
 		),
 		Name: "repository test",

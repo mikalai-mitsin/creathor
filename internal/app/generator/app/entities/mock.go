@@ -3,6 +3,7 @@ package entities
 import (
 	"bytes"
 	"fmt"
+	"github.com/iancoleman/strcase"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -10,23 +11,22 @@ import (
 	"os"
 	"path"
 
-	mods "github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	mods "github.com/mikalai-mitsin/creathor/internal/pkg/app"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/fake"
 )
 
 type Mock struct {
 	typeSpec *ast.TypeSpec
-	fileName string
-	domain   *mods.App
+	domain   *mods.BaseEntity
 }
 
-func NewMock(typeSpec *ast.TypeSpec, fileName string, domain *mods.App) *Mock {
-	return &Mock{typeSpec: typeSpec, fileName: fileName, domain: domain}
+func NewMock(typeSpec *ast.TypeSpec, domain *mods.BaseEntity) *Mock {
+	return &Mock{typeSpec: typeSpec, domain: domain}
 }
 
 func (m *Mock) constructorName() string {
-	return fmt.Sprintf("New%s", m.typeSpec.Name)
+	return fmt.Sprintf("NewMock%s", m.typeSpec.Name)
 }
 
 func (m *Mock) constructor() *ast.FuncDecl {
@@ -50,10 +50,7 @@ func (m *Mock) constructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("entities"),
-							Sel: m.typeSpec.Name,
-						},
+						Type: ast.NewIdent(m.typeSpec.Name.String()),
 					},
 				},
 			},
@@ -78,10 +75,7 @@ func (m *Mock) constructor() *ast.FuncDecl {
 
 func (m *Mock) model() *ast.CompositeLit {
 	cl := &ast.CompositeLit{
-		Type: &ast.SelectorExpr{
-			X:   ast.NewIdent("entities"),
-			Sel: m.typeSpec.Name,
-		},
+		Type: ast.NewIdent(m.typeSpec.Name.String()),
 		Elts: []ast.Expr{},
 	}
 	for _, kv := range m.values() {
@@ -126,7 +120,7 @@ func (m *Mock) fill(cl *ast.CompositeLit) {
 
 func (m *Mock) file() *ast.File {
 	return &ast.File{
-		Name: ast.NewIdent("mock_entities"),
+		Name: ast.NewIdent("entities"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok: token.IMPORT,
@@ -141,12 +135,6 @@ func (m *Mock) file() *ast.File {
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
 							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, m.domain.Module),
-						},
-					},
-					&ast.ImportSpec{
-						Path: &ast.BasicLit{
-							Kind:  token.STRING,
-							Value: m.domain.EntitiesImportPath(),
 						},
 					},
 					&ast.ImportSpec{
@@ -175,7 +163,7 @@ func (m *Mock) file() *ast.File {
 
 func (m *Mock) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", m.domain.DirName(), "entities", "mock", m.fileName)
+	filename := path.Join("internal", "app", m.domain.AppName(), "entities", m.domain.DirName(), fmt.Sprintf("%s_mock.go", strcase.ToSnake(m.domain.Name)))
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err

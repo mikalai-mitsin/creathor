@@ -3,7 +3,7 @@ package http
 import (
 	"bytes"
 	"fmt"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -14,10 +14,10 @@ import (
 )
 
 type DTOGenerator struct {
-	domain *domain.App
+	domain *app.BaseEntity
 }
 
-func NewDTOGenerator(domain *domain.App) *DTOGenerator {
+func NewDTOGenerator(domain *app.BaseEntity) *DTOGenerator {
 	return &DTOGenerator{domain: domain}
 }
 
@@ -25,9 +25,10 @@ func (g *DTOGenerator) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
-		g.domain.DirName(),
+		g.domain.AppName(),
 		"handlers",
 		"http",
+		g.domain.DirName(),
 		fmt.Sprintf("%s_dto.go", g.domain.SnakeName()),
 	)
 }
@@ -1340,12 +1341,6 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 										Elt: &ast.SelectorExpr{
 											X:   ast.NewIdent("uuid"),
 											Sel: ast.NewIdent("UUID"),
-										},
-									},
-									&ast.CallExpr{
-										Fun: ast.NewIdent("len"),
-										Args: []ast.Expr{
-											ast.NewIdent("ids"),
 										},
 									},
 									&ast.CallExpr{

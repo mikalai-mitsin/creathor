@@ -10,20 +10,20 @@ import (
 	"os"
 	"path"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 )
 
 type InterfacesGenerator struct {
-	domain *domain.App
+	domain *app.BaseEntity
 }
 
-func NewInterfacesGenerator(domain *domain.App) *InterfacesGenerator {
+func NewInterfacesGenerator(domain *app.BaseEntity) *InterfacesGenerator {
 	return &InterfacesGenerator{domain: domain}
 }
 
 func (i InterfacesGenerator) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", i.domain.DirName(), "usecases", fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()))
+	filename := path.Join("internal", "app", i.domain.AppName(), "usecases", i.domain.DirName(), fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()))
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err

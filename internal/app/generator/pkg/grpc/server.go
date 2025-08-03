@@ -139,7 +139,7 @@ func (u Server) file() *ast.File {
 									},
 									{
 										Names: []*ast.Ident{
-											ast.NewIdent("unaryUseCases"),
+											ast.NewIdent("unaryInterceptors"),
 										},
 										Type: &ast.ArrayType{
 											Elt: &ast.SelectorExpr{
@@ -226,7 +226,7 @@ func (u Server) file() *ast.File {
 												},
 											},
 											&ast.KeyValueExpr{
-												Key: ast.NewIdent("unaryUseCases"),
+												Key: ast.NewIdent("unaryInterceptors"),
 												Value: &ast.CompositeLit{
 													Type: &ast.ArrayType{
 														Elt: &ast.SelectorExpr{
@@ -235,13 +235,7 @@ func (u Server) file() *ast.File {
 														},
 													},
 													Elts: []ast.Expr{
-														ast.NewIdent("unaryErrorServerUseCase"),
-														&ast.CallExpr{
-															Fun: &ast.SelectorExpr{
-																X:   ast.NewIdent("otelgrpc"),
-																Sel: ast.NewIdent("UnaryServerInterceptor"),
-															},
-														},
+														ast.NewIdent("unaryErrorServerInterceptor"),
 														&ast.CallExpr{
 															Fun: &ast.SelectorExpr{
 																X:   ast.NewIdent("grpc_zap"),
@@ -337,10 +331,25 @@ func (u Server) file() *ast.File {
 											Args: []ast.Expr{
 												&ast.SelectorExpr{
 													X:   ast.NewIdent("s"),
-													Sel: ast.NewIdent("unaryUseCases"),
+													Sel: ast.NewIdent("unaryInterceptors"),
 												},
 											},
 											Ellipsis: 1180,
+										},
+										&ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X:   ast.NewIdent("grpc"),
+												Sel: ast.NewIdent("StatsHandler"),
+											},
+											Args: []ast.Expr{
+												&ast.CallExpr{
+													Fun: &ast.SelectorExpr{
+														X:   ast.NewIdent("otelgrpc"),
+														Sel: ast.NewIdent("NewServerHandler"),
+													},
+													Args: []ast.Expr{},
+												},
+											},
 										},
 									},
 								},
@@ -645,7 +654,7 @@ func (u Server) file() *ast.File {
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									ast.NewIdent("usecase"),
+									ast.NewIdent("Interceptor"),
 								},
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("grpc"),
@@ -661,7 +670,7 @@ func (u Server) file() *ast.File {
 							Lhs: []ast.Expr{
 								&ast.SelectorExpr{
 									X:   ast.NewIdent("s"),
-									Sel: ast.NewIdent("unaryUseCases"),
+									Sel: ast.NewIdent("unaryInterceptors"),
 								},
 							},
 							Tok: token.ASSIGN,
@@ -671,9 +680,9 @@ func (u Server) file() *ast.File {
 									Args: []ast.Expr{
 										&ast.SelectorExpr{
 											X:   ast.NewIdent("s"),
-											Sel: ast.NewIdent("unaryUseCases"),
+											Sel: ast.NewIdent("unaryInterceptors"),
 										},
-										ast.NewIdent("usecase"),
+										ast.NewIdent("Interceptor"),
 									},
 								},
 							},

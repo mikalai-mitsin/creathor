@@ -3,15 +3,15 @@ package grpc
 import (
 	"path"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 )
 
 type TestGenerator struct {
-	domain *domain.App
+	domain *app.BaseEntity
 }
 
-func NewTestGenerator(domain *domain.App) *TestGenerator {
+func NewTestGenerator(domain *app.BaseEntity) *TestGenerator {
 	return &TestGenerator{domain: domain}
 }
 
@@ -22,9 +22,10 @@ func (g *TestGenerator) Sync() error {
 			destinationPath,
 			"internal",
 			"app",
-			g.domain.DirName(),
+			g.domain.AppName(),
 			"handlers",
 			"grpc",
+			g.domain.DirName(),
 			g.domain.TestFileName(),
 		),
 		Name: "test grpc service server",

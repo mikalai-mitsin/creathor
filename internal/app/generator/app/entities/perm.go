@@ -20,12 +20,11 @@ import (
 
 type Perm struct {
 	modelName string
-	fileName  string
 	domain    *mods.BaseEntity
 }
 
-func NewPerm(modelName string, fileName string, domain *mods.BaseEntity) *Perm {
-	return &Perm{modelName: modelName, fileName: fileName, domain: domain}
+func NewPerm(modelName string, domain *mods.BaseEntity) *Perm {
+	return &Perm{modelName: modelName, domain: domain}
 }
 
 func (m *Perm) file() *ast.File {
@@ -119,7 +118,8 @@ func (m *Perm) filename() string {
 		"app",
 		"user",
 		"entities",
-		fmt.Sprintf("permission_%s", m.fileName),
+		m.domain.DirName(),
+		fmt.Sprintf("permission_%s", m.domain.FileName()),
 	)
 }
 

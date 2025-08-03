@@ -43,7 +43,7 @@ func TestAuthMiddleware_Auth(t *testing.T) {
     defer ctrl.Finish()
     authUseCase := mock_grpc.NewMockAuthUseCase(ctrl)
     ctx := context.Background()
-    token := mockEntities.NewToken(t)
+    token := entities.NewMockToken(t)
     user := mockUserEntities.NewUser(t)
     ctxWithToken := metadata.NewIncomingContext(ctx, metadata.New(map[string]string{
         "authorization": fmt.Sprintf("Bearer %s", token.String()),

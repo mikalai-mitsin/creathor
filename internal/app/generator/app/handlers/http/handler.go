@@ -46,7 +46,7 @@ func (h *HandlerGenerator) Sync() error {
 }
 
 func (h *HandlerGenerator) filename() string {
-	return path.Join("internal", "app", h.domain.AppName(), "handlers", "http", h.domain.FileName())
+	return path.Join("internal", "app", h.domain.AppName(), "handlers", "http", h.domain.DirName(), h.domain.FileName())
 }
 
 func (h *HandlerGenerator) file() *ast.File {

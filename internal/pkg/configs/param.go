@@ -40,6 +40,10 @@ func (p *Param) IsSlice() bool {
 	return strings.HasPrefix(strings.TrimPrefix(p.Type, "*"), "[]")
 }
 
+func (p *Param) IsID() bool {
+	return strings.HasPrefix(strings.ToLower(strings.TrimPrefix(p.Type, "*")), "uuid")
+}
+
 func (p *Param) SliceType() string {
 	return strings.TrimPrefix(strings.TrimPrefix(p.Type, "*"), "[]")
 }
@@ -91,7 +95,7 @@ func (p *Param) Fake() string {
 	case "[]string":
 		return "faker.Lorem().Words(5)"
 	case "uuid", "UUID":
-		fake = "uuid.UUID(uuid.NewString())"
+		fake = "uuid.MustParse(uuid.NewString())"
 	case "time.Time":
 		fake = "faker.Time().Backward(40 * time.Hour).UTC()"
 	default:

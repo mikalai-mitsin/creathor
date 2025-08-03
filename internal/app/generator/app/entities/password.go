@@ -22,7 +22,7 @@ func NewPassword(domain *mods.BaseEntity) *Password {
 
 func (m *Password) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", m.domain.AppName(), "entities", m.domain.FileName())
+	filename := path.Join("internal", "app", m.domain.AppName(), "entities", m.domain.DirName(), m.domain.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err

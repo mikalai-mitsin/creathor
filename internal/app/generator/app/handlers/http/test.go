@@ -25,6 +25,7 @@ func (g *TestGenerator) Sync() error {
 			g.domain.AppName(),
 			"handlers",
 			"http",
+			g.domain.DirName(),
 			g.domain.TestFileName(),
 		),
 		Name: "test http handler",

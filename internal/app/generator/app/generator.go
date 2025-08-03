@@ -97,7 +97,7 @@ func addPermission(permission, check string) error {
 		"app",
 		"user",
 		"repositories",
-		"postgres",
+		"user",
 	)
 	if err := os.MkdirAll(packagePath, 0777); err != nil {
 		return err

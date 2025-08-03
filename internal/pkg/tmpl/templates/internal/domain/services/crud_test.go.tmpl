@@ -6,8 +6,7 @@ import (
     "time"
 
     "{{ .Module }}/internal/pkg/errs"
-    "{{ .Module }}/internal/app/{{ .AppName }}/entities"
-    mockEntities "{{ .Module }}/internal/app/{{ .AppName }}/entities/mock"
+    "{{ .Module }}/internal/app/{{ .AppName }}/entities/{{ .DirName }}"
     "{{ .Module }}/internal/pkg/uuid"
     "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
@@ -66,7 +65,7 @@ func Test{{ .Config.ServiceTypeName }}_Get(t *testing.T) {
     mock{{ .Config.RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
+    {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
         logger           logger
@@ -139,9 +138,9 @@ func Test{{ .Config.ServiceTypeName }}_List(t *testing.T) {
     var {{ .Config.ListVariable }} []entities.{{ .Config.EntityName }}
     count := faker.New().UInt64Between(2, 20)
     for i := uint64(0); i < count; i++ {
-        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mockEntities.New{{ .Config.EntityName }}(t))
+        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, entities.NewMock{{ .Config.EntityName }}(t))
     }
-    filter := mockEntities.New{{ .Config.FilterTypeName }}(t)
+    filter := entities.NewMock{{ .Config.FilterTypeName }}(t)
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
         logger           logger
@@ -236,7 +235,7 @@ func Test{{ .Config.ServiceTypeName }}_Create(t *testing.T) {
     mockLogger := NewMocklogger(ctrl)
     mockUUID := NewMockuuidGenerator(ctrl)
     ctx := context.Background()
-    create := mockEntities.New{{ .Config.CreateTypeName }}(t)
+    create := entities.NewMock{{ .Config.CreateTypeName }}(t)
     now := time.Now().UTC()
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
@@ -373,9 +372,9 @@ func Test{{ .Config.ServiceTypeName }}_Update(t *testing.T) {
     mock{{ .Config.RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
+    {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     mockClock := NewMockclock(ctrl)
-    update := mockEntities.New{{ .Config.UpdateTypeName }}(t)
+    update := entities.NewMock{{ .Config.UpdateTypeName }}(t)
     now := time.Now().UTC()
     updated{{ .Config.EntityName }} := entities.{{ .Config.EntityName }} {
         ID:         {{ .Config.Variable }}.ID,
@@ -485,7 +484,7 @@ func Test{{ .Config.ServiceTypeName }}_Delete(t *testing.T) {
     mock{{ .Config.RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
+    {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     type fields struct {
         {{ .Config.RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
         logger           logger

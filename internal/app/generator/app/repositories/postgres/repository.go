@@ -40,7 +40,7 @@ func (r RepositoryGenerator) filename() string {
 		"app",
 		r.domain.AppName(),
 		"repositories",
-		"postgres",
+		r.domain.DirName(),
 		r.domain.FileName(),
 	)
 }
@@ -4002,7 +4002,7 @@ func (r RepositoryGenerator) syncTest() error {
 			"app",
 			r.domain.AppName(),
 			"repositories",
-			"postgres",
+			r.domain.DirName(),
 			r.domain.TestFileName(),
 		),
 		Name: "repository test",

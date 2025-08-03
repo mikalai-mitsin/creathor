@@ -26,6 +26,7 @@ func (g *TestGenerator) Sync() error {
 			"app",
 			g.domain.AppName(),
 			"usecases",
+			g.domain.DirName(),
 			g.domain.TestFileName(),
 		),
 		Name: "usecase test",

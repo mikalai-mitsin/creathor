@@ -24,7 +24,7 @@ func NewInterfacesGenerator(domain *app.BaseEntity) *InterfacesGenerator {
 
 func (i InterfacesGenerator) Sync() error {
 	fileset := token.NewFileSet()
-	filename := filepath.Join("internal", "app", i.domain.AppName(), "services", fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()))
+	filename := filepath.Join("internal", "app", i.domain.AppName(), "services", i.domain.DirName(), fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()))
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err

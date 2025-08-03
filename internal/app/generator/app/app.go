@@ -64,50 +64,8 @@ func (a App) imports() *ast.GenDecl {
 	specs := []ast.Spec{
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
-				Kind: token.STRING,
-				Value: fmt.Sprintf(
-					`"%s/internal/app/%s/usecases"`,
-					a.app.Module,
-					a.app.AppName(),
-				),
-			},
-		},
-		&ast.ImportSpec{
-			Path: &ast.BasicLit{
-				Kind: token.STRING,
-				Value: fmt.Sprintf(
-					`"%s/internal/app/%s/repositories/postgres"`,
-					a.app.Module,
-					a.app.AppName(),
-				),
-			},
-		},
-		&ast.ImportSpec{
-			Path: &ast.BasicLit{
-				Kind: token.STRING,
-				Value: fmt.Sprintf(
-					`"%s/internal/app/%s/services"`,
-					a.app.Module,
-					a.app.AppName(),
-				),
-			},
-		},
-		&ast.ImportSpec{
-			Path: &ast.BasicLit{
 				Kind:  token.STRING,
 				Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, a.app.Module),
-			},
-		},
-		&ast.ImportSpec{
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, a.app.Module),
-			},
-		},
-		&ast.ImportSpec{
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/http"`, a.app.Module),
 			},
 		},
 		&ast.ImportSpec{
@@ -129,46 +87,105 @@ func (a App) imports() *ast.GenDecl {
 			},
 		},
 	}
-	if a.app.Config.HTTPEnabled {
-		specs = append(specs, &ast.ImportSpec{
-			Name: ast.NewIdent("httpHandlers"),
-			Path: &ast.BasicLit{
-				Kind: token.STRING,
-				Value: fmt.Sprintf(
-					`"%s/internal/app/%s/handlers/http"`,
-					a.app.Module,
-					a.app.AppName(),
-				),
-			},
-		})
-	}
-	if a.app.Config.GRPCEnabled {
+	for _, entity := range a.app.Entities {
 		specs = append(
 			specs,
 			&ast.ImportSpec{
-				Name: ast.NewIdent("grpcHandlers"),
+				Name: ast.NewIdent(fmt.Sprintf("%sUseCases", entity.LowerCamelName())),
 				Path: &ast.BasicLit{
 					Kind: token.STRING,
 					Value: fmt.Sprintf(
-						`"%s/internal/app/%s/handlers/grpc"`,
+						`"%s/internal/app/%s/usecases/%s"`,
 						a.app.Module,
 						a.app.AppName(),
+						entity.DirName(),
 					),
 				},
-			}, &ast.ImportSpec{
-				Name: ast.NewIdent(a.app.ProtoModule),
+			},
+			&ast.ImportSpec{
+				Name: ast.NewIdent(fmt.Sprintf("%sRepositories", entity.LowerCamelName())),
 				Path: &ast.BasicLit{
 					Kind: token.STRING,
 					Value: fmt.Sprintf(
-						`"%s/pkg/%s/v1"`,
+						`"%s/internal/app/%s/repositories/%s"`,
 						a.app.Module,
-						a.app.ProtoModule,
+						a.app.AppName(),
+						entity.DirName(),
+					),
+				},
+			},
+			&ast.ImportSpec{
+				Name: ast.NewIdent(fmt.Sprintf("%sServices", entity.LowerCamelName())),
+				Path: &ast.BasicLit{
+					Kind: token.STRING,
+					Value: fmt.Sprintf(
+						`"%s/internal/app/%s/services/%s"`,
+						a.app.Module,
+						a.app.AppName(),
+						entity.DirName(),
 					),
 				},
 			},
 		)
-
+		if a.app.Config.HTTPEnabled {
+			specs = append(
+				specs,
+				&ast.ImportSpec{
+					Name: ast.NewIdent(fmt.Sprintf("%sHttpHandlers", entity.LowerCamelName())),
+					Path: &ast.BasicLit{
+						Kind: token.STRING,
+						Value: fmt.Sprintf(
+							`"%s/internal/app/%s/handlers/http/%s"`,
+							a.app.Module,
+							a.app.AppName(),
+							entity.DirName(),
+						),
+					},
+				},
+				&ast.ImportSpec{
+					Path: &ast.BasicLit{
+						Kind:  token.STRING,
+						Value: fmt.Sprintf(`"%s/internal/pkg/http"`, a.app.Module),
+					},
+				},
+			)
+		}
+		if a.app.Config.GRPCEnabled {
+			specs = append(
+				specs,
+				&ast.ImportSpec{
+					Name: ast.NewIdent(fmt.Sprintf("%sGrpcHandlers", entity.LowerCamelName())),
+					Path: &ast.BasicLit{
+						Kind: token.STRING,
+						Value: fmt.Sprintf(
+							`"%s/internal/app/%s/handlers/grpc/%s"`,
+							a.app.Module,
+							a.app.AppName(),
+							entity.DirName(),
+						),
+					},
+				},
+				&ast.ImportSpec{
+					Path: &ast.BasicLit{
+						Kind:  token.STRING,
+						Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, a.app.Module),
+					},
+				},
+				&ast.ImportSpec{
+					Name: ast.NewIdent(a.app.ProtoModule),
+					Path: &ast.BasicLit{
+						Kind: token.STRING,
+						Value: fmt.Sprintf(
+							`"%s/pkg/%s/v1"`,
+							a.app.Module,
+							a.app.ProtoModule,
+						),
+					},
+				},
+			)
+		}
 	}
+
 	return &ast.GenDecl{
 		Tok:   token.IMPORT,
 		Specs: specs,
@@ -259,7 +276,7 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent("postgres"),
+							X:   ast.NewIdent(fmt.Sprintf("%sRepositories", entity.LowerCamelName())),
 							Sel: ast.NewIdent(entity.GetRepositoryConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -277,7 +294,7 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent("services"),
+							X:   ast.NewIdent(fmt.Sprintf("%sServices", entity.LowerCamelName())),
 							Sel: ast.NewIdent(entity.GetServiceConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -297,7 +314,7 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent("usecases"),
+							X:   ast.NewIdent(fmt.Sprintf("%sUseCases", entity.LowerCamelName())),
 							Sel: ast.NewIdent(entity.GetUseCaseConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -317,7 +334,7 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent("httpHandlers"),
+							X:   ast.NewIdent(fmt.Sprintf("%sHttpHandlers", entity.LowerCamelName())),
 							Sel: ast.NewIdent(entity.GetHTTPHandlerConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -341,7 +358,7 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent("grpcHandlers"),
+							X:   ast.NewIdent(fmt.Sprintf("%sGrpcHandlers", entity.LowerCamelName())),
 							Sel: ast.NewIdent(entity.GetGRPCHandlerConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -425,7 +442,7 @@ func (a App) structure() *ast.GenDecl {
 			},
 			Type: &ast.StarExpr{
 				X: &ast.SelectorExpr{
-					X:   ast.NewIdent("postgres"),
+					X:   ast.NewIdent(fmt.Sprintf("%sRepositories", entity.LowerCamelName())),
 					Sel: ast.NewIdent(entity.GetRepositoryTypeName()),
 				},
 			},
@@ -436,7 +453,7 @@ func (a App) structure() *ast.GenDecl {
 				},
 				Type: &ast.StarExpr{
 					X: &ast.SelectorExpr{
-						X:   ast.NewIdent("services"),
+						X:   ast.NewIdent(fmt.Sprintf("%sServices", entity.LowerCamelName())),
 						Sel: ast.NewIdent(entity.GetServiceTypeName()),
 					},
 				},
@@ -447,7 +464,7 @@ func (a App) structure() *ast.GenDecl {
 				},
 				Type: &ast.StarExpr{
 					X: &ast.SelectorExpr{
-						X:   ast.NewIdent("usecases"),
+						X:   ast.NewIdent(fmt.Sprintf("%sUseCases", entity.LowerCamelName())),
 						Sel: ast.NewIdent(entity.GetUseCaseTypeName()),
 					},
 				},
@@ -459,7 +476,7 @@ func (a App) structure() *ast.GenDecl {
 				},
 				Type: &ast.StarExpr{
 					X: &ast.SelectorExpr{
-						X:   ast.NewIdent("httpHandlers"),
+						X:   ast.NewIdent(fmt.Sprintf("%sHttpHandlers", entity.LowerCamelName())),
 						Sel: ast.NewIdent(entity.GetHTTPHandlerTypeName()),
 					},
 				},
@@ -472,7 +489,7 @@ func (a App) structure() *ast.GenDecl {
 				},
 				Type: &ast.StarExpr{
 					X: &ast.SelectorExpr{
-						X:   ast.NewIdent("grpcHandlers"),
+						X:   ast.NewIdent(fmt.Sprintf("%sGrpcHandlers", entity.LowerCamelName())),
 						Sel: ast.NewIdent(entity.GetGRPCHandlerTypeName()),
 					},
 				},

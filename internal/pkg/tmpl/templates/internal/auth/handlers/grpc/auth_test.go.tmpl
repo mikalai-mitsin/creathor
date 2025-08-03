@@ -18,8 +18,8 @@ func TestAuthServiceServer_CreateToken(t *testing.T) {
     defer ctrl.Finish()
     mockAuthUseCase := NewMockauthUseCase(ctrl)
     ctx := context.Background()
-    login := mockEntities.NewLogin(t)
-    pair := mockEntities.NewTokenPair(t)
+    login := entities.NewMockLogin(t)
+    pair := entities.NewMockTokenPair(t)
     type fields struct {
         UnimplementedAuthServiceServer {{ .ProtoPackage }}.UnimplementedAuthServiceServer
         authUseCase                authUseCase
@@ -102,8 +102,8 @@ func TestAuthServiceServer_RefreshToken(t *testing.T) {
     defer ctrl.Finish()
     mockAuthUseCase := NewMockauthUseCase(ctrl)
     ctx := context.Background()
-    token := mockEntities.NewToken(t)
-    pair := mockEntities.NewTokenPair(t)
+    token := entities.NewMockToken(t)
+    pair := entities.NewMockTokenPair(t)
     type fields struct {
         UnimplementedAuthServiceServer {{ .ProtoPackage }}.UnimplementedAuthServiceServer
         authUseCase                authUseCase

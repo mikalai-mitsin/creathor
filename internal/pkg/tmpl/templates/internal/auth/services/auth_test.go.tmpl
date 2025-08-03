@@ -125,9 +125,9 @@ func TestAuthService_CreateToken(t *testing.T) {
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     user := mockUserEntities.NewUser(t)
-    login := mockEntities.NewLogin(t)
+    login := entities.NewMockLogin(t)
     user.Email = login.Email
-    pair := mockEntities.NewTokenPair(t)
+    pair := entities.NewMockTokenPair(t)
     user.SetPassword(login.Password)
     type fields struct {
         authRepository authRepository
@@ -255,7 +255,7 @@ func TestAuthService_RefreshToken(t *testing.T) {
     mockAuthRepository :=  NewMockauthRepository(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    pair := mockEntities.NewTokenPair(t)
+    pair := entities.NewMockTokenPair(t)
     type fields struct {
         authRepository authRepository
         userRepository userRepository
@@ -456,7 +456,7 @@ func TestAuthService_CreateTokenByUser(t *testing.T) {
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     user := mockUserEntities.NewUser(t)
-    tokenPair := mockEntities.NewTokenPair(t)
+    tokenPair := entities.NewMockTokenPair(t)
     type fields struct {
         authRepository authRepository
         userRepository userRepository

@@ -29,7 +29,7 @@ func (r InterfacesGenerator) Sync() error {
 		"app",
 		r.domain.AppName(),
 		"repositories",
-		"postgres",
+		r.domain.DirName(),
 		fmt.Sprintf("%s_interfaces.go", r.domain.SnakeName()),
 	)
 	err := os.MkdirAll(path.Dir(filename), 0777)

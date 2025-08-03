@@ -97,8 +97,12 @@ func (m *BaseEntity) AppName() string {
 	return m.AppConfig.AppName()
 }
 
+func (m *BaseEntity) DirName() string {
+	return strcase.ToSnake(m.Name)
+}
+
 func (m *BaseEntity) EntitiesImportPath() string {
-	return fmt.Sprintf(`"%s/internal/app/%s/entities"`, m.Module, m.AppName())
+	return fmt.Sprintf(`"%s/internal/app/%s/entities/%s"`, m.Module, m.AppName(), m.DirName())
 }
 
 func (m *BaseEntity) GetMainModel() *Entity {

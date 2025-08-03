@@ -25,6 +25,7 @@ func (g *TestGenerator) Sync() error {
 			g.domain.AppName(),
 			"handlers",
 			"grpc",
+			g.domain.DirName(),
 			g.domain.TestFileName(),
 		),
 		Name: "test grpc service server",

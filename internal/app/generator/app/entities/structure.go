@@ -89,7 +89,7 @@ func (m *Structure) file() *ast.File {
 }
 
 func (m *Structure) filename() string {
-	return filepath.Join("internal", "app", m.domain.AppName(), "entities", m.fileName)
+	return filepath.Join("internal", "app", m.domain.AppName(), "entities", m.domain.DirName(), m.domain.FileName())
 }
 
 func (m *Structure) fill(structure *ast.TypeSpec) {

@@ -225,7 +225,7 @@ func TestPermissionRepository_HasPermission(t *testing.T) {
     }
     defer db.Close()
     query := "SELECT permissions.id, permissions.name FROM public.permissions INNER JOIN group_permissions ON permissions.id = group_permissions.permission_id WHERE group_permissions.group_id = $1 AND permissions.id = $2"
-    user := mockEntities.NewUser(t)
+    user := entities.NewMockUser(t)
     user.GroupID = "user"
     permission := entities.Permission{}
     type fields struct {
@@ -303,9 +303,9 @@ func TestPermissionRepository_HasObjectPermission1(t *testing.T) {
         return
     }
     defer db.Close()
-    user := mockEntities.NewUser(t)
+    user := entities.NewMockUser(t)
     user.GroupID = "user"
-    article := mockEntities.NewUser(t)
+    article := entities.NewMockUser(t)
     type fields struct {
         database *sqlx.DB
     }

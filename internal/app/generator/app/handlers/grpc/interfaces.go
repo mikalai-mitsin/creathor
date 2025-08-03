@@ -29,6 +29,7 @@ func (i InterfacesGenerator) Sync() error {
 		i.domain.AppName(),
 		"handlers",
 		"grpc",
+		i.domain.DirName(),
 		fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()),
 	)
 	err := os.MkdirAll(path.Dir(filename), 0777)

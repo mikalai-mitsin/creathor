@@ -1349,12 +1349,6 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 											ast.NewIdent("ids"),
 										},
 									},
-									&ast.CallExpr{
-										Fun: ast.NewIdent("len"),
-										Args: []ast.Expr{
-											ast.NewIdent("ids"),
-										},
-									},
 								},
 							},
 						},

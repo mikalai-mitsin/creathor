@@ -35,7 +35,7 @@ Config example
 ```yaml
 name: "example"
 module: "github.com/mikalai-mitsin/example"
-goVersion: "1.22"
+goVersion: "1.24"
 ci: "github"
 gRPC: true
 http: true

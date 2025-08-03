@@ -492,6 +492,8 @@ func Test_decode{{ .Config.EntityName }}(t *testing.T) {
         {{- range $value := .Config.Params }}
             {{- if $value.IsSlice }}
         {{ $value.GRPCParam }}: {{ $value.GRPCType }}{},
+            {{- else if $value.IsID }}
+        {{ $value.GRPCParam }}: {{ $.Config.Variable }}.{{ $value.GetName }}.String(),
             {{- else }}
         {{ $value.GRPCParam }}: {{ $value.GRPCType }}({{ $.Config.Variable }}.{{ $value.GetName }}),
             {{- end }}

@@ -11,14 +11,14 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 )
 
 type InterfacesGenerator struct {
-	domain *domain.App
+	domain *app.BaseEntity
 }
 
-func NewInterfacesGenerator(domain *domain.App) *InterfacesGenerator {
+func NewInterfacesGenerator(domain *app.BaseEntity) *InterfacesGenerator {
 	return &InterfacesGenerator{domain: domain}
 }
 
@@ -27,9 +27,9 @@ func (r InterfacesGenerator) Sync() error {
 	filename := filepath.Join(
 		"internal",
 		"app",
-		r.domain.DirName(),
+		r.domain.AppName(),
 		"repositories",
-		"postgres",
+		r.domain.DirName(),
 		fmt.Sprintf("%s_interfaces.go", r.domain.SnakeName()),
 	)
 	err := os.MkdirAll(path.Dir(filename), 0777)

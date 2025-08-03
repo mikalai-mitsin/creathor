@@ -13,14 +13,13 @@ import (
     "testing"
 
     "{{ .Module }}/internal/pkg/errs"
-    mockEntities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
     "{{ .Module }}/internal/pkg/postgres"
     "github.com/DATA-DOG/go-sqlmock"
     "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
     "github.com/stretchr/testify/assert"
 
-    "{{ .Module }}/internal/app/{{ .DirName }}/entities"
+    "{{ .Module }}/internal/app/{{ .AppName }}/entities/{{ .DirName }}"
     "{{ .Module }}/internal/pkg/pointer"
     "{{ .Module }}/internal/pkg/uuid"
     "github.com/jmoiron/sqlx"
@@ -74,7 +73,7 @@ func Test{{ .Config.RepositoryTypeName }}_Create(t *testing.T) {
     defer ctrl.Finish()
     mockLogger := NewMocklogger(ctrl)
     query := "INSERT INTO public.{{ .TableName }} (id,created_at,updated_at,{{- range $i, $value := .Config.Params }}{{if $i}},{{end}}{{ $value.Tag }}{{- end }}) VALUES ($1,$2,$3,{{ range $i, $value := .Config.Params }}{{if $i}},{{end}}${{ add $i 4}}{{- end }})"
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
+    {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     ctx := context.Background()
     type fields struct {
         database *sqlx.DB
@@ -172,7 +171,7 @@ func Test{{ .Config.RepositoryTypeName }}_Get(t *testing.T) {
     defer ctrl.Finish()
     mockLogger := NewMocklogger(ctrl)
     query := "SELECT {{ .TableName }}.id, {{ .TableName }}.created_at, {{ .TableName }}.updated_at{{ range $key, $value := .Config.Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }} WHERE id = $1 LIMIT 1"
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
+    {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     ctx := context.Background()
     type fields struct {
         database *sqlx.DB
@@ -268,7 +267,7 @@ func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
     ctx := context.Background()
     var {{ .Config.ListVariable }} []entities.{{ .Config.EntityName }}
     for i := 0; i < faker.New().IntBetween(2, 20); i++ {
-        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, mockEntities.New{{ .Config.EntityName }}(t))
+        {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, entities.NewMock{{ .Config.EntityName }}(t))
     }
     filter := entities.{{ .Config.FilterTypeName }}{
 		PageSize:   pointer.Of(uint64(10)),
@@ -373,7 +372,7 @@ func Test{{ .Config.RepositoryTypeName }}_Update(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mockLogger := NewMocklogger(ctrl)
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
+    {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     query := `UPDATE public.{{ .TableName }} SET created_at = $1, updated_at = $2, {{ range $i, $value := .Config.Params }}{{if $i}}, {{end}}{{ $value.Tag }} = ${{ add $i 3}}{{- end }} WHERE id = ${{ add (len $.Config.Params) 3 }}`
     ctx := context.Background()
     type fields struct {
@@ -555,7 +554,7 @@ func Test{{ .Config.RepositoryTypeName }}_Delete(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mockLogger := NewMocklogger(ctrl)
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
+    {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     type fields struct {
         database *sqlx.DB
         logger   logger

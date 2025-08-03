@@ -3,8 +3,6 @@ package main
 import (
 	"bytes"
 
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/auth"
-
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/layout"
 
 	"fmt"
@@ -14,10 +12,10 @@ import (
 	"path"
 	"strings"
 
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/app"
+	appgenerator "github.com/mikalai-mitsin/creathor/internal/app/generator/app"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 
 	"github.com/iancoleman/strcase"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
@@ -73,27 +71,31 @@ func initProject(_ *cli.Context) error {
 	if err := pkgGenerator.Sync(); err != nil {
 		return err
 	}
-	if project.Auth {
-		authGenerator := auth.NewGenerator(project)
-		if err := authGenerator.Sync(); err != nil {
-			return err
-		}
-	}
-	for _, m := range project.Apps {
-		d := &domain.App{
-			Config:      m,
-			Name:        m.Name,
+	for _, appConfig := range project.Apps {
+		ap := &app.App{
+			Config:      appConfig,
+			Name:        appConfig.Name,
 			Module:      project.Module,
 			ProtoModule: project.ProtoPackage(),
-			Entities: []*domain.Entity{
-				domain.NewMainEntity(m),
-				domain.NewFilterEntity(m),
-				domain.NewCreateEntity(m),
-				domain.NewUpdateEntity(m),
-			},
-			Auth: project.Auth,
+			Entities:    make([]*app.BaseEntity, len(appConfig.Entities)),
 		}
-		appGenerator := app.NewGenerator(d)
+		for i, entity := range appConfig.Entities {
+			baseEntity := &app.BaseEntity{
+				Config:      entity,
+				AppConfig:   &appConfig,
+				Name:        entity.Name,
+				Module:      project.Module,
+				ProtoModule: project.ProtoPackage(),
+				Entities: []*app.Entity{
+					app.NewMainEntity(entity),
+					app.NewFilterEntity(entity),
+					app.NewCreateEntity(entity),
+					app.NewUpdateEntity(entity),
+				},
+			}
+			ap.Entities[i] = baseEntity
+		}
+		appGenerator := appgenerator.NewGenerator(ap)
 		if err := appGenerator.Sync(); err != nil {
 			return err
 		}

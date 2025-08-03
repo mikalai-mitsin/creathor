@@ -8,7 +8,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/domain"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 )
 
 func astType(t string) ast.Expr {
@@ -29,11 +29,11 @@ func astType(t string) ast.Expr {
 }
 
 type Model struct {
-	model  *domain.Entity
-	domain *domain.App
+	model  *app.Entity
+	domain *app.BaseEntity
 }
 
-func NewModel(model *domain.Entity, domain *domain.App) *Model {
+func NewModel(model *app.Entity, domain *app.BaseEntity) *Model {
 	return &Model{
 		model:  model,
 		domain: domain,
@@ -60,18 +60,12 @@ func (m *Model) Sync() error {
 	if err != nil {
 		return err
 	}
-	if m.domain.Auth {
-		permissions := NewPerm(m.model.Name, m.domain.FileName(), m.domain)
-		if err := permissions.Sync(); err != nil {
-			return err
-		}
-	}
 	structure := NewStructure(m.domain.FileName(), m.model.Name, m.params(), m.domain)
 	if err := structure.Sync(); err != nil {
 		return err
 	}
 	if m.model.Validation {
-		validate := NewValidate(structure.spec(), m.domain.FileName(), m.domain)
+		validate := NewValidate(structure.spec(), m.domain)
 		if err := validate.Sync(); err != nil {
 			return err
 		}
@@ -83,7 +77,7 @@ func (m *Model) Sync() error {
 		}
 	}
 	if m.model.Mock {
-		mock := NewMock(structure.spec(), m.domain.FileName(), m.domain)
+		mock := NewMock(structure.spec(), m.domain)
 		if err := mock.Sync(); err != nil {
 			return err
 		}

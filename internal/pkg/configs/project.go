@@ -14,7 +14,6 @@ type Project struct {
 	Name           string      `yaml:"name"`
 	Module         string      `yaml:"module"`
 	GoVersion      string      `yaml:"goVersion"`
-	Auth           bool        `yaml:"auth"`
 	CI             string      `yaml:"ci"`
 	Apps           []AppConfig `yaml:"apps"`
 	GRPCEnabled    bool        `yaml:"gRPC"`
@@ -31,7 +30,6 @@ func NewProject(configPath string) (*Project, error) {
 		Name:           "",
 		Module:         "",
 		GoVersion:      "1.20",
-		Auth:           true,
 		CI:             "github",
 		Apps:           nil,
 		GRPCEnabled:    true,
@@ -48,35 +46,24 @@ func NewProject(configPath string) (*Project, error) {
 	if err := yaml.Unmarshal(file, project); err != nil {
 		log.Fatalf("error: %v", err)
 	}
-	if project.Auth {
-		project.Apps = append(project.Apps, AppConfig{
-			Name:         "user",
-			Module:       project.Module,
-			ProjectName:  project.Name,
-			ProtoPackage: project.ProtoPackage(),
-			Auth:         project.Auth,
-			Params: []*Param{
-				{Name: "FirstName", Type: "string", Search: true},
-				{Name: "LastName", Type: "string", Search: true},
-				{Name: "Password", Type: "string", Search: false},
-				{Name: "Email", Type: "string", Search: true},
-				{Name: "GroupID", Type: "entities.GroupID", Search: false},
-			},
-			HTTPEnabled:    project.HTTPEnabled,
-			GRPCEnabled:    project.GRPCEnabled,
-			GatewayEnabled: project.GatewayEnabled,
-			KafkaEnabled:   project.KafkaEnabled,
-		})
-	}
-	for i, entity := range project.Apps {
-		entity.Module = project.Module
-		entity.Auth = project.Auth
-		entity.ProjectName = project.Name
-		entity.ProtoPackage = project.ProtoPackage()
-		entity.GRPCEnabled = project.GRPCEnabled
-		entity.HTTPEnabled = project.HTTPEnabled
-		entity.GatewayEnabled = project.GatewayEnabled
-		project.Apps[i] = entity
+
+	for i, app := range project.Apps {
+		app.Module = project.Module
+		app.ProjectName = project.Name
+		app.ProtoPackage = project.ProtoPackage()
+		app.GRPCEnabled = project.GRPCEnabled
+		app.HTTPEnabled = project.HTTPEnabled
+		app.GatewayEnabled = project.GatewayEnabled
+		for i2, entity := range app.Entities {
+			entity.Module = project.Module
+			entity.ProjectName = project.Name
+			entity.ProtoPackage = project.ProtoPackage()
+			entity.GRPCEnabled = project.GRPCEnabled
+			entity.HTTPEnabled = project.HTTPEnabled
+			entity.GatewayEnabled = project.GatewayEnabled
+			app.Entities[i2] = entity
+		}
+		project.Apps[i] = app
 	}
 	return project, nil
 }
@@ -87,7 +74,6 @@ func (p *Project) Validate() error {
 		validation.Field(&p.Name, validation.Required),
 		validation.Field(&p.Module, validation.Required),
 		validation.Field(&p.GoVersion, validation.Required),
-		validation.Field(&p.Auth, validation.Required),
 		validation.Field(&p.CI),
 		validation.Field(&p.Apps),
 		validation.Field(&p.GRPCEnabled),

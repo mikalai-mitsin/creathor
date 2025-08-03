@@ -5,7 +5,7 @@ Creathor is a CLI tool for generating layout and base CRUD operations on your pr
 Creathor provides:
 
 * [Standart project layout](https://github.com/golang-standards/project-layout)
-* Clean architecture with interfaces, interceptors, usecases, repositories and domain models
+* Clean architecture with interfaces, usecases, services, repositories and domain entities
 * DI with [FX](https://github.com/uber-go/fx)
 * Interface of [Logger](https://github.com/uber-go/zap) and clock
 * gRPC and RESTful APIs
@@ -36,35 +36,44 @@ Config example
 name: "example"
 module: "github.com/mikalai-mitsin/example"
 goVersion: "1.22"
-auth: true
 ci: "github"
 gRPC: true
 http: true
 gateway: false
 uptrace: true
-domains:
-  - model: Post
-    params:
-      - name: "title"
-        type: "string"
-      - name: "body"
-        type: "string"
-      - name: "is_private"
-        type: "bool"
-      - name: "tags"
-        type: "[]string"
-      - name: "published_at"
-        type: "time.Time"
-      - name: "author_id"
-        type: "uuid.UUID"
-  - model: Comment
-    params:
-      - name: "text"
-        type: "string"
-      - name: "author_id"
-        type: "uuid.UUID"
-      - name: "post_id"
-        type: "uuid.UUID"
+apps:
+  - name: posts
+    entities:
+      - name: post
+        params:
+          - name: "Body"
+            type: "string"
+      - name: tag
+        params:
+          - name: "post_id"
+            type: "uuid.UUID"
+          - name: "Value"
+            type: "string"
+      - name: like
+        params:
+          - name: "PostID"
+            type: "uuid.UUID"
+          - name: "Value"
+            type: "string"
+          - name: "user_id"
+            type: "uuid.UUID"
+  - name: articles
+    entities:
+      - name: article
+        params:
+          - name: "Title"
+            type: "string"
+          - name: "Subtitle"
+            type: "string"
+          - name: "Body"
+            type: "string"
+          - name: "is_published"
+            type: "string"
 ```
 
 To generate code in the current directory and with default config name, use the command `creathor`

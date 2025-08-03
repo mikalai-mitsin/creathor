@@ -17,7 +17,11 @@ func NewUUID() UUID {
 }
 
 func MustParse(id string) UUID {
-	return UUID(uuid.MustParse(id))
+	parse, err := uuid.Parse(id)
+	if err != nil {
+		return UUID{}
+	}
+	return UUID(parse)
 }
 
 func (id UUID) Validate() error {

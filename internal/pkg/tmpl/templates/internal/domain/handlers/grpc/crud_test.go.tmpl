@@ -4,8 +4,7 @@ import (
     "context"
     "{{ .Module }}/internal/pkg/errs"
 
-    "{{ .Module }}/internal/app/{{ .DirName }}/entities"
-    mockEntities "{{ .Module }}/internal/app/{{ .DirName }}/entities/mock"
+    "{{ .Module }}/internal/app/{{ .AppName }}/entities/{{ .DirName }}"
     "{{ .Module }}/internal/pkg/pointer"
     "{{ .Module }}/internal/pkg/uuid"
     {{ .Config.ProtoPackage }} "{{ .Module }}/pkg/{{ .Config.ProtoPackage }}/v1"
@@ -58,8 +57,8 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Create(t *testing.T) {
     mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    // create := mockEntities.New{{ .Config.CreateTypeName }}(t)
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
+    // create := entities.NewMock{{ .Config.CreateTypeName }}(t)
+    {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
         {{ .Config.UseCaseVariableName }} {{ .GetUseCaseInterfaceName }}
@@ -224,7 +223,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Get(t *testing.T) {
     mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
+    {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
         {{ .Config.UseCaseVariableName }}                {{ .GetUseCaseInterfaceName }}
@@ -255,7 +254,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Get(t *testing.T) {
             args: args{
                 ctx: ctx,
                 input: &{{ .Config.ProtoPackage }}.{{ .Config.EntityName }}Get{
-                    Id: string({{ .Config.Variable }}.ID),
+                    Id: {{ .Config.Variable }}.ID.String(),
                 },
             },
             want:    decode{{ .Config.EntityName }}({{ .Config.Variable }}),
@@ -276,7 +275,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Get(t *testing.T) {
             args: args{
                 ctx: ctx,
                 input: &{{ .Config.ProtoPackage }}.{{ .Config.EntityName }}Get{
-                    Id: string({{ .Config.Variable }}.ID),
+                    Id: {{ .Config.Variable }}.ID.String(),
                 },
             },
             want:    nil,
@@ -304,7 +303,7 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
     mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    filter := mockEntities.New{{ .Config.FilterTypeName }}(t)
+    filter := entities.NewMock{{ .Config.FilterTypeName }}(t)
     var ids []uuid.UUID
     var stringIDs []string
     count := faker.New().UInt64Between(2, 20)
@@ -314,9 +313,9 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
     }
     {{ .Config.ListVariable }} := make([]entities.{{ .Config.EntityName }}, 0, int(count))
     for i := 0; i < int(count); i++ {
-        a := mockEntities.New{{ .Config.EntityName }}(t)
+        a := entities.NewMock{{ .Config.EntityName }}(t)
         ids = append(ids, a.ID)
-        stringIDs = append(stringIDs, string(a.ID))
+        stringIDs = append(stringIDs, a.ID.String())
         {{ .Config.ListVariable }} = append({{ .Config.ListVariable }}, a)
         response.Items = append(response.Items, decode{{ .Config.EntityName }}(a))
     }
@@ -414,8 +413,8 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Update(t *testing.T) {
     mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
-    update := mockEntities.New{{ .Config.UpdateTypeName }}(t)
+    {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
+    update := entities.NewMock{{ .Config.UpdateTypeName }}(t)
     type fields struct {
         Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
         {{ .Config.UseCaseVariableName }}                {{ .GetUseCaseInterfaceName }}
@@ -485,14 +484,16 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Update(t *testing.T) {
 }
 
 func Test_decode{{ .Config.EntityName }}(t *testing.T) {
-    {{ .Config.Variable }} := mockEntities.New{{ .Config.EntityName }}(t)
+    {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     result := &{{ .Config.ProtoPackage }}.{{ .Config.EntityName }}{
-        Id:          string({{ .Config.Variable }}.ID),
+        Id:          {{ .Config.Variable }}.ID.String(),
         UpdatedAt:   timestamppb.New({{ .Config.Variable }}.UpdatedAt),
         CreatedAt:   timestamppb.New({{ .Config.Variable }}.CreatedAt),
         {{- range $value := .Config.Params }}
             {{- if $value.IsSlice }}
         {{ $value.GRPCParam }}: {{ $value.GRPCType }}{},
+            {{- else if $value.IsID }}
+        {{ $value.GRPCParam }}: {{ $.Config.Variable }}.{{ $value.GetName }}.String(),
             {{- else }}
         {{ $value.GRPCParam }}: {{ $value.GRPCType }}({{ $.Config.Variable }}.{{ $value.GetName }}),
             {{- end }}
@@ -549,7 +550,7 @@ func Test_encode{{ .Config.FilterTypeName }}(t *testing.T) {
                     Search:     wrapperspb.String("my name is"),
 {{- end}}
                     OrderBy:    []string{"created_at", "id"},
-                    Ids:        []string{string(id)},
+                    Ids:        []string{id.String()},
                 },
             },
             want: entities.{{ .Config.FilterTypeName }}{

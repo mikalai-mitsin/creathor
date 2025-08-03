@@ -116,9 +116,9 @@ func (m *Perm) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
-		"user",
+		"users",
 		"entities",
-		m.domain.DirName(),
+		"permission",
 		fmt.Sprintf("permission_%s", m.domain.FileName()),
 	)
 }

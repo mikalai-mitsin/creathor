@@ -14,7 +14,6 @@ type AppConfig struct {
 	Module         string         `json:"module"        yaml:"module"`
 	ProjectName    string         `json:"project_name"  yaml:"projectName"`
 	ProtoPackage   string         `json:"proto_package" yaml:"protoPackage"`
-	Auth           bool           `json:"auth" yaml:"auth"`
 	HTTPEnabled    bool           `                     yaml:"http"`
 	GRPCEnabled    bool           `                     yaml:"gRPC"`
 	GatewayEnabled bool           `                     yaml:"gateway"`
@@ -35,7 +34,6 @@ type EntityConfig struct {
 	Module         string   `json:"module"        yaml:"module"`
 	ProjectName    string   `json:"project_name"  yaml:"projectName"`
 	ProtoPackage   string   `json:"proto_package" yaml:"protoPackage"`
-	Auth           bool     `json:"auth"          yaml:"auth"`
 	Params         []*Param `json:"params"        yaml:"params"`
 	HTTPEnabled    bool     `                     yaml:"http"`
 	GRPCEnabled    bool     `                     yaml:"gRPC"`
@@ -49,7 +47,6 @@ func (m *EntityConfig) Validate() error {
 		validation.Field(&m.Name, validation.Required),
 		validation.Field(&m.Module, validation.Required),
 		validation.Field(&m.ProjectName, validation.Required),
-		validation.Field(&m.Auth),
 		validation.Field(&m.Params),
 	)
 	if err != nil {

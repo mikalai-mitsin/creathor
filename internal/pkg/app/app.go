@@ -20,7 +20,6 @@ type App struct {
 	Module      string
 	ProtoModule string
 	Entities    []*BaseEntity
-	Auth        bool
 }
 
 func (m *App) AppName() string {
@@ -33,7 +32,6 @@ type BaseEntity struct {
 	Module      string
 	ProtoModule string
 	Entities    []*Entity
-	Auth        bool
 	AppConfig   *configs.AppConfig
 }
 

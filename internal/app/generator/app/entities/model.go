@@ -60,12 +60,6 @@ func (m *Model) Sync() error {
 	if err != nil {
 		return err
 	}
-	if m.domain.Auth {
-		permissions := NewPerm(m.model.Name, m.domain)
-		if err := permissions.Sync(); err != nil {
-			return err
-		}
-	}
 	structure := NewStructure(m.domain.FileName(), m.model.Name, m.params(), m.domain)
 	if err := structure.Sync(); err != nil {
 		return err

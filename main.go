@@ -3,8 +3,6 @@ package main
 import (
 	"bytes"
 
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/auth"
-
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/layout"
 
 	"fmt"
@@ -73,12 +71,6 @@ func initProject(_ *cli.Context) error {
 	if err := pkgGenerator.Sync(); err != nil {
 		return err
 	}
-	if project.Auth {
-		authGenerator := auth.NewGenerator(project)
-		if err := authGenerator.Sync(); err != nil {
-			return err
-		}
-	}
 	for _, appConfig := range project.Apps {
 		ap := &app.App{
 			Config:      appConfig,
@@ -86,7 +78,6 @@ func initProject(_ *cli.Context) error {
 			Module:      project.Module,
 			ProtoModule: project.ProtoPackage(),
 			Entities:    make([]*app.BaseEntity, len(appConfig.Entities)),
-			Auth:        appConfig.Auth,
 		}
 		for i, entity := range appConfig.Entities {
 			baseEntity := &app.BaseEntity{
@@ -101,7 +92,6 @@ func initProject(_ *cli.Context) error {
 					app.NewCreateEntity(entity),
 					app.NewUpdateEntity(entity),
 				},
-				Auth: project.Auth,
 			}
 			ap.Entities[i] = baseEntity
 		}

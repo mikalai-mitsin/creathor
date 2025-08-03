@@ -18,6 +18,7 @@ func (g *Generator) Sync() error {
 		NewCmdGenerator(g.project),
 		NewDocsGenerator(g.project),
 		NewBuilderGenerator(g.project),
+		NewGitGenerator(g.project),
 		NewCIGenerator(g.project),
 		NewDeploymentGenerator(g.project),
 	}

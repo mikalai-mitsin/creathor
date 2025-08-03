@@ -632,10 +632,6 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 					},
 					Elts: []ast.Expr{
 						&ast.KeyValueExpr{
-							Key:   ast.NewIdent("IDs"),
-							Value: ast.NewIdent("nil"),
-						},
-						&ast.KeyValueExpr{
 							Key:   ast.NewIdent("PageSize"),
 							Value: ast.NewIdent("nil"),
 						},
@@ -743,50 +739,6 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 												},
 											},
 											Sel: ast.NewIdent("GetValue"),
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		&ast.RangeStmt{
-			Key:   ast.NewIdent("_"),
-			Value: ast.NewIdent("id"),
-			Tok:   token.DEFINE,
-			X: &ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X:   ast.NewIdent("input"),
-					Sel: ast.NewIdent("GetIds"),
-				},
-			},
-			Body: &ast.BlockStmt{
-				List: []ast.Stmt{
-					&ast.AssignStmt{
-						Lhs: []ast.Expr{
-							&ast.SelectorExpr{
-								X:   ast.NewIdent("filter"),
-								Sel: ast.NewIdent("IDs"),
-							},
-						},
-						Tok: token.ASSIGN,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: ast.NewIdent("append"),
-								Args: []ast.Expr{
-									&ast.SelectorExpr{
-										X:   ast.NewIdent("filter"),
-										Sel: ast.NewIdent("IDs"),
-									},
-									&ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X:   ast.NewIdent("uuid"),
-											Sel: ast.NewIdent("MustParse"),
-										},
-										Args: []ast.Expr{
-											ast.NewIdent("id"),
 										},
 									},
 								},

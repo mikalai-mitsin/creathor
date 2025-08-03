@@ -435,8 +435,5 @@ func (p *Param) GetPrivateName() string {
 }
 
 func (p *Param) Tag() string {
-	if p.Name == "IDs" {
-		return "ids"
-	}
 	return strcase.ToSnake(p.Name)
 }

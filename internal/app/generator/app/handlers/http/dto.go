@@ -811,16 +811,6 @@ func (g *DTOGenerator) filterDTOStruct() *ast.TypeSpec {
 					Value: "`json:\"order_by\"`",
 				},
 			},
-			{
-				Names: []*ast.Ident{
-					ast.NewIdent("IDs"),
-				},
-				Type: ast.NewIdent("[]uuid.UUID"),
-				Tag: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: "`json:\"ids\"`",
-				},
-			},
 		},
 	}
 	if g.domain.SearchEnabled() {
@@ -887,10 +877,6 @@ func (g *DTOGenerator) syncFilterDTOStruct() error {
 
 func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 	exprs := []ast.Expr{
-		&ast.KeyValueExpr{
-			Key:   ast.NewIdent("IDs"),
-			Value: ast.NewIdent("nil"),
-		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("PageSize"),
 			Value: ast.NewIdent("nil"),
@@ -1262,133 +1248,6 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 				},
 			},
 		},
-		&ast.IfStmt{
-			Cond: &ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X: &ast.CallExpr{
-						Fun: &ast.SelectorExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("r"),
-								Sel: ast.NewIdent("URL"),
-							},
-							Sel: ast.NewIdent("Query"),
-						},
-					},
-					Sel: ast.NewIdent("Has"),
-				},
-				Args: []ast.Expr{
-					&ast.BasicLit{
-						Kind:  token.STRING,
-						Value: "\"ids\"",
-					},
-				},
-			},
-			Body: &ast.BlockStmt{
-				List: []ast.Stmt{
-					&ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("ids"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X:   ast.NewIdent("strings"),
-									Sel: ast.NewIdent("Split"),
-								},
-								Args: []ast.Expr{
-									&ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X: &ast.CallExpr{
-												Fun: &ast.SelectorExpr{
-													X: &ast.SelectorExpr{
-														X:   ast.NewIdent("r"),
-														Sel: ast.NewIdent("URL"),
-													},
-													Sel: ast.NewIdent("Query"),
-												},
-											},
-											Sel: ast.NewIdent("Get"),
-										},
-										Args: []ast.Expr{
-											&ast.BasicLit{
-												Kind:  token.STRING,
-												Value: "\"ids\"",
-											},
-										},
-									},
-									&ast.BasicLit{
-										Kind:  token.STRING,
-										Value: "\",\"",
-									},
-								},
-							},
-						},
-					},
-					&ast.AssignStmt{
-						Lhs: []ast.Expr{
-							&ast.SelectorExpr{
-								X:   ast.NewIdent("filter"),
-								Sel: ast.NewIdent("IDs"),
-							},
-						},
-						Tok: token.ASSIGN,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: ast.NewIdent("make"),
-								Args: []ast.Expr{
-									&ast.ArrayType{
-										Elt: &ast.SelectorExpr{
-											X:   ast.NewIdent("uuid"),
-											Sel: ast.NewIdent("UUID"),
-										},
-									},
-									&ast.CallExpr{
-										Fun: ast.NewIdent("len"),
-										Args: []ast.Expr{
-											ast.NewIdent("ids"),
-										},
-									},
-								},
-							},
-						},
-					},
-					&ast.RangeStmt{
-						Key:   ast.NewIdent("i"),
-						Value: ast.NewIdent("id"),
-						Tok:   token.DEFINE,
-						X:     ast.NewIdent("ids"),
-						Body: &ast.BlockStmt{
-							List: []ast.Stmt{
-								&ast.AssignStmt{
-									Lhs: []ast.Expr{
-										&ast.IndexExpr{
-											X: &ast.SelectorExpr{
-												X:   ast.NewIdent("filter"),
-												Sel: ast.NewIdent("IDs"),
-											},
-											Index: ast.NewIdent("i"),
-										},
-									},
-									Tok: token.ASSIGN,
-									Rhs: []ast.Expr{
-										&ast.CallExpr{
-											Fun: &ast.SelectorExpr{
-												X:   ast.NewIdent("uuid"),
-												Sel: ast.NewIdent("MustParse"),
-											},
-											Args: []ast.Expr{
-												ast.NewIdent("id"),
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
 	}
 	if g.domain.SearchEnabled() {
 		stmts = append(stmts, &ast.IfStmt{
@@ -1544,13 +1403,6 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 			Value: &ast.SelectorExpr{
 				X:   ast.NewIdent("dto"),
 				Sel: ast.NewIdent("OrderBy"),
-			},
-		},
-		&ast.KeyValueExpr{
-			Key: ast.NewIdent("IDs"),
-			Value: &ast.SelectorExpr{
-				X:   ast.NewIdent("dto"),
-				Sel: ast.NewIdent("IDs"),
 			},
 		},
 	}

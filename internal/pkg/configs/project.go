@@ -29,7 +29,7 @@ func NewProject(configPath string) (*Project, error) {
 	project := &Project{
 		Name:           "",
 		Module:         "",
-		GoVersion:      "1.20",
+		GoVersion:      "1.24",
 		CI:             "github",
 		Apps:           nil,
 		GRPCEnabled:    true,

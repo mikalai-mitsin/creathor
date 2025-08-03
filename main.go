@@ -145,5 +145,12 @@ func postInit(project *configs.Project) error {
 	if err := tidy.Run(); err != nil {
 		fmt.Println(errb.String())
 	}
+	docs := exec.Command("task", "docs")
+	docs.Dir = destinationPath
+	docs.Stderr = &errb
+	fmt.Println(strings.Join(docs.Args, " "))
+	if err := docs.Run(); err != nil {
+		fmt.Println(errb.String())
+	}
 	return nil
 }

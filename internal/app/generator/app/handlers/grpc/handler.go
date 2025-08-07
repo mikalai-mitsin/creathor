@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
 )
 
 type HandlerGenerator struct {
@@ -1476,17 +1477,7 @@ func (h HandlerGenerator) syncStruct() error {
 	if err != nil {
 		file = h.file()
 	}
-	var structureExists bool
-	var structure *ast.TypeSpec
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok &&
-			t.Name.String() == h.domain.GetGRPCHandlerTypeName() {
-			structure = t
-			structureExists = true
-			return false
-		}
-		return true
-	})
+	structure, structureExists := astfile.FindType(file, h.domain.GetGRPCHandlerTypeName())
 	if structure == nil {
 		structure = h.structure()
 	}

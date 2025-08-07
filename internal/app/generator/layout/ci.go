@@ -40,11 +40,19 @@ func (c *CIGenerator) Sync() error {
 			Name:            "gitlab-ci",
 		})
 	case "github":
-		files = append(files, &tmpl.Template{
-			SourcePath:      "templates/ci/github/workflows/tests.yaml.tmpl",
-			DestinationPath: filepath.Join(destinationPath, ".github", "workflows", "tests.yaml"),
-			Name:            "gitlab-ci",
-		})
+		files = append(
+			files,
+			&tmpl.Template{
+				SourcePath:      "templates/ci/github/workflows/tests.yaml.tmpl",
+				DestinationPath: filepath.Join(destinationPath, ".github", "workflows", "tests.yaml"),
+				Name:            "github-tests",
+			},
+			&tmpl.Template{
+				SourcePath:      "templates/ci/github/workflows/docker-publish.yml.tmpl",
+				DestinationPath: filepath.Join(destinationPath, ".github", "workflows", "docker-publish.yml"),
+				Name:            "github-docker-publish",
+			},
+		)
 		directories = append(directories, filepath.Join(destinationPath, ".github", "workflows"))
 	}
 	for _, directory := range directories {

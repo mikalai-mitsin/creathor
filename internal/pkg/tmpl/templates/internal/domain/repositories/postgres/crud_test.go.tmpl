@@ -1,4 +1,4 @@
-package postgres
+package repositories
 
 import (
     "context"
@@ -33,7 +33,7 @@ func TestNew{{ .Config.RepositoryTypeName }}(t *testing.T) {
     }
     defer mockDB.Close()
     type args struct {
-        database *sqlx.DB
+        database database
         logger   logger
     }
     tests := []struct {
@@ -76,7 +76,7 @@ func Test{{ .Config.RepositoryTypeName }}_Create(t *testing.T) {
     {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     ctx := context.Background()
     type fields struct {
-        database *sqlx.DB
+        database database
         logger   logger
     }
     type args struct {
@@ -174,7 +174,7 @@ func Test{{ .Config.RepositoryTypeName }}_Get(t *testing.T) {
     {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     ctx := context.Background()
     type fields struct {
-        database *sqlx.DB
+        database database
         logger   logger
     }
     type args struct {
@@ -277,7 +277,7 @@ func Test{{ .Config.RepositoryTypeName }}_List(t *testing.T) {
 	}
     query := "SELECT {{ .TableName }}.id, {{ .TableName }}.created_at, {{ .TableName }}.updated_at{{ range $key, $value := .Config.Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }} ORDER BY id ASC LIMIT 10 OFFSET 10"
     type fields struct {
-        database *sqlx.DB
+        database database
         logger   logger
     }
     type args struct {
@@ -375,7 +375,7 @@ func Test{{ .Config.RepositoryTypeName }}_Update(t *testing.T) {
     query := `UPDATE public.{{ .TableName }} SET created_at = $1, updated_at = $2, {{ range $i, $value := .Config.Params }}{{if $i}}, {{end}}{{ $value.Tag }} = ${{ add $i 3}}{{- end }} WHERE id = ${{ add (len $.Config.Params) 3 }}`
     ctx := context.Background()
     type fields struct {
-        database *sqlx.DB
+        database database
         logger   logger
     }
     type args struct {
@@ -555,7 +555,7 @@ func Test{{ .Config.RepositoryTypeName }}_Delete(t *testing.T) {
     mockLogger := NewMocklogger(ctrl)
     {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     type fields struct {
-        database *sqlx.DB
+        database database
         logger   logger
     }
     type args struct {
@@ -662,7 +662,7 @@ func Test{{ .Config.RepositoryTypeName }}_Count(t *testing.T) {
     ctx := context.Background()
     filter := entities.{{ .Config.FilterTypeName }}{}
     type fields struct {
-        database *sqlx.DB
+        database database
         logger   logger
     }
     type args struct {

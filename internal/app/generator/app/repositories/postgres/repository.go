@@ -11,6 +11,7 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
@@ -183,50 +184,23 @@ func (r RepositoryGenerator) syncDTOStruct() error {
 	if err != nil {
 		return err
 	}
-	var structureExists bool
-	var structure *ast.TypeSpec
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.getDTOName() {
-			structure = t
-			structureExists = true
-			return false
-		}
-		return true
-	})
+	structure, structureExists := astfile.FindType(file, r.getDTOName())
 	if structure == nil {
 		structure = r.dtoStruct()
 	}
 	for _, param := range r.domain.GetMainModel().Params {
-		ast.Inspect(structure, func(node ast.Node) bool {
-			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
-				for _, field := range st.Fields.List {
-					for _, fieldName := range field.Names {
-						if fieldName.Name == param.GetName() {
-							return false
-						}
-					}
-				}
-				st.Fields.List = append(st.Fields.List, &ast.Field{
-					Doc:   nil,
-					Names: []*ast.Ident{ast.NewIdent(param.GetName())},
-					Type:  ast.NewIdent(param.PostgresDTOType()),
-					Tag: &ast.BasicLit{
-						Kind:  token.STRING,
-						Value: fmt.Sprintf("`db:\"%s\"`", param.Tag()),
-					},
-					Comment: nil,
-				})
-				return false
-			}
-			return true
-		})
+		astfile.SetTypeParam(
+			structure,
+			param.GetName(),
+			param.PostgresDTOType(),
+			fmt.Sprintf("`db:\"%s\"`", param.Tag()),
+		)
 	}
 	if !structureExists {
-		gd := &ast.GenDecl{
+		file.Decls = append(file.Decls, &ast.GenDecl{
 			Tok:   token.TYPE,
 			Specs: []ast.Spec{structure},
-		}
-		file.Decls = append(file.Decls, gd)
+		})
 	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
@@ -643,14 +617,9 @@ func (r RepositoryGenerator) astStruct() *ast.TypeSpec {
 				Opening: 0,
 				List: []*ast.Field{
 					{
-						Doc:   nil,
-						Names: []*ast.Ident{ast.NewIdent("database")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("sqlx"),
-								Sel: ast.NewIdent("DB"),
-							},
-						},
+						Doc:     nil,
+						Names:   []*ast.Ident{ast.NewIdent("database")},
+						Type:    ast.NewIdent("database"),
 						Tag:     nil,
 						Comment: nil,
 					},
@@ -724,12 +693,6 @@ func (r RepositoryGenerator) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: `"github.com/jmoiron/sqlx"`,
-			},
-		},
-		&ast.ImportSpec{
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
 				Value: `"github.com/lib/pq"`,
 			},
 		},
@@ -743,7 +706,7 @@ func (r RepositoryGenerator) file() *ast.File {
 		})
 	}
 	return &ast.File{
-		Name: ast.NewIdent("postgres"),
+		Name: ast.NewIdent("repositories"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok:   token.IMPORT,
@@ -759,17 +722,7 @@ func (r RepositoryGenerator) syncStruct() error {
 	if err != nil {
 		file = r.file()
 	}
-	var structureExists bool
-	var structure *ast.TypeSpec
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok &&
-			t.Name.String() == r.domain.GetRepositoryTypeName() {
-			structure = t
-			structureExists = true
-			return false
-		}
-		return true
-	})
+	structure, structureExists := astfile.FindType(file, r.domain.GetRepositoryTypeName())
 	if structure == nil {
 		structure = r.astStruct()
 	}
@@ -805,14 +758,9 @@ func (r RepositoryGenerator) astConstructor() *ast.FuncDecl {
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Doc:   nil,
-						Names: []*ast.Ident{ast.NewIdent("database")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("sqlx"),
-								Sel: ast.NewIdent("DB"),
-							},
-						},
+						Doc:     nil,
+						Names:   []*ast.Ident{ast.NewIdent("database")},
+						Type:    ast.NewIdent("database"),
 						Tag:     nil,
 						Comment: nil,
 					},
@@ -1944,89 +1892,19 @@ func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 						},
 					},
 				},
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent("result"),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("r"),
-									Sel: ast.NewIdent("database"),
-								},
-								Sel: ast.NewIdent("QueryRowxContext"),
-							},
-							Args: []ast.Expr{
-								ast.NewIdent("ctx"),
-								ast.NewIdent("query"),
-								ast.NewIdent("args"),
-							},
-							Ellipsis: 7757,
-						},
-					},
-				},
-				&ast.IfStmt{
-					Init: &ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X:   ast.NewIdent("result"),
-									Sel: ast.NewIdent("Err"),
-								},
-							},
-						},
-					},
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.AssignStmt{
-								Lhs: []ast.Expr{
-									ast.NewIdent("e"),
-								},
-								Tok: token.DEFINE,
-								Rhs: []ast.Expr{
-									&ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X:   ast.NewIdent("errs"),
-											Sel: ast.NewIdent("FromPostgresError"),
-										},
-										Args: []ast.Expr{
-											ast.NewIdent("err"),
-										},
-									},
-								},
-							},
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									&ast.BasicLit{
-										Kind:  token.INT,
-										Value: "0",
-									},
-									ast.NewIdent("e"),
-								},
-							},
-						},
-					},
-				},
 				&ast.DeclStmt{
 					Decl: &ast.GenDecl{
 						Tok: token.VAR,
 						Specs: []ast.Spec{
 							&ast.ValueSpec{
 								Names: []*ast.Ident{
-									ast.NewIdent("count"),
+									&ast.Ident{
+										Name: "count",
+									},
 								},
-								Type: ast.NewIdent("uint64"),
+								Type: &ast.Ident{
+									Name: "uint64",
+								},
 							},
 						},
 					},
@@ -2040,38 +1918,71 @@ func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X:   ast.NewIdent("result"),
-									Sel: ast.NewIdent("Scan"),
-								},
-								Args: []ast.Expr{
-									&ast.UnaryExpr{
-										Op: token.AND,
-										X:  ast.NewIdent("count"),
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "r",
+										},
+										Sel: &ast.Ident{
+											Name: "database",
+										},
+									},
+									Sel: &ast.Ident{
+										Name: "GetContext",
 									},
 								},
+								Args: []ast.Expr{
+									&ast.Ident{
+										Name: "ctx",
+									},
+									&ast.UnaryExpr{
+										Op: token.AND,
+										X: &ast.Ident{
+											Name: "count",
+										},
+									},
+									&ast.Ident{
+										Name: "query",
+									},
+									&ast.Ident{
+										Name: "args",
+									},
+								},
+								Ellipsis: 378,
 							},
 						},
 					},
 					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
+						X: &ast.Ident{
+							Name: "err",
+						},
 						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
+						Y: &ast.Ident{
+							Name: "nil",
+						},
 					},
 					Body: &ast.BlockStmt{
 						List: []ast.Stmt{
 							&ast.AssignStmt{
 								Lhs: []ast.Expr{
-									ast.NewIdent("e"),
+									&ast.Ident{
+										Name: "e",
+									},
 								},
 								Tok: token.DEFINE,
 								Rhs: []ast.Expr{
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
-											X:   ast.NewIdent("errs"),
-											Sel: ast.NewIdent("FromPostgresError"),
+											X: &ast.Ident{
+												Name: "errs",
+											},
+											Sel: &ast.Ident{
+												Name: "FromPostgresError",
+											},
 										},
 										Args: []ast.Expr{
-											ast.NewIdent("err"),
+											&ast.Ident{
+												Name: "err",
+											},
 										},
 									},
 								},
@@ -2082,7 +1993,9 @@ func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 										Kind:  token.INT,
 										Value: "0",
 									},
-									ast.NewIdent("e"),
+									&ast.Ident{
+										Name: "e",
+									},
 								},
 							},
 						},

@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
 )
 
 type ServiceGenerator struct {
@@ -128,16 +129,7 @@ func (u ServiceGenerator) syncStruct() error {
 	if err != nil {
 		file = u.file()
 	}
-	var structureExists bool
-	var structure *ast.TypeSpec
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == u.domain.GetServiceTypeName() {
-			structure = t
-			structureExists = true
-			return false
-		}
-		return true
-	})
+	structure, structureExists := astfile.FindType(file, u.domain.GetServiceTypeName())
 	if structure == nil {
 		structure = u.structure()
 	}

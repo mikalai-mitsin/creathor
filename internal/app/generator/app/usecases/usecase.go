@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
 )
 
 type UseCaseGenerator struct {
@@ -83,16 +84,7 @@ func (i UseCaseGenerator) syncStruct() error {
 	if err != nil {
 		file = i.file()
 	}
-	var structureExists bool
-	var structure *ast.TypeSpec
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == i.domain.GetUseCaseTypeName() {
-			structure = t
-			structureExists = true
-			return false
-		}
-		return true
-	})
+	structure, structureExists := astfile.FindType(file, i.domain.GetUseCaseTypeName())
 	if structure == nil {
 		structure = i.structure()
 	}

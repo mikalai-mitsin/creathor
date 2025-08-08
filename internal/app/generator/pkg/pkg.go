@@ -5,7 +5,6 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/clock"
 	cg "github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/configs"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/containers"
-	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/domain/repositories"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/errs"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/grpc"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/http"
@@ -49,12 +48,6 @@ func (g *Generator) Sync() error {
 	}
 	if g.project.UptraceEnabled {
 		generators = append(generators, uptrace.NewProvider(g.project))
-	}
-	if g.project.KafkaEnabled {
-		generators = append(
-			generators,
-			repositories.NewRepositoryInterfaceEvent(g.project),
-		)
 	}
 	for _, generator := range generators {
 		if err := generator.Sync(); err != nil {

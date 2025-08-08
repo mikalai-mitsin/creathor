@@ -1,17 +1,17 @@
-package kafka
+package events
 
 import (
 	"context"
 	"errors"
 	"{{ .Module }}/internal/pkg/configs"
 	"{{ .Module }}/internal/pkg/errs"
-	"{{ .Module }}/internal/domain/entities"
-	mockEntities "{{ .Module }}/internal/domain/entities/mock"
+    "{{ .Module }}/internal/app/{{ .AppName }}/entities/{{ .DirName }}"
+	mockEntities "{{ .Module }}/internal/app/{{ .AppName }}/entities/{{ .DirName }}"
 	"{{ .Module }}/internal/domain/repositories"
 	mock_sarama "{{ .Module }}/internal/repositories/kafka/mock"
 	"{{ .Module }}/internal/pkg/clock"
 	mock_log "{{ .Module }}/internal/pkg/log/mock"
-	"github.com/Shopify/sarama"
+	"github.com/IBM/sarama"
 	"go.uber.org/mock/gomock"
 	"reflect"
 	"testing"

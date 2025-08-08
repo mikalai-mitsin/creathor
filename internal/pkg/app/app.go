@@ -99,6 +99,24 @@ func (m *BaseEntity) DirName() string {
 	return strcase.ToSnake(m.Name)
 }
 
+func (m *BaseEntity) EventProducerConstructorName() string {
+	return fmt.Sprintf("New%s", m.EventProducerTypeName())
+}
+
+func (m *BaseEntity) EventProducerTypeName() string {
+	return fmt.Sprintf("%sEventProducer", strcase.ToCamel(m.Name))
+}
+
+func (m *BaseEntity) CreatedTopicName() string {
+	return fmt.Sprintf("%s.created", strcase.ToSnake(m.Name))
+}
+func (m *BaseEntity) UpdatedTopicName() string {
+	return fmt.Sprintf("%s.updated", strcase.ToSnake(m.Name))
+}
+func (m *BaseEntity) DeletedTopicName() string {
+	return fmt.Sprintf("%s.deleted", strcase.ToSnake(m.Name))
+}
+
 func (m *BaseEntity) EntitiesImportPath() string {
 	return fmt.Sprintf(`"%s/internal/app/%s/entities/%s"`, m.Module, m.AppName(), m.DirName())
 }

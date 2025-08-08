@@ -210,6 +210,28 @@ func (m *BaseEntity) GetGRPCServiceDescriptionName() string {
 	return fmt.Sprintf("%sService_ServiceDesc", strcase.ToCamel(m.Config.Name))
 }
 
+func (m *BaseEntity) GetGRPCCreateDTOEncodeName() string {
+	return fmt.Sprintf("encode%s", m.GetCreateModel().Name)
+}
+
+func (m *BaseEntity) GetGRPCUpdateDTOEncodeName() string {
+	return fmt.Sprintf("encode%s", m.GetUpdateModel().Name)
+}
+
+func (m *BaseEntity) GetGRPCFilterDTOEncodeName() string {
+	return fmt.Sprintf("encode%s", m.GetFilterModel().Name)
+}
+
+func (m *BaseEntity) GetGRPCMainDecodeName() string {
+	return fmt.Sprintf("decode%s", m.GetMainModel().Name)
+}
+func (m *BaseEntity) GetGRPCMainListDecodeName() string {
+	return fmt.Sprintf("decodeList%s", m.GetMainModel().Name)
+}
+func (m *BaseEntity) GetGRPCUpdateDecodeName() string {
+	return fmt.Sprintf("decode%s", m.GetUpdateModel().Name)
+}
+
 func (m *BaseEntity) GetHTTPHandlerConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetHTTPHandlerTypeName())
 }
@@ -232,6 +254,7 @@ func (m *BaseEntity) GetHTTPItemDTOConstructorName() string {
 func (m *BaseEntity) GetHTTPUpdateDTOName() string {
 	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.GetUpdateModel().Name))
 }
+
 func (m *BaseEntity) GetHTTPUpdateDTOConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetHTTPUpdateDTOName())
 }

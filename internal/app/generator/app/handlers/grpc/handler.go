@@ -226,17 +226,7 @@ func (h HandlerGenerator) syncEncodeCreate() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("encode%s", h.domain.GetCreateModel().Name) {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCCreateDTOEncodeName())
 	if method == nil {
 		method = h.encodeCreate()
 	}
@@ -591,17 +581,7 @@ func (h HandlerGenerator) syncEncodeUpdate() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("encode%s", h.domain.GetUpdateModel().Name) {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCUpdateDTOEncodeName())
 	if method == nil {
 		method = h.encodeUpdate()
 	}
@@ -844,17 +824,7 @@ func (h HandlerGenerator) syncEncodeFilter() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("encode%s", h.domain.GetFilterModel().Name) {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCFilterDTOEncodeName())
 	if method == nil {
 		method = h.encodeFilter()
 	}
@@ -873,7 +843,7 @@ func (h HandlerGenerator) syncEncodeFilter() error {
 
 func (h HandlerGenerator) decode() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("decode%s", h.domain.GetMainModel().Name)),
+		Name: ast.NewIdent(h.domain.GetGRPCMainDecodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -992,17 +962,7 @@ func (h HandlerGenerator) syncDecodeModel() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("decode%s", h.domain.GetMainModel().Name) {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCMainDecodeName())
 	if method == nil {
 		method = h.decode()
 	}
@@ -1045,7 +1005,7 @@ func (h HandlerGenerator) syncDecodeModel() error {
 
 func (h HandlerGenerator) decodeList() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("decodeList%s", h.domain.GetMainModel().Name)),
+		Name: ast.NewIdent(h.domain.GetGRPCMainListDecodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -1189,17 +1149,7 @@ func (h HandlerGenerator) syncDecodeList() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("decodeList%s", h.domain.GetMainModel().Name) {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCMainListDecodeName())
 	if method == nil {
 		method = h.decodeList()
 	}
@@ -1321,7 +1271,7 @@ func (h HandlerGenerator) decodeUpdate() *ast.FuncDecl {
 		},
 	})
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("decode%s", h.domain.GetUpdateModel().Name)),
+		Name: ast.NewIdent(h.domain.GetGRPCUpdateDecodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -1408,17 +1358,7 @@ func (h HandlerGenerator) syncDecodeUpdate() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("decode%s", h.domain.GetUpdateModel().Name) {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCUpdateDecodeName())
 	if method == nil {
 		method = h.decodeUpdate()
 	}
@@ -1567,17 +1507,7 @@ func (h HandlerGenerator) syncConstructor() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", h.domain.GetGRPCHandlerTypeName()) {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCHandlerConstructorName())
 	if method == nil {
 		method = h.constructor()
 	}
@@ -1719,16 +1649,7 @@ func (h HandlerGenerator) syncCreateMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Create" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Create")
 	if method == nil {
 		method = h.create()
 	}
@@ -1878,16 +1799,7 @@ func (h HandlerGenerator) syncGetMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Get" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Get")
 	if method == nil {
 		method = h.get()
 	}
@@ -2012,7 +1924,7 @@ func (h HandlerGenerator) list() *ast.FuncDecl {
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
 						&ast.CallExpr{
-							Fun: ast.NewIdent(fmt.Sprintf("decodeList%s", h.domain.GetMainModel().Name)),
+							Fun: ast.NewIdent(h.domain.GetGRPCMainListDecodeName()),
 							Args: []ast.Expr{
 								ast.NewIdent("items"),
 								ast.NewIdent("count"),
@@ -2032,16 +1944,7 @@ func (h HandlerGenerator) syncListMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "List" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "List")
 	if method == nil {
 		method = h.list()
 	}
@@ -2184,16 +2087,7 @@ func (h HandlerGenerator) syncUpdateMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Update" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Update")
 	if method == nil {
 		method = h.update()
 	}
@@ -2346,16 +2240,7 @@ func (h HandlerGenerator) syncDeleteMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Delete" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Delete")
 	if method == nil {
 		method = h.delete()
 	}
@@ -2399,7 +2284,6 @@ func (h HandlerGenerator) Sync() error {
 	if err := h.syncDeleteMethod(); err != nil {
 		return err
 	}
-
 	if err := h.syncEncodeCreate(); err != nil {
 		return err
 	}

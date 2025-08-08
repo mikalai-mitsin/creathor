@@ -62,3 +62,18 @@ func SetTypeParam(typeSpec *ast.TypeSpec, name, typeName, tag string) {
 		return true
 	})
 }
+
+func FindFunc(file ast.Node, name string) (*ast.FuncDecl, bool) {
+	var funcExists bool
+	var function *ast.FuncDecl
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.FuncDecl); ok &&
+			t.Name.String() == name {
+			funcExists = true
+			function = t
+			return false
+		}
+		return true
+	})
+	return function, funcExists
+}

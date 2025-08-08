@@ -49,11 +49,6 @@ func (u ServiceGenerator) Sync() error {
 	if err := u.syncDeleteMethod(); err != nil {
 		return err
 	}
-	if u.domain.SnakeName() == "user" {
-		if err := u.syncGetByEmailMethod(); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
@@ -230,22 +225,12 @@ func (u ServiceGenerator) syncConstructor() error {
 	if err != nil {
 		return err
 	}
-	var structureConstructorExists bool
-	var structureConstructor *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", u.domain.GetServiceTypeName()) {
-			structureConstructorExists = true
-			structureConstructor = t
-			return false
-		}
-		return true
-	})
-	if structureConstructor == nil {
-		structureConstructor = u.constructor()
+	method, methodExist := astfile.FindFunc(file, u.domain.GetServiceConstructorName())
+	if method == nil {
+		method = u.constructor()
 	}
-	if !structureConstructorExists {
-		file.Decls = append(file.Decls, structureConstructor)
+	if !methodExist {
+		file.Decls = append(file.Decls, method)
 	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
@@ -467,16 +452,7 @@ func (u ServiceGenerator) syncCreateMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Create" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Create")
 	if method == nil {
 		method = u.create()
 	}
@@ -652,16 +628,7 @@ func (u ServiceGenerator) syncListMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "List" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "List")
 	if method == nil {
 		method = u.list()
 	}
@@ -786,16 +753,7 @@ func (u ServiceGenerator) syncGetMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Get" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Get")
 	if method == nil {
 		method = u.get()
 	}
@@ -1076,16 +1034,7 @@ func (u ServiceGenerator) syncUpdateMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Update" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Update")
 	if method == nil {
 		method = u.update()
 	}
@@ -1258,152 +1207,9 @@ func (u ServiceGenerator) syncDeleteMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Delete" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Delete")
 	if method == nil {
 		method = u.delete()
-	}
-	if !methodExist {
-		file.Decls = append(file.Decls, method)
-	}
-	buff := &bytes.Buffer{}
-	if err := printer.Fprint(buff, fileset, file); err != nil {
-		return err
-	}
-	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (u ServiceGenerator) getByEmail() *ast.FuncDecl {
-	return &ast.FuncDecl{
-		Recv: &ast.FieldList{
-			Opening: 0,
-			List: []*ast.Field{
-				{
-					Names: []*ast.Ident{
-						ast.NewIdent("u"),
-					},
-					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.GetServiceTypeName()),
-					},
-				},
-			},
-		},
-		Name: ast.NewIdent("GetByEmail"),
-		Type: &ast.FuncType{
-			Params: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Names: []*ast.Ident{ast.NewIdent("ctx")},
-						Type:  ast.NewIdent("context.Context"),
-					},
-					{
-						Names: []*ast.Ident{ast.NewIdent("email")},
-						Type:  ast.NewIdent("string"),
-					},
-				},
-			},
-			Results: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
-						},
-					},
-					{
-						Type: ast.NewIdent("error"),
-					},
-				},
-			},
-		},
-		Body: &ast.BlockStmt{
-			List: []ast.Stmt{
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent(u.domain.GetMainModel().Variable),
-						ast.NewIdent("err"),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("u"),
-									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
-								},
-								Sel: ast.NewIdent("GetByEmail"),
-							},
-							Args: []ast.Expr{
-								ast.NewIdent("ctx"),
-								ast.NewIdent("email"),
-							},
-						},
-					},
-				},
-				&ast.IfStmt{
-					Init: nil,
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									&ast.CompositeLit{
-										Type: &ast.SelectorExpr{
-											X:   ast.NewIdent("entities"),
-											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
-										},
-									},
-									ast.NewIdent("err"),
-								},
-							},
-						},
-					},
-					Else: nil,
-				},
-				&ast.ReturnStmt{
-					Results: []ast.Expr{
-						ast.NewIdent(u.domain.GetMainModel().Variable),
-						ast.NewIdent("nil"),
-					},
-				},
-			},
-		},
-	}
-}
-
-func (u ServiceGenerator) syncGetByEmailMethod() error {
-	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
-	if err != nil {
-		return err
-	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "GetByEmail" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
-	if method == nil {
-		method = u.getByEmail()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)

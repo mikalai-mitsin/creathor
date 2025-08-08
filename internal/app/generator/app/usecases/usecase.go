@@ -167,22 +167,12 @@ func (i UseCaseGenerator) syncConstructor() error {
 	if err != nil {
 		return err
 	}
-	var structureConstructorExists bool
-	var structureConstructor *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == i.domain.GetUseCaseConstructorName() {
-			structureConstructorExists = true
-			structureConstructor = t
-			return false
-		}
-		return true
-	})
-	if structureConstructor == nil {
-		structureConstructor = i.constructor()
+	constructor, constructorExists := astfile.FindFunc(file, i.domain.GetUseCaseConstructorName())
+	if constructor == nil {
+		constructor = i.constructor()
 	}
-	if !structureConstructorExists {
-		file.Decls = append(file.Decls, structureConstructor)
+	if !constructorExists {
+		file.Decls = append(file.Decls, constructor)
 	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
@@ -311,16 +301,7 @@ func (i UseCaseGenerator) syncCreateMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Create" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Create")
 	if method == nil {
 		method = i.createMethod()
 	}
@@ -459,16 +440,7 @@ func (i UseCaseGenerator) syncListMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "List" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "List")
 	if method == nil {
 		method = i.astListMethod()
 	}
@@ -607,16 +579,7 @@ func (i UseCaseGenerator) syncGetMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Get" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Get")
 	if method == nil {
 		method = i.astGetMethod()
 	}
@@ -751,16 +714,7 @@ func (i UseCaseGenerator) syncUpdateMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Update" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Update")
 	if method == nil {
 		method = i.updateMethod()
 	}
@@ -878,16 +832,7 @@ func (i UseCaseGenerator) syncDeleteMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Delete" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Delete")
 	if method == nil {
 		method = i.deleteMethod()
 	}

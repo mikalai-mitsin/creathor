@@ -196,7 +196,8 @@ func (a App) constructor() *ast.FuncDecl {
 	args := []*ast.Field{
 		{
 			Names: []*ast.Ident{
-				ast.NewIdent("db"),
+				ast.NewIdent("readDB"),
+				ast.NewIdent("writeDB"),
 			},
 			Type: &ast.StarExpr{
 				X: &ast.SelectorExpr{
@@ -241,8 +242,12 @@ func (a App) constructor() *ast.FuncDecl {
 	}
 	exprs := []ast.Expr{
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent("db"),
-			Value: ast.NewIdent("db"),
+			Key:   ast.NewIdent("readDB"),
+			Value: ast.NewIdent("readDB"),
+		},
+		&ast.KeyValueExpr{
+			Key:   ast.NewIdent("writeDB"),
+			Value: ast.NewIdent("writeDB"),
 		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("logger"),
@@ -280,7 +285,8 @@ func (a App) constructor() *ast.FuncDecl {
 							Sel: ast.NewIdent(entity.GetRepositoryConstructorName()),
 						},
 						Args: []ast.Expr{
-							ast.NewIdent("db"),
+							ast.NewIdent("readDB"),
+							ast.NewIdent("writeDB"),
 							ast.NewIdent("logger"),
 						},
 					},
@@ -412,7 +418,18 @@ func (a App) structure() *ast.GenDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent("db"),
+						ast.NewIdent("readDB"),
+					},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent("sqlx"),
+							Sel: ast.NewIdent("DB"),
+						},
+					},
+				},
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent("writeDB"),
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{

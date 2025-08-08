@@ -106,7 +106,7 @@ func (u Server) file() *ast.File {
 							Text: fmt.Sprintf("// @title %s", u.project.Name),
 						},
 						{
-							Text: "// @host 127.0.0.1:8000",
+							Text: "// @host http://127.0.0.1:8000",
 						},
 						{
 							Text: "// @BasePath /",

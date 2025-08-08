@@ -613,7 +613,14 @@ func (r RepositoryGenerator) astStruct() *ast.TypeSpec {
 				List: []*ast.Field{
 					{
 						Doc:     nil,
-						Names:   []*ast.Ident{ast.NewIdent("database")},
+						Names:   []*ast.Ident{ast.NewIdent("readDB")},
+						Type:    ast.NewIdent("database"),
+						Tag:     nil,
+						Comment: nil,
+					},
+					{
+						Doc:     nil,
+						Names:   []*ast.Ident{ast.NewIdent("writeDB")},
 						Type:    ast.NewIdent("database"),
 						Tag:     nil,
 						Comment: nil,
@@ -754,7 +761,14 @@ func (r RepositoryGenerator) astConstructor() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Doc:     nil,
-						Names:   []*ast.Ident{ast.NewIdent("database")},
+						Names:   []*ast.Ident{ast.NewIdent("readDB")},
+						Type:    ast.NewIdent("database"),
+						Tag:     nil,
+						Comment: nil,
+					},
+					{
+						Doc:     nil,
+						Names:   []*ast.Ident{ast.NewIdent("writeDB")},
 						Type:    ast.NewIdent("database"),
 						Tag:     nil,
 						Comment: nil,
@@ -795,8 +809,12 @@ func (r RepositoryGenerator) astConstructor() *ast.FuncDecl {
 								Type: ast.NewIdent(r.domain.GetRepositoryTypeName()),
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
-										Key:   ast.NewIdent("database"),
-										Value: ast.NewIdent("database"),
+										Key:   ast.NewIdent("readDB"),
+										Value: ast.NewIdent("readDB"),
+									},
+									&ast.KeyValueExpr{
+										Key:   ast.NewIdent("writeDB"),
+										Value: ast.NewIdent("writeDB"),
 									},
 									&ast.KeyValueExpr{
 										Key:   ast.NewIdent("logger"),
@@ -1014,7 +1032,7 @@ func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("r"),
-										Sel: ast.NewIdent("database"),
+										Sel: ast.NewIdent("writeDB"),
 									},
 									Sel: ast.NewIdent("ExecContext"),
 								},
@@ -1587,7 +1605,7 @@ func (r RepositoryGenerator) listMethod() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("r"),
-										Sel: ast.NewIdent("database"),
+										Sel: ast.NewIdent("readDB"),
 									},
 									Sel: ast.NewIdent("SelectContext"),
 								},
@@ -1889,7 +1907,7 @@ func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 											Name: "r",
 										},
 										Sel: &ast.Ident{
-											Name: "database",
+											Name: "readDB",
 										},
 									},
 									Sel: &ast.Ident{
@@ -2203,7 +2221,7 @@ func (r RepositoryGenerator) getMethod() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("r"),
-										Sel: ast.NewIdent("database"),
+										Sel: ast.NewIdent("readDB"),
 									},
 									Sel: ast.NewIdent("GetContext"),
 								},
@@ -2538,7 +2556,7 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("r"),
-									Sel: ast.NewIdent("database"),
+									Sel: ast.NewIdent("writeDB"),
 								},
 								Sel: ast.NewIdent("ExecContext"),
 							},
@@ -2985,7 +3003,7 @@ func (r RepositoryGenerator) astDeleteMethod() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("r"),
-									Sel: ast.NewIdent("database"),
+									Sel: ast.NewIdent("writeDB"),
 								},
 								Sel: ast.NewIdent("ExecContext"),
 							},

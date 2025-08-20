@@ -1,4 +1,4 @@
-FROM golang:{{ .GoVersion }} as builder
+FROM golang:{{ .GoVersion }} AS builder
 
 WORKDIR /go/src/{{ .Name }}
 COPY go.mod .

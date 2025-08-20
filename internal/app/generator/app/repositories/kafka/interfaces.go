@@ -1,4 +1,4 @@
-package postgres
+package kafka
 
 import (
 	"bytes"
@@ -23,17 +23,22 @@ func NewInterfacesGenerator(domain *app.BaseEntity) *InterfacesGenerator {
 	return &InterfacesGenerator{domain: domain}
 }
 
-func (r InterfacesGenerator) Sync() error {
-	fileset := token.NewFileSet()
-	filename := filepath.Join(
+func (r *InterfacesGenerator) filename() string {
+	return filepath.Join(
+		".",
 		"internal",
 		"app",
 		r.domain.AppName(),
 		"repositories",
-		"postgres",
+		"kafka",
 		r.domain.DirName(),
 		fmt.Sprintf("%s_interfaces.go", r.domain.SnakeName()),
 	)
+}
+
+func (r InterfacesGenerator) Sync() error {
+	fileset := token.NewFileSet()
+	filename := r.filename()
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err
@@ -45,8 +50,8 @@ func (r InterfacesGenerator) Sync() error {
 	if !astfile.TypeExists(file, "logger") {
 		file.Decls = append(file.Decls, r.loggerInterface())
 	}
-	if !astfile.TypeExists(file, "database") {
-		file.Decls = append(file.Decls, r.databaseInterface())
+	if !astfile.TypeExists(file, "producer") {
+		file.Decls = append(file.Decls, r.kafkaInterface())
 	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
@@ -60,7 +65,7 @@ func (r InterfacesGenerator) Sync() error {
 
 func (r InterfacesGenerator) file() *ast.File {
 	return &ast.File{
-		Name: ast.NewIdent("repositories"),
+		Name: ast.NewIdent("events"),
 		Decls: []ast.Decl{
 			r.imports(),
 		},
@@ -74,7 +79,7 @@ func (r InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text:  fmt.Sprintf("//go:generate mockgen -source=%s_interfaces.go -package=repositories -destination=%s_interfaces_mock.go", r.domain.SnakeName(), r.domain.SnakeName()),
+					Text:  fmt.Sprintf("//go:generate mockgen -source=%s_interfaces.go -package=events -destination=%s_interfaces_mock.go", r.domain.SnakeName(), r.domain.SnakeName()),
 				},
 			},
 		},
@@ -83,6 +88,12 @@ func (r InterfacesGenerator) imports() *ast.GenDecl {
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: fmt.Sprintf(`"%s/internal/pkg/log"`, r.domain.Module),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: `"github.com/IBM/sarama"`,
 				},
 			},
 		},
@@ -302,61 +313,40 @@ func (r InterfacesGenerator) loggerInterface() *ast.GenDecl {
 	}
 }
 
-func (r InterfacesGenerator) databaseInterface() *ast.GenDecl {
+func (r InterfacesGenerator) kafkaInterface() *ast.GenDecl {
 	return &ast.GenDecl{
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
 				Name: &ast.Ident{
-					Name: "database",
+					Name: "producer",
 				},
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: []*ast.Field{
-							{
+							&ast.Field{
 								Names: []*ast.Ident{
-									{
-										Name: "ExecContext",
+									&ast.Ident{
+										Name: "SendMessage",
 									},
 								},
 								Type: &ast.FuncType{
 									Params: &ast.FieldList{
 										List: []*ast.Field{
-											{
+											&ast.Field{
 												Names: []*ast.Ident{
-													{
-														Name: "ctx",
+													&ast.Ident{
+														Name: "msg",
 													},
 												},
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "context",
-													},
-													Sel: &ast.Ident{
-														Name: "Context",
-													},
-												},
-											},
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "query",
-													},
-												},
-												Type: &ast.Ident{
-													Name: "string",
-												},
-											},
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "args",
-													},
-												},
-												Type: &ast.Ellipsis{
-													Ellipsis: 93,
-													Elt: &ast.InterfaceType{
-														Methods: &ast.FieldList{},
+												Type: &ast.StarExpr{
+													X: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "sarama",
+														},
+														Sel: &ast.Ident{
+															Name: "ProducerMessage",
+														},
 													},
 												},
 											},
@@ -364,157 +354,32 @@ func (r InterfacesGenerator) databaseInterface() *ast.GenDecl {
 									},
 									Results: &ast.FieldList{
 										List: []*ast.Field{
-											{
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "sql",
-													},
-													Sel: &ast.Ident{
-														Name: "Result",
-													},
-												},
-											},
-											{
-												Type: &ast.Ident{
-													Name: "error",
-												},
-											},
-										},
-									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "GetContext",
-									},
-								},
-								Type: &ast.FuncType{
-									Params: &ast.FieldList{
-										List: []*ast.Field{
-											{
+											&ast.Field{
 												Names: []*ast.Ident{
-													{
-														Name: "ctx",
-													},
-												},
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "context",
-													},
-													Sel: &ast.Ident{
-														Name: "Context",
-													},
-												},
-											},
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "dest",
+													&ast.Ident{
+														Name: "partition",
 													},
 												},
 												Type: &ast.Ident{
-													Name: "any",
+													Name: "int32",
 												},
 											},
-											{
+											&ast.Field{
 												Names: []*ast.Ident{
-													{
-														Name: "query",
+													&ast.Ident{
+														Name: "offset",
 													},
 												},
 												Type: &ast.Ident{
-													Name: "string",
+													Name: "int64",
 												},
 											},
-											{
+											&ast.Field{
 												Names: []*ast.Ident{
-													{
-														Name: "args",
+													&ast.Ident{
+														Name: "err",
 													},
 												},
-												Type: &ast.Ellipsis{
-													Ellipsis: 191,
-													Elt: &ast.InterfaceType{
-														Methods: &ast.FieldList{},
-													},
-												},
-											},
-										},
-									},
-									Results: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Type: &ast.Ident{
-													Name: "error",
-												},
-											},
-										},
-									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "SelectContext",
-									},
-								},
-								Type: &ast.FuncType{
-									Params: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "ctx",
-													},
-												},
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "context",
-													},
-													Sel: &ast.Ident{
-														Name: "Context",
-													},
-												},
-											},
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "dest",
-													},
-												},
-												Type: &ast.Ident{
-													Name: "any",
-												},
-											},
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "query",
-													},
-												},
-												Type: &ast.Ident{
-													Name: "string",
-												},
-											},
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "args",
-													},
-												},
-												Type: &ast.Ellipsis{
-													Ellipsis: 278,
-													Elt: &ast.InterfaceType{
-														Methods: &ast.FieldList{},
-													},
-												},
-											},
-										},
-									},
-									Results: &ast.FieldList{
-										List: []*ast.Field{
-											{
 												Type: &ast.Ident{
 													Name: "error",
 												},

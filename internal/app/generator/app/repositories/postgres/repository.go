@@ -11,6 +11,7 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
@@ -40,6 +41,7 @@ func (r RepositoryGenerator) filename() string {
 		"app",
 		r.domain.AppName(),
 		"repositories",
+		"postgres",
 		r.domain.DirName(),
 		r.domain.FileName(),
 	)
@@ -89,15 +91,7 @@ func (r RepositoryGenerator) Sync() error {
 	if err := r.syncDeleteMethod(); err != nil {
 		return err
 	}
-	if r.domain.Name == "user" {
-		if err := r.syncGetByEmailMethod(); err != nil {
-			return err
-		}
-	}
 	if err := r.syncMigrations(); err != nil {
-		return err
-	}
-	if err := r.syncTest(); err != nil {
 		return err
 	}
 	return nil
@@ -183,50 +177,23 @@ func (r RepositoryGenerator) syncDTOStruct() error {
 	if err != nil {
 		return err
 	}
-	var structureExists bool
-	var structure *ast.TypeSpec
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == r.getDTOName() {
-			structure = t
-			structureExists = true
-			return false
-		}
-		return true
-	})
+	structure, structureExists := astfile.FindType(file, r.getDTOName())
 	if structure == nil {
 		structure = r.dtoStruct()
 	}
 	for _, param := range r.domain.GetMainModel().Params {
-		ast.Inspect(structure, func(node ast.Node) bool {
-			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
-				for _, field := range st.Fields.List {
-					for _, fieldName := range field.Names {
-						if fieldName.Name == param.GetName() {
-							return false
-						}
-					}
-				}
-				st.Fields.List = append(st.Fields.List, &ast.Field{
-					Doc:   nil,
-					Names: []*ast.Ident{ast.NewIdent(param.GetName())},
-					Type:  ast.NewIdent(param.PostgresDTOType()),
-					Tag: &ast.BasicLit{
-						Kind:  token.STRING,
-						Value: fmt.Sprintf("`db:\"%s\"`", param.Tag()),
-					},
-					Comment: nil,
-				})
-				return false
-			}
-			return true
-		})
+		astfile.SetTypeParam(
+			structure,
+			param.GetName(),
+			param.PostgresDTOType(),
+			fmt.Sprintf("`db:\"%s\"`", param.Tag()),
+		)
 	}
 	if !structureExists {
-		gd := &ast.GenDecl{
+		file.Decls = append(file.Decls, &ast.GenDecl{
 			Tok:   token.TYPE,
 			Specs: []ast.Spec{structure},
-		}
-		file.Decls = append(file.Decls, gd)
+		})
 	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
@@ -643,14 +610,16 @@ func (r RepositoryGenerator) astStruct() *ast.TypeSpec {
 				Opening: 0,
 				List: []*ast.Field{
 					{
-						Doc:   nil,
-						Names: []*ast.Ident{ast.NewIdent("database")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("sqlx"),
-								Sel: ast.NewIdent("DB"),
-							},
-						},
+						Doc:     nil,
+						Names:   []*ast.Ident{ast.NewIdent("readDB")},
+						Type:    ast.NewIdent("database"),
+						Tag:     nil,
+						Comment: nil,
+					},
+					{
+						Doc:     nil,
+						Names:   []*ast.Ident{ast.NewIdent("writeDB")},
+						Type:    ast.NewIdent("database"),
 						Tag:     nil,
 						Comment: nil,
 					},
@@ -724,12 +693,6 @@ func (r RepositoryGenerator) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: `"github.com/jmoiron/sqlx"`,
-			},
-		},
-		&ast.ImportSpec{
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
 				Value: `"github.com/lib/pq"`,
 			},
 		},
@@ -743,7 +706,7 @@ func (r RepositoryGenerator) file() *ast.File {
 		})
 	}
 	return &ast.File{
-		Name: ast.NewIdent("postgres"),
+		Name: ast.NewIdent("repositories"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok:   token.IMPORT,
@@ -759,17 +722,7 @@ func (r RepositoryGenerator) syncStruct() error {
 	if err != nil {
 		file = r.file()
 	}
-	var structureExists bool
-	var structure *ast.TypeSpec
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok &&
-			t.Name.String() == r.domain.GetRepositoryTypeName() {
-			structure = t
-			structureExists = true
-			return false
-		}
-		return true
-	})
+	structure, structureExists := astfile.FindType(file, r.domain.GetRepositoryTypeName())
 	if structure == nil {
 		structure = r.astStruct()
 	}
@@ -805,14 +758,16 @@ func (r RepositoryGenerator) astConstructor() *ast.FuncDecl {
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Doc:   nil,
-						Names: []*ast.Ident{ast.NewIdent("database")},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("sqlx"),
-								Sel: ast.NewIdent("DB"),
-							},
-						},
+						Doc:     nil,
+						Names:   []*ast.Ident{ast.NewIdent("readDB")},
+						Type:    ast.NewIdent("database"),
+						Tag:     nil,
+						Comment: nil,
+					},
+					{
+						Doc:     nil,
+						Names:   []*ast.Ident{ast.NewIdent("writeDB")},
+						Type:    ast.NewIdent("database"),
 						Tag:     nil,
 						Comment: nil,
 					},
@@ -852,8 +807,12 @@ func (r RepositoryGenerator) astConstructor() *ast.FuncDecl {
 								Type: ast.NewIdent(r.domain.GetRepositoryTypeName()),
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
-										Key:   ast.NewIdent("database"),
-										Value: ast.NewIdent("database"),
+										Key:   ast.NewIdent("readDB"),
+										Value: ast.NewIdent("readDB"),
+									},
+									&ast.KeyValueExpr{
+										Key:   ast.NewIdent("writeDB"),
+										Value: ast.NewIdent("writeDB"),
 									},
 									&ast.KeyValueExpr{
 										Key:   ast.NewIdent("logger"),
@@ -877,22 +836,12 @@ func (r RepositoryGenerator) syncConstructor() error {
 	if err != nil {
 		return err
 	}
-	var structureConstructorExists bool
-	var structureConstructor *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == fmt.Sprintf("New%s", r.domain.GetRepositoryTypeName()) {
-			structureConstructorExists = true
-			structureConstructor = t
-			return false
-		}
-		return true
-	})
-	if structureConstructor == nil {
-		structureConstructor = r.astConstructor()
+	method, methodExist := astfile.FindFunc(file, r.domain.GetRepositoryConstructorName())
+	if method == nil {
+		method = r.astConstructor()
 	}
-	if !structureConstructorExists {
-		file.Decls = append(file.Decls, structureConstructor)
+	if !methodExist {
+		file.Decls = append(file.Decls, method)
 	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
@@ -1081,7 +1030,7 @@ func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("r"),
-										Sel: ast.NewIdent("database"),
+										Sel: ast.NewIdent("writeDB"),
 									},
 									Sel: ast.NewIdent("ExecContext"),
 								},
@@ -1143,16 +1092,7 @@ func (r RepositoryGenerator) syncCreateMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Create" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Create")
 	if method == nil {
 		method = r.astCreateMethod()
 	}
@@ -1203,7 +1143,6 @@ func (r RepositoryGenerator) syncCreateMethod() error {
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
 	}
-
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
@@ -1664,7 +1603,7 @@ func (r RepositoryGenerator) listMethod() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("r"),
-										Sel: ast.NewIdent("database"),
+										Sel: ast.NewIdent("readDB"),
 									},
 									Sel: ast.NewIdent("SelectContext"),
 								},
@@ -1736,16 +1675,7 @@ func (r RepositoryGenerator) syncListMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "List" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "List")
 	if method == nil {
 		method = r.listMethod()
 	}
@@ -1944,89 +1874,19 @@ func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 						},
 					},
 				},
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent("result"),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("r"),
-									Sel: ast.NewIdent("database"),
-								},
-								Sel: ast.NewIdent("QueryRowxContext"),
-							},
-							Args: []ast.Expr{
-								ast.NewIdent("ctx"),
-								ast.NewIdent("query"),
-								ast.NewIdent("args"),
-							},
-							Ellipsis: 7757,
-						},
-					},
-				},
-				&ast.IfStmt{
-					Init: &ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X:   ast.NewIdent("result"),
-									Sel: ast.NewIdent("Err"),
-								},
-							},
-						},
-					},
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.AssignStmt{
-								Lhs: []ast.Expr{
-									ast.NewIdent("e"),
-								},
-								Tok: token.DEFINE,
-								Rhs: []ast.Expr{
-									&ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X:   ast.NewIdent("errs"),
-											Sel: ast.NewIdent("FromPostgresError"),
-										},
-										Args: []ast.Expr{
-											ast.NewIdent("err"),
-										},
-									},
-								},
-							},
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									&ast.BasicLit{
-										Kind:  token.INT,
-										Value: "0",
-									},
-									ast.NewIdent("e"),
-								},
-							},
-						},
-					},
-				},
 				&ast.DeclStmt{
 					Decl: &ast.GenDecl{
 						Tok: token.VAR,
 						Specs: []ast.Spec{
 							&ast.ValueSpec{
 								Names: []*ast.Ident{
-									ast.NewIdent("count"),
+									&ast.Ident{
+										Name: "count",
+									},
 								},
-								Type: ast.NewIdent("uint64"),
+								Type: &ast.Ident{
+									Name: "uint64",
+								},
 							},
 						},
 					},
@@ -2040,38 +1900,71 @@ func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X:   ast.NewIdent("result"),
-									Sel: ast.NewIdent("Scan"),
-								},
-								Args: []ast.Expr{
-									&ast.UnaryExpr{
-										Op: token.AND,
-										X:  ast.NewIdent("count"),
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "r",
+										},
+										Sel: &ast.Ident{
+											Name: "readDB",
+										},
+									},
+									Sel: &ast.Ident{
+										Name: "GetContext",
 									},
 								},
+								Args: []ast.Expr{
+									&ast.Ident{
+										Name: "ctx",
+									},
+									&ast.UnaryExpr{
+										Op: token.AND,
+										X: &ast.Ident{
+											Name: "count",
+										},
+									},
+									&ast.Ident{
+										Name: "query",
+									},
+									&ast.Ident{
+										Name: "args",
+									},
+								},
+								Ellipsis: 378,
 							},
 						},
 					},
 					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
+						X: &ast.Ident{
+							Name: "err",
+						},
 						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
+						Y: &ast.Ident{
+							Name: "nil",
+						},
 					},
 					Body: &ast.BlockStmt{
 						List: []ast.Stmt{
 							&ast.AssignStmt{
 								Lhs: []ast.Expr{
-									ast.NewIdent("e"),
+									&ast.Ident{
+										Name: "e",
+									},
 								},
 								Tok: token.DEFINE,
 								Rhs: []ast.Expr{
 									&ast.CallExpr{
 										Fun: &ast.SelectorExpr{
-											X:   ast.NewIdent("errs"),
-											Sel: ast.NewIdent("FromPostgresError"),
+											X: &ast.Ident{
+												Name: "errs",
+											},
+											Sel: &ast.Ident{
+												Name: "FromPostgresError",
+											},
 										},
 										Args: []ast.Expr{
-											ast.NewIdent("err"),
+											&ast.Ident{
+												Name: "err",
+											},
 										},
 									},
 								},
@@ -2082,7 +1975,9 @@ func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 										Kind:  token.INT,
 										Value: "0",
 									},
-									ast.NewIdent("e"),
+									&ast.Ident{
+										Name: "e",
+									},
 								},
 							},
 						},
@@ -2105,16 +2000,7 @@ func (r RepositoryGenerator) syncCountMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Count" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Count")
 	if method == nil {
 		method = r.astCountMethod()
 	}
@@ -2333,7 +2219,7 @@ func (r RepositoryGenerator) getMethod() *ast.FuncDecl {
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
 										X:   ast.NewIdent("r"),
-										Sel: ast.NewIdent("database"),
+										Sel: ast.NewIdent("readDB"),
 									},
 									Sel: ast.NewIdent("GetContext"),
 								},
@@ -2418,360 +2304,15 @@ func (r RepositoryGenerator) getMethod() *ast.FuncDecl {
 	}
 }
 
-func (r RepositoryGenerator) getByEmailMethod() *ast.FuncDecl {
-	tableName := r.domain.TableName()
-	var columns []ast.Expr
-	for _, param := range r.domain.GetMainModel().Params {
-		columns = append(
-			columns,
-			&ast.BasicLit{
-				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s.%s"`, tableName, param.Tag()),
-			},
-		)
-	}
-	return &ast.FuncDecl{
-		Recv: &ast.FieldList{
-			List: []*ast.Field{
-				{
-					Names: []*ast.Ident{
-						ast.NewIdent("r"),
-					},
-					Type: &ast.StarExpr{
-						X: ast.NewIdent(r.domain.GetRepositoryTypeName()),
-					},
-				},
-			},
-		},
-		Name: ast.NewIdent("GetByEmail"),
-		Type: &ast.FuncType{
-			Params: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Names: []*ast.Ident{
-							ast.NewIdent("ctx"),
-						},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("context"),
-							Sel: ast.NewIdent("Context"),
-						},
-					},
-					{
-						Names: []*ast.Ident{
-							ast.NewIdent("email"),
-						},
-						Type: ast.NewIdent("string"),
-					},
-				},
-			},
-			Results: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(r.domain.GetMainModel().Name),
-						},
-					},
-					{
-						Type: ast.NewIdent("error"),
-					},
-				},
-			},
-		},
-		Body: &ast.BlockStmt{
-			List: []ast.Stmt{
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent("ctx"),
-						ast.NewIdent("cancel"),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X:   ast.NewIdent("context"),
-								Sel: ast.NewIdent("WithTimeout"),
-							},
-							Args: []ast.Expr{
-								ast.NewIdent("ctx"),
-								&ast.SelectorExpr{
-									X:   ast.NewIdent("time"),
-									Sel: ast.NewIdent("Second"),
-								},
-							},
-						},
-					},
-				},
-				&ast.DeferStmt{
-					Call: &ast.CallExpr{
-						Fun: ast.NewIdent("cancel"),
-					},
-				},
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent("dto"),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.UnaryExpr{
-							Op: token.AND,
-							X: &ast.CompositeLit{
-								Type: ast.NewIdent(r.getDTOName()),
-							},
-						},
-					},
-				},
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent("q"),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.CallExpr{
-											Fun: &ast.SelectorExpr{
-												X: &ast.CallExpr{
-													Fun: &ast.SelectorExpr{
-														X:   ast.NewIdent("sq"),
-														Sel: ast.NewIdent("Select"),
-													},
-													Args: columns,
-												},
-												Sel: ast.NewIdent("From"),
-											},
-											Args: []ast.Expr{
-												&ast.BasicLit{
-													Kind:  token.STRING,
-													Value: fmt.Sprintf(`"public.%s"`, tableName),
-												},
-											},
-										},
-										Sel: ast.NewIdent("Where"),
-									},
-									Args: []ast.Expr{
-										&ast.CompositeLit{
-											Type: &ast.SelectorExpr{
-												X:   ast.NewIdent("sq"),
-												Sel: ast.NewIdent("Eq"),
-											},
-											Elts: []ast.Expr{
-												&ast.KeyValueExpr{
-													Key: &ast.BasicLit{
-														Kind:  token.STRING,
-														Value: `"email"`,
-													},
-													Value: ast.NewIdent("email"),
-												},
-											},
-										},
-									},
-								},
-								Sel: ast.NewIdent("Limit"),
-							},
-							Args: []ast.Expr{
-								&ast.BasicLit{
-									Kind:  token.INT,
-									Value: "1",
-								},
-							},
-						},
-					},
-				},
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent("query"),
-						ast.NewIdent("args"),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X: &ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X:   ast.NewIdent("q"),
-										Sel: ast.NewIdent("PlaceholderFormat"),
-									},
-									Args: []ast.Expr{
-										&ast.SelectorExpr{
-											X:   ast.NewIdent("sq"),
-											Sel: ast.NewIdent("Dollar"),
-										},
-									},
-								},
-								Sel: ast.NewIdent("MustSql"),
-							},
-						},
-					},
-				},
-				&ast.IfStmt{
-					Init: &ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("r"),
-										Sel: ast.NewIdent("database"),
-									},
-									Sel: ast.NewIdent("GetContext"),
-								},
-								Args: []ast.Expr{
-									ast.NewIdent("ctx"),
-									ast.NewIdent("dto"),
-									ast.NewIdent("query"),
-									ast.NewIdent("args"),
-								},
-								Ellipsis: 4211,
-							},
-						},
-					},
-					Cond: &ast.BinaryExpr{
-						X:  ast.NewIdent("err"),
-						Op: token.NEQ,
-						Y:  ast.NewIdent("nil"),
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.AssignStmt{
-								Lhs: []ast.Expr{
-									ast.NewIdent("e"),
-								},
-								Tok: token.DEFINE,
-								Rhs: []ast.Expr{
-									&ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X: &ast.CallExpr{
-												Fun: &ast.SelectorExpr{
-													X:   ast.NewIdent("errs"),
-													Sel: ast.NewIdent("FromPostgresError"),
-												},
-												Args: []ast.Expr{
-													ast.NewIdent("err"),
-												},
-											},
-											Sel: ast.NewIdent("WithParam"),
-										},
-										Args: []ast.Expr{
-											&ast.BasicLit{
-												Kind: token.STRING,
-												Value: fmt.Sprintf(
-													`"%s_email"`,
-													strcase.ToSnake(r.domain.GetMainModel().Name),
-												),
-											},
-											ast.NewIdent("email"),
-										},
-									},
-								},
-							},
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									&ast.CompositeLit{
-										Type: &ast.SelectorExpr{
-											X:   ast.NewIdent("entities"),
-											Sel: ast.NewIdent(r.domain.GetMainModel().Name),
-										},
-									},
-									ast.NewIdent("e"),
-								},
-							},
-						},
-					},
-				},
-				&ast.ReturnStmt{
-					Results: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X:   ast.NewIdent("dto"),
-								Sel: ast.NewIdent("toEntity"),
-							},
-						},
-						ast.NewIdent("nil"),
-					},
-				},
-			},
-		},
-	}
-}
-
 func (r RepositoryGenerator) syncGetMethod() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Get" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Get")
 	if method == nil {
 		method = r.getMethod()
-	}
-	for _, param := range r.domain.GetMainModel().Params {
-		param := param
-		column := fmt.Sprintf(`"%s.%s"`, r.domain.TableName(), param.Tag())
-		ast.Inspect(method, func(node ast.Node) bool {
-			if call, ok := node.(*ast.CallExpr); ok {
-				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Select" {
-					for _, arg := range call.Args {
-						arg := arg
-						if bl, ok := arg.(*ast.BasicLit); ok && bl.Value == column {
-							return false
-						}
-					}
-					call.Args = append(call.Args, &ast.BasicLit{
-						Kind:  token.STRING,
-						Value: column,
-					})
-					return false
-				}
-			}
-			return true
-		})
-	}
-	if !methodExist {
-		file.Decls = append(file.Decls, method)
-	}
-	buff := &bytes.Buffer{}
-	if err := printer.Fprint(buff, fileset, file); err != nil {
-		return err
-	}
-	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (r RepositoryGenerator) syncGetByEmailMethod() error {
-	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
-	if err != nil {
-		return err
-	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "GetByEmail" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
-	if method == nil {
-		method = r.getByEmailMethod()
 	}
 	for _, param := range r.domain.GetMainModel().Params {
 		param := param
@@ -3013,7 +2554,7 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("r"),
-									Sel: ast.NewIdent("database"),
+									Sel: ast.NewIdent("writeDB"),
 								},
 								Sel: ast.NewIdent("ExecContext"),
 							},
@@ -3226,16 +2767,7 @@ func (r RepositoryGenerator) syncUpdateMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Update" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Update")
 	if method == nil {
 		method = r.updateMethod()
 	}
@@ -3469,7 +3001,7 @@ func (r RepositoryGenerator) astDeleteMethod() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("r"),
-									Sel: ast.NewIdent("database"),
+									Sel: ast.NewIdent("writeDB"),
 								},
 								Sel: ast.NewIdent("ExecContext"),
 							},
@@ -3681,16 +3213,7 @@ func (r RepositoryGenerator) syncDeleteMethod() error {
 	if err != nil {
 		return err
 	}
-	var methodExist bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "Delete" {
-			methodExist = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "Delete")
 	if method == nil {
 		method = r.astDeleteMethod()
 	}
@@ -3722,17 +3245,7 @@ func (r RepositoryGenerator) syncDTOListType() error {
 	if err != nil {
 		return err
 	}
-	var structureExists bool
-	var dtoListType *ast.TypeSpec
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok &&
-			t.Name.String() == r.getDTOListName() {
-			dtoListType = t
-			structureExists = true
-			return false
-		}
-		return true
-	})
+	dtoListType, structureExists := astfile.FindType(file, r.getDTOListName())
 	if dtoListType == nil {
 		dtoListType = r.astDTOListType()
 	}
@@ -3853,20 +3366,11 @@ func (r RepositoryGenerator) syncDTOListToEntities() error {
 	if err != nil {
 		return err
 	}
-	var methodExists bool
-	var method *ast.FuncDecl
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "ToEntities" {
-			methodExists = true
-			method = t
-			return false
-		}
-		return true
-	})
+	method, methodExist := astfile.FindFunc(file, "ToEntities")
 	if method == nil {
 		method = r.astDTOToEntities()
 	}
-	if !methodExists {
+	if !methodExist {
 		file.Decls = append(file.Decls, method)
 	}
 	buff := &bytes.Buffer{}
@@ -3880,26 +3384,6 @@ func (r RepositoryGenerator) syncDTOListToEntities() error {
 }
 
 var destinationPath = "."
-
-func (r RepositoryGenerator) syncTest() error {
-	test := tmpl.Template{
-		SourcePath: "templates/internal/domain/repositories/postgres/crud_test.go.tmpl",
-		DestinationPath: filepath.Join(
-			destinationPath,
-			"internal",
-			"app",
-			r.domain.AppName(),
-			"repositories",
-			r.domain.DirName(),
-			r.domain.TestFileName(),
-		),
-		Name: "repository test",
-	}
-	if err := test.RenderToFile(r.domain); err != nil {
-		return err
-	}
-	return nil
-}
 
 func (r RepositoryGenerator) syncMigrations() error {
 	pattern := fmt.Sprintf("*_%s.up.sql", r.domain.TableName())

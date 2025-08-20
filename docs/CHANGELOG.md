@@ -2,6 +2,20 @@
 ## [Unreleased]
 
 
+<a name="v0.7.2"></a>
+## [v0.7.2] - 2025-08-21
+### Feat
+- register a producer and move to repositories
+- add event producer
+- add producer
+- cleanup code
+- add find func
+- update repository
+
+### Fix
+- fix order by validation
+
+
 <a name="v0.7.1"></a>
 ## [v0.7.1] - 2025-08-03
 ### Ci
@@ -461,7 +475,8 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.2...HEAD
+[v0.7.2]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.1...v0.7.2
 [v0.7.1]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.6.1...v0.7.0
 [v0.6.1]: https://github.com/mikalai-mitsin/creathor/compare/v0.6.0...v0.6.1

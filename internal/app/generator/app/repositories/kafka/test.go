@@ -1,4 +1,4 @@
-package postgres
+package kafka
 
 import (
 	"path/filepath"
@@ -12,25 +12,25 @@ type TestGenerator struct {
 	domain *app.BaseEntity
 }
 
-func NewTestGenerator(domain *app.BaseEntity) *TestGenerator {
+func NewProducerTestGenerator(domain *app.BaseEntity) *TestGenerator {
 	return &TestGenerator{domain: domain}
 }
 
 func (g *TestGenerator) Sync() error {
 	//return nil
 	test := tmpl.Template{
-		SourcePath: "templates/internal/domain/repositories/postgres/crud_test.go.tmpl",
+		SourcePath: "templates/internal/domain/repositories/kafka/event_test.go.tmpl",
 		DestinationPath: filepath.Join(
-			destinationPath,
+			".",
 			"internal",
 			"app",
 			g.domain.AppName(),
 			"repositories",
-			"postgres",
+			"kafka",
 			g.domain.DirName(),
 			g.domain.TestFileName(),
 		),
-		Name: "repository test",
+		Name: "producer test",
 	}
 	if err := test.RenderToFile(g.domain); err != nil {
 		return err

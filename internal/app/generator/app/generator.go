@@ -5,6 +5,7 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/entities"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/handlers/grpc"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/handlers/http"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/repositories/kafka"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/repositories/postgres"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/services"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/usecases"
@@ -35,6 +36,14 @@ func (g *Generator) Sync() error {
 			postgres.NewRepositoryGenerator(entity),
 			postgres.NewTestGenerator(entity),
 		)
+		if g.domain.Config.KafkaEnabled {
+			domainGenerators = append(
+				domainGenerators,
+				kafka.NewProducerGenerator(entity),
+				kafka.NewInterfacesGenerator(entity),
+				kafka.NewProducerTestGenerator(entity),
+			)
+		}
 		if g.domain.Config.HTTPEnabled {
 			domainGenerators = append(
 				domainGenerators,

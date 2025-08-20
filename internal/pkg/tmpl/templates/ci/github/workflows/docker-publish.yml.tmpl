@@ -1,0 +1,44 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    env:
+      IMAGE_NAME: ghcr.io/${{"{{"}} github.repository_owner {{"}}"}}/${{"{{"}} github.event.repository.name {{"}}"}}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get short SHA
+        id: sha
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const shortSha = context.sha.substring(0, 7)
+            core.setOutput('short', shortSha)
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{"{{"}} github.actor {{"}}"}}
+          password: ${{"{{"}} secrets.GITHUB_TOKEN {{"}}"}}
+
+      - name: Build and tag Docker image
+        run: |
+          docker build -f ./build/Dockerfile -t $IMAGE_NAME:${{"{{"}} steps.sha.outputs.short {{"}}"}} .
+
+      - name: Push Docker image
+        run: |
+          docker push $IMAGE_NAME:${{"{{"}} steps.sha.outputs.short {{"}}"}}

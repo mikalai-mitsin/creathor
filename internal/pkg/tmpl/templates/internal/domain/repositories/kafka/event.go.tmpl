@@ -1,40 +1,68 @@
-package kafka
+package events
 
 import (
 	"context"
 	"encoding/json"
-	"{{ .Module }}/internal/pkg/configs"
-	"{{ .Module }}/internal/domain/entities"
-	"{{ .Module }}/internal/domain/repositories"
+    "{{ .Module }}/internal/app/{{ .AppName }}/entities/{{ .DirName }}"
 	"{{ .Module }}/internal/pkg/clock"
-	"github.com/Shopify/sarama"
+	"github.com/IBM/sarama"
 )
 
-type EventRepository struct {
-	producer sarama.SyncProducer
+const (
+	topicEventCreated = "{{ .CreatedTopicName }}"
+	topicEventUpdated = "{{ .UpdatedTopicName }}"
+	topicEventDeleted = "{{ .DeletedTopicName }}"
+)
+
+type {{ .EventProducerTypeName }} struct {
+	producer producer
 	logger   logger
-	topic    string
 }
 
-func NewEventRepository(
-	producer sarama.SyncProducer,
-	config *configs.Config,
+func {{ .EventProducerConstructorName }}(
+	producer producer,
 	logger logger,
-) repositories.EventRepository {
-	return &EventRepository{producer: producer, logger: logger, topic: config.Kafka.Topic}
+) *{{ .EventProducerTypeName }} {
+	return &{{ .EventProducerTypeName }}{producer: producer, logger: logger}
 }
 
-func (r *EventRepository) Send(_ context.Context, event entities.Event) error {
-	data, err := json.Marshal(event)
+func (p *{{ .EventProducerTypeName }}) Created(_ context.Context, {{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}) error {
+	data, err := json.Marshal({{ .GetOneVariableName }})
 	if err != nil {
 		return err
 	}
 	message := &sarama.ProducerMessage{
-		Topic: r.topic,
+		Topic: topicEventCreated,
 		Value: sarama.ByteEncoder(data),
 	}
-	if _, _, err := r.producer.SendMessage(message); err != nil {
+	if _, _, err := p.producer.SendMessage(message); err != nil {
+		return errs.FromKafkaError(err)
+	}
+	return nil
+}
+
+func (p *{{ .EventProducerTypeName }}) Updated(_ context.Context, {{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}) error {
+	data, err := json.Marshal({{ .GetOneVariableName }})
+	if err != nil {
 		return err
+	}
+	message := &sarama.ProducerMessage{
+		Topic: topicEventUpdated,
+		Value: sarama.ByteEncoder(data),
+	}
+	if _, _, err := p.producer.SendMessage(message); err != nil {
+		return errs.FromKafkaError(err)
+	}
+	return nil
+}
+
+func (p *{{ .EventProducerTypeName }}) Deleted(_ context.Context, id uuid.UUID) error {
+	message := &sarama.ProducerMessage{
+		Topic: topicEventDeleted,
+		Value: sarama.ByteEncoder(id.String()),
+	}
+	if _, _, err := p.producer.SendMessage(message); err != nil {
+		return errs.FromKafkaError(err)
 	}
 	return nil
 }

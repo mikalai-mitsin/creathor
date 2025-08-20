@@ -17,9 +17,15 @@ func TestNew{{ .GetUseCaseTypeName }}(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
+{{- if .Config.KafkaEnabled }}
+    mock{{ .GetEventProducerPrivateVariableName }} := NewMock{{ .EventProducerInterfaceName }}(ctrl)
+{{- end}}
     mockLogger := NewMocklogger(ctrl)
     type args struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
+{{- if .Config.KafkaEnabled }}
+        {{ .GetEventProducerPrivateVariableName }} {{ .EventProducerInterfaceName }}
+{{- end}}
         logger          logger
     }
     tests := []struct {
@@ -33,10 +39,16 @@ func TestNew{{ .GetUseCaseTypeName }}(t *testing.T) {
             setup: func() {},
             args: args{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }} : mock{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger: mockLogger,
             },
             want: &{{ .GetUseCaseTypeName }}{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }} : mock{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger: mockLogger,
             },
         },
@@ -44,7 +56,7 @@ func TestNew{{ .GetUseCaseTypeName }}(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
-            got := New{{ .GetUseCaseTypeName }}(tt.args.{{ .Config.ServiceVariableName }}, tt.args.logger)
+            got := New{{ .GetUseCaseTypeName }}(tt.args.{{ .Config.ServiceVariableName }}, {{- if .Config.KafkaEnabled }}tt.args.{{ .GetEventProducerPrivateVariableName }},{{- end}} tt.args.logger)
             assert.Equal(t, tt.want, got)
         })
     }
@@ -54,11 +66,17 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
+{{- if .Config.KafkaEnabled }}
+    mock{{ .GetEventProducerPrivateVariableName }} := NewMock{{ .EventProducerInterfaceName }}(ctrl)
+{{- end}}
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
+{{- if .Config.KafkaEnabled }}
+        {{ .GetEventProducerPrivateVariableName }} {{ .EventProducerInterfaceName }}
+{{- end}}
         logger          logger
     }
     type args struct {
@@ -82,6 +100,9 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger: mockLogger,
             },
             args: args{
@@ -100,6 +121,9 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger: mockLogger,
             },
             args: args{
@@ -115,6 +139,9 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
             tt.setup()
             i := &{{ .GetUseCaseTypeName }}{
                 {{ .Config.ServiceVariableName }}: tt.fields.{{ .Config.ServiceVariableName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }}: tt.fields.{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger:          tt.fields.logger,
             }
             got, err := i.Get(tt.args.ctx, tt.args.id)
@@ -128,12 +155,18 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
+{{- if .Config.KafkaEnabled }}
+    mock{{ .GetEventProducerPrivateVariableName }} := NewMock{{ .EventProducerInterfaceName }}(ctrl)
+{{- end}}
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     create := entities.NewMock{{ .Config.CreateTypeName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
+{{- if .Config.KafkaEnabled }}
+        {{ .GetEventProducerPrivateVariableName }} {{ .EventProducerInterfaceName }}
+{{- end}}
         logger          logger
     }
     type args struct {
@@ -152,9 +185,15 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
             name: "ok",
             setup: func() {
                 mock{{ .Config.ServiceTypeName }}.EXPECT().Create(ctx, create).Return({{ .Config.Variable }}, nil)
+{{- if .Config.KafkaEnabled }}
+                mock{{ .GetEventProducerPrivateVariableName }}.EXPECT().Created(ctx, {{ .Config.Variable }}).Return(nil)
+{{- end}}
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger: mockLogger,
             },
             args: args{
@@ -173,6 +212,9 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger: mockLogger,
             },
             args: args{
@@ -188,6 +230,9 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
             tt.setup()
             i := &{{ .GetUseCaseTypeName }}{
                 {{ .Config.ServiceVariableName }}: tt.fields.{{ .Config.ServiceVariableName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }}: tt.fields.{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger:          tt.fields.logger,
             }
             got, err := i.Create(tt.args.ctx, tt.args.create)
@@ -201,12 +246,18 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
+{{- if .Config.KafkaEnabled }}
+    mock{{ .GetEventProducerPrivateVariableName }} := NewMock{{ .EventProducerInterfaceName }}(ctrl)
+{{- end}}
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     update := entities.NewMock{{ .Config.UpdateTypeName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
+{{- if .Config.KafkaEnabled }}
+        {{ .GetEventProducerPrivateVariableName }} {{ .EventProducerInterfaceName }}
+{{- end}}
         logger          logger
     }
     type args struct {
@@ -225,9 +276,15 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
             name: "ok",
             setup: func() {
                 mock{{ .Config.ServiceTypeName }}.EXPECT().Update(ctx, update).Return({{ .Config.Variable }}, nil)
+{{- if .Config.KafkaEnabled }}
+                mock{{ .GetEventProducerPrivateVariableName }}.EXPECT().Updated(ctx, {{ .Config.Variable }}).Return(nil)
+{{- end}}
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger: mockLogger,
             },
             args: args{
@@ -246,6 +303,9 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger: mockLogger,
             },
             args: args{
@@ -261,6 +321,9 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
             tt.setup()
             i := &{{ .GetUseCaseTypeName }}{
                 {{ .Config.ServiceVariableName }}: tt.fields.{{ .Config.ServiceVariableName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }}: tt.fields.{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger:          tt.fields.logger,
             }
             got, err := i.Update(tt.args.ctx, tt.args.update)
@@ -274,11 +337,17 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
+{{- if .Config.KafkaEnabled }}
+    mock{{ .GetEventProducerPrivateVariableName }} := NewMock{{ .EventProducerInterfaceName }}(ctrl)
+{{- end}}
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
+{{- if .Config.KafkaEnabled }}
+        {{ .GetEventProducerPrivateVariableName }} {{ .EventProducerInterfaceName }}
+{{- end}}
         logger          logger
     }
     type args struct {
@@ -298,9 +367,15 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
                 mock{{ .Config.ServiceTypeName }}.EXPECT().
                     Delete(ctx, {{ .Config.Variable }}.ID).
                     Return(nil)
+{{- if .Config.KafkaEnabled }}
+                mock{{ .GetEventProducerPrivateVariableName }}.EXPECT().Deleted(ctx, {{ .Config.Variable }}.ID).Return(nil)
+{{- end}}
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger: mockLogger,
             },
             args: args{
@@ -318,6 +393,9 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger: mockLogger,
             },
             args: args{
@@ -332,6 +410,9 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
             tt.setup()
             i := &{{ .GetUseCaseTypeName }}{
                 {{ .Config.ServiceVariableName }}: tt.fields.{{ .Config.ServiceVariableName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }}: tt.fields.{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger:          tt.fields.logger,
             }
             err := i.Delete(tt.args.ctx, tt.args.id)
@@ -344,6 +425,9 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mock{{ .Config.ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
+{{- if .Config.KafkaEnabled }}
+    mock{{ .GetEventProducerPrivateVariableName }} := NewMock{{ .EventProducerInterfaceName }}(ctrl)
+{{- end}}
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     filter := entities.NewMock{{ .Config.FilterTypeName }}(t)
@@ -354,6 +438,9 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
     }
     type fields struct {
         {{ .Config.ServiceVariableName }} {{ .GetServiceInterfaceName }}
+{{- if .Config.KafkaEnabled }}
+        {{ .GetEventProducerPrivateVariableName }} {{ .EventProducerInterfaceName }}
+{{- end}}
         logger          logger
     }
     type args struct {
@@ -378,6 +465,9 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger: mockLogger,
             },
             args: args{
@@ -397,6 +487,9 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
             },
             fields: fields{
                 {{ .Config.ServiceVariableName }}: mock{{ .Config.ServiceTypeName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger: mockLogger,
             },
             args: args{
@@ -413,6 +506,9 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
             tt.setup()
             i := &{{ .GetUseCaseTypeName }}{
                 {{ .Config.ServiceVariableName }}: tt.fields.{{ .Config.ServiceVariableName }},
+{{- if .Config.KafkaEnabled }}
+                {{ .GetEventProducerPrivateVariableName }}: tt.fields.{{ .GetEventProducerPrivateVariableName }},
+{{- end}}
                 logger:          tt.fields.logger,
             }
             got, got1, err := i.List(tt.args.ctx, tt.args.filter)

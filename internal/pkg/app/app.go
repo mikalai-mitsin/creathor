@@ -99,6 +99,31 @@ func (m *BaseEntity) DirName() string {
 	return strcase.ToSnake(m.Name)
 }
 
+func (m *BaseEntity) EventProducerConstructorName() string {
+	return fmt.Sprintf("New%s", m.EventProducerTypeName())
+}
+
+func (m *BaseEntity) EventProducerTypeName() string {
+	return fmt.Sprintf("%sEventProducer", strcase.ToCamel(m.Name))
+}
+
+func (m *BaseEntity) EventProducerInterfaceName() string {
+	return fmt.Sprintf("%sEventProducer", strcase.ToLowerCamel(m.Name))
+}
+func (m *BaseEntity) GetEventProducerPrivateVariableName() string {
+	return fmt.Sprintf("%sEventProducer", strcase.ToLowerCamel(m.Config.Name))
+}
+
+func (m *BaseEntity) CreatedTopicName() string {
+	return fmt.Sprintf("%s.created", strcase.ToSnake(m.Name))
+}
+func (m *BaseEntity) UpdatedTopicName() string {
+	return fmt.Sprintf("%s.updated", strcase.ToSnake(m.Name))
+}
+func (m *BaseEntity) DeletedTopicName() string {
+	return fmt.Sprintf("%s.deleted", strcase.ToSnake(m.Name))
+}
+
 func (m *BaseEntity) EntitiesImportPath() string {
 	return fmt.Sprintf(`"%s/internal/app/%s/entities/%s"`, m.Module, m.AppName(), m.DirName())
 }
@@ -210,6 +235,28 @@ func (m *BaseEntity) GetGRPCServiceDescriptionName() string {
 	return fmt.Sprintf("%sService_ServiceDesc", strcase.ToCamel(m.Config.Name))
 }
 
+func (m *BaseEntity) GetGRPCCreateDTOEncodeName() string {
+	return fmt.Sprintf("encode%s", m.GetCreateModel().Name)
+}
+
+func (m *BaseEntity) GetGRPCUpdateDTOEncodeName() string {
+	return fmt.Sprintf("encode%s", m.GetUpdateModel().Name)
+}
+
+func (m *BaseEntity) GetGRPCFilterDTOEncodeName() string {
+	return fmt.Sprintf("encode%s", m.GetFilterModel().Name)
+}
+
+func (m *BaseEntity) GetGRPCMainDecodeName() string {
+	return fmt.Sprintf("decode%s", m.GetMainModel().Name)
+}
+func (m *BaseEntity) GetGRPCMainListDecodeName() string {
+	return fmt.Sprintf("decodeList%s", m.GetMainModel().Name)
+}
+func (m *BaseEntity) GetGRPCUpdateDecodeName() string {
+	return fmt.Sprintf("decode%s", m.GetUpdateModel().Name)
+}
+
 func (m *BaseEntity) GetHTTPHandlerConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetHTTPHandlerTypeName())
 }
@@ -232,6 +279,7 @@ func (m *BaseEntity) GetHTTPItemDTOConstructorName() string {
 func (m *BaseEntity) GetHTTPUpdateDTOName() string {
 	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.GetUpdateModel().Name))
 }
+
 func (m *BaseEntity) GetHTTPUpdateDTOConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetHTTPUpdateDTOName())
 }

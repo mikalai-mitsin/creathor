@@ -34,6 +34,7 @@ func (i InterfacesGenerator) Sync() error {
 	}
 	appServiceExists := false
 	loggerExists := false
+	eventProducerExists := false
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.TypeSpec); ok {
 			if t.Name.String() == i.domain.GetServiceInterfaceName() {
@@ -41,6 +42,9 @@ func (i InterfacesGenerator) Sync() error {
 			}
 			if t.Name.String() == "logger" {
 				loggerExists = true
+			}
+			if t.Name.String() == i.domain.EventProducerInterfaceName() {
+				eventProducerExists = true
 			}
 			return true
 		}
@@ -51,6 +55,9 @@ func (i InterfacesGenerator) Sync() error {
 	}
 	if !loggerExists {
 		file.Decls = append(file.Decls, i.loggerInterface())
+	}
+	if !eventProducerExists && i.domain.Config.KafkaEnabled {
+		file.Decls = append(file.Decls, i.appEventProducerInterface())
 	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
@@ -293,6 +300,151 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: methods,
+					},
+				},
+			},
+		},
+	}
+}
+
+func (i InterfacesGenerator) appEventProducerInterface() *ast.GenDecl {
+	return &ast.GenDecl{
+		Tok: token.TYPE,
+		Specs: []ast.Spec{
+			&ast.TypeSpec{
+				Name: &ast.Ident{
+					Name: i.domain.EventProducerInterfaceName(),
+				},
+				Type: &ast.InterfaceType{
+					Methods: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "Created",
+									},
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "context",
+													},
+													Sel: &ast.Ident{
+														Name: "Context",
+													},
+												},
+											},
+											{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "entities",
+													},
+													Sel: &ast.Ident{
+														Name: i.domain.GetMainModel().Name,
+													},
+												},
+											},
+										},
+									},
+									Results: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.Ident{
+													Name: "error",
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "Updated",
+									},
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "context",
+													},
+													Sel: &ast.Ident{
+														Name: "Context",
+													},
+												},
+											},
+											{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "entities",
+													},
+													Sel: &ast.Ident{
+														Name: i.domain.GetMainModel().Name,
+													},
+												},
+											},
+										},
+									},
+									Results: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.Ident{
+													Name: "error",
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "Deleted",
+									},
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "context",
+													},
+													Sel: &ast.Ident{
+														Name: "Context",
+													},
+												},
+											},
+											{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "uuid",
+													},
+													Sel: &ast.Ident{
+														Name: "UUID",
+													},
+												},
+											},
+										},
+									},
+									Results: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.Ident{
+													Name: "error",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},

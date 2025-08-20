@@ -2572,6 +2572,250 @@ func (i Errors) filePostgres() *ast.File {
 		},
 	}
 }
+func (i Errors) fileKafka() *ast.File {
+	return &ast.File{
+		Package: 1,
+		Name: &ast.Ident{
+			Name: "errs",
+		},
+		Decls: []ast.Decl{
+			&ast.GenDecl{
+				Tok: token.IMPORT,
+				Specs: []ast.Spec{
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: "\"errors\"",
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: "\"github.com/IBM/sarama\"",
+						},
+					},
+				},
+			},
+			&ast.FuncDecl{
+				Name: &ast.Ident{
+					Name: "FromKafkaError",
+				},
+				Type: &ast.FuncType{
+					Params: &ast.FieldList{
+						List: []*ast.Field{
+							&ast.Field{
+								Names: []*ast.Ident{
+									&ast.Ident{
+										Name: "err",
+									},
+								},
+								Type: &ast.Ident{
+									Name: "error",
+								},
+							},
+						},
+					},
+					Results: &ast.FieldList{
+						List: []*ast.Field{
+							&ast.Field{
+								Type: &ast.StarExpr{
+									X: &ast.Ident{
+										Name: "Error",
+									},
+								},
+							},
+						},
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
+								&ast.Ident{
+									Name: "e",
+								},
+							},
+							Tok: token.DEFINE,
+							Rhs: []ast.Expr{
+								&ast.UnaryExpr{
+									Op: token.AND,
+									X: &ast.CompositeLit{
+										Type: &ast.Ident{
+											Name: "Error",
+										},
+										Elts: []ast.Expr{
+											&ast.KeyValueExpr{
+												Key: &ast.Ident{
+													Name: "Code",
+												},
+												Value: &ast.Ident{
+													Name: "ErrorCodeInternal",
+												},
+											},
+											&ast.KeyValueExpr{
+												Key: &ast.Ident{
+													Name: "Message",
+												},
+												Value: &ast.BasicLit{
+													Kind:  token.STRING,
+													Value: "\"Unexpected behavior.\"",
+												},
+											},
+											&ast.KeyValueExpr{
+												Key: &ast.Ident{
+													Name: "Params",
+												},
+												Value: &ast.Ident{
+													Name: "nil",
+												},
+											},
+											&ast.KeyValueExpr{
+												Key: &ast.Ident{
+													Name: "Err",
+												},
+												Value: &ast.Ident{
+													Name: "err",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.DeclStmt{
+							Decl: &ast.GenDecl{
+								Tok: token.VAR,
+								Specs: []ast.Spec{
+									&ast.ValueSpec{
+										Names: []*ast.Ident{
+											&ast.Ident{
+												Name: "prErr",
+											},
+										},
+										Type: &ast.StarExpr{
+											X: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "sarama",
+												},
+												Sel: &ast.Ident{
+													Name: "ProducerError",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "errors",
+									},
+									Sel: &ast.Ident{
+										Name: "As",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.Ident{
+										Name: "err",
+									},
+									&ast.UnaryExpr{
+										Op: token.AND,
+										X: &ast.Ident{
+											Name: "prErr",
+										},
+									},
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.ExprStmt{
+										X: &ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "e",
+												},
+												Sel: &ast.Ident{
+													Name: "AddParam",
+												},
+											},
+											Args: []ast.Expr{
+												&ast.BasicLit{
+													Kind:  token.STRING,
+													Value: "\"error\"",
+												},
+												&ast.CallExpr{
+													Fun: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "prErr",
+														},
+														Sel: &ast.Ident{
+															Name: "Error",
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "e",
+									},
+									Sel: &ast.Ident{
+										Name: "AddParam",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.BasicLit{
+										Kind:  token.STRING,
+										Value: "\"error\"",
+									},
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "err",
+											},
+											Sel: &ast.Ident{
+												Name: "Error",
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								&ast.Ident{
+									Name: "e",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Imports: []*ast.ImportSpec{
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: "\"errors\"",
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: "\"github.com/IBM/sarama\"",
+				},
+			},
+		},
+	}
+}
 
 func (i Errors) fileValidation() *ast.File {
 	return &ast.File{
@@ -3048,6 +3292,11 @@ func (i Errors) Sync() error {
 	if err := i.syncPostgres(); err != nil {
 		return err
 	}
+	if i.project.KafkaEnabled {
+		if err := i.syncKafka(); err != nil {
+			return err
+		}
+	}
 	if err := i.syncValidation(); err != nil {
 		return err
 	}
@@ -3193,6 +3442,27 @@ func (i Errors) syncPostgres() error {
 		Name: "postgres errors tests",
 	}
 	if err := test.RenderToFile(i.project); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (i Errors) syncKafka() error {
+	fileset := token.NewFileSet()
+	filename := path.Join("internal", "pkg", "errs", "kafka.go")
+	err := os.MkdirAll(path.Dir(filename), 0777)
+	if err != nil {
+		return err
+	}
+	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
+	if err != nil {
+		file = i.fileKafka()
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filename, buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil

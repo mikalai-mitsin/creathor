@@ -54,6 +54,7 @@ func NewProject(configPath string) (*Project, error) {
 		app.GRPCEnabled = project.GRPCEnabled
 		app.HTTPEnabled = project.HTTPEnabled
 		app.GatewayEnabled = project.GatewayEnabled
+		app.KafkaEnabled = project.KafkaEnabled
 		for i2, entity := range app.Entities {
 			entity.Module = project.Module
 			entity.ProjectName = project.Name
@@ -61,6 +62,7 @@ func NewProject(configPath string) (*Project, error) {
 			entity.GRPCEnabled = project.GRPCEnabled
 			entity.HTTPEnabled = project.HTTPEnabled
 			entity.GatewayEnabled = project.GatewayEnabled
+			entity.KafkaEnabled = project.KafkaEnabled
 			app.Entities[i2] = entity
 		}
 		project.Apps[i] = app

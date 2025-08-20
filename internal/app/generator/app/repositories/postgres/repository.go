@@ -41,6 +41,7 @@ func (r RepositoryGenerator) filename() string {
 		"app",
 		r.domain.AppName(),
 		"repositories",
+		"postgres",
 		r.domain.DirName(),
 		r.domain.FileName(),
 	)
@@ -91,9 +92,6 @@ func (r RepositoryGenerator) Sync() error {
 		return err
 	}
 	if err := r.syncMigrations(); err != nil {
-		return err
-	}
-	if err := r.syncTest(); err != nil {
 		return err
 	}
 	return nil
@@ -3386,26 +3384,6 @@ func (r RepositoryGenerator) syncDTOListToEntities() error {
 }
 
 var destinationPath = "."
-
-func (r RepositoryGenerator) syncTest() error {
-	test := tmpl.Template{
-		SourcePath: "templates/internal/domain/repositories/postgres/crud_test.go.tmpl",
-		DestinationPath: filepath.Join(
-			destinationPath,
-			"internal",
-			"app",
-			r.domain.AppName(),
-			"repositories",
-			r.domain.DirName(),
-			r.domain.TestFileName(),
-		),
-		Name: "repository test",
-	}
-	if err := test.RenderToFile(r.domain); err != nil {
-		return err
-	}
-	return nil
-}
 
 func (r RepositoryGenerator) syncMigrations() error {
 	pattern := fmt.Sprintf("*_%s.up.sql", r.domain.TableName())

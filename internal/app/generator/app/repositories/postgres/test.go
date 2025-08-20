@@ -26,6 +26,7 @@ func (g *TestGenerator) Sync() error {
 			"app",
 			g.domain.AppName(),
 			"repositories",
+			"postgres",
 			g.domain.DirName(),
 			g.domain.TestFileName(),
 		),

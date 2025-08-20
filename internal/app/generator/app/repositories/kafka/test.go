@@ -25,9 +25,10 @@ func (g *TestGenerator) Sync() error {
 			"internal",
 			"app",
 			g.domain.AppName(),
-			"events",
+			"repositories",
+			"kafka",
 			g.domain.DirName(),
-			"producer_test.go",
+			g.domain.TestFileName(),
 		),
 		Name: "producer test",
 	}

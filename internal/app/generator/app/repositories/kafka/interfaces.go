@@ -29,7 +29,8 @@ func (r *InterfacesGenerator) filename() string {
 		"internal",
 		"app",
 		r.domain.AppName(),
-		"events",
+		"repositories",
+		"kafka",
 		r.domain.DirName(),
 		fmt.Sprintf("%s_interfaces.go", r.domain.SnakeName()),
 	)
@@ -49,7 +50,7 @@ func (r InterfacesGenerator) Sync() error {
 	if !astfile.TypeExists(file, "logger") {
 		file.Decls = append(file.Decls, r.loggerInterface())
 	}
-	if !astfile.TypeExists(file, "database") {
+	if !astfile.TypeExists(file, "producer") {
 		file.Decls = append(file.Decls, r.kafkaInterface())
 	}
 	buff := &bytes.Buffer{}

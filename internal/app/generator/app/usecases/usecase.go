@@ -62,11 +62,17 @@ func (i UseCaseGenerator) structure() *ast.TypeSpec {
 			Names: []*ast.Ident{ast.NewIdent(i.domain.GetServicePrivateVariableName())},
 			Type:  ast.NewIdent(i.domain.GetServiceInterfaceName()),
 		},
-		{
-			Names: []*ast.Ident{ast.NewIdent("logger")},
-			Type:  ast.NewIdent("logger"),
-		},
 	}
+	if i.domain.Config.KafkaEnabled {
+		fields = append(fields, &ast.Field{
+			Names: []*ast.Ident{ast.NewIdent(i.domain.GetEventProducerPrivateVariableName())},
+			Type:  ast.NewIdent(i.domain.EventProducerInterfaceName()),
+		})
+	}
+	fields = append(fields, &ast.Field{
+		Names: []*ast.Ident{ast.NewIdent("logger")},
+		Type:  ast.NewIdent("logger"),
+	})
 	structure := &ast.TypeSpec{
 		Name: ast.NewIdent(i.domain.GetUseCaseTypeName()),
 		Type: &ast.StructType{
@@ -111,21 +117,33 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 			Names: []*ast.Ident{ast.NewIdent(i.domain.GetServicePrivateVariableName())},
 			Type:  ast.NewIdent(i.domain.GetServiceInterfaceName()),
 		},
-		{
-			Names: []*ast.Ident{ast.NewIdent("logger")},
-			Type:  ast.NewIdent("logger"),
-		},
 	}
+	if i.domain.Config.KafkaEnabled {
+		fields = append(fields, &ast.Field{
+			Names: []*ast.Ident{ast.NewIdent(i.domain.GetEventProducerPrivateVariableName())},
+			Type:  ast.NewIdent(i.domain.EventProducerInterfaceName()),
+		})
+	}
+	fields = append(fields, &ast.Field{
+		Names: []*ast.Ident{ast.NewIdent("logger")},
+		Type:  ast.NewIdent("logger"),
+	})
 	exprs := []ast.Expr{
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 			Value: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 		},
-		&ast.KeyValueExpr{
-			Key:   ast.NewIdent("logger"),
-			Value: ast.NewIdent("logger"),
-		},
 	}
+	if i.domain.Config.KafkaEnabled {
+		exprs = append(exprs, &ast.KeyValueExpr{
+			Key:   ast.NewIdent(i.domain.GetEventProducerPrivateVariableName()),
+			Value: ast.NewIdent(i.domain.GetEventProducerPrivateVariableName()),
+		})
+	}
+	exprs = append(exprs, &ast.KeyValueExpr{
+		Key:   ast.NewIdent("logger"),
+		Value: ast.NewIdent("logger"),
+	})
 	constructor := &ast.FuncDecl{
 		Name: ast.NewIdent(i.domain.GetUseCaseConstructorName()),
 		Type: &ast.FuncType{
@@ -189,7 +207,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 	body = append(body,
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(i.domain.GetMainModel().Variable),
+				ast.NewIdent(i.domain.GetOneVariableName()),
 				ast.NewIdent("err"),
 			},
 			Tok: token.DEFINE,
@@ -234,10 +252,79 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 			},
 			Else: nil,
 		},
+	)
+	if i.domain.Config.KafkaEnabled {
+		body = append(body, &ast.IfStmt{
+			Init: &ast.AssignStmt{
+				Lhs: []ast.Expr{
+					&ast.Ident{
+						Name: "err",
+					},
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "i",
+								},
+								Sel: &ast.Ident{
+									Name: i.domain.GetEventProducerPrivateVariableName(),
+								},
+							},
+							Sel: &ast.Ident{
+								Name: "Created",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.Ident{
+								Name: "ctx",
+							},
+							&ast.Ident{
+								Name: i.domain.GetOneVariableName(),
+							},
+						},
+					},
+				},
+			},
+			Cond: &ast.BinaryExpr{
+				X: &ast.Ident{
+					Name: "err",
+				},
+				Op: token.NEQ,
+				Y: &ast.Ident{
+					Name: "nil",
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							&ast.CompositeLit{
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "entities",
+									},
+									Sel: &ast.Ident{
+										Name: i.domain.GetMainModel().Name,
+									},
+								},
+							},
+							&ast.Ident{
+								Name: "err",
+							},
+						},
+					},
+				},
+			},
+		})
+	}
+	body = append(body,
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(i.domain.GetMainModel().Variable),
+				ast.NewIdent(i.domain.GetOneVariableName()),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -325,7 +412,7 @@ func (i UseCaseGenerator) astListMethod() *ast.FuncDecl {
 		// Try to update model at use case
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent("items"),
+				ast.NewIdent(i.domain.GetManyVariableName()),
 				ast.NewIdent("count"),
 				ast.NewIdent("err"),
 			},
@@ -370,7 +457,7 @@ func (i UseCaseGenerator) astListMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent("items"),
+				ast.NewIdent(i.domain.GetManyVariableName()),
 				ast.NewIdent("count"),
 				ast.NewIdent("nil"),
 			},
@@ -464,7 +551,7 @@ func (i UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 		// Try to get model from use case
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(i.domain.GetMainModel().Variable),
+				ast.NewIdent(i.domain.GetOneVariableName()),
 				ast.NewIdent("err"),
 			},
 			Tok: token.DEFINE,
@@ -515,7 +602,7 @@ func (i UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(i.domain.GetMainModel().Variable),
+				ast.NewIdent(i.domain.GetOneVariableName()),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -602,7 +689,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 		// Try to update model at use case
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent("updated"),
+				ast.NewIdent(i.domain.GetOneVariableName()),
 				ast.NewIdent("err"),
 			},
 			Tok: token.DEFINE,
@@ -647,10 +734,79 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 			},
 			Else: nil,
 		},
+	)
+	if i.domain.Config.KafkaEnabled {
+		body = append(body, &ast.IfStmt{
+			Init: &ast.AssignStmt{
+				Lhs: []ast.Expr{
+					&ast.Ident{
+						Name: "err",
+					},
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "i",
+								},
+								Sel: &ast.Ident{
+									Name: i.domain.GetEventProducerPrivateVariableName(),
+								},
+							},
+							Sel: &ast.Ident{
+								Name: "Updated",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.Ident{
+								Name: "ctx",
+							},
+							&ast.Ident{
+								Name: i.domain.GetOneVariableName(),
+							},
+						},
+					},
+				},
+			},
+			Cond: &ast.BinaryExpr{
+				X: &ast.Ident{
+					Name: "err",
+				},
+				Op: token.NEQ,
+				Y: &ast.Ident{
+					Name: "nil",
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							&ast.CompositeLit{
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "entities",
+									},
+									Sel: &ast.Ident{
+										Name: i.domain.GetMainModel().Name,
+									},
+								},
+							},
+							&ast.Ident{
+								Name: "err",
+							},
+						},
+					},
+				},
+			},
+		})
+	}
+	body = append(body,
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent("updated"),
+				ast.NewIdent(i.domain.GetOneVariableName()),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -772,6 +928,65 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 				},
 			},
 		},
+	)
+	if i.domain.Config.KafkaEnabled {
+		body = append(body, &ast.IfStmt{
+			Init: &ast.AssignStmt{
+				Lhs: []ast.Expr{
+					&ast.Ident{
+						Name: "err",
+					},
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "i",
+								},
+								Sel: &ast.Ident{
+									Name: i.domain.GetEventProducerPrivateVariableName(),
+								},
+							},
+							Sel: &ast.Ident{
+								Name: "Deleted",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.Ident{
+								Name: "ctx",
+							},
+							&ast.Ident{
+								Name: "id",
+							},
+						},
+					},
+				},
+			},
+			Cond: &ast.BinaryExpr{
+				X: &ast.Ident{
+					Name: "err",
+				},
+				Op: token.NEQ,
+				Y: &ast.Ident{
+					Name: "nil",
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							&ast.Ident{
+								Name: "err",
+							},
+						},
+					},
+				},
+			},
+		})
+	}
+	body = append(body,
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{

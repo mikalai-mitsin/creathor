@@ -40,7 +40,8 @@ func (r *ProducerGenerator) filename() string {
 		"internal",
 		"app",
 		r.domain.AppName(),
-		"events",
+		"repositories",
+		"kafka",
 		r.domain.DirName(),
 		r.domain.FileName(),
 	)

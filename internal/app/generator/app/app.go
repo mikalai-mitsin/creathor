@@ -107,7 +107,7 @@ func (a App) imports() *ast.GenDecl {
 				Path: &ast.BasicLit{
 					Kind: token.STRING,
 					Value: fmt.Sprintf(
-						`"%s/internal/app/%s/repositories/%s"`,
+						`"%s/internal/app/%s/repositories/postgres/%s"`,
 						a.app.Module,
 						a.app.AppName(),
 						entity.DirName(),
@@ -127,6 +127,23 @@ func (a App) imports() *ast.GenDecl {
 				},
 			},
 		)
+		if a.app.Config.KafkaEnabled {
+			specs = append(
+				specs,
+				&ast.ImportSpec{
+					Name: ast.NewIdent(fmt.Sprintf("%sEvents", entity.LowerCamelName())),
+					Path: &ast.BasicLit{
+						Kind: token.STRING,
+						Value: fmt.Sprintf(
+							`"%s/internal/app/%s/repositories/kafka/%s"`,
+							a.app.Module,
+							a.app.AppName(),
+							entity.DirName(),
+						),
+					},
+				},
+			)
+		}
 		if a.app.Config.HTTPEnabled {
 			specs = append(
 				specs,
@@ -240,6 +257,19 @@ func (a App) constructor() *ast.FuncDecl {
 			},
 		},
 	}
+	if a.app.Config.KafkaEnabled {
+		args = append(args,
+			&ast.Field{
+				Names: []*ast.Ident{
+					ast.NewIdent("kafkaProducer"),
+				},
+				Type: &ast.SelectorExpr{
+					X:   ast.NewIdent("sarama"),
+					Sel: ast.NewIdent("SyncProducer"),
+				},
+			},
+		)
+	}
 	exprs := []ast.Expr{
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("readDB"),
@@ -253,6 +283,14 @@ func (a App) constructor() *ast.FuncDecl {
 			Key:   ast.NewIdent("logger"),
 			Value: ast.NewIdent("logger"),
 		},
+	}
+	if a.app.Config.KafkaEnabled {
+		exprs = append(exprs,
+			&ast.KeyValueExpr{
+				Key:   ast.NewIdent("kafkaProducer"),
+				Value: ast.NewIdent("kafkaProducer"),
+			},
+		)
 	}
 	body := &ast.BlockStmt{
 		List: []ast.Stmt{},
@@ -311,25 +349,49 @@ func (a App) constructor() *ast.FuncDecl {
 						},
 					},
 				},
-			},
-			&ast.AssignStmt{
+			})
+		if a.app.Config.KafkaEnabled {
+			body.List = append(body.List, &ast.AssignStmt{
 				Lhs: []ast.Expr{
-					ast.NewIdent(entity.GetUseCasePrivateVariableName()),
+					ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
 				},
 				Tok: token.DEFINE,
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent(fmt.Sprintf("%sUseCases", entity.LowerCamelName())),
-							Sel: ast.NewIdent(entity.GetUseCaseConstructorName()),
+							X:   ast.NewIdent(fmt.Sprintf("%sEvents", entity.LowerCamelName())),
+							Sel: ast.NewIdent(entity.EventProducerConstructorName()),
 						},
 						Args: []ast.Expr{
-							ast.NewIdent(entity.GetServicePrivateVariableName()),
+							ast.NewIdent("kafkaProducer"),
 							ast.NewIdent("logger"),
 						},
 					},
 				},
 			})
+		}
+		useCaseArgs := []ast.Expr{
+			ast.NewIdent(entity.GetServicePrivateVariableName()),
+		}
+		if a.app.Config.KafkaEnabled {
+			useCaseArgs = append(useCaseArgs, ast.NewIdent(entity.GetEventProducerPrivateVariableName()))
+		}
+		useCaseArgs = append(useCaseArgs, ast.NewIdent("logger"))
+		body.List = append(body.List, &ast.AssignStmt{
+			Lhs: []ast.Expr{
+				ast.NewIdent(entity.GetUseCasePrivateVariableName()),
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X:   ast.NewIdent(fmt.Sprintf("%sUseCases", entity.LowerCamelName())),
+						Sel: ast.NewIdent(entity.GetUseCaseConstructorName()),
+					},
+					Args: useCaseArgs,
+				},
+			},
+		})
 
 		if a.app.Config.HTTPEnabled {
 			body.List = append(body.List, &ast.AssignStmt{
@@ -353,6 +415,12 @@ func (a App) constructor() *ast.FuncDecl {
 			exprs = append(exprs, &ast.KeyValueExpr{
 				Key:   ast.NewIdent(entity.GetHTTPHandlerPrivateVariableName()),
 				Value: ast.NewIdent(entity.GetHTTPHandlerPrivateVariableName()),
+			})
+		}
+		if a.app.Config.KafkaEnabled {
+			exprs = append(exprs, &ast.KeyValueExpr{
+				Key:   ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
+				Value: ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
 			})
 		}
 		if a.app.Config.GRPCEnabled {
@@ -452,6 +520,19 @@ func (a App) structure() *ast.GenDecl {
 			},
 		},
 	}
+	if a.app.Config.KafkaEnabled {
+		structType.Fields.List = append(structType.Fields.List,
+			&ast.Field{
+				Names: []*ast.Ident{
+					ast.NewIdent("kafkaProducer"),
+				},
+				Type: &ast.SelectorExpr{
+					X:   ast.NewIdent("sarama"),
+					Sel: ast.NewIdent("SyncProducer"),
+				},
+			},
+		)
+	}
 	for _, entity := range a.app.Entities {
 		structType.Fields.List = append(structType.Fields.List, &ast.Field{
 			Names: []*ast.Ident{
@@ -495,6 +576,19 @@ func (a App) structure() *ast.GenDecl {
 					X: &ast.SelectorExpr{
 						X:   ast.NewIdent(fmt.Sprintf("%sHttpHandlers", entity.LowerCamelName())),
 						Sel: ast.NewIdent(entity.GetHTTPHandlerTypeName()),
+					},
+				},
+			})
+		}
+		if a.app.Config.KafkaEnabled {
+			structType.Fields.List = append(structType.Fields.List, &ast.Field{
+				Names: []*ast.Ident{
+					ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
+				},
+				Type: &ast.StarExpr{
+					X: &ast.SelectorExpr{
+						X:   ast.NewIdent(fmt.Sprintf("%sEvents", entity.LowerCamelName())),
+						Sel: ast.NewIdent(entity.EventProducerTypeName()),
 					},
 				},
 			})

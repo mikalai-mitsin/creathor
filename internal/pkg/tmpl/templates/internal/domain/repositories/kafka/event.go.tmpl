@@ -8,27 +8,19 @@ import (
 	"github.com/IBM/sarama"
 )
 
-type logger interface {
-	Debug(msg string, fields ...log.Field)
-	Info(msg string, fields ...log.Field)
-	Print(msg string, fields ...log.Field)
-	Warn(msg string, fields ...log.Field)
-	Error(msg string, fields ...log.Field)
-	Fatal(msg string, fields ...log.Field)
-	Panic(msg string, fields ...log.Field)
-}
-
-type kafka interface {
-	sarama.SyncProducer
-}
+const (
+	topicEventCreated = "{{ .CreatedTopicName }}"
+	topicEventUpdated = "{{ .UpdatedTopicName }}"
+	topicEventDeleted = "{{ .DeletedTopicName }}"
+)
 
 type {{ .EventProducerTypeName }} struct {
-	producer kafka
+	producer producer
 	logger   logger
 }
 
 func {{ .EventProducerConstructorName }}(
-	producer kafka,
+	producer producer,
 	logger logger,
 ) *{{ .EventProducerTypeName }} {
 	return &{{ .EventProducerTypeName }}{producer: producer, logger: logger}
@@ -40,11 +32,11 @@ func (p *{{ .EventProducerTypeName }}) Created(_ context.Context, {{ .GetOneVari
 		return err
 	}
 	message := &sarama.ProducerMessage{
-		Topic: "{{ .CreatedTopicName }}",
+		Topic: topicEventCreated,
 		Value: sarama.ByteEncoder(data),
 	}
 	if _, _, err := p.producer.SendMessage(message); err != nil {
-		return err
+		return errs.FromKafkaError(err)
 	}
 	return nil
 }
@@ -55,22 +47,22 @@ func (p *{{ .EventProducerTypeName }}) Updated(_ context.Context, {{ .GetOneVari
 		return err
 	}
 	message := &sarama.ProducerMessage{
-		Topic: "{{ .UpdatedTopicName }}",
+		Topic: topicEventUpdated,
 		Value: sarama.ByteEncoder(data),
 	}
 	if _, _, err := p.producer.SendMessage(message); err != nil {
-		return err
+		return errs.FromKafkaError(err)
 	}
 	return nil
 }
 
 func (p *{{ .EventProducerTypeName }}) Deleted(_ context.Context, id uuid.UUID) error {
 	message := &sarama.ProducerMessage{
-		Topic: "{{ .UpdatedTopicName }}",
+		Topic: topicEventDeleted,
 		Value: sarama.ByteEncoder(id.String()),
 	}
 	if _, _, err := p.producer.SendMessage(message); err != nil {
-		return err
+		return errs.FromKafkaError(err)
 	}
 	return nil
 }

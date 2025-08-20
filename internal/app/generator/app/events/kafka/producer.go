@@ -18,30 +18,30 @@ func NewProducerGenerator(domain *app.BaseEntity) *ProducerGenerator {
 	return &ProducerGenerator{domain: domain}
 }
 
-func (g *ProducerGenerator) Sync() error {
-	err := os.MkdirAll(path.Dir(g.filename()), 0777)
+func (r *ProducerGenerator) Sync() error {
+	err := os.MkdirAll(path.Dir(r.filename()), 0777)
 	if err != nil {
 		return err
 	}
 	test := tmpl.Template{
 		SourcePath:      "templates/internal/domain/repositories/kafka/event.go.tmpl",
-		DestinationPath: g.filename(),
+		DestinationPath: r.filename(),
 		Name:            "producer",
 	}
-	if err := test.RenderToFile(g.domain); err != nil {
+	if err := test.RenderToFile(r.domain); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (g *ProducerGenerator) filename() string {
+func (r *ProducerGenerator) filename() string {
 	return filepath.Join(
 		".",
 		"internal",
 		"app",
-		g.domain.AppName(),
+		r.domain.AppName(),
 		"events",
-		g.domain.DirName(),
-		"producer.go",
+		r.domain.DirName(),
+		r.domain.FileName(),
 	)
 }

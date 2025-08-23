@@ -11,7 +11,7 @@ import (
 	"path"
 	"path/filepath"
 
-	mods "github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 
 	"golang.org/x/exp/slices"
 
@@ -20,10 +20,10 @@ import (
 
 type Perm struct {
 	modelName string
-	domain    *mods.BaseEntity
+	domain    *configs.BaseEntity
 }
 
-func NewPerm(modelName string, domain *mods.BaseEntity) *Perm {
+func NewPerm(modelName string, domain *configs.BaseEntity) *Perm {
 	return &Perm{modelName: modelName, domain: domain}
 }
 

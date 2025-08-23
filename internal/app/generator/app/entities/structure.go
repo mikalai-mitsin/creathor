@@ -10,13 +10,13 @@ import (
 	"path"
 	"path/filepath"
 
-	mods "github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type Structure struct {
 	fileName string
 	name     string
-	domain   *mods.BaseEntity
+	domain   *configs.BaseEntity
 	params   []*ast.Field
 }
 
@@ -24,7 +24,7 @@ func NewStructure(
 	fileName string,
 	name string,
 	params []*ast.Field,
-	domain *mods.BaseEntity,
+	domain *configs.BaseEntity,
 ) *Structure {
 	return &Structure{
 		fileName: fileName,

@@ -10,16 +10,16 @@ import (
 	"os"
 	"path"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 const destinationPath = "."
 
 type HandlerGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.BaseEntity
 }
 
-func NewHandlerGenerator(domain *app.BaseEntity) *HandlerGenerator {
+func NewHandlerGenerator(domain *configs.BaseEntity) *HandlerGenerator {
 	return &HandlerGenerator{
 		domain: domain,
 	}

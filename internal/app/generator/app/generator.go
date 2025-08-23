@@ -9,14 +9,14 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/repositories/postgres"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/services"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/usecases"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type Generator struct {
-	domain *app.App
+	domain *configs.GeneratorConfig
 }
 
-func NewGenerator(d *app.App) *Generator {
+func NewGenerator(d *configs.GeneratorConfig) *Generator {
 	return &Generator{domain: d}
 }
 

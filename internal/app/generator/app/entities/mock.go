@@ -12,17 +12,17 @@ import (
 
 	"github.com/iancoleman/strcase"
 
-	mods "github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/fake"
 )
 
 type Mock struct {
 	typeSpec *ast.TypeSpec
-	domain   *mods.BaseEntity
+	domain   *configs.BaseEntity
 }
 
-func NewMock(typeSpec *ast.TypeSpec, domain *mods.BaseEntity) *Mock {
+func NewMock(typeSpec *ast.TypeSpec, domain *configs.BaseEntity) *Mock {
 	return &Mock{typeSpec: typeSpec, domain: domain}
 }
 

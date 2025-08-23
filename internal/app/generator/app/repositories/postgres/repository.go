@@ -14,16 +14,16 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 
 	"github.com/iancoleman/strcase"
 )
 
 type RepositoryGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.BaseEntity
 }
 
-func NewRepositoryGenerator(domain *app.BaseEntity) *RepositoryGenerator {
+func NewRepositoryGenerator(domain *configs.BaseEntity) *RepositoryGenerator {
 	return &RepositoryGenerator{domain: domain}
 }
 

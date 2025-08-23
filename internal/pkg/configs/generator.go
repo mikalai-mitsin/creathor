@@ -1,4 +1,4 @@
-package app
+package configs
 
 import (
 	"fmt"
@@ -7,32 +7,30 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
-
 	"github.com/iancoleman/strcase"
 	"github.com/jinzhu/inflection"
 	"golang.org/x/exp/slices"
 )
 
-type App struct {
-	Config      configs.AppConfig
+type GeneratorConfig struct {
+	Config      AppConfig
 	Name        string
 	Module      string
 	ProtoModule string
 	Entities    []*BaseEntity
 }
 
-func (m *App) AppName() string {
+func (m *GeneratorConfig) AppName() string {
 	return m.Config.AppName()
 }
 
 type BaseEntity struct {
-	Config      configs.EntityConfig
+	Config      EntityConfig
 	Name        string
 	Module      string
 	ProtoModule string
 	Entities    []*Entity
-	AppConfig   *configs.AppConfig
+	AppConfig   *AppConfig
 }
 
 func (m *BaseEntity) SnakeName() string {
@@ -146,7 +144,7 @@ func (m *BaseEntity) TableName() string {
 func (m *BaseEntity) SearchEnabled() bool {
 	return slices.ContainsFunc(
 		m.GetMainModel().Params,
-		func(param *configs.Param) bool { return param.Search },
+		func(param *Param) bool { return param.Search },
 	)
 }
 

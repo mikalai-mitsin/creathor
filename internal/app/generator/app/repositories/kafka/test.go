@@ -3,16 +3,16 @@ package kafka
 import (
 	"path/filepath"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 )
 
 type TestGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.BaseEntity
 }
 
-func NewProducerTestGenerator(domain *app.BaseEntity) *TestGenerator {
+func NewProducerTestGenerator(domain *configs.BaseEntity) *TestGenerator {
 	return &TestGenerator{domain: domain}
 }
 

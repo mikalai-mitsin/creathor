@@ -5,16 +5,16 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 )
 
 type ProducerGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.BaseEntity
 }
 
-func NewProducerGenerator(domain *app.BaseEntity) *ProducerGenerator {
+func NewProducerGenerator(domain *configs.BaseEntity) *ProducerGenerator {
 	return &ProducerGenerator{domain: domain}
 }
 

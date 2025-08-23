@@ -11,15 +11,15 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type UseCaseGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.BaseEntity
 }
 
-func NewUseCaseGenerator(domain *app.BaseEntity) *UseCaseGenerator {
+func NewUseCaseGenerator(domain *configs.BaseEntity) *UseCaseGenerator {
 	return &UseCaseGenerator{domain: domain}
 }
 

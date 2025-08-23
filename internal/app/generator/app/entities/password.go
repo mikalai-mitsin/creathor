@@ -9,14 +9,14 @@ import (
 	"os"
 	"path"
 
-	mods "github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type Password struct {
-	domain *mods.BaseEntity
+	domain *configs.BaseEntity
 }
 
-func NewPassword(domain *mods.BaseEntity) *Password {
+func NewPassword(domain *configs.BaseEntity) *Password {
 	return &Password{domain: domain}
 }
 

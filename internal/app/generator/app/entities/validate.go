@@ -11,15 +11,15 @@ import (
 	"path"
 	"strings"
 
-	mods "github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	configs "github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type Validate struct {
 	typeSpec *ast.TypeSpec
-	domain   *mods.BaseEntity
+	domain   *configs.BaseEntity
 }
 
-func NewValidate(typeSpec *ast.TypeSpec, domain *mods.BaseEntity) *Validate {
+func NewValidate(typeSpec *ast.TypeSpec, domain *configs.BaseEntity) *Validate {
 	return &Validate{typeSpec: typeSpec, domain: domain}
 }
 func (m *Validate) Sync() error {

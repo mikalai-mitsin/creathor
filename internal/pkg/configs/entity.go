@@ -1,9 +1,7 @@
-package app
+package configs
 
 import (
 	"fmt"
-
-	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type EntityType uint8
@@ -19,12 +17,12 @@ type Entity struct {
 	Type       EntityType
 	Name       string
 	Variable   string
-	Params     []*configs.Param // FIXME: replace with own type
+	Params     []*Param // FIXME: replace with own type
 	Validation bool
 	Mock       bool
 }
 
-func NewCreateEntity(entityConfig configs.EntityConfig) *Entity {
+func NewCreateEntity(entityConfig EntityConfig) *Entity {
 	return &Entity{
 		Type:       EntityTypeCreate,
 		Name:       entityConfig.CreateTypeName(),
@@ -35,12 +33,12 @@ func NewCreateEntity(entityConfig configs.EntityConfig) *Entity {
 	}
 }
 
-func NewUpdateEntity(entityConfig configs.EntityConfig) *Entity {
+func NewUpdateEntity(entityConfig EntityConfig) *Entity {
 	model := &Entity{
 		Type:     EntityTypeUpdate,
 		Name:     entityConfig.UpdateTypeName(),
 		Variable: "update",
-		Params: []*configs.Param{
+		Params: []*Param{
 			{
 				Name: "ID",
 				Type: "uuid.UUID",
@@ -50,7 +48,7 @@ func NewUpdateEntity(entityConfig configs.EntityConfig) *Entity {
 		Mock:       true,
 	}
 	for _, param := range entityConfig.Params {
-		model.Params = append(model.Params, &configs.Param{
+		model.Params = append(model.Params, &Param{
 			Name: param.GetName(),
 			Type: fmt.Sprintf("*%s", param.Type),
 		})
@@ -58,12 +56,12 @@ func NewUpdateEntity(entityConfig configs.EntityConfig) *Entity {
 	return model
 }
 
-func NewMainEntity(modelConfig configs.EntityConfig) *Entity {
+func NewMainEntity(modelConfig EntityConfig) *Entity {
 	model := &Entity{
 		Type:     EntityTypeMain,
 		Name:     modelConfig.EntityName(),
 		Variable: modelConfig.Variable(),
-		Params: []*configs.Param{
+		Params: []*Param{
 			{
 				Name:   "ID",
 				Type:   "uuid.UUID",
@@ -87,12 +85,12 @@ func NewMainEntity(modelConfig configs.EntityConfig) *Entity {
 	return model
 }
 
-func NewFilterEntity(modelConfig configs.EntityConfig) *Entity {
+func NewFilterEntity(modelConfig EntityConfig) *Entity {
 	model := &Entity{
 		Type:     EntityTypeFilter,
 		Name:     modelConfig.FilterTypeName(),
 		Variable: "filter",
-		Params: []*configs.Param{
+		Params: []*Param{
 			{
 				Name:   "PageSize",
 				Type:   "*uint64",

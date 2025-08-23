@@ -10,14 +10,14 @@ import (
 	"os"
 	"path"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type InterfacesGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.BaseEntity
 }
 
-func NewInterfacesGenerator(domain *app.BaseEntity) *InterfacesGenerator {
+func NewInterfacesGenerator(domain *configs.BaseEntity) *InterfacesGenerator {
 	return &InterfacesGenerator{domain: domain}
 }
 

@@ -3,15 +3,15 @@ package http
 import (
 	"path"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 )
 
 type TestGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.BaseEntity
 }
 
-func NewTestGenerator(domain *app.BaseEntity) *TestGenerator {
+func NewTestGenerator(domain *configs.BaseEntity) *TestGenerator {
 	return &TestGenerator{domain: domain}
 }
 

@@ -10,14 +10,14 @@ import (
 	"os"
 	"path"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type App struct {
-	app *app.App
+	app *configs.GeneratorConfig
 }
 
-func NewApp(domain *app.App) *App {
+func NewApp(domain *configs.GeneratorConfig) *App {
 	return &App{app: domain}
 }
 

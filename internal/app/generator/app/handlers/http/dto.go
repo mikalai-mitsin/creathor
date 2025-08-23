@@ -11,14 +11,14 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type DTOGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.BaseEntity
 }
 
-func NewDTOGenerator(domain *app.BaseEntity) *DTOGenerator {
+func NewDTOGenerator(domain *configs.BaseEntity) *DTOGenerator {
 	return &DTOGenerator{domain: domain}
 }
 

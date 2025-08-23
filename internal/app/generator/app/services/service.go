@@ -11,15 +11,15 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type ServiceGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.BaseEntity
 }
 
-func NewServiceGenerator(domain *app.BaseEntity) *ServiceGenerator {
+func NewServiceGenerator(domain *configs.BaseEntity) *ServiceGenerator {
 	return &ServiceGenerator{domain: domain}
 }
 

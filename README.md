@@ -39,7 +39,6 @@ goVersion: "1.24"
 ci: "github"
 gRPC: true
 http: true
-gateway: false
 uptrace: true
 apps:
   - name: posts

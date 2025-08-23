@@ -14,17 +14,16 @@ import (
 )
 
 type EntityConfig struct {
-	Name           string   `json:"name" yaml:"name"`
-	Module         string   `json:"module"        yaml:"module"`
-	ProjectName    string   `json:"project_name"  yaml:"projectName"`
-	ProtoPackage   string   `json:"proto_package" yaml:"protoPackage"`
-	Params         []*Param `json:"params"        yaml:"params"`
-	HTTPEnabled    bool     `                     yaml:"http"`
-	GRPCEnabled    bool     `                     yaml:"gRPC"`
-	GatewayEnabled bool     `                     yaml:"gateway"`
-	KafkaEnabled   bool     `                     yaml:"kafka"`
-	AppConfig      *AppConfig
-	Entities       []*Entity
+	Name         string   `json:"name" yaml:"name"`
+	Module       string   `json:"module"        yaml:"module"`
+	ProjectName  string   `json:"project_name"  yaml:"projectName"`
+	ProtoPackage string   `json:"proto_package" yaml:"protoPackage"`
+	Params       []*Param `json:"params"        yaml:"params"`
+	HTTPEnabled  bool     `                     yaml:"http"`
+	GRPCEnabled  bool     `                     yaml:"gRPC"`
+	KafkaEnabled bool     `                     yaml:"kafka"`
+	AppConfig    *AppConfig
+	Entities     []*Entity
 }
 
 func (m *EntityConfig) Validate() error {
@@ -86,10 +85,6 @@ func (m *EntityConfig) GRPCHandlerTypeName() string {
 
 func (m *EntityConfig) RESTHandlerTypeName() string {
 	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) GatewayHandlerTypeName() string {
-	return fmt.Sprintf("Register%sServiceHandlerFromEndpoint", strcase.ToCamel(m.Name))
 }
 
 func (m *EntityConfig) RESTHandlerPath() string {

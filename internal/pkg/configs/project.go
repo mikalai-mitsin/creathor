@@ -17,7 +17,6 @@ type Project struct {
 	CI             string      `yaml:"ci"`
 	Apps           []AppConfig `yaml:"apps"`
 	GRPCEnabled    bool        `yaml:"gRPC"`
-	GatewayEnabled bool        `yaml:"gateway"`
 	MakeEnabled    bool        `yaml:"make"`
 	TaskEnabled    bool        `yaml:"task"`
 	UptraceEnabled bool        `yaml:"uptrace"`
@@ -33,7 +32,6 @@ func NewProject(configPath string) (*Project, error) {
 		CI:             "github",
 		Apps:           nil,
 		GRPCEnabled:    true,
-		GatewayEnabled: false,
 		MakeEnabled:    false,
 		TaskEnabled:    true,
 		UptraceEnabled: false,
@@ -53,7 +51,6 @@ func NewProject(configPath string) (*Project, error) {
 		app.ProtoPackage = project.ProtoPackage()
 		app.GRPCEnabled = project.GRPCEnabled
 		app.HTTPEnabled = project.HTTPEnabled
-		app.GatewayEnabled = project.GatewayEnabled
 		app.KafkaEnabled = project.KafkaEnabled
 		for i2, entity := range app.Entities {
 			entity.Module = project.Module
@@ -61,7 +58,6 @@ func NewProject(configPath string) (*Project, error) {
 			entity.ProtoPackage = project.ProtoPackage()
 			entity.GRPCEnabled = project.GRPCEnabled
 			entity.HTTPEnabled = project.HTTPEnabled
-			entity.GatewayEnabled = project.GatewayEnabled
 			entity.KafkaEnabled = project.KafkaEnabled
 			app.Entities[i2] = entity
 		}
@@ -135,8 +131,4 @@ func (p *Project) ConfigsImportPath() string {
 
 func (p *Project) ClockImportPath() string {
 	return fmt.Sprintf(`"%s/internal/pkg/clock"`, p.Module)
-}
-
-func (p *Project) GatewayImportPath() string {
-	return fmt.Sprintf(`"%s/internal/pkg/gateway"`, p.Module)
 }

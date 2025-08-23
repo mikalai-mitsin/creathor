@@ -415,8 +415,128 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 			Args: toProvide,
 		},
 	}
+	return &ast.ValueSpec{
+		Names: []*ast.Ident{
+			ast.NewIdent("FXModule"),
+		},
+		Values: []ast.Expr{
+			&ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X:   ast.NewIdent("fx"),
+					Sel: ast.NewIdent("Options"),
+				},
+				Args: exprs,
+			},
+		},
+	}
+}
+
+func (f FxContainer) syncFxModule() error {
+	fileset := token.NewFileSet()
+	filename := f.filename()
+	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
+		return err
+	}
+	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
+	if err != nil {
+		file = f.file()
+	}
+	var varExists bool
+	var fxModule *ast.ValueSpec
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.ValueSpec); ok {
+			for _, name := range t.Names {
+				if name.String() == "FXModule" {
+					fxModule = t
+					varExists = true
+					return false
+				}
+			}
+		}
+		return true
+	})
+	if fxModule == nil {
+		fxModule = f.astFxModule()
+	}
+	for _, expr := range f.toProvide() {
+		expr, ok := expr.(*ast.SelectorExpr)
+		if ok {
+			ast.Inspect(fxModule, func(node ast.Node) bool {
+				if call, ok := node.(*ast.CallExpr); ok {
+					if fun, ok := call.Fun.(*ast.SelectorExpr); ok &&
+						fun.Sel.String() == "Provide" {
+						for _, arg := range call.Args {
+							arg := arg
+							if argSelector, ok := arg.(*ast.SelectorExpr); ok {
+								if argSelector.Sel.String() == expr.Sel.String() {
+									return false
+								}
+							}
+						}
+						call.Args = append(call.Args, expr)
+						return false
+					}
+				}
+				return true
+			})
+		}
+	}
+	if !varExists {
+		gd := &ast.GenDecl{
+			Doc:    nil,
+			TokPos: 0,
+			Tok:    token.VAR,
+			Lparen: 0,
+			Specs:  []ast.Spec{fxModule},
+			Rparen: 0,
+		}
+		file.Decls = append(file.Decls, gd)
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filename, buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (f FxContainer) astServerContainer() *ast.FuncDecl {
+	args := []ast.Expr{
+		&ast.CallExpr{
+			Fun: &ast.SelectorExpr{
+				X:   ast.NewIdent("fx"),
+				Sel: ast.NewIdent("Provide"),
+			},
+			Args: []ast.Expr{
+				&ast.FuncLit{
+					Type: &ast.FuncType{
+						Params: &ast.FieldList{},
+						Results: &ast.FieldList{
+							List: []*ast.Field{
+								{
+									Type: ast.NewIdent("string"),
+								},
+							},
+						},
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.ReturnStmt{
+								Results: []ast.Expr{
+									ast.NewIdent("config"),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		ast.NewIdent("FXModule"),
+	}
 	if f.project.UptraceEnabled {
-		exprs = append(exprs, &ast.CallExpr{
+		args = append(args, &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
 				X:   ast.NewIdent("fx"),
 				Sel: ast.NewIdent("Invoke"),
@@ -501,7 +621,7 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 		})
 	}
 	if f.project.KafkaEnabled {
-		exprs = append(exprs,
+		args = append(args,
 			&ast.CallExpr{
 				Fun: &ast.SelectorExpr{
 					X:   ast.NewIdent("fx"),
@@ -647,126 +767,6 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 				},
 			},
 		)
-	}
-	return &ast.ValueSpec{
-		Names: []*ast.Ident{
-			ast.NewIdent("FXModule"),
-		},
-		Values: []ast.Expr{
-			&ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X:   ast.NewIdent("fx"),
-					Sel: ast.NewIdent("Options"),
-				},
-				Args: exprs,
-			},
-		},
-	}
-}
-
-func (f FxContainer) syncFxModule() error {
-	fileset := token.NewFileSet()
-	filename := f.filename()
-	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
-		return err
-	}
-	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
-	if err != nil {
-		file = f.file()
-	}
-	var varExists bool
-	var fxModule *ast.ValueSpec
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.ValueSpec); ok {
-			for _, name := range t.Names {
-				if name.String() == "FXModule" {
-					fxModule = t
-					varExists = true
-					return false
-				}
-			}
-		}
-		return true
-	})
-	if fxModule == nil {
-		fxModule = f.astFxModule()
-	}
-	for _, expr := range f.toProvide() {
-		expr, ok := expr.(*ast.SelectorExpr)
-		if ok {
-			ast.Inspect(fxModule, func(node ast.Node) bool {
-				if call, ok := node.(*ast.CallExpr); ok {
-					if fun, ok := call.Fun.(*ast.SelectorExpr); ok &&
-						fun.Sel.String() == "Provide" {
-						for _, arg := range call.Args {
-							arg := arg
-							if argSelector, ok := arg.(*ast.SelectorExpr); ok {
-								if argSelector.Sel.String() == expr.Sel.String() {
-									return false
-								}
-							}
-						}
-						call.Args = append(call.Args, expr)
-						return false
-					}
-				}
-				return true
-			})
-		}
-	}
-	if !varExists {
-		gd := &ast.GenDecl{
-			Doc:    nil,
-			TokPos: 0,
-			Tok:    token.VAR,
-			Lparen: 0,
-			Specs:  []ast.Spec{fxModule},
-			Rparen: 0,
-		}
-		file.Decls = append(file.Decls, gd)
-	}
-	buff := &bytes.Buffer{}
-	if err := printer.Fprint(buff, fileset, file); err != nil {
-		return err
-	}
-	if err := os.WriteFile(filename, buff.Bytes(), 0777); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (f FxContainer) astServerContainer() *ast.FuncDecl {
-	args := []ast.Expr{
-		&ast.CallExpr{
-			Fun: &ast.SelectorExpr{
-				X:   ast.NewIdent("fx"),
-				Sel: ast.NewIdent("Provide"),
-			},
-			Args: []ast.Expr{
-				&ast.FuncLit{
-					Type: &ast.FuncType{
-						Params: &ast.FieldList{},
-						Results: &ast.FieldList{
-							List: []*ast.Field{
-								{
-									Type: ast.NewIdent("string"),
-								},
-							},
-						},
-					},
-					Body: &ast.BlockStmt{
-						List: []ast.Stmt{
-							&ast.ReturnStmt{
-								Results: []ast.Expr{
-									ast.NewIdent("config"),
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		ast.NewIdent("FXModule"),
 	}
 	if f.project.GRPCEnabled {
 		args = append(

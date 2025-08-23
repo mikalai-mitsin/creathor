@@ -14,10 +14,10 @@ import (
 )
 
 type InterfacesGenerator struct {
-	domain *configs.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewInterfacesGenerator(domain *configs.BaseEntity) *InterfacesGenerator {
+func NewInterfacesGenerator(domain *configs.EntityConfig) *InterfacesGenerator {
 	return &InterfacesGenerator{domain: domain}
 }
 
@@ -26,7 +26,7 @@ func (i InterfacesGenerator) Sync() error {
 	filename := path.Join(
 		"internal",
 		"app",
-		i.domain.AppName(),
+		i.domain.AppConfig.AppName(),
 		"handlers",
 		"http",
 		i.domain.DirName(),

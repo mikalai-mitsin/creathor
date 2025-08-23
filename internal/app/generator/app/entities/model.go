@@ -30,10 +30,10 @@ func astType(t string) ast.Expr {
 
 type Model struct {
 	model  *configs.Entity
-	domain *configs.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewModel(model *configs.Entity, domain *configs.BaseEntity) *Model {
+func NewModel(model *configs.Entity, domain *configs.EntityConfig) *Model {
 	return &Model{
 		model:  model,
 		domain: domain,

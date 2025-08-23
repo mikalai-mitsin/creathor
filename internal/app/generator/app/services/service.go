@@ -16,10 +16,10 @@ import (
 )
 
 type ServiceGenerator struct {
-	domain *configs.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewServiceGenerator(domain *configs.BaseEntity) *ServiceGenerator {
+func NewServiceGenerator(domain *configs.EntityConfig) *ServiceGenerator {
 	return &ServiceGenerator{domain: domain}
 }
 
@@ -53,7 +53,7 @@ func (u ServiceGenerator) Sync() error {
 }
 
 func (u ServiceGenerator) filename() string {
-	return filepath.Join("internal", "app", u.domain.AppName(), "services", u.domain.DirName(), u.domain.FileName())
+	return filepath.Join("internal", "app", u.domain.AppConfig.AppName(), "services", u.domain.DirName(), u.domain.FileName())
 }
 
 func (u ServiceGenerator) file() *ast.File {

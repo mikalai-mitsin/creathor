@@ -8,10 +8,10 @@ import (
 )
 
 type TestGenerator struct {
-	domain *configs.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewTestGenerator(domain *configs.BaseEntity) *TestGenerator {
+func NewTestGenerator(domain *configs.EntityConfig) *TestGenerator {
 	return &TestGenerator{domain: domain}
 }
 
@@ -22,7 +22,7 @@ func (g *TestGenerator) Sync() error {
 			destinationPath,
 			"internal",
 			"app",
-			g.domain.AppName(),
+			g.domain.AppConfig.AppName(),
 			"handlers",
 			"grpc",
 			g.domain.DirName(),

@@ -1,11 +1,11 @@
-DROP TABLE public.{{ .Config.TableName }};
+DROP TABLE public.{{ .TableName }};
 
 DELETE
 FROM public.permissions
 WHERE id IN (
-    '{{- .Config.KeyName -}}_list',
-    '{{- .Config.KeyName -}}_detail',
-    '{{- .Config.KeyName -}}_create',
-    '{{- .Config.KeyName -}}_update',
-    '{{- .Config.KeyName -}}_delete'
+    '{{- .KeyName -}}_list',
+    '{{- .KeyName -}}_detail',
+    '{{- .KeyName -}}_create',
+    '{{- .KeyName -}}_update',
+    '{{- .KeyName -}}_delete'
 );

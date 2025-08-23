@@ -9,10 +9,10 @@ import (
 )
 
 type TestGenerator struct {
-	domain *configs.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewProducerTestGenerator(domain *configs.BaseEntity) *TestGenerator {
+func NewProducerTestGenerator(domain *configs.EntityConfig) *TestGenerator {
 	return &TestGenerator{domain: domain}
 }
 
@@ -24,7 +24,7 @@ func (g *TestGenerator) Sync() error {
 			".",
 			"internal",
 			"app",
-			g.domain.AppName(),
+			g.domain.AppConfig.AppName(),
 			"repositories",
 			"kafka",
 			g.domain.DirName(),

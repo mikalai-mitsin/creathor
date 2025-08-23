@@ -7,7 +7,7 @@ import (
     "{{ .Module }}/internal/app/{{ .AppName }}/entities/{{ .DirName }}"
     "{{ .Module }}/internal/pkg/pointer"
     "{{ .Module }}/internal/pkg/uuid"
-    {{ .Config.ProtoPackage }} "{{ .Module }}/pkg/{{ .Config.ProtoPackage }}/v1"
+    {{ .ProtoPackage }} "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1"
     "go.uber.org/mock/gomock"
     "google.golang.org/protobuf/types/known/emptypb"
     "google.golang.org/protobuf/types/known/timestamppb"
@@ -17,102 +17,102 @@ import (
     "testing"
 )
 
-func TestNew{{ .Config.GRPCHandlerTypeName }}(t *testing.T) {
+func TestNew{{ .GRPCHandlerTypeName }}(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
+    mock{{ .UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     type args struct {
-        {{ .Config.UseCaseVariableName }} {{ .GetUseCaseInterfaceName }}
+        {{ .UseCaseVariableName }} {{ .GetUseCaseInterfaceName }}
         logger             logger
     }
     tests := []struct {
         name string
         args args
-        want {{ .Config.ProtoPackage }}.{{ .Config.GRPCHandlerTypeName }}
+        want {{ .ProtoPackage }}.{{ .GRPCHandlerTypeName }}
     }{
         {
             name: "ok",
             args: args{
-                {{ .Config.UseCaseVariableName }}: mock{{ .Config.UseCaseTypeName }},
+                {{ .UseCaseVariableName }}: mock{{ .UseCaseTypeName }},
                 logger: mockLogger,
             },
-            want: &{{ .Config.GRPCHandlerTypeName }}{
-                {{ .Config.UseCaseVariableName }}: mock{{ .Config.UseCaseTypeName }},
+            want: &{{ .GRPCHandlerTypeName }}{
+                {{ .UseCaseVariableName }}: mock{{ .UseCaseTypeName }},
                 logger: mockLogger,
             },
         },
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            got := New{{ .Config.GRPCHandlerTypeName }}(tt.args.{{ .Config.UseCaseVariableName }}, tt.args.logger)
+            got := New{{ .GRPCHandlerTypeName }}(tt.args.{{ .UseCaseVariableName }}, tt.args.logger)
             assert.Equal(t, tt.want, got)
         })
     }
 }
 
-func Test{{ .Config.GRPCHandlerTypeName }}_Create(t *testing.T) {
+func Test{{ .GRPCHandlerTypeName }}_Create(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
+    mock{{ .UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    // create := entities.NewMock{{ .Config.CreateTypeName }}(t)
-    {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
+    // create := entities.NewMock{{ .CreateTypeName }}(t)
+    {{ .Variable }} := entities.NewMock{{ .EntityName }}(t)
     type fields struct {
-        Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
-        {{ .Config.UseCaseVariableName }} {{ .GetUseCaseInterfaceName }}
+        Unimplemented{{ .GRPCHandlerTypeName }} {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}
+        {{ .UseCaseVariableName }} {{ .GetUseCaseInterfaceName }}
         logger logger
     }
     type args struct {
         ctx   context.Context
-        input *{{ .Config.ProtoPackage }}.{{ .Config.CreateTypeName }}
+        input *{{ .ProtoPackage }}.{{ .CreateTypeName }}
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *{{ .Config.ProtoPackage }}.{{ .Config.EntityName }}
+        want    *{{ .ProtoPackage }}.{{ .EntityName }}
         wantErr error
     }{
         {
             name: "ok",
             setup: func() {
-                mock{{ .Config.UseCaseTypeName }}.
+                mock{{ .UseCaseTypeName }}.
                     EXPECT().
                     Create(ctx, gomock.Any()).
-                    Return({{ .Config.Variable }}, nil)
+                    Return({{ .Variable }}, nil)
             },
             fields: fields{
-                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
-                {{ .Config.UseCaseVariableName }}: mock{{ .Config.UseCaseTypeName }},
+                Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
+                {{ .UseCaseVariableName }}: mock{{ .UseCaseTypeName }},
                 logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
-                input: &{{ .Config.ProtoPackage }}.{{ .Config.CreateTypeName }}{},
+                input: &{{ .ProtoPackage }}.{{ .CreateTypeName }}{},
             },
-            want:    decode{{ .Config.EntityName }}({{ .Config.Variable }}),
+            want:    decode{{ .EntityName }}({{ .Variable }}),
             wantErr: nil,
         },
         {
             name: "usecase error",
             setup: func() {
-                mock{{ .Config.UseCaseTypeName }}.
+                mock{{ .UseCaseTypeName }}.
                     EXPECT().
                     Create(ctx, gomock.Any()).
-                    Return(entities.{{ .Config.EntityName }}{}, errs.NewUnexpectedBehaviorError("usecase error")).
+                    Return(entities.{{ .EntityName }}{}, errs.NewUnexpectedBehaviorError("usecase error")).
                     Times(1)
             },
             fields: fields{
-                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
-                {{ .Config.UseCaseVariableName }}: mock{{ .Config.UseCaseTypeName }},
+                Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
+                {{ .UseCaseVariableName }}: mock{{ .UseCaseTypeName }},
                 logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
-                input: &{{ .Config.ProtoPackage }}.{{ .Config.CreateTypeName }}{},
+                input: &{{ .ProtoPackage }}.{{ .CreateTypeName }}{},
             },
             want:    nil,
             wantErr: errs.NewUnexpectedBehaviorError("usecase error"),
@@ -121,9 +121,9 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Create(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
-            s := {{ .Config.GRPCHandlerTypeName }}{
-                Unimplemented{{ .Config.GRPCHandlerTypeName }}: tt.fields.Unimplemented{{ .Config.GRPCHandlerTypeName }},
-                {{ .Config.UseCaseVariableName }}:                tt.fields.{{ .Config.UseCaseVariableName }},
+            s := {{ .GRPCHandlerTypeName }}{
+                Unimplemented{{ .GRPCHandlerTypeName }}: tt.fields.Unimplemented{{ .GRPCHandlerTypeName }},
+                {{ .UseCaseVariableName }}:                tt.fields.{{ .UseCaseVariableName }},
                 logger:                            tt.fields.logger,
             }
             got, err := s.Create(tt.args.ctx, tt.args.input)
@@ -133,21 +133,21 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Create(t *testing.T) {
     }
 }
 
-func Test{{ .Config.GRPCHandlerTypeName }}_Delete(t *testing.T) {
+func Test{{ .GRPCHandlerTypeName }}_Delete(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
+    mock{{ .UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     id := uuid.NewUUID()
     type fields struct {
-        Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
-        {{ .Config.UseCaseVariableName }}                {{ .GetUseCaseInterfaceName }}
+        Unimplemented{{ .GRPCHandlerTypeName }} {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}
+        {{ .UseCaseVariableName }}                {{ .GetUseCaseInterfaceName }}
         logger                            logger
     }
     type args struct {
         ctx   context.Context
-        input *{{ .Config.ProtoPackage }}.{{ .Config.EntityName }}Delete
+        input *{{ .ProtoPackage }}.{{ .EntityName }}Delete
     }
     tests := []struct {
         name    string
@@ -160,16 +160,16 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Delete(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                mock{{ .Config.UseCaseTypeName }}.EXPECT().Delete(ctx, id).Return(nil).Times(1)
+                mock{{ .UseCaseTypeName }}.EXPECT().Delete(ctx, id).Return(nil).Times(1)
             },
             fields: fields{
-                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
-                {{ .Config.UseCaseVariableName }}: mock{{ .Config.UseCaseTypeName }},
+                Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
+                {{ .UseCaseVariableName }}: mock{{ .UseCaseTypeName }},
                 logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
-                input: &{{ .Config.ProtoPackage }}.{{ .Config.EntityName }}Delete{
+                input: &{{ .ProtoPackage }}.{{ .EntityName }}Delete{
                     Id: id.String(),
                 },
             },
@@ -179,18 +179,18 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Delete(t *testing.T) {
         {
             name: "usecase error",
             setup: func() {
-                mock{{ .Config.UseCaseTypeName }}.EXPECT().Delete(ctx, id).
+                mock{{ .UseCaseTypeName }}.EXPECT().Delete(ctx, id).
                     Return(errs.NewUnexpectedBehaviorError("i error")).
                     Times(1)
             },
             fields: fields{
-                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
-                {{ .Config.UseCaseVariableName }}: mock{{ .Config.UseCaseTypeName }},
+                Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
+                {{ .UseCaseVariableName }}: mock{{ .UseCaseTypeName }},
                 logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
-                input: &{{ .Config.ProtoPackage }}.{{ .Config.EntityName }}Delete{
+                input: &{{ .ProtoPackage }}.{{ .EntityName }}Delete{
                     Id: id.String(),
                 },
             },
@@ -205,9 +205,9 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Delete(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
-            s := {{ .Config.GRPCHandlerTypeName }}{
-                Unimplemented{{ .Config.GRPCHandlerTypeName }}: tt.fields.Unimplemented{{ .Config.GRPCHandlerTypeName }},
-                {{ .Config.UseCaseVariableName }}:                tt.fields.{{ .Config.UseCaseVariableName }},
+            s := {{ .GRPCHandlerTypeName }}{
+                Unimplemented{{ .GRPCHandlerTypeName }}: tt.fields.Unimplemented{{ .GRPCHandlerTypeName }},
+                {{ .UseCaseVariableName }}:                tt.fields.{{ .UseCaseVariableName }},
                 logger:                            tt.fields.logger,
             }
             got, err := s.Delete(tt.args.ctx, tt.args.input)
@@ -217,65 +217,65 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Delete(t *testing.T) {
     }
 }
 
-func Test{{ .Config.GRPCHandlerTypeName }}_Get(t *testing.T) {
+func Test{{ .GRPCHandlerTypeName }}_Get(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
+    mock{{ .UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
+    {{ .Variable }} := entities.NewMock{{ .EntityName }}(t)
     type fields struct {
-        Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
-        {{ .Config.UseCaseVariableName }}                {{ .GetUseCaseInterfaceName }}
+        Unimplemented{{ .GRPCHandlerTypeName }} {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}
+        {{ .UseCaseVariableName }}                {{ .GetUseCaseInterfaceName }}
         logger                            logger
     }
     type args struct {
         ctx   context.Context
-        input *{{ .Config.ProtoPackage }}.{{ .Config.EntityName }}Get
+        input *{{ .ProtoPackage }}.{{ .EntityName }}Get
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *{{ .Config.ProtoPackage }}.{{ .Config.EntityName }}
+        want    *{{ .ProtoPackage }}.{{ .EntityName }}
         wantErr error
     }{
         {
             name: "ok",
             setup: func() {
-                mock{{ .Config.UseCaseTypeName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).Return({{ .Config.Variable }}, nil).Times(1)
+                mock{{ .UseCaseTypeName }}.EXPECT().Get(ctx, {{ .Variable }}.ID).Return({{ .Variable }}, nil).Times(1)
             },
             fields: fields{
-                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
-                {{ .Config.UseCaseVariableName }}: mock{{ .Config.UseCaseTypeName }},
+                Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
+                {{ .UseCaseVariableName }}: mock{{ .UseCaseTypeName }},
                 logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
-                input: &{{ .Config.ProtoPackage }}.{{ .Config.EntityName }}Get{
-                    Id: {{ .Config.Variable }}.ID.String(),
+                input: &{{ .ProtoPackage }}.{{ .EntityName }}Get{
+                    Id: {{ .Variable }}.ID.String(),
                 },
             },
-            want:    decode{{ .Config.EntityName }}({{ .Config.Variable }}),
+            want:    decode{{ .EntityName }}({{ .Variable }}),
             wantErr: nil,
         },
         {
             name: "usecase error",
             setup: func() {
-                mock{{ .Config.UseCaseTypeName }}.EXPECT().Get(ctx, {{ .Config.Variable }}.ID).
-                    Return(entities.{{ .Config.EntityName }}{}, errs.NewUnexpectedBehaviorError("i error")).
+                mock{{ .UseCaseTypeName }}.EXPECT().Get(ctx, {{ .Variable }}.ID).
+                    Return(entities.{{ .EntityName }}{}, errs.NewUnexpectedBehaviorError("i error")).
                     Times(1)
             },
             fields: fields{
-                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
-                {{ .Config.UseCaseVariableName }}: mock{{ .Config.UseCaseTypeName }},
+                Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
+                {{ .UseCaseVariableName }}: mock{{ .UseCaseTypeName }},
                 logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
-                input: &{{ .Config.ProtoPackage }}.{{ .Config.EntityName }}Get{
-                    Id: {{ .Config.Variable }}.ID.String(),
+                input: &{{ .ProtoPackage }}.{{ .EntityName }}Get{
+                    Id: {{ .Variable }}.ID.String(),
                 },
             },
             want:    nil,
@@ -285,9 +285,9 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Get(t *testing.T) {
     for _, tt := range tests {
         tt.setup()
         t.Run(tt.name, func(t *testing.T) {
-            s := {{ .Config.GRPCHandlerTypeName }}{
-                Unimplemented{{ .Config.GRPCHandlerTypeName }}: tt.fields.Unimplemented{{ .Config.GRPCHandlerTypeName }},
-                {{ .Config.UseCaseVariableName }}:                tt.fields.{{ .Config.UseCaseVariableName }},
+            s := {{ .GRPCHandlerTypeName }}{
+                Unimplemented{{ .GRPCHandlerTypeName }}: tt.fields.Unimplemented{{ .GRPCHandlerTypeName }},
+                {{ .UseCaseVariableName }}:                tt.fields.{{ .UseCaseVariableName }},
                 logger:                            tt.fields.logger,
             }
             got, err := s.Get(tt.args.ctx, tt.args.input)
@@ -297,52 +297,52 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Get(t *testing.T) {
     }
 }
 
-func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
+func Test{{ .GRPCHandlerTypeName }}_List(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
+    mock{{ .UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    filter := entities.NewMock{{ .Config.FilterTypeName }}(t)
+    filter := entities.NewMock{{ .FilterTypeName }}(t)
     count := faker.New().UInt64Between(2, 20)
-    response := &{{ .Config.ProtoPackage }}.List{{ .Config.EntityName }}{
-        Items: make([]*{{ .Config.ProtoPackage }}.{{ .Config.EntityName }}, 0, int(count)),
+    response := &{{ .ProtoPackage }}.List{{ .EntityName }}{
+        Items: make([]*{{ .ProtoPackage }}.{{ .EntityName }}, 0, int(count)),
         Count:    count,
     }
-    {{ .Config.ListVariable }} := make([]entities.{{ .Config.EntityName }}, 0, int(count))
+    {{ .ListVariable }} := make([]entities.{{ .EntityName }}, 0, int(count))
     type fields struct {
-        Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
-        {{ .Config.UseCaseVariableName }}                {{ .GetUseCaseInterfaceName }}
+        Unimplemented{{ .GRPCHandlerTypeName }} {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}
+        {{ .UseCaseVariableName }}                {{ .GetUseCaseInterfaceName }}
         logger                            logger
     }
     type args struct {
         ctx   context.Context
-        input *{{ .Config.ProtoPackage }}.{{ .Config.FilterTypeName }}
+        input *{{ .ProtoPackage }}.{{ .FilterTypeName }}
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *{{ .Config.ProtoPackage }}.List{{ .Config.EntityName }}
+        want    *{{ .ProtoPackage }}.List{{ .EntityName }}
         wantErr error
     }{
         {
             name: "ok",
             setup: func() {
-                mock{{ .Config.UseCaseTypeName }}.EXPECT().List(ctx, gomock.Any()).Return({{ .Config.ListVariable }}, count, nil).Times(1)
+                mock{{ .UseCaseTypeName }}.EXPECT().List(ctx, gomock.Any()).Return({{ .ListVariable }}, count, nil).Times(1)
             },
             fields: fields{
-                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
-                {{ .Config.UseCaseVariableName }}: mock{{ .Config.UseCaseTypeName }},
+                Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
+                {{ .UseCaseVariableName }}: mock{{ .UseCaseTypeName }},
                 logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
-                input: &{{ .Config.ProtoPackage }}.{{ .Config.FilterTypeName }}{
+                input: &{{ .ProtoPackage }}.{{ .FilterTypeName }}{
                     PageNumber: wrapperspb.UInt64(*filter.PageNumber),
                     PageSize:   wrapperspb.UInt64(*filter.PageSize),
-{{- if .Config.SearchEnabled }}
+{{- if .SearchEnabled }}
                     Search:     wrapperspb.String(*filter.Search),
 {{- end}}
                     OrderBy:    filter.OrderBy,
@@ -354,23 +354,23 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
         {
             name: "usecase error",
             setup: func() {
-                mock{{ .Config.UseCaseTypeName }}.
+                mock{{ .UseCaseTypeName }}.
                     EXPECT().
                     List(ctx, gomock.Any()).
                     Return(nil, uint64(0), errs.NewUnexpectedBehaviorError("i error")).
                     Times(1)
             },
             fields: fields{
-                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
-                {{ .Config.UseCaseVariableName }}: mock{{ .Config.UseCaseTypeName }},
+                Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
+                {{ .UseCaseVariableName }}: mock{{ .UseCaseTypeName }},
                 logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
-                input: &{{ .Config.ProtoPackage }}.{{ .Config.FilterTypeName }}{
+                input: &{{ .ProtoPackage }}.{{ .FilterTypeName }}{
                     PageNumber: wrapperspb.UInt64(*filter.PageNumber),
                     PageSize:   wrapperspb.UInt64(*filter.PageSize),
-{{- if .Config.SearchEnabled }}
+{{- if .SearchEnabled }}
                     Search:     wrapperspb.String(*filter.Search),
 {{- end }}
                     OrderBy:    filter.OrderBy,
@@ -383,9 +383,9 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
-            s := {{ .Config.GRPCHandlerTypeName }}{
-                Unimplemented{{ .Config.GRPCHandlerTypeName }}: tt.fields.Unimplemented{{ .Config.GRPCHandlerTypeName }},
-                {{ .Config.UseCaseVariableName }}:                tt.fields.{{ .Config.UseCaseVariableName }},
+            s := {{ .GRPCHandlerTypeName }}{
+                Unimplemented{{ .GRPCHandlerTypeName }}: tt.fields.Unimplemented{{ .GRPCHandlerTypeName }},
+                {{ .UseCaseVariableName }}:                tt.fields.{{ .UseCaseVariableName }},
                 logger:                            tt.fields.logger,
             }
             got, err := s.List(tt.args.ctx, tt.args.input)
@@ -395,62 +395,62 @@ func Test{{ .Config.GRPCHandlerTypeName }}_List(t *testing.T) {
     }
 }
 
-func Test{{ .Config.GRPCHandlerTypeName }}_Update(t *testing.T) {
+func Test{{ .GRPCHandlerTypeName }}_Update(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
-    mock{{ .Config.UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
+    mock{{ .UseCaseTypeName }} := NewMock{{ .GetUseCaseInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
-    update := entities.NewMock{{ .Config.UpdateTypeName }}(t)
+    {{ .Variable }} := entities.NewMock{{ .EntityName }}(t)
+    update := entities.NewMock{{ .UpdateTypeName }}(t)
     type fields struct {
-        Unimplemented{{ .Config.GRPCHandlerTypeName }} {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}
-        {{ .Config.UseCaseVariableName }}                {{ .GetUseCaseInterfaceName }}
+        Unimplemented{{ .GRPCHandlerTypeName }} {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}
+        {{ .UseCaseVariableName }}                {{ .GetUseCaseInterfaceName }}
         logger                            logger
     }
     type args struct {
         ctx   context.Context
-        input *{{ .Config.ProtoPackage }}.{{ .Config.UpdateTypeName }}
+        input *{{ .ProtoPackage }}.{{ .UpdateTypeName }}
     }
     tests := []struct {
         name    string
         setup   func()
         fields  fields
         args    args
-        want    *{{ .Config.ProtoPackage }}.{{ .Config.EntityName }}
+        want    *{{ .ProtoPackage }}.{{ .EntityName }}
         wantErr error
     }{
         {
             name: "ok",
             setup: func() {
-                mock{{ .Config.UseCaseTypeName }}.EXPECT().Update(ctx, gomock.Any()).Return({{ .Config.Variable }}, nil).Times(1)
+                mock{{ .UseCaseTypeName }}.EXPECT().Update(ctx, gomock.Any()).Return({{ .Variable }}, nil).Times(1)
             },
             fields: fields{
-                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
-                {{ .Config.UseCaseVariableName }}: mock{{ .Config.UseCaseTypeName }},
+                Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
+                {{ .UseCaseVariableName }}: mock{{ .UseCaseTypeName }},
                 logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
-                input: decode{{ .Config.UpdateTypeName }}(update),
+                input: decode{{ .UpdateTypeName }}(update),
             },
-            want:    decode{{ .Config.EntityName }}({{ .Config.Variable }}),
+            want:    decode{{ .EntityName }}({{ .Variable }}),
             wantErr: nil,
         },
         {
             name: "usecase error",
             setup: func() {
-                mock{{ .Config.UseCaseTypeName }}.EXPECT().Update(ctx, gomock.Any()).
-                    Return(entities.{{ .Config.EntityName }}{}, errs.NewUnexpectedBehaviorError("i error"))
+                mock{{ .UseCaseTypeName }}.EXPECT().Update(ctx, gomock.Any()).
+                    Return(entities.{{ .EntityName }}{}, errs.NewUnexpectedBehaviorError("i error"))
             },
             fields: fields{
-                Unimplemented{{ .Config.GRPCHandlerTypeName }}: {{ .Config.ProtoPackage }}.Unimplemented{{ .Config.GRPCHandlerTypeName }}{},
-                {{ .Config.UseCaseVariableName }}: mock{{ .Config.UseCaseTypeName }},
+                Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
+                {{ .UseCaseVariableName }}: mock{{ .UseCaseTypeName }},
                 logger: mockLogger,
             },
             args: args{
                 ctx: ctx,
-                input: decode{{ .Config.UpdateTypeName }}(update),
+                input: decode{{ .UpdateTypeName }}(update),
             },
             want:    nil,
             wantErr: errs.NewUnexpectedBehaviorError("i error"),
@@ -459,9 +459,9 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Update(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
-            s := {{ .Config.GRPCHandlerTypeName }}{
-                Unimplemented{{ .Config.GRPCHandlerTypeName }}: tt.fields.Unimplemented{{ .Config.GRPCHandlerTypeName }},
-                {{ .Config.UseCaseVariableName }}:                tt.fields.{{ .Config.UseCaseVariableName }},
+            s := {{ .GRPCHandlerTypeName }}{
+                Unimplemented{{ .GRPCHandlerTypeName }}: tt.fields.Unimplemented{{ .GRPCHandlerTypeName }},
+                {{ .UseCaseVariableName }}:                tt.fields.{{ .UseCaseVariableName }},
                 logger:                            tt.fields.logger,
             }
             got, err := s.Update(tt.args.ctx, tt.args.input)
@@ -471,79 +471,79 @@ func Test{{ .Config.GRPCHandlerTypeName }}_Update(t *testing.T) {
     }
 }
 
-func Test_decode{{ .Config.EntityName }}(t *testing.T) {
-    {{ .Config.Variable }} := entities.NewMock{{ .Config.EntityName }}(t)
-    result := &{{ .Config.ProtoPackage }}.{{ .Config.EntityName }}{
-        Id:          {{ .Config.Variable }}.ID.String(),
-        UpdatedAt:   timestamppb.New({{ .Config.Variable }}.UpdatedAt),
-        CreatedAt:   timestamppb.New({{ .Config.Variable }}.CreatedAt),
-        {{- range $value := .Config.Params }}
+func Test_decode{{ .EntityName }}(t *testing.T) {
+    {{ .Variable }} := entities.NewMock{{ .EntityName }}(t)
+    result := &{{ .ProtoPackage }}.{{ .EntityName }}{
+        Id:          {{ .Variable }}.ID.String(),
+        UpdatedAt:   timestamppb.New({{ .Variable }}.UpdatedAt),
+        CreatedAt:   timestamppb.New({{ .Variable }}.CreatedAt),
+        {{- range $value := .Params }}
             {{- if $value.IsSlice }}
         {{ $value.GRPCParam }}: {{ $value.GRPCType }}{},
             {{- else if $value.IsID }}
-        {{ $value.GRPCParam }}: {{ $.Config.Variable }}.{{ $value.GetName }}.String(),
+        {{ $value.GRPCParam }}: {{ $.Variable }}.{{ $value.GetName }}.String(),
             {{- else }}
-        {{ $value.GRPCParam }}: {{ $value.GRPCType }}({{ $.Config.Variable }}.{{ $value.GetName }}),
+        {{ $value.GRPCParam }}: {{ $value.GRPCType }}({{ $.Variable }}.{{ $value.GetName }}),
             {{- end }}
         {{- end }}
     }
-{{- range $value := .Config.Params }}
+{{- range $value := .Params }}
     {{- if $value.IsSlice }}
-    for _, param := range {{ $.Config.Variable }}.{{ $value.GetName }} {
+    for _, param := range {{ $.Variable }}.{{ $value.GetName }} {
         result.{{ $value.GRPCParam }} = append(result.{{ $value.GRPCParam }}, {{ $value.GRPCSliceType }}(param))
     }
     {{- end }}
 {{- end }}
     type args struct {
-        {{ .Config.Variable }} entities.{{ .Config.EntityName }}
+        {{ .Variable }} entities.{{ .EntityName }}
     }
     tests := []struct {
         name string
         args args
-        want *{{ .Config.ProtoPackage }}.{{ .Config.EntityName }}
+        want *{{ .ProtoPackage }}.{{ .EntityName }}
     }{
         {
             name: "ok",
             args: args{
-                {{ .Config.Variable }}: {{ .Config.Variable }},
+                {{ .Variable }}: {{ .Variable }},
             },
             want: result,
         },
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            got := decode{{ .Config.EntityName }}(tt.args.{{ .Config.Variable }})
+            got := decode{{ .EntityName }}(tt.args.{{ .Variable }})
             assert.Equal(t, tt.want, got)
         })
     }
 }
 
-func Test_encode{{ .Config.FilterTypeName }}(t *testing.T) {
+func Test_encode{{ .FilterTypeName }}(t *testing.T) {
     type args struct {
-        input *{{ .Config.ProtoPackage }}.{{ .Config.FilterTypeName }}
+        input *{{ .ProtoPackage }}.{{ .FilterTypeName }}
     }
     tests := []struct {
         name string
         args args
-        want entities.{{ .Config.FilterTypeName }}
+        want entities.{{ .FilterTypeName }}
     }{
         {
             name: "ok",
             args: args{
-                input: &{{ .Config.ProtoPackage }}.{{ .Config.FilterTypeName }}{
+                input: &{{ .ProtoPackage }}.{{ .FilterTypeName }}{
                     PageNumber: wrapperspb.UInt64(2),
                     PageSize:   wrapperspb.UInt64(5),
-{{- if .Config.SearchEnabled }}
+{{- if .SearchEnabled }}
                     Search:     wrapperspb.String("my name is"),
 {{- end}}
                     OrderBy:    []string{"created_at", "id"},
                 },
             },
-            want: entities.{{ .Config.FilterTypeName }}{
+            want: entities.{{ .FilterTypeName }}{
                 PageSize:   pointer.Of(uint64(5)),
                 PageNumber: pointer.Of(uint64(2)),
                 OrderBy:    []string{"created_at", "id"},
-{{- if .Config.SearchEnabled }}
+{{- if .SearchEnabled }}
                 Search:     pointer.Of("my name is"),
 {{- end}}
             },
@@ -551,7 +551,7 @@ func Test_encode{{ .Config.FilterTypeName }}(t *testing.T) {
     }
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            got := encode{{ .Config.FilterTypeName }}(tt.args.input)
+            got := encode{{ .FilterTypeName }}(tt.args.input)
             assert.Equal(t, tt.want, got)
         })
     }

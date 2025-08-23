@@ -14,10 +14,10 @@ import (
 )
 
 type App struct {
-	app *configs.GeneratorConfig
+	app *configs.AppConfig
 }
 
-func NewApp(domain *configs.GeneratorConfig) *App {
+func NewApp(domain *configs.AppConfig) *App {
 	return &App{app: domain}
 }
 
@@ -48,10 +48,10 @@ func (a App) file() *ast.File {
 		a.structure(),
 		a.constructor(),
 	}
-	if a.app.Config.HTTPEnabled {
+	if a.app.HTTPEnabled {
 		decls = append(decls, a.registerHTTP())
 	}
-	if a.app.Config.GRPCEnabled {
+	if a.app.GRPCEnabled {
 		decls = append(decls, a.registerGRPC())
 	}
 	return &ast.File{
@@ -65,19 +65,19 @@ func (a App) imports() *ast.GenDecl {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: a.app.Config.ProjectConfig.ClockImportPath(),
+				Value: a.app.ProjectConfig.ClockImportPath(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: a.app.Config.ProjectConfig.LogImportPath(),
+				Value: a.app.ProjectConfig.LogImportPath(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: a.app.Config.ProjectConfig.UUIDImportPath(),
+				Value: a.app.ProjectConfig.UUIDImportPath(),
 			},
 		},
 		&ast.ImportSpec{
@@ -127,7 +127,7 @@ func (a App) imports() *ast.GenDecl {
 				},
 			},
 		)
-		if a.app.Config.KafkaEnabled {
+		if a.app.KafkaEnabled {
 			specs = append(
 				specs,
 				&ast.ImportSpec{
@@ -144,7 +144,7 @@ func (a App) imports() *ast.GenDecl {
 				},
 			)
 		}
-		if a.app.Config.HTTPEnabled {
+		if a.app.HTTPEnabled {
 			specs = append(
 				specs,
 				&ast.ImportSpec{
@@ -162,12 +162,12 @@ func (a App) imports() *ast.GenDecl {
 				&ast.ImportSpec{
 					Path: &ast.BasicLit{
 						Kind:  token.STRING,
-						Value: a.app.Config.ProjectConfig.HTTPImportPath(),
+						Value: a.app.ProjectConfig.HTTPImportPath(),
 					},
 				},
 			)
 		}
-		if a.app.Config.GRPCEnabled {
+		if a.app.GRPCEnabled {
 			specs = append(
 				specs,
 				&ast.ImportSpec{
@@ -185,17 +185,17 @@ func (a App) imports() *ast.GenDecl {
 				&ast.ImportSpec{
 					Path: &ast.BasicLit{
 						Kind:  token.STRING,
-						Value: a.app.Config.ProjectConfig.GRPCImportPath(),
+						Value: a.app.ProjectConfig.GRPCImportPath(),
 					},
 				},
 				&ast.ImportSpec{
-					Name: ast.NewIdent(a.app.ProtoModule),
+					Name: ast.NewIdent(a.app.ProtoPackage),
 					Path: &ast.BasicLit{
 						Kind: token.STRING,
 						Value: fmt.Sprintf(
 							`"%s/pkg/%s/v1"`,
 							a.app.Module,
-							a.app.ProtoModule,
+							a.app.ProtoPackage,
 						),
 					},
 				},
@@ -257,7 +257,7 @@ func (a App) constructor() *ast.FuncDecl {
 			},
 		},
 	}
-	if a.app.Config.KafkaEnabled {
+	if a.app.KafkaEnabled {
 		args = append(args,
 			&ast.Field{
 				Names: []*ast.Ident{
@@ -284,7 +284,7 @@ func (a App) constructor() *ast.FuncDecl {
 			Value: ast.NewIdent("logger"),
 		},
 	}
-	if a.app.Config.KafkaEnabled {
+	if a.app.KafkaEnabled {
 		exprs = append(exprs,
 			&ast.KeyValueExpr{
 				Key:   ast.NewIdent("kafkaProducer"),
@@ -350,7 +350,7 @@ func (a App) constructor() *ast.FuncDecl {
 					},
 				},
 			})
-		if a.app.Config.KafkaEnabled {
+		if a.app.KafkaEnabled {
 			body.List = append(body.List, &ast.AssignStmt{
 				Lhs: []ast.Expr{
 					ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
@@ -373,7 +373,7 @@ func (a App) constructor() *ast.FuncDecl {
 		useCaseArgs := []ast.Expr{
 			ast.NewIdent(entity.GetServicePrivateVariableName()),
 		}
-		if a.app.Config.KafkaEnabled {
+		if a.app.KafkaEnabled {
 			useCaseArgs = append(useCaseArgs, ast.NewIdent(entity.GetEventProducerPrivateVariableName()))
 		}
 		useCaseArgs = append(useCaseArgs, ast.NewIdent("logger"))
@@ -393,7 +393,7 @@ func (a App) constructor() *ast.FuncDecl {
 			},
 		})
 
-		if a.app.Config.HTTPEnabled {
+		if a.app.HTTPEnabled {
 			body.List = append(body.List, &ast.AssignStmt{
 				Lhs: []ast.Expr{
 					ast.NewIdent(entity.GetHTTPHandlerPrivateVariableName()),
@@ -417,13 +417,13 @@ func (a App) constructor() *ast.FuncDecl {
 				Value: ast.NewIdent(entity.GetHTTPHandlerPrivateVariableName()),
 			})
 		}
-		if a.app.Config.KafkaEnabled {
+		if a.app.KafkaEnabled {
 			exprs = append(exprs, &ast.KeyValueExpr{
 				Key:   ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
 				Value: ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
 			})
 		}
-		if a.app.Config.GRPCEnabled {
+		if a.app.GRPCEnabled {
 			body.List = append(body.List, &ast.AssignStmt{
 				Lhs: []ast.Expr{
 					ast.NewIdent(entity.GetGRPCHandlerPrivateVariableName()),
@@ -520,7 +520,7 @@ func (a App) structure() *ast.GenDecl {
 			},
 		},
 	}
-	if a.app.Config.KafkaEnabled {
+	if a.app.KafkaEnabled {
 		structType.Fields.List = append(structType.Fields.List,
 			&ast.Field{
 				Names: []*ast.Ident{
@@ -567,7 +567,7 @@ func (a App) structure() *ast.GenDecl {
 					},
 				},
 			})
-		if a.app.Config.HTTPEnabled {
+		if a.app.HTTPEnabled {
 			structType.Fields.List = append(structType.Fields.List, &ast.Field{
 				Names: []*ast.Ident{
 					ast.NewIdent(entity.GetHTTPHandlerPrivateVariableName()),
@@ -580,7 +580,7 @@ func (a App) structure() *ast.GenDecl {
 				},
 			})
 		}
-		if a.app.Config.KafkaEnabled {
+		if a.app.KafkaEnabled {
 			structType.Fields.List = append(structType.Fields.List, &ast.Field{
 				Names: []*ast.Ident{
 					ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
@@ -593,7 +593,7 @@ func (a App) structure() *ast.GenDecl {
 				},
 			})
 		}
-		if a.app.Config.GRPCEnabled {
+		if a.app.GRPCEnabled {
 			structType.Fields.List = append(structType.Fields.List, &ast.Field{
 				Names: []*ast.Ident{
 					ast.NewIdent(entity.GetGRPCHandlerPrivateVariableName()),
@@ -620,7 +620,7 @@ func (a App) structure() *ast.GenDecl {
 
 func (a App) registerGRPC() *ast.FuncDecl {
 	stmts := make([]ast.Stmt, 0, len(a.app.Entities)+1)
-	for _, entities := range a.app.Entities {
+	for _, entity := range a.app.Entities {
 		stmts = append(stmts, &ast.ExprStmt{
 			X: &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
@@ -631,13 +631,13 @@ func (a App) registerGRPC() *ast.FuncDecl {
 					&ast.UnaryExpr{
 						Op: token.AND,
 						X: &ast.SelectorExpr{
-							X:   ast.NewIdent(entities.ProtoModule),
-							Sel: ast.NewIdent(entities.GetGRPCServiceDescriptionName()),
+							X:   ast.NewIdent(entity.ProtoPackage),
+							Sel: ast.NewIdent(entity.GetGRPCServiceDescriptionName()),
 						},
 					},
 					&ast.SelectorExpr{
 						X:   ast.NewIdent("a"),
-						Sel: ast.NewIdent(entities.GetGRPCHandlerPrivateVariableName()),
+						Sel: ast.NewIdent(entity.GetGRPCHandlerPrivateVariableName()),
 					},
 				},
 			},

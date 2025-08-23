@@ -19,10 +19,10 @@ import (
 
 type Mock struct {
 	typeSpec *ast.TypeSpec
-	domain   *configs.BaseEntity
+	domain   *configs.EntityConfig
 }
 
-func NewMock(typeSpec *ast.TypeSpec, domain *configs.BaseEntity) *Mock {
+func NewMock(typeSpec *ast.TypeSpec, domain *configs.EntityConfig) *Mock {
 	return &Mock{typeSpec: typeSpec, domain: domain}
 }
 
@@ -164,7 +164,7 @@ func (m *Mock) file() *ast.File {
 
 func (m *Mock) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", m.domain.AppName(), "entities", m.domain.DirName(), fmt.Sprintf("%s_mock.go", strcase.ToSnake(m.domain.Name)))
+	filename := path.Join("internal", "app", m.domain.AppConfig.AppName(), "entities", m.domain.DirName(), fmt.Sprintf("%s_mock.go", strcase.ToSnake(m.domain.Name)))
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err

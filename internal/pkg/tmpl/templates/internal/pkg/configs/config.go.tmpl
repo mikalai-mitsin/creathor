@@ -3,20 +3,17 @@ package configs
 import (
     "{{ .Module }}/internal/pkg/errs"
     "github.com/ilyakaznacheev/cleanenv"
+    "{{ .Module }}/internal/pkg/postgres"
     {{- if .HTTPEnabled }}
     "{{ .Module }}/internal/pkg/http"
     {{- end }}
     {{- if .GRPCEnabled }}
     "{{ .Module }}/internal/pkg/grpc"
     {{- end }}
+    {{- if .KafkaEnabled }}
+    "{{ .Module }}/internal/pkg/kafka"
+    {{- end }}
 )
-{{- if .KafkaEnabled }}
-type kafka struct {
-    Topic string `env:"KAFKA_TOPIC" toml:"topic" `
-    Host  string `env:"KAFKA_HOST"  toml:"host"`
-    Port  int    `env:"KAFKA_PORT"  toml:"port" `
-}
-{{- end }}
 
 {{- if .UptraceEnabled }}
 type otel struct {
@@ -26,20 +23,14 @@ type otel struct {
 }
 {{- end }}
 
-type database struct {
-    URI                string `env:"DATABASE_URI" toml:"uri"`
-    MaxOpenConnections int    `env:"DATABASE_MAX_OPEN_CONNECTIONS" env-default:"50"  toml:"max_open_connections"`
-    MaxIDLEConnections int    `env:"DATABASE_MAX_IDLE_CONNECTIONS" env-default:"10"  toml:"max_idle_connections"`
-}
-
 type Config struct {
     LogLevel string   `env:"LOG_LEVEL" toml:"log_level" env-default:"debug"`
-    Database database `toml:"database"`
+    Database *postgres.Config `toml:"database"`
 {{- if .UptraceEnabled }}
     Otel     otel     `toml:"otel"`
 {{- end }}
 {{- if .KafkaEnabled }}
-    Kafka    kafka    `toml:"kafka"`
+    Kafka    *kafka.Config    `toml:"kafka"`
 {{- end }}
 {{- if .HTTPEnabled }}
     HTTP    *http.Config    `toml:"http"`

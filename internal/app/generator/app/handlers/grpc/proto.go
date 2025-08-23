@@ -10,10 +10,10 @@ import (
 )
 
 type ProtoGenerator struct {
-	domain *configs.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewProtoGenerator(domain *configs.BaseEntity) *ProtoGenerator {
+func NewProtoGenerator(domain *configs.EntityConfig) *ProtoGenerator {
 	return &ProtoGenerator{domain: domain}
 }
 
@@ -26,7 +26,7 @@ func (c *ProtoGenerator) Sync() error {
 			destinationPath,
 			"api",
 			"proto",
-			c.domain.ProtoModule,
+			c.domain.ProtoPackage,
 			"v1",
 			fmt.Sprintf("%s.proto", c.domain.SnakeName()),
 		),

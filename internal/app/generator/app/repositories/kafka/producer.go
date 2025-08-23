@@ -11,10 +11,10 @@ import (
 )
 
 type ProducerGenerator struct {
-	domain *configs.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewProducerGenerator(domain *configs.BaseEntity) *ProducerGenerator {
+func NewProducerGenerator(domain *configs.EntityConfig) *ProducerGenerator {
 	return &ProducerGenerator{domain: domain}
 }
 
@@ -39,7 +39,7 @@ func (r *ProducerGenerator) filename() string {
 		".",
 		"internal",
 		"app",
-		r.domain.AppName(),
+		r.domain.AppConfig.AppName(),
 		"repositories",
 		"kafka",
 		r.domain.DirName(),

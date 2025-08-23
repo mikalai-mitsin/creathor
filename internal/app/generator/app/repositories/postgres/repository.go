@@ -20,10 +20,10 @@ import (
 )
 
 type RepositoryGenerator struct {
-	domain *configs.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewRepositoryGenerator(domain *configs.BaseEntity) *RepositoryGenerator {
+func NewRepositoryGenerator(domain *configs.EntityConfig) *RepositoryGenerator {
 	return &RepositoryGenerator{domain: domain}
 }
 
@@ -39,7 +39,7 @@ func (r RepositoryGenerator) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
-		r.domain.AppName(),
+		r.domain.AppConfig.AppName(),
 		"repositories",
 		"postgres",
 		r.domain.DirName(),

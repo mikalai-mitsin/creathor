@@ -20,10 +20,10 @@ import (
 
 type Perm struct {
 	modelName string
-	domain    *configs.BaseEntity
+	domain    *configs.EntityConfig
 }
 
-func NewPerm(modelName string, domain *configs.BaseEntity) *Perm {
+func NewPerm(modelName string, domain *configs.EntityConfig) *Perm {
 	return &Perm{modelName: modelName, domain: domain}
 }
 

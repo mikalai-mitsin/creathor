@@ -16,7 +16,7 @@ import (
 type Structure struct {
 	fileName string
 	name     string
-	domain   *configs.BaseEntity
+	domain   *configs.EntityConfig
 	params   []*ast.Field
 }
 
@@ -24,7 +24,7 @@ func NewStructure(
 	fileName string,
 	name string,
 	params []*ast.Field,
-	domain *configs.BaseEntity,
+	domain *configs.EntityConfig,
 ) *Structure {
 	return &Structure{
 		fileName: fileName,
@@ -88,7 +88,7 @@ func (m *Structure) file() *ast.File {
 }
 
 func (m *Structure) filename() string {
-	return filepath.Join("internal", "app", m.domain.AppName(), "entities", m.domain.DirName(), m.domain.FileName())
+	return filepath.Join("internal", "app", m.domain.AppConfig.AppName(), "entities", m.domain.DirName(), m.domain.FileName())
 }
 
 func (m *Structure) fill(structure *ast.TypeSpec) {

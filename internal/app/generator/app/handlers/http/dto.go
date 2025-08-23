@@ -15,10 +15,10 @@ import (
 )
 
 type DTOGenerator struct {
-	domain *configs.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewDTOGenerator(domain *configs.BaseEntity) *DTOGenerator {
+func NewDTOGenerator(domain *configs.EntityConfig) *DTOGenerator {
 	return &DTOGenerator{domain: domain}
 }
 
@@ -26,7 +26,7 @@ func (g *DTOGenerator) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
-		g.domain.AppName(),
+		g.domain.AppConfig.AppName(),
 		"handlers",
 		"http",
 		g.domain.DirName(),

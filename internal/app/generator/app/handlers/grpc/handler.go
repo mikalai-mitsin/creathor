@@ -16,10 +16,10 @@ import (
 )
 
 type HandlerGenerator struct {
-	domain *configs.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewHandlerGenerator(domain *configs.BaseEntity) *HandlerGenerator {
+func NewHandlerGenerator(domain *configs.EntityConfig) *HandlerGenerator {
 	return &HandlerGenerator{
 		domain: domain,
 	}
@@ -40,13 +40,13 @@ func (h HandlerGenerator) file() *ast.File {
 			},
 		},
 		&ast.ImportSpec{
-			Name: ast.NewIdent(h.domain.ProtoModule),
+			Name: ast.NewIdent(h.domain.ProtoPackage),
 			Path: &ast.BasicLit{
 				Kind: token.STRING,
 				Value: fmt.Sprintf(
 					`"%s/pkg/%s/v1"`,
 					h.domain.Module,
-					h.domain.ProtoModule,
+					h.domain.ProtoPackage,
 				),
 			},
 		},
@@ -104,7 +104,7 @@ func (h HandlerGenerator) file() *ast.File {
 }
 
 func (h HandlerGenerator) filename() string {
-	return path.Join("internal", "app", h.domain.AppName(), "handlers", "grpc", h.domain.DirName(), h.domain.FileName())
+	return path.Join("internal", "app", h.domain.AppConfig.AppName(), "handlers", "grpc", h.domain.DirName(), h.domain.FileName())
 }
 
 func (h HandlerGenerator) createParams() []ast.Expr {
@@ -175,7 +175,7 @@ func (h HandlerGenerator) encodeCreate() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoModule),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
 								Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
 							},
 						},
@@ -551,7 +551,7 @@ func (h HandlerGenerator) encodeUpdate() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoModule),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
 								Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
 							},
 						},
@@ -794,7 +794,7 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoModule),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
 								Sel: ast.NewIdent(h.domain.GetFilterModel().Name),
 							},
 						},
@@ -863,7 +863,7 @@ func (h HandlerGenerator) decode() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoModule),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
 								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 							},
 						},
@@ -883,7 +883,7 @@ func (h HandlerGenerator) decode() *ast.FuncDecl {
 							Op: token.AND,
 							X: &ast.CompositeLit{
 								Type: &ast.SelectorExpr{
-									X:   ast.NewIdent(h.domain.ProtoModule),
+									X:   ast.NewIdent(h.domain.ProtoPackage),
 									Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 								},
 								Elts: h.modelParams(),
@@ -1033,7 +1033,7 @@ func (h HandlerGenerator) decodeList() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoModule),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
 								Sel: ast.NewIdent(fmt.Sprintf("List%s", h.domain.GetMainModel().Name)),
 							},
 						},
@@ -1053,7 +1053,7 @@ func (h HandlerGenerator) decodeList() *ast.FuncDecl {
 							Op: token.AND,
 							X: &ast.CompositeLit{
 								Type: &ast.SelectorExpr{
-									X:   ast.NewIdent(h.domain.ProtoModule),
+									X:   ast.NewIdent(h.domain.ProtoPackage),
 									Sel: ast.NewIdent(fmt.Sprintf("List%s", h.domain.GetMainModel().Name)),
 								},
 								Elts: []ast.Expr{
@@ -1065,7 +1065,7 @@ func (h HandlerGenerator) decodeList() *ast.FuncDecl {
 												&ast.ArrayType{
 													Elt: &ast.StarExpr{
 														X: &ast.SelectorExpr{
-															X:   ast.NewIdent(h.domain.ProtoModule),
+															X:   ast.NewIdent(h.domain.ProtoPackage),
 															Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 														},
 													},
@@ -1178,7 +1178,7 @@ func (h HandlerGenerator) decodeUpdate() *ast.FuncDecl {
 					Op: token.AND,
 					X: &ast.CompositeLit{
 						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent(h.domain.ProtoModule),
+							X:   ast.NewIdent(h.domain.ProtoPackage),
 							Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
 						},
 						Elts: h.decodeUpdateParams(),
@@ -1291,7 +1291,7 @@ func (h HandlerGenerator) decodeUpdate() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoModule),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
 								Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
 							},
 						},
@@ -1383,7 +1383,7 @@ func (h HandlerGenerator) structure() *ast.TypeSpec {
 				List: []*ast.Field{
 					{
 						Type: &ast.SelectorExpr{
-							X: ast.NewIdent(h.domain.ProtoModule),
+							X: ast.NewIdent(h.domain.ProtoPackage),
 							Sel: &ast.Ident{
 								Name: fmt.Sprintf(
 									"Unimplemented%sServiceServer",
@@ -1566,7 +1566,7 @@ func (h HandlerGenerator) create() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoModule),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
 								Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
 							},
 						},
@@ -1578,7 +1578,7 @@ func (h HandlerGenerator) create() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoModule),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
 								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 							},
 						},
@@ -1716,7 +1716,7 @@ func (h HandlerGenerator) get() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoModule),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
 								Sel: ast.NewIdent(fmt.Sprintf("%sGet", h.domain.GetMainModel().Name)),
 							},
 						},
@@ -1728,7 +1728,7 @@ func (h HandlerGenerator) get() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoModule),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
 								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 							},
 						},
@@ -1859,7 +1859,7 @@ func (h HandlerGenerator) list() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoModule),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
 								Sel: ast.NewIdent(h.domain.GetFilterModel().Name),
 							},
 						},
@@ -1871,7 +1871,7 @@ func (h HandlerGenerator) list() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoModule),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
 								Sel: ast.NewIdent(fmt.Sprintf("List%s", h.domain.GetMainModel().Name)),
 							},
 						},
@@ -2004,7 +2004,7 @@ func (h HandlerGenerator) update() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoModule),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
 								Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
 							},
 						},
@@ -2016,7 +2016,7 @@ func (h HandlerGenerator) update() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoModule),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
 								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 							},
 						},
@@ -2155,7 +2155,7 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoModule),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
 								Sel: ast.NewIdent(fmt.Sprintf("%sDelete", h.domain.GetMainModel().Name)),
 							},
 						},

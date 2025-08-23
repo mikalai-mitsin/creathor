@@ -1,16 +1,16 @@
-CREATE TABLE public.{{ .Config.TableName }}
+CREATE TABLE public.{{ .TableName }}
 (
     id          uuid                  DEFAULT uuidv7()
-        CONSTRAINT {{ .Config.TableName }}_pk PRIMARY KEY,
-{{- range $value := .Config.Params }}
+        CONSTRAINT {{ .TableName }}_pk PRIMARY KEY,
+{{- range $value := .Params }}
     {{ $value.Tag }} {{ $value.SQLType }} NOT NULL,
 {{- end }}
     updated_at  timestamp    NOT NULL DEFAULT (now() at time zone 'utc'),
     created_at  timestamp    NOT NULL DEFAULT (now() at time zone 'utc')
 );
 
-{{- if .Config.SearchEnabled }}
-CREATE INDEX search_{{ .Config.TableName }}
-    ON public.{{ .Config.TableName }}
-        USING GIN ({{ .Config.SearchVector }});
+{{- if .SearchEnabled }}
+CREATE INDEX search_{{ .TableName }}
+    ON public.{{ .TableName }}
+        USING GIN ({{ .SearchVector }});
 {{- end}}

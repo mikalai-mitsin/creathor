@@ -15,16 +15,16 @@ import (
 )
 
 type InterfacesGenerator struct {
-	domain *configs.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewInterfacesGenerator(domain *configs.BaseEntity) *InterfacesGenerator {
+func NewInterfacesGenerator(domain *configs.EntityConfig) *InterfacesGenerator {
 	return &InterfacesGenerator{domain: domain}
 }
 
 func (i InterfacesGenerator) Sync() error {
 	fileset := token.NewFileSet()
-	filename := filepath.Join("internal", "app", i.domain.AppName(), "services", i.domain.DirName(), fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()))
+	filename := filepath.Join("internal", "app", i.domain.AppConfig.AppName(), "services", i.domain.DirName(), fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()))
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err

@@ -16,15 +16,15 @@ import (
 
 type Validate struct {
 	typeSpec *ast.TypeSpec
-	domain   *configs.BaseEntity
+	domain   *configs.EntityConfig
 }
 
-func NewValidate(typeSpec *ast.TypeSpec, domain *configs.BaseEntity) *Validate {
+func NewValidate(typeSpec *ast.TypeSpec, domain *configs.EntityConfig) *Validate {
 	return &Validate{typeSpec: typeSpec, domain: domain}
 }
 func (m *Validate) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", m.domain.AppName(), "entities", m.domain.DirName(), m.domain.FileName())
+	filename := path.Join("internal", "app", m.domain.AppConfig.AppName(), "entities", m.domain.DirName(), m.domain.FileName())
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err

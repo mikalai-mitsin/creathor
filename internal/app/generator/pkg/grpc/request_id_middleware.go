@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -40,7 +39,7 @@ func (m RequestIDMiddleware) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, m.project.Module),
+							Value: m.project.LogImportPath(),
 						},
 					},
 					&ast.ImportSpec{

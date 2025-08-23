@@ -78,7 +78,7 @@ func (u ServiceGenerator) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, u.domain.Module),
+							Value: u.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 						},
 					},
 				},

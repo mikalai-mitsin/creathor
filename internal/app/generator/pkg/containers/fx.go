@@ -62,20 +62,20 @@ func (f FxContainer) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/postgres"`, f.project.Module),
+				Value: f.project.PostgresImportPath(),
 			},
 		},
 
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, f.project.Module),
+				Value: f.project.ClockImportPath(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, f.project.Module),
+				Value: f.project.UUIDImportPath(),
 			},
 		},
 		&ast.ImportSpec{
@@ -94,13 +94,13 @@ func (f FxContainer) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/log"`, f.project.Module),
+				Value: f.project.LogImportPath(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/configs"`, f.project.Module),
+				Value: f.project.ConfigsImportPath(),
 			},
 		},
 	}
@@ -108,7 +108,7 @@ func (f FxContainer) file() *ast.File {
 		imports = append(imports, &ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, f.project.Module),
+				Value: f.project.GRPCImportPath(),
 			},
 		})
 	}
@@ -116,7 +116,7 @@ func (f FxContainer) file() *ast.File {
 		imports = append(imports, &ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/http"`, f.project.Module),
+				Value: f.project.HTTPImportPath(),
 			},
 		})
 	}
@@ -124,7 +124,7 @@ func (f FxContainer) file() *ast.File {
 		imports = append(imports, &ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/uptrace"`, f.project.Module),
+				Value: f.project.UptraceImportPath(),
 			},
 		})
 	}
@@ -132,7 +132,7 @@ func (f FxContainer) file() *ast.File {
 		imports = append(imports, &ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/gateway"`, f.project.Module),
+				Value: f.project.GatewayImportPath(),
 			},
 		})
 	}

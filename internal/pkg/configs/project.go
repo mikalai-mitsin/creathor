@@ -65,6 +65,7 @@ func NewProject(configPath string) (*Project, error) {
 			entity.KafkaEnabled = project.KafkaEnabled
 			app.Entities[i2] = entity
 		}
+		app.ProjectConfig = project
 		project.Apps[i] = app
 	}
 	return project, nil
@@ -88,4 +89,54 @@ func (p *Project) Validate() error {
 
 func (p *Project) ProtoPackage() string {
 	return fmt.Sprintf("%spb", strcase.ToSnake(p.Name))
+}
+
+func (p *Project) ErrsImportPath() string {
+	return fmt.Sprintf(`"%s/internal/pkg/errs"`, p.Module)
+}
+func (p *Project) LogImportPath() string {
+	return fmt.Sprintf(`"%s/internal/pkg/log"`, p.Module)
+}
+func (p *Project) KafkaImportPath() string {
+	return fmt.Sprintf(`"%s/internal/pkg/kafka"`, p.Module)
+}
+
+func (p *Project) UUIDImportPath() string {
+	return fmt.Sprintf(`"%s/internal/pkg/uuid"`, p.Module)
+}
+
+func (p *Project) UptraceImportPath() string {
+	return fmt.Sprintf(`"%s/internal/pkg/uptrace"`, p.Module)
+}
+
+func (p *Project) PostgresImportPath() string {
+	return fmt.Sprintf(`"%s/internal/pkg/postgres"`, p.Module)
+}
+
+func (p *Project) PointerImportPath() string {
+	return fmt.Sprintf(`"%s/internal/pkg/pointer"`, p.Module)
+}
+
+func (p *Project) HTTPImportPath() string {
+	return fmt.Sprintf(`"%s/internal/pkg/http"`, p.Module)
+}
+
+func (p *Project) GRPCImportPath() string {
+	return fmt.Sprintf(`"%s/internal/pkg/grpc"`, p.Module)
+}
+
+func (p *Project) ContainersImportPath() string {
+	return fmt.Sprintf(`"%s/internal/pkg/containers"`, p.Module)
+}
+
+func (p *Project) ConfigsImportPath() string {
+	return fmt.Sprintf(`"%s/internal/pkg/configs"`, p.Module)
+}
+
+func (p *Project) ClockImportPath() string {
+	return fmt.Sprintf(`"%s/internal/pkg/clock"`, p.Module)
+}
+
+func (p *Project) GatewayImportPath() string {
+	return fmt.Sprintf(`"%s/internal/pkg/gateway"`, p.Module)
 }

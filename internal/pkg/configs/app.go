@@ -19,6 +19,7 @@ type AppConfig struct {
 	GatewayEnabled bool           `                     yaml:"gateway"`
 	KafkaEnabled   bool           `                     yaml:"kafka"`
 	Entities       []EntityConfig `json:"entities" yaml:"entities"`
+	ProjectConfig  *Project       `json:"-" yaml:"-"`
 }
 
 func (m *AppConfig) AppName() string {

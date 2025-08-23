@@ -43,7 +43,7 @@ func (u Provider) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/configs"`, u.project.Module),
+							Value: u.project.ConfigsImportPath(),
 						},
 					},
 					&ast.ImportSpec{

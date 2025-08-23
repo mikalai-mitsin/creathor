@@ -661,7 +661,7 @@ func (r RepositoryGenerator) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/errs"`, r.domain.Module),
+				Value: r.domain.AppConfig.ProjectConfig.ErrsImportPath(),
 			},
 		},
 		&ast.ImportSpec{
@@ -674,13 +674,13 @@ func (r RepositoryGenerator) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/pointer"`, r.domain.Module),
+				Value: r.domain.AppConfig.ProjectConfig.PointerImportPath(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, r.domain.Module),
+				Value: r.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 			},
 		},
 		&ast.ImportSpec{
@@ -701,7 +701,7 @@ func (r RepositoryGenerator) file() *ast.File {
 		specs = append(specs, &ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/postgres"`, r.domain.Module),
+				Value: r.domain.AppConfig.ProjectConfig.PostgresImportPath(),
 			},
 		})
 	}

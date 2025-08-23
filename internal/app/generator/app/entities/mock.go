@@ -3,13 +3,14 @@ package entities
 import (
 	"bytes"
 	"fmt"
-	"github.com/iancoleman/strcase"
 	"go/ast"
 	"go/parser"
 	"go/printer"
 	"go/token"
 	"os"
 	"path"
+
+	"github.com/iancoleman/strcase"
 
 	mods "github.com/mikalai-mitsin/creathor/internal/pkg/app"
 
@@ -128,13 +129,13 @@ func (m *Mock) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/pointer"`, m.domain.Module),
+							Value: m.domain.AppConfig.ProjectConfig.PointerImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, m.domain.Module),
+							Value: m.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 						},
 					},
 					&ast.ImportSpec{

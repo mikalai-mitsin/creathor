@@ -82,7 +82,7 @@ func (r InterfacesGenerator) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/log"`, r.domain.Module),
+					Value: r.domain.AppConfig.ProjectConfig.LogImportPath(),
 				},
 			},
 		},

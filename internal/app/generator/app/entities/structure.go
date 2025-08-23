@@ -2,7 +2,6 @@ package entities
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -61,13 +60,13 @@ func (m *Structure) file() *ast.File {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, m.domain.Module),
+					Value: m.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 				},
 			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/errs"`, m.domain.Module),
+					Value: m.domain.AppConfig.ProjectConfig.ErrsImportPath(),
 				},
 			},
 		},

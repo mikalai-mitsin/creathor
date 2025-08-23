@@ -65,19 +65,19 @@ func (a App) imports() *ast.GenDecl {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/clock"`, a.app.Module),
+				Value: a.app.Config.ProjectConfig.ClockImportPath(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/log"`, a.app.Module),
+				Value: a.app.Config.ProjectConfig.LogImportPath(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, a.app.Module),
+				Value: a.app.Config.ProjectConfig.UUIDImportPath(),
 			},
 		},
 		&ast.ImportSpec{
@@ -162,7 +162,7 @@ func (a App) imports() *ast.GenDecl {
 				&ast.ImportSpec{
 					Path: &ast.BasicLit{
 						Kind:  token.STRING,
-						Value: fmt.Sprintf(`"%s/internal/pkg/http"`, a.app.Module),
+						Value: a.app.Config.ProjectConfig.HTTPImportPath(),
 					},
 				},
 			)
@@ -185,7 +185,7 @@ func (a App) imports() *ast.GenDecl {
 				&ast.ImportSpec{
 					Path: &ast.BasicLit{
 						Kind:  token.STRING,
-						Value: fmt.Sprintf(`"%s/internal/pkg/grpc"`, a.app.Module),
+						Value: a.app.Config.ProjectConfig.GRPCImportPath(),
 					},
 				},
 				&ast.ImportSpec{

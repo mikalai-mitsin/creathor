@@ -93,7 +93,7 @@ func (r InterfacesGenerator) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: `"github.com/IBM/sarama"`,
+					Value: r.domain.AppConfig.ProjectConfig.KafkaImportPath(),
 				},
 			},
 		},
@@ -324,28 +324,43 @@ func (r InterfacesGenerator) kafkaInterface() *ast.GenDecl {
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: []*ast.Field{
-							&ast.Field{
+							{
 								Names: []*ast.Ident{
-									&ast.Ident{
-										Name: "SendMessage",
+									{
+										Name: "Send",
 									},
 								},
 								Type: &ast.FuncType{
 									Params: &ast.FieldList{
 										List: []*ast.Field{
-											&ast.Field{
+											{
 												Names: []*ast.Ident{
-													&ast.Ident{
+													{
+														Name: "ctx",
+													},
+												},
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "context",
+													},
+													Sel: &ast.Ident{
+														Name: "Context",
+													},
+												},
+											},
+											{
+												Names: []*ast.Ident{
+													{
 														Name: "msg",
 													},
 												},
 												Type: &ast.StarExpr{
 													X: &ast.SelectorExpr{
 														X: &ast.Ident{
-															Name: "sarama",
+															Name: "kafka",
 														},
 														Sel: &ast.Ident{
-															Name: "ProducerMessage",
+															Name: "Message",
 														},
 													},
 												},
@@ -354,32 +369,7 @@ func (r InterfacesGenerator) kafkaInterface() *ast.GenDecl {
 									},
 									Results: &ast.FieldList{
 										List: []*ast.Field{
-											&ast.Field{
-												Names: []*ast.Ident{
-													&ast.Ident{
-														Name: "partition",
-													},
-												},
-												Type: &ast.Ident{
-													Name: "int32",
-												},
-											},
-											&ast.Field{
-												Names: []*ast.Ident{
-													&ast.Ident{
-														Name: "offset",
-													},
-												},
-												Type: &ast.Ident{
-													Name: "int64",
-												},
-											},
-											&ast.Field{
-												Names: []*ast.Ident{
-													&ast.Ident{
-														Name: "err",
-													},
-												},
+											{
 												Type: &ast.Ident{
 													Name: "error",
 												},

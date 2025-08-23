@@ -112,6 +112,14 @@ func (f FxContainer) file() *ast.File {
 			},
 		})
 	}
+	if f.project.KafkaEnabled {
+		imports = append(imports, &ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: f.project.KafkaImportPath(),
+			},
+		})
+	}
 	if f.project.HTTPEnabled {
 		imports = append(imports, &ast.ImportSpec{
 			Path: &ast.BasicLit{
@@ -183,6 +191,49 @@ func (f FxContainer) toProvide() []ast.Expr {
 			X:   ast.NewIdent("uuid"),
 			Sel: ast.NewIdent("NewUUIDv7Generator"),
 		},
+		&ast.FuncLit{
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Names: []*ast.Ident{
+								ast.NewIdent("config"),
+							},
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("configs"),
+									Sel: ast.NewIdent("Config"),
+								},
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("postgres"),
+									Sel: ast.NewIdent("Config"),
+								},
+							},
+						},
+					},
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							&ast.SelectorExpr{
+								X:   ast.NewIdent("config"),
+								Sel: ast.NewIdent("Database"),
+							},
+						},
+					},
+				},
+			},
+		},
 		&ast.SelectorExpr{
 			X:   ast.NewIdent("postgres"),
 			Sel: ast.NewIdent("NewDatabase"),
@@ -191,6 +242,62 @@ func (f FxContainer) toProvide() []ast.Expr {
 			X:   ast.NewIdent("postgres"),
 			Sel: ast.NewIdent("NewMigrateManager"),
 		},
+	}
+	if f.project.KafkaEnabled {
+		toProvide = append(
+			toProvide,
+			&ast.SelectorExpr{
+				X:   ast.NewIdent("kafka"),
+				Sel: ast.NewIdent("NewConsumer"),
+			},
+			&ast.SelectorExpr{
+				X:   ast.NewIdent("kafka"),
+				Sel: ast.NewIdent("NewProducer"),
+			},
+			&ast.FuncLit{
+				Type: &ast.FuncType{
+					Params: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("config"),
+								},
+								Type: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X:   ast.NewIdent("configs"),
+										Sel: ast.NewIdent("Config"),
+									},
+								},
+							},
+						},
+					},
+					Results: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Type: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X:   ast.NewIdent("kafka"),
+										Sel: ast.NewIdent("Config"),
+									},
+								},
+							},
+						},
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								&ast.SelectorExpr{
+									X:   ast.NewIdent("config"),
+									Sel: ast.NewIdent("Kafka"),
+								},
+							},
+						},
+					},
+				},
+			},
+		)
 	}
 	if f.project.UptraceEnabled {
 		toProvide = append(
@@ -410,6 +517,154 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 				},
 			},
 		})
+	}
+	if f.project.KafkaEnabled {
+		exprs = append(exprs,
+			&ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X:   ast.NewIdent("fx"),
+					Sel: ast.NewIdent("Invoke"),
+				},
+				Args: []ast.Expr{
+					&ast.FuncLit{
+						Type: &ast.FuncType{
+							Params: &ast.FieldList{
+								List: []*ast.Field{
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("lifecycle"),
+										},
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("fx"),
+											Sel: ast.NewIdent("Lifecycle"),
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("producer"),
+										},
+										Type: &ast.StarExpr{
+											X: &ast.SelectorExpr{
+												X:   ast.NewIdent("kafka"),
+												Sel: ast.NewIdent("Producer"),
+											},
+										},
+									},
+								},
+							},
+						},
+						Body: &ast.BlockStmt{
+							List: []ast.Stmt{
+								&ast.ExprStmt{
+									X: &ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X:   ast.NewIdent("lifecycle"),
+											Sel: ast.NewIdent("Append"),
+										},
+										Args: []ast.Expr{
+											&ast.CompositeLit{
+												Type: &ast.SelectorExpr{
+													X:   ast.NewIdent("fx"),
+													Sel: ast.NewIdent("Hook"),
+												},
+												Elts: []ast.Expr{
+													&ast.KeyValueExpr{
+														Key: ast.NewIdent("OnStart"),
+														Value: &ast.SelectorExpr{
+															X:   ast.NewIdent("producer"),
+															Sel: ast.NewIdent("Start"),
+														},
+													},
+													&ast.KeyValueExpr{
+														Key: ast.NewIdent("OnStop"),
+														Value: &ast.SelectorExpr{
+															X:   ast.NewIdent("producer"),
+															Sel: ast.NewIdent("Stop"),
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			&ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X:   ast.NewIdent("fx"),
+					Sel: ast.NewIdent("Invoke"),
+				},
+				Args: []ast.Expr{
+					&ast.FuncLit{
+						Type: &ast.FuncType{
+							Params: &ast.FieldList{
+								List: []*ast.Field{
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("lifecycle"),
+										},
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("fx"),
+											Sel: ast.NewIdent("Lifecycle"),
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("consumer"),
+										},
+										Type: &ast.StarExpr{
+											X: &ast.SelectorExpr{
+												X:   ast.NewIdent("kafka"),
+												Sel: ast.NewIdent("Consumer"),
+											},
+										},
+									},
+								},
+							},
+						},
+						Body: &ast.BlockStmt{
+							List: []ast.Stmt{
+								&ast.ExprStmt{
+									X: &ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X:   ast.NewIdent("lifecycle"),
+											Sel: ast.NewIdent("Append"),
+										},
+										Args: []ast.Expr{
+											&ast.CompositeLit{
+												Type: &ast.SelectorExpr{
+													X:   ast.NewIdent("fx"),
+													Sel: ast.NewIdent("Hook"),
+												},
+												Elts: []ast.Expr{
+													&ast.KeyValueExpr{
+														Key: ast.NewIdent("OnStart"),
+														Value: &ast.SelectorExpr{
+															X:   ast.NewIdent("consumer"),
+															Sel: ast.NewIdent("Start"),
+														},
+													},
+													&ast.KeyValueExpr{
+														Key: ast.NewIdent("OnStop"),
+														Value: &ast.SelectorExpr{
+															X:   ast.NewIdent("consumer"),
+															Sel: ast.NewIdent("Stop"),
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		)
 	}
 	return &ast.ValueSpec{
 		Names: []*ast.Ident{

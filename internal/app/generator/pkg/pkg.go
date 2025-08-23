@@ -37,7 +37,12 @@ func (g *Generator) Sync() error {
 		uuid.NewGenerator(g.project),
 	}
 	if g.project.KafkaEnabled {
-		generators = append(generators, kafka.NewConfigGenerator(g.project), kafka.NewKafkaGenerator(g.project))
+		generators = append(
+			generators,
+			kafka.NewConfigGenerator(g.project),
+			kafka.NewConsumerGenerator(g.project),
+			kafka.NewProducerGenerator(g.project),
+		)
 	}
 	if g.project.HTTPEnabled {
 		generators = append(generators, http.NewConfig(g.project), http.NewServer(g.project))

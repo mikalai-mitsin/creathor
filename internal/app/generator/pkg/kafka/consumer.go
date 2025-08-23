@@ -12,15 +12,15 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
-type KafkaGenerator struct {
+type ConsumerGenerator struct {
 	project *configs.Project
 }
 
-func NewKafkaGenerator(project *configs.Project) *KafkaGenerator {
-	return &KafkaGenerator{project: project}
+func NewConsumerGenerator(project *configs.Project) *ConsumerGenerator {
+	return &ConsumerGenerator{project: project}
 }
 
-func (u KafkaGenerator) file() *ast.File {
+func (u ConsumerGenerator) file() *ast.File {
 	return &ast.File{
 		Package: 1,
 		Name: &ast.Ident{
@@ -145,7 +145,7 @@ func (u KafkaGenerator) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: "Kafka",
+							Name: "Consumer",
 						},
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
@@ -217,7 +217,7 @@ func (u KafkaGenerator) file() *ast.File {
 			},
 			&ast.FuncDecl{
 				Name: &ast.Ident{
-					Name: "NewKafka",
+					Name: "NewConsumer",
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -234,6 +234,23 @@ func (u KafkaGenerator) file() *ast.File {
 									},
 								},
 							},
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "logger",
+									},
+								},
+								Type: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "log",
+										},
+										Sel: &ast.Ident{
+											Name: "Log",
+										},
+									},
+								},
+							},
 						},
 					},
 					Results: &ast.FieldList{
@@ -241,7 +258,7 @@ func (u KafkaGenerator) file() *ast.File {
 							{
 								Type: &ast.StarExpr{
 									X: &ast.Ident{
-										Name: "Kafka",
+										Name: "Consumer",
 									},
 								},
 							},
@@ -390,7 +407,7 @@ func (u KafkaGenerator) file() *ast.File {
 									Op: token.AND,
 									X: &ast.CompositeLit{
 										Type: &ast.Ident{
-											Name: "Kafka",
+											Name: "Consumer",
 										},
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
@@ -407,6 +424,14 @@ func (u KafkaGenerator) file() *ast.File {
 												},
 												Value: &ast.Ident{
 													Name: "client",
+												},
+											},
+											&ast.KeyValueExpr{
+												Key: &ast.Ident{
+													Name: "logger",
+												},
+												Value: &ast.Ident{
+													Name: "logger",
 												},
 											},
 										},
@@ -426,12 +451,12 @@ func (u KafkaGenerator) file() *ast.File {
 						{
 							Names: []*ast.Ident{
 								{
-									Name: "k",
+									Name: "c",
 								},
 							},
 							Type: &ast.StarExpr{
 								X: &ast.Ident{
-									Name: "Kafka",
+									Name: "Consumer",
 								},
 							},
 						},
@@ -463,7 +488,7 @@ func (u KafkaGenerator) file() *ast.File {
 								&ast.IndexExpr{
 									X: &ast.SelectorExpr{
 										X: &ast.Ident{
-											Name: "k",
+											Name: "c",
 										},
 										Sel: &ast.Ident{
 											Name: "handlers",
@@ -495,12 +520,12 @@ func (u KafkaGenerator) file() *ast.File {
 						{
 							Names: []*ast.Ident{
 								{
-									Name: "k",
+									Name: "c",
 								},
 							},
 							Type: &ast.StarExpr{
 								X: &ast.Ident{
-									Name: "Kafka",
+									Name: "Consumer",
 								},
 							},
 						},
@@ -551,7 +576,7 @@ func (u KafkaGenerator) file() *ast.File {
 							Rhs: []ast.Expr{
 								&ast.SelectorExpr{
 									X: &ast.Ident{
-										Name: "k",
+										Name: "c",
 									},
 									Sel: &ast.Ident{
 										Name: "logger",
@@ -634,7 +659,7 @@ func (u KafkaGenerator) file() *ast.File {
 							Tok: token.DEFINE,
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "k",
+									Name: "c",
 								},
 								Sel: &ast.Ident{
 									Name: "handlers",
@@ -673,7 +698,7 @@ func (u KafkaGenerator) file() *ast.File {
 													},
 													&ast.SelectorExpr{
 														X: &ast.Ident{
-															Name: "k",
+															Name: "c",
 														},
 														Sel: &ast.Ident{
 															Name: "client",
@@ -765,7 +790,7 @@ func (u KafkaGenerator) file() *ast.File {
 											&ast.IndexExpr{
 												X: &ast.SelectorExpr{
 													X: &ast.Ident{
-														Name: "k",
+														Name: "c",
 													},
 													Sel: &ast.Ident{
 														Name: "handlers",
@@ -823,7 +848,7 @@ func (u KafkaGenerator) file() *ast.File {
 															Tok: token.DEFINE,
 															X: &ast.SelectorExpr{
 																X: &ast.Ident{
-																	Name: "k",
+																	Name: "c",
 																},
 																Sel: &ast.Ident{
 																	Name: "handlers",
@@ -1002,12 +1027,12 @@ func (u KafkaGenerator) file() *ast.File {
 						{
 							Names: []*ast.Ident{
 								{
-									Name: "k",
+									Name: "c",
 								},
 							},
 							Type: &ast.StarExpr{
 								X: &ast.Ident{
-									Name: "Kafka",
+									Name: "Consumer",
 								},
 							},
 						},
@@ -1017,7 +1042,25 @@ func (u KafkaGenerator) file() *ast.File {
 					Name: "Stop",
 				},
 				Type: &ast.FuncType{
-					Params: &ast.FieldList{},
+					Params: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "ctx",
+									},
+								},
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "context",
+									},
+									Sel: &ast.Ident{
+										Name: "Context",
+									},
+								},
+							},
+						},
+					},
 					Results: &ast.FieldList{
 						List: []*ast.Field{
 							{
@@ -1036,7 +1079,7 @@ func (u KafkaGenerator) file() *ast.File {
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
 											X: &ast.Ident{
-												Name: "k",
+												Name: "c",
 											},
 											Sel: &ast.Ident{
 												Name: "client",
@@ -1056,9 +1099,9 @@ func (u KafkaGenerator) file() *ast.File {
 	}
 }
 
-func (u KafkaGenerator) Sync() error {
+func (u ConsumerGenerator) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "pkg", "kafka", "kafka.go")
+	filename := path.Join("internal", "pkg", "kafka", "consumer.go")
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}

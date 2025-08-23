@@ -5,7 +5,7 @@ import (
 	"encoding/json"
     "{{ .Module }}/internal/app/{{ .AppName }}/entities/{{ .DirName }}"
 	"{{ .Module }}/internal/pkg/clock"
-	"github.com/IBM/sarama"
+	"{{ .Module }}/internal/pkg/kafka"
 )
 
 const (
@@ -26,42 +26,42 @@ func {{ .EventProducerConstructorName }}(
 	return &{{ .EventProducerTypeName }}{producer: producer, logger: logger}
 }
 
-func (p *{{ .EventProducerTypeName }}) Created(_ context.Context, {{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}) error {
+func (p *{{ .EventProducerTypeName }}) Created(ctx context.Context, {{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}) error {
 	data, err := json.Marshal({{ .GetOneVariableName }})
 	if err != nil {
 		return err
 	}
-	message := &sarama.ProducerMessage{
+	message := &kafka.Message{
 		Topic: topicEventCreated,
-		Value: sarama.ByteEncoder(data),
+		Value: data,
 	}
-	if _, _, err := p.producer.SendMessage(message); err != nil {
+	if err := p.producer.Send(ctx, message); err != nil {
 		return errs.FromKafkaError(err)
 	}
 	return nil
 }
 
-func (p *{{ .EventProducerTypeName }}) Updated(_ context.Context, {{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}) error {
+func (p *{{ .EventProducerTypeName }}) Updated(ctx context.Context, {{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}) error {
 	data, err := json.Marshal({{ .GetOneVariableName }})
 	if err != nil {
 		return err
 	}
-	message := &sarama.ProducerMessage{
+	message := &kafka.Message{
 		Topic: topicEventUpdated,
-		Value: sarama.ByteEncoder(data),
+		Value: data,
 	}
-	if _, _, err := p.producer.SendMessage(message); err != nil {
+	if err := p.producer.Send(ctx, message); err != nil {
 		return errs.FromKafkaError(err)
 	}
 	return nil
 }
 
-func (p *{{ .EventProducerTypeName }}) Deleted(_ context.Context, id uuid.UUID) error {
-	message := &sarama.ProducerMessage{
+func (p *{{ .EventProducerTypeName }}) Deleted(ctx context.Context, id uuid.UUID) error {
+	message := &kafka.Message{
 		Topic: topicEventDeleted,
-		Value: sarama.ByteEncoder(id.String()),
+		Value: []byte(id.String()),
 	}
-	if _, _, err := p.producer.SendMessage(message); err != nil {
+	if err := p.producer.Send(ctx, message); err != nil {
 		return errs.FromKafkaError(err)
 	}
 	return nil

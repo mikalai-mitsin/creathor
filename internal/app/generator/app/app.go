@@ -83,6 +83,12 @@ func (a App) imports() *ast.GenDecl {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
+				Value: a.app.ProjectConfig.KafkaImportPath(),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
 				Value: `"github.com/jmoiron/sqlx"`,
 			},
 		},
@@ -263,10 +269,10 @@ func (a App) constructor() *ast.FuncDecl {
 				Names: []*ast.Ident{
 					ast.NewIdent("kafkaProducer"),
 				},
-				Type: &ast.SelectorExpr{
-					X:   ast.NewIdent("sarama"),
-					Sel: ast.NewIdent("SyncProducer"),
-				},
+				Type: &ast.StarExpr{X: &ast.SelectorExpr{
+					X:   ast.NewIdent("kafka"),
+					Sel: ast.NewIdent("Producer"),
+				}},
 			},
 		)
 	}
@@ -526,9 +532,11 @@ func (a App) structure() *ast.GenDecl {
 				Names: []*ast.Ident{
 					ast.NewIdent("kafkaProducer"),
 				},
-				Type: &ast.SelectorExpr{
-					X:   ast.NewIdent("sarama"),
-					Sel: ast.NewIdent("SyncProducer"),
+				Type: &ast.StarExpr{
+					X: &ast.SelectorExpr{
+						X:   ast.NewIdent("kafka"),
+						Sel: ast.NewIdent("Producer"),
+					},
 				},
 			},
 		)

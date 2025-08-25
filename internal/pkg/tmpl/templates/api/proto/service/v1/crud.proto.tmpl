@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package {{ .Config.ProtoPackage }}.v1;
+package {{ .ProtoPackage }}.v1;
 
-option go_package = "{{ .Module }}/pkg/{{ .Config.ProtoPackage }}/v1";
+option go_package = "{{ .Module }}/pkg/{{ .ProtoPackage }}/v1";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
@@ -10,42 +10,42 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/struct.proto";
 import "google/api/annotations.proto";
 
-message {{ .Config.CreateTypeName }} {
-{{- range $i, $value := .Config.Params }}
+message {{ .CreateTypeName }} {
+{{- range $i, $value := .Params }}
   {{ $value.ProtoType }} {{ $value.Tag }} = {{ add $i 1 }};
 {{- end }}
 }
 
-message {{ .Config.EntityName }}Get {
+message {{ .EntityName }}Get {
   string id = 1;
 }
 
-message {{ .Config.UpdateTypeName }} {
+message {{ .UpdateTypeName }} {
   string id = 1;
-{{- range $i, $value := .Config.Params }}
+{{- range $i, $value := .Params }}
   {{ $value.ProtoWrapType }} {{ $value.Tag }} = {{ add $i 2 }};
 {{- end }}
 }
 
-message {{ .Config.EntityName }} {
+message {{ .EntityName }} {
   string id = 1;
   google.protobuf.Timestamp updated_at = 2;
   google.protobuf.Timestamp created_at = 3;
-{{- range $i, $value := .Config.Params }}
+{{- range $i, $value := .Params }}
   {{ $value.ProtoType }} {{ $value.Tag }} = {{ add $i 4 }};
 {{- end }}
 }
 
-message List{{ .Config.EntityName }} {
-  repeated {{ .Config.EntityName }} items = 1;
+message List{{ .EntityName }} {
+  repeated {{ .EntityName }} items = 1;
   uint64 count = 2;
 }
 
-message {{ .Config.EntityName }}Delete {
+message {{ .EntityName }}Delete {
   string id = 1;
 }
 
-message {{ .Config.FilterTypeName }} {
+message {{ .FilterTypeName }} {
   google.protobuf.UInt64Value page_number = 1;
   google.protobuf.UInt64Value page_size = 2;
   repeated string order_by = 3;
@@ -54,26 +54,26 @@ message {{ .Config.FilterTypeName }} {
 {{- end }}
 }
 
-service {{ .Config.EntityName }}Service {
-  rpc Create({{ .Config.ProtoPackage }}.v1.{{ .Config.CreateTypeName }}) returns ({{ .Config.ProtoPackage }}.v1.{{ .Config.EntityName }}) {
+service {{ .EntityName }}Service {
+  rpc Create({{ .ProtoPackage }}.v1.{{ .CreateTypeName }}) returns ({{ .ProtoPackage }}.v1.{{ .EntityName }}) {
     option (google.api.http) = {
-      post: "/api/v1/{{ .Config.RESTHandlerPath }}"
+      post: "/api/v1/{{ .RESTHandlerPath }}"
       body: "*"
     };
   }
-  rpc Get({{ .Config.ProtoPackage }}.v1.{{ .Config.EntityName}}Get) returns ({{ .Config.ProtoPackage }}.v1.{{ .Config.EntityName }}) {
-    option (google.api.http) = {get: "/api/v1/{{ .Config.RESTHandlerPath }}/{id}"};
+  rpc Get({{ .ProtoPackage }}.v1.{{ .EntityName}}Get) returns ({{ .ProtoPackage }}.v1.{{ .EntityName }}) {
+    option (google.api.http) = {get: "/api/v1/{{ .RESTHandlerPath }}/{id}"};
   }
-  rpc Update({{ .Config.ProtoPackage }}.v1.{{ .Config.UpdateTypeName }}) returns ({{ .Config.ProtoPackage }}.v1.{{ .Config.EntityName }}) {
+  rpc Update({{ .ProtoPackage }}.v1.{{ .UpdateTypeName }}) returns ({{ .ProtoPackage }}.v1.{{ .EntityName }}) {
     option (google.api.http) = {
-      patch: "/api/v1/{{ .Config.RESTHandlerPath }}/{id}"
+      patch: "/api/v1/{{ .RESTHandlerPath }}/{id}"
       body: "*"
     };
   }
-  rpc Delete({{ .Config.ProtoPackage }}.v1.{{ .Config.EntityName }}Delete) returns (google.protobuf.Empty) {
-    option (google.api.http) = {delete: "/api/v1/{{ .Config.RESTHandlerPath }}/{id}"};
+  rpc Delete({{ .ProtoPackage }}.v1.{{ .EntityName }}Delete) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/api/v1/{{ .RESTHandlerPath }}/{id}"};
   }
-  rpc List({{ .Config.ProtoPackage }}.v1.{{ .Config.FilterTypeName }}) returns ({{ .Config.ProtoPackage }}.v1.List{{ .Config.EntityName }}) {
-    option (google.api.http) = {get: "/api/v1/{{ .Config.RESTHandlerPath }}"};
+  rpc List({{ .ProtoPackage }}.v1.{{ .FilterTypeName }}) returns ({{ .ProtoPackage }}.v1.List{{ .EntityName }}) {
+    option (google.api.http) = {get: "/api/v1/{{ .RESTHandlerPath }}"};
   }
 }

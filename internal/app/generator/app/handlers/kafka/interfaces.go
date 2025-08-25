@@ -9,9 +9,7 @@ import (
 	"go/token"
 	"os"
 	"path"
-	"path/filepath"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
@@ -23,35 +21,44 @@ func NewInterfacesGenerator(domain *configs.EntityConfig) *InterfacesGenerator {
 	return &InterfacesGenerator{domain: domain}
 }
 
-func (r *InterfacesGenerator) filename() string {
-	return filepath.Join(
-		".",
+func (i InterfacesGenerator) Sync() error {
+	fileset := token.NewFileSet()
+	filename := path.Join(
 		"internal",
 		"app",
-		r.domain.AppConfig.AppName(),
-		"repositories",
+		i.domain.AppConfig.AppName(),
+		"handlers",
 		"kafka",
-		r.domain.DirName(),
-		fmt.Sprintf("%s_interfaces.go", r.domain.SnakeName()),
+		i.domain.DirName(),
+		fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()),
 	)
-}
-
-func (r InterfacesGenerator) Sync() error {
-	fileset := token.NewFileSet()
-	filename := r.filename()
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err
 	}
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
-		file = r.file()
+		file = i.file()
 	}
-	if !astfile.TypeExists(file, "logger") {
-		file.Decls = append(file.Decls, r.loggerInterface())
+	var loggerExists bool
+	var usecaseExists bool
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.TypeSpec); ok {
+			if t.Name.String() == i.domain.GetUseCaseInterfaceName() {
+				usecaseExists = true
+			}
+			if t.Name.String() == "logger" {
+				loggerExists = true
+			}
+			return true
+		}
+		return true
+	})
+	if !usecaseExists {
+		file.Decls = append(file.Decls, i.usecaseInterface())
 	}
-	if !astfile.TypeExists(file, "producer") {
-		file.Decls = append(file.Decls, r.kafkaInterface())
+	if !loggerExists {
+		file.Decls = append(file.Decls, i.loggerInterface())
 	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
@@ -63,23 +70,23 @@ func (r InterfacesGenerator) Sync() error {
 	return nil
 }
 
-func (r InterfacesGenerator) file() *ast.File {
+func (i InterfacesGenerator) file() *ast.File {
 	return &ast.File{
-		Name: ast.NewIdent("events"),
+		Name: ast.NewIdent("handlers"),
 		Decls: []ast.Decl{
-			r.imports(),
+			i.imports(),
 		},
 	}
 }
 
-func (r InterfacesGenerator) imports() *ast.GenDecl {
+func (i InterfacesGenerator) imports() *ast.GenDecl {
 	return &ast.GenDecl{
 		Tok: token.IMPORT,
 		Doc: &ast.CommentGroup{
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text:  fmt.Sprintf("//go:generate mockgen -source=%s_interfaces.go -package=events -destination=%s_interfaces_mock.go", r.domain.SnakeName(), r.domain.SnakeName()),
+					Text:  fmt.Sprintf("//go:generate mockgen -source=%s_interfaces.go -package=handlers -destination=%s_interfaces_mock.go", i.domain.SnakeName(), i.domain.SnakeName()),
 				},
 			},
 		},
@@ -87,20 +94,219 @@ func (r InterfacesGenerator) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: r.domain.AppConfig.ProjectConfig.LogImportPath(),
+					Value: `"context"`,
 				},
 			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: r.domain.AppConfig.ProjectConfig.KafkaImportPath(),
+					Value: i.domain.EntitiesImportPath(),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: i.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: i.domain.AppConfig.ProjectConfig.LogImportPath(),
 				},
 			},
 		},
 	}
 }
 
-func (r InterfacesGenerator) loggerInterface() *ast.GenDecl {
+func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
+	methods := []*ast.Field{
+		{
+			Names: []*ast.Ident{ast.NewIdent("Create")},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetCreateModel().Name),
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+							},
+						},
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("Get")},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("uuid"),
+								Sel: ast.NewIdent("UUID"),
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+							},
+						},
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("List")},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetFilterModel().Name),
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.ArrayType{
+								Elt: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
+						},
+						{
+							Type: ast.NewIdent("uint64"),
+						},
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("Update")},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetUpdateModel().Name),
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+							},
+						},
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{ast.NewIdent("Delete")},
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("context"),
+								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("uuid"),
+								Sel: ast.NewIdent("UUID"),
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: ast.NewIdent("error"),
+						},
+					},
+				},
+			},
+		},
+	}
+	return &ast.GenDecl{
+		Tok: token.TYPE,
+		Specs: []ast.Spec{
+			&ast.TypeSpec{
+				Name: ast.NewIdent(i.domain.GetUseCaseInterfaceName()),
+				Type: &ast.InterfaceType{
+					Methods: &ast.FieldList{
+						List: methods,
+					},
+				},
+			},
+		},
+	}
+}
+
+func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 	return &ast.GenDecl{
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
@@ -299,79 +505,6 @@ func (r InterfacesGenerator) loggerInterface() *ast.GenDecl {
 														X:   ast.NewIdent("log"),
 														Sel: ast.NewIdent("Field"),
 													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-}
-
-func (r InterfacesGenerator) kafkaInterface() *ast.GenDecl {
-	return &ast.GenDecl{
-		Tok: token.TYPE,
-		Specs: []ast.Spec{
-			&ast.TypeSpec{
-				Name: &ast.Ident{
-					Name: "producer",
-				},
-				Type: &ast.InterfaceType{
-					Methods: &ast.FieldList{
-						List: []*ast.Field{
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "Send",
-									},
-								},
-								Type: &ast.FuncType{
-									Params: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "ctx",
-													},
-												},
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "context",
-													},
-													Sel: &ast.Ident{
-														Name: "Context",
-													},
-												},
-											},
-											{
-												Names: []*ast.Ident{
-													{
-														Name: "msg",
-													},
-												},
-												Type: &ast.StarExpr{
-													X: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "kafka",
-														},
-														Sel: &ast.Ident{
-															Name: "Message",
-														},
-													},
-												},
-											},
-										},
-									},
-									Results: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Type: &ast.Ident{
-													Name: "error",
 												},
 											},
 										},

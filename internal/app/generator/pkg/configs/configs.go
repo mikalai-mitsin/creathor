@@ -50,11 +50,6 @@ func (c *ConfigGenerator) Sync() error {
 			),
 			Name: "config tests",
 		},
-		{
-			SourcePath:      "templates/internal/pkg/configs/testing.go.tmpl",
-			DestinationPath: path.Join(destinationPath, "internal", "pkg", "configs", "testing.go"),
-			Name:            "config testing",
-		},
 	}
 	for _, file := range files {
 		if err := file.RenderToFile(c.project); err != nil {

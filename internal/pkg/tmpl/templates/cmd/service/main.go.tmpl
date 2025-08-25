@@ -28,7 +28,9 @@ func main() {
                 HasBeenSet:  false,
             },
         },
-        Action: runApp,
+{{- if or .GRPCEnabled .HTTPEnabled }}
+        Action: runServer,
+{{- end  }}
         Commands: []*cli.Command{
             {
                 Name:      "migrate",
@@ -36,27 +38,11 @@ func main() {
                 Action:    runMigrations,
                 ArgsUsage: "",
             },
-{{- if .GRPCEnabled }}
+{{- if or .GRPCEnabled .HTTPEnabled }}
             {
-                Name:      "grpc",
-                Usage:     "Run gRPC server",
-                Action:    runGRPC,
-                ArgsUsage: "",
-            },
-{{- end  }}
-{{- if .GatewayEnabled }}
-            {
-                Name:      "gateway",
-                Usage:     "Run gateway-grpc server",
-                Action:    runGateway,
-                ArgsUsage: "",
-            },
-{{- end  }}
-{{- if .HTTPEnabled }}
-            {
-                Name:      "http",
-                Usage:     "Run HTTP server",
-                Action:    runHTTP,
+                Name:      "server",
+                Usage:     "Run API server",
+                Action:    runServer,
                 ArgsUsage: "",
             },
 {{- end  }}
@@ -67,37 +53,10 @@ func main() {
     }
 }
 
-// runApp - run app
-func runApp(context *cli.Context) error {
-{{- if .GRPCEnabled }}
-    app := containers.NewGRPCContainer(configPath)
-    app.Run()
-{{- end }}
-    return nil
-}
-
-{{- if .GRPCEnabled }}
-// runGRPC - run grpc api
-func runGRPC(context *cli.Context) error {
-    app := containers.NewGRPCContainer(configPath)
-    app.Run()
-    return nil
-}
-{{- end }}
-
-{{- if .GatewayEnabled }}
-// runGateway - run gateway api
-func runGateway(context *cli.Context) error {
-    app := containers.NewGatewayContainer(configPath)
-    app.Run()
-    return nil
-}
-{{- end }}
-
-{{- if .HTTPEnabled }}
-// runGateway - run gateway api
-func runHTTP(context *cli.Context) error {
-    app := containers.NewHTTPContainer(configPath)
+{{- if or .HTTPEnabled .GRPCEnabled }}
+// runServer - run api server
+func runServer(context *cli.Context) error {
+    app := containers.NewServerContainer(configPath)
     app.Run()
     return nil
 }

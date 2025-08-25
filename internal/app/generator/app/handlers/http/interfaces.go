@@ -10,14 +10,14 @@ import (
 	"os"
 	"path"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type InterfacesGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewInterfacesGenerator(domain *app.BaseEntity) *InterfacesGenerator {
+func NewInterfacesGenerator(domain *configs.EntityConfig) *InterfacesGenerator {
 	return &InterfacesGenerator{domain: domain}
 }
 
@@ -26,7 +26,7 @@ func (i InterfacesGenerator) Sync() error {
 	filename := path.Join(
 		"internal",
 		"app",
-		i.domain.AppName(),
+		i.domain.AppConfig.AppName(),
 		"handlers",
 		"http",
 		i.domain.DirName(),
@@ -106,13 +106,13 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, i.domain.Module),
+					Value: i.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 				},
 			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/log"`, i.domain.Module),
+					Value: i.domain.AppConfig.ProjectConfig.LogImportPath(),
 				},
 			},
 		},

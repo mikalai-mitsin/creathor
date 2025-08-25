@@ -12,10 +12,9 @@ import (
 	"path"
 	"strings"
 
-	appgenerator "github.com/mikalai-mitsin/creathor/internal/app/generator/app"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app"
 
 	"github.com/iancoleman/strcase"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
@@ -72,30 +71,24 @@ func initProject(_ *cli.Context) error {
 		return err
 	}
 	for _, appConfig := range project.Apps {
-		ap := &app.App{
-			Config:      appConfig,
-			Name:        appConfig.Name,
-			Module:      project.Module,
-			ProtoModule: project.ProtoPackage(),
-			Entities:    make([]*app.BaseEntity, len(appConfig.Entities)),
-		}
 		for i, entity := range appConfig.Entities {
-			baseEntity := &app.BaseEntity{
-				Config:      entity,
-				AppConfig:   &appConfig,
-				Name:        entity.Name,
-				Module:      project.Module,
-				ProtoModule: project.ProtoPackage(),
-				Entities: []*app.Entity{
-					app.NewMainEntity(entity),
-					app.NewFilterEntity(entity),
-					app.NewCreateEntity(entity),
-					app.NewUpdateEntity(entity),
-				},
-			}
-			ap.Entities[i] = baseEntity
+			//baseEntity := &configs.MainEntity{
+			//	Config:      entity,
+			//	AppConfig:   &appConfig,
+			//	Name:        entity.Name,
+			//	Module:      project.Module,
+			//	ProtoModule: project.ProtoPackage(),
+			//	Entities:    []*configs.Entity{},
+			//}
+			appConfig.Entities[i].AppConfig = &appConfig
+			appConfig.Entities[i].Entities = append(appConfig.Entities[i].Entities,
+				configs.NewMainEntity(entity),
+				configs.NewFilterEntity(entity),
+				configs.NewCreateEntity(entity),
+				configs.NewUpdateEntity(entity),
+			)
 		}
-		appGenerator := appgenerator.NewGenerator(ap)
+		appGenerator := app.NewGenerator(&appConfig)
 		if err := appGenerator.Sync(); err != nil {
 			return err
 		}

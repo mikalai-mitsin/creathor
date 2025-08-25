@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 )
 
 type ProtoGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewProtoGenerator(domain *app.BaseEntity) *ProtoGenerator {
+func NewProtoGenerator(domain *configs.EntityConfig) *ProtoGenerator {
 	return &ProtoGenerator{domain: domain}
 }
 
@@ -26,7 +26,7 @@ func (c *ProtoGenerator) Sync() error {
 			destinationPath,
 			"api",
 			"proto",
-			c.domain.ProtoModule,
+			c.domain.ProtoPackage,
 			"v1",
 			fmt.Sprintf("%s.proto", c.domain.SnakeName()),
 		),

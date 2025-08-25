@@ -5,18 +5,19 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/entities"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/handlers/grpc"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/handlers/http"
+	handlersKafka "github.com/mikalai-mitsin/creathor/internal/app/generator/app/handlers/kafka"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/repositories/kafka"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/repositories/postgres"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/services"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/usecases"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type Generator struct {
-	domain *app.App
+	domain *configs.AppConfig
 }
 
-func NewGenerator(d *app.App) *Generator {
+func NewGenerator(d *configs.AppConfig) *Generator {
 	return &Generator{domain: d}
 }
 
@@ -24,45 +25,47 @@ func (g *Generator) Sync() error {
 	domainGenerators := []generator.Generator{NewApp(g.domain)}
 	for _, entity := range g.domain.Entities {
 		domainGenerators = append(domainGenerators,
-			usecases.NewInterfacesGenerator(entity),
-			usecases.NewUseCaseGenerator(entity),
-			usecases.NewTestGenerator(entity),
+			usecases.NewInterfacesGenerator(&entity),
+			usecases.NewUseCaseGenerator(&entity),
+			usecases.NewTestGenerator(&entity),
 
-			services.NewInterfacesGenerator(entity),
-			services.NewServiceGenerator(entity),
-			services.NewTestGenerator(entity),
+			services.NewInterfacesGenerator(&entity),
+			services.NewServiceGenerator(&entity),
+			services.NewTestGenerator(&entity),
 
-			postgres.NewInterfacesGenerator(entity),
-			postgres.NewRepositoryGenerator(entity),
-			postgres.NewTestGenerator(entity),
+			postgres.NewInterfacesGenerator(&entity),
+			postgres.NewRepositoryGenerator(&entity),
+			postgres.NewTestGenerator(&entity),
 		)
-		if g.domain.Config.KafkaEnabled {
+		if g.domain.KafkaEnabled {
 			domainGenerators = append(
 				domainGenerators,
-				kafka.NewProducerGenerator(entity),
-				kafka.NewInterfacesGenerator(entity),
-				kafka.NewProducerTestGenerator(entity),
+				kafka.NewProducerGenerator(&entity),
+				kafka.NewInterfacesGenerator(&entity),
+				kafka.NewProducerTestGenerator(&entity),
+				handlersKafka.NewHandlerGenerator(&entity),
+				handlersKafka.NewInterfacesGenerator(&entity),
 			)
 		}
-		if g.domain.Config.HTTPEnabled {
+		if g.domain.HTTPEnabled {
 			domainGenerators = append(
 				domainGenerators,
-				http.NewDTOGenerator(entity),
-				http.NewHandlerGenerator(entity),
-				http.NewInterfacesGenerator(entity),
+				http.NewDTOGenerator(&entity),
+				http.NewHandlerGenerator(&entity),
+				http.NewInterfacesGenerator(&entity),
 			)
 		}
-		if g.domain.Config.GRPCEnabled {
+		if g.domain.GRPCEnabled {
 			domainGenerators = append(
 				domainGenerators,
-				grpc.NewProtoGenerator(entity),
-				grpc.NewInterfacesGenerator(entity),
-				grpc.NewHandlerGenerator(entity),
-				grpc.NewTestGenerator(entity),
+				grpc.NewProtoGenerator(&entity),
+				grpc.NewInterfacesGenerator(&entity),
+				grpc.NewHandlerGenerator(&entity),
+				grpc.NewTestGenerator(&entity),
 			)
 		}
 		for _, baseEntity := range entity.Entities {
-			domainGenerators = append(domainGenerators, entities.NewModel(baseEntity, entity))
+			domainGenerators = append(domainGenerators, entities.NewModel(baseEntity, &entity))
 		}
 	}
 	for _, domainGenerator := range domainGenerators {

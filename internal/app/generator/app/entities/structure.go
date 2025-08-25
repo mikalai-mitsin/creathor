@@ -2,7 +2,6 @@ package entities
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -11,13 +10,13 @@ import (
 	"path"
 	"path/filepath"
 
-	mods "github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type Structure struct {
 	fileName string
 	name     string
-	domain   *mods.BaseEntity
+	domain   *configs.EntityConfig
 	params   []*ast.Field
 }
 
@@ -25,7 +24,7 @@ func NewStructure(
 	fileName string,
 	name string,
 	params []*ast.Field,
-	domain *mods.BaseEntity,
+	domain *configs.EntityConfig,
 ) *Structure {
 	return &Structure{
 		fileName: fileName,
@@ -61,13 +60,13 @@ func (m *Structure) file() *ast.File {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, m.domain.Module),
+					Value: m.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 				},
 			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/errs"`, m.domain.Module),
+					Value: m.domain.AppConfig.ProjectConfig.ErrsImportPath(),
 				},
 			},
 		},
@@ -89,7 +88,7 @@ func (m *Structure) file() *ast.File {
 }
 
 func (m *Structure) filename() string {
-	return filepath.Join("internal", "app", m.domain.AppName(), "entities", m.domain.DirName(), m.domain.FileName())
+	return filepath.Join("internal", "app", m.domain.AppConfig.AppName(), "entities", m.domain.DirName(), m.domain.FileName())
 }
 
 func (m *Structure) fill(structure *ast.TypeSpec) {

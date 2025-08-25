@@ -1,3 +1,5 @@
+![Repo Icon](assets/icon.png)
+
 Creathor is a CLI tool for generating layout and base CRUD operations on your project.
 
 # Overview
@@ -39,6 +41,7 @@ goVersion: "1.24"
 ci: "github"
 gRPC: true
 http: true
+kafka: true
 uptrace: true
 apps:
   - name: posts
@@ -72,7 +75,7 @@ apps:
           - name: "Body"
             type: "string"
           - name: "is_published"
-            type: "string"
+            type: "bool"
 ```
 
 To generate code in the current directory and with default config name, use the command `creathor`

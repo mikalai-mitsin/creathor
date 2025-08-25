@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -44,13 +43,13 @@ func (u Middlewares) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/errs"`, u.project.Module),
+							Value: u.project.ErrsImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/log"`, u.project.Module),
+							Value: u.project.LogImportPath(),
 						},
 					},
 					&ast.ImportSpec{
@@ -1081,13 +1080,13 @@ func (u Middlewares) file() *ast.File {
 			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/errs"`, u.project.Module),
+					Value: u.project.ErrsImportPath(),
 				},
 			},
 			{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/log"`, u.project.Module),
+					Value: u.project.LogImportPath(),
 				},
 			},
 			{

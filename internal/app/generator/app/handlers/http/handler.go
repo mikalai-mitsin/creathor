@@ -10,16 +10,16 @@ import (
 	"os"
 	"path"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 const destinationPath = "."
 
 type HandlerGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewHandlerGenerator(domain *app.BaseEntity) *HandlerGenerator {
+func NewHandlerGenerator(domain *configs.EntityConfig) *HandlerGenerator {
 	return &HandlerGenerator{
 		domain: domain,
 	}
@@ -46,7 +46,7 @@ func (h *HandlerGenerator) Sync() error {
 }
 
 func (h *HandlerGenerator) filename() string {
-	return path.Join("internal", "app", h.domain.AppName(), "handlers", "http", h.domain.DirName(), h.domain.FileName())
+	return path.Join("internal", "app", h.domain.AppConfig.AppName(), "handlers", "http", h.domain.DirName(), h.domain.FileName())
 }
 
 func (h *HandlerGenerator) file() *ast.File {
@@ -72,13 +72,13 @@ func (h *HandlerGenerator) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/errs"`, h.domain.Module),
+							Value: h.domain.AppConfig.ProjectConfig.ErrsImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, h.domain.Module),
+							Value: h.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 						},
 					},
 					&ast.ImportSpec{
@@ -228,7 +228,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/ [POST]", h.domain.AppName(), h.domain.GetHTTPPath()),
+							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/ [POST]", h.domain.AppConfig.AppName(), h.domain.GetHTTPPath()),
 						},
 					},
 				},
@@ -521,7 +521,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/{id} [GET]", h.domain.AppName(), h.domain.GetHTTPPath()),
+							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/{id} [GET]", h.domain.AppConfig.AppName(), h.domain.GetHTTPPath()),
 						},
 					},
 				},
@@ -763,7 +763,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/ [GET]", h.domain.AppName(), h.domain.GetHTTPPath()),
+							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/ [GET]", h.domain.AppConfig.AppName(), h.domain.GetHTTPPath()),
 						},
 					},
 				},
@@ -1061,7 +1061,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/{id} [PATCH]", h.domain.AppName(), h.domain.GetHTTPPath()),
+							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/{id} [PATCH]", h.domain.AppConfig.AppName(), h.domain.GetHTTPPath()),
 						},
 					},
 				},
@@ -1354,7 +1354,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/{id} [DELETE]", h.domain.AppName(), h.domain.GetHTTPPath()),
+							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/{id} [DELETE]", h.domain.AppConfig.AppName(), h.domain.GetHTTPPath()),
 						},
 					},
 				},

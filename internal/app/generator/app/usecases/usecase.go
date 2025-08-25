@@ -11,15 +11,15 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type UseCaseGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewUseCaseGenerator(domain *app.BaseEntity) *UseCaseGenerator {
+func NewUseCaseGenerator(domain *configs.EntityConfig) *UseCaseGenerator {
 	return &UseCaseGenerator{domain: domain}
 }
 
@@ -53,7 +53,7 @@ func (i UseCaseGenerator) Sync() error {
 }
 
 func (i UseCaseGenerator) filename() string {
-	return filepath.Join("internal", "app", i.domain.AppName(), "usecases", i.domain.DirName(), i.domain.FileName())
+	return filepath.Join("internal", "app", i.domain.AppConfig.AppName(), "usecases", i.domain.DirName(), i.domain.FileName())
 }
 
 func (i UseCaseGenerator) structure() *ast.TypeSpec {
@@ -63,7 +63,7 @@ func (i UseCaseGenerator) structure() *ast.TypeSpec {
 			Type:  ast.NewIdent(i.domain.GetServiceInterfaceName()),
 		},
 	}
-	if i.domain.Config.KafkaEnabled {
+	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		fields = append(fields, &ast.Field{
 			Names: []*ast.Ident{ast.NewIdent(i.domain.GetEventProducerPrivateVariableName())},
 			Type:  ast.NewIdent(i.domain.EventProducerInterfaceName()),
@@ -118,7 +118,7 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 			Type:  ast.NewIdent(i.domain.GetServiceInterfaceName()),
 		},
 	}
-	if i.domain.Config.KafkaEnabled {
+	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		fields = append(fields, &ast.Field{
 			Names: []*ast.Ident{ast.NewIdent(i.domain.GetEventProducerPrivateVariableName())},
 			Type:  ast.NewIdent(i.domain.EventProducerInterfaceName()),
@@ -134,7 +134,7 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 			Value: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 		},
 	}
-	if i.domain.Config.KafkaEnabled {
+	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		exprs = append(exprs, &ast.KeyValueExpr{
 			Key:   ast.NewIdent(i.domain.GetEventProducerPrivateVariableName()),
 			Value: ast.NewIdent(i.domain.GetEventProducerPrivateVariableName()),
@@ -253,7 +253,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 			Else: nil,
 		},
 	)
-	if i.domain.Config.KafkaEnabled {
+	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		body = append(body, &ast.IfStmt{
 			Init: &ast.AssignStmt{
 				Lhs: []ast.Expr{
@@ -735,7 +735,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 			Else: nil,
 		},
 	)
-	if i.domain.Config.KafkaEnabled {
+	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		body = append(body, &ast.IfStmt{
 			Init: &ast.AssignStmt{
 				Lhs: []ast.Expr{
@@ -929,7 +929,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 			},
 		},
 	)
-	if i.domain.Config.KafkaEnabled {
+	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		body = append(body, &ast.IfStmt{
 			Init: &ast.AssignStmt{
 				Lhs: []ast.Expr{
@@ -1082,7 +1082,7 @@ func (i UseCaseGenerator) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, i.domain.Module),
+				Value: i.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 			},
 		},
 	}

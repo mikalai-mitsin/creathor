@@ -44,11 +44,7 @@ log_level = 2
             },
             want: &Config{
                 LogLevel: "debug",
-                Database: database{
-                    URI:                "",
-                    MaxOpenConnections: 50,
-                    MaxIDLEConnections: 10,
-                },
+                Database: nil,
             },
             wantErr: nil,
         },
@@ -59,11 +55,7 @@ log_level = 2
             },
             want: &Config{
                 LogLevel: "debug",
-                Database: database{
-                    URI:                "",
-                    MaxOpenConnections: 50,
-                    MaxIDLEConnections: 10,
-                },
+                Database: nil,
             },
             wantErr: nil,
         },

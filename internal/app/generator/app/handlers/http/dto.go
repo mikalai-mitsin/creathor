@@ -3,7 +3,6 @@ package http
 import (
 	"bytes"
 	"fmt"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -11,13 +10,15 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type DTOGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewDTOGenerator(domain *app.BaseEntity) *DTOGenerator {
+func NewDTOGenerator(domain *configs.EntityConfig) *DTOGenerator {
 	return &DTOGenerator{domain: domain}
 }
 
@@ -25,7 +26,7 @@ func (g *DTOGenerator) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
-		g.domain.AppName(),
+		g.domain.AppConfig.AppName(),
 		"handlers",
 		"http",
 		g.domain.DirName(),
@@ -127,7 +128,7 @@ func (g *DTOGenerator) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/errs"`, g.domain.Module),
+							Value: g.domain.AppConfig.ProjectConfig.ErrsImportPath(),
 						},
 					},
 					&ast.ImportSpec{
@@ -139,13 +140,13 @@ func (g *DTOGenerator) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/pointer"`, g.domain.Module),
+							Value: g.domain.AppConfig.ProjectConfig.PointerImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, g.domain.Module),
+							Value: g.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 						},
 					},
 					&ast.ImportSpec{

@@ -55,7 +55,9 @@ func (t *Template) RenderToFile(data interface{}) error {
 	a := path.Base(t.SourcePath)
 	tmpl, err := template.New(a).Funcs(funcMap).ParseFS(content, t.SourcePath)
 	if err != nil {
-		return errs.NewBadTemplateError(err.Error())
+		e := errs.NewBadTemplateError(err.Error())
+		e.AddParam("template", t.SourcePath)
+		return e
 	}
 	file, err := os.Create(t.DestinationPath)
 	if err != nil {

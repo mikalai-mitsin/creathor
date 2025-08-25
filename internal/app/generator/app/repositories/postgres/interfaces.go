@@ -11,15 +11,15 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type InterfacesGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewInterfacesGenerator(domain *app.BaseEntity) *InterfacesGenerator {
+func NewInterfacesGenerator(domain *configs.EntityConfig) *InterfacesGenerator {
 	return &InterfacesGenerator{domain: domain}
 }
 
@@ -28,7 +28,7 @@ func (r InterfacesGenerator) Sync() error {
 	filename := filepath.Join(
 		"internal",
 		"app",
-		r.domain.AppName(),
+		r.domain.AppConfig.AppName(),
 		"repositories",
 		"postgres",
 		r.domain.DirName(),
@@ -82,7 +82,7 @@ func (r InterfacesGenerator) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/log"`, r.domain.Module),
+					Value: r.domain.AppConfig.ProjectConfig.LogImportPath(),
 				},
 			},
 		},

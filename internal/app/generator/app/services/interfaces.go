@@ -11,20 +11,20 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type InterfacesGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewInterfacesGenerator(domain *app.BaseEntity) *InterfacesGenerator {
+func NewInterfacesGenerator(domain *configs.EntityConfig) *InterfacesGenerator {
 	return &InterfacesGenerator{domain: domain}
 }
 
 func (i InterfacesGenerator) Sync() error {
 	fileset := token.NewFileSet()
-	filename := filepath.Join("internal", "app", i.domain.AppName(), "services", i.domain.DirName(), fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()))
+	filename := filepath.Join("internal", "app", i.domain.AppConfig.AppName(), "services", i.domain.DirName(), fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()))
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err
@@ -119,13 +119,13 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/log"`, i.domain.Module),
+					Value: i.domain.AppConfig.ProjectConfig.LogImportPath(),
 				},
 			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, i.domain.Module),
+					Value: i.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 				},
 			},
 		},

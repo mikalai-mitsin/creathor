@@ -11,15 +11,15 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type ServiceGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewServiceGenerator(domain *app.BaseEntity) *ServiceGenerator {
+func NewServiceGenerator(domain *configs.EntityConfig) *ServiceGenerator {
 	return &ServiceGenerator{domain: domain}
 }
 
@@ -53,7 +53,7 @@ func (u ServiceGenerator) Sync() error {
 }
 
 func (u ServiceGenerator) filename() string {
-	return filepath.Join("internal", "app", u.domain.AppName(), "services", u.domain.DirName(), u.domain.FileName())
+	return filepath.Join("internal", "app", u.domain.AppConfig.AppName(), "services", u.domain.DirName(), u.domain.FileName())
 }
 
 func (u ServiceGenerator) file() *ast.File {
@@ -78,7 +78,7 @@ func (u ServiceGenerator) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, u.domain.Module),
+							Value: u.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 						},
 					},
 				},

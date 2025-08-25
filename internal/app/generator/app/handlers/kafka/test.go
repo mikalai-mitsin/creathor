@@ -1,4 +1,4 @@
-package http
+package kafka
 
 import (
 	"path"
@@ -17,14 +17,13 @@ func NewTestGenerator(domain *configs.EntityConfig) *TestGenerator {
 
 func (g *TestGenerator) Sync() error {
 	test := tmpl.Template{
-		SourcePath: "templates/internal/domain/handlers/http/crud_test.go.tmpl",
+		SourcePath: "templates/internal/domain/handlers/kafka/crud_test.go.tmpl",
 		DestinationPath: path.Join(
-			destinationPath,
 			"internal",
 			"app",
 			g.domain.AppConfig.AppName(),
 			"handlers",
-			"http",
+			"kafka",
 			g.domain.DirName(),
 			g.domain.TestFileName(),
 		),

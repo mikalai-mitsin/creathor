@@ -3,7 +3,6 @@ package entities
 import (
 	"bytes"
 	"fmt"
-	"github.com/iancoleman/strcase"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -11,17 +10,19 @@ import (
 	"os"
 	"path"
 
-	mods "github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/iancoleman/strcase"
+
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/fake"
 )
 
 type Mock struct {
 	typeSpec *ast.TypeSpec
-	domain   *mods.BaseEntity
+	domain   *configs.EntityConfig
 }
 
-func NewMock(typeSpec *ast.TypeSpec, domain *mods.BaseEntity) *Mock {
+func NewMock(typeSpec *ast.TypeSpec, domain *configs.EntityConfig) *Mock {
 	return &Mock{typeSpec: typeSpec, domain: domain}
 }
 
@@ -128,13 +129,13 @@ func (m *Mock) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/pointer"`, m.domain.Module),
+							Value: m.domain.AppConfig.ProjectConfig.PointerImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, m.domain.Module),
+							Value: m.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 						},
 					},
 					&ast.ImportSpec{
@@ -163,7 +164,7 @@ func (m *Mock) file() *ast.File {
 
 func (m *Mock) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", m.domain.AppName(), "entities", m.domain.DirName(), fmt.Sprintf("%s_mock.go", strcase.ToSnake(m.domain.Name)))
+	filename := path.Join("internal", "app", m.domain.AppConfig.AppName(), "entities", m.domain.DirName(), fmt.Sprintf("%s_mock.go", strcase.ToSnake(m.domain.Name)))
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err

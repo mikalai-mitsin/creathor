@@ -5,16 +5,16 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 )
 
 type ProducerGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewProducerGenerator(domain *app.BaseEntity) *ProducerGenerator {
+func NewProducerGenerator(domain *configs.EntityConfig) *ProducerGenerator {
 	return &ProducerGenerator{domain: domain}
 }
 
@@ -39,7 +39,7 @@ func (r *ProducerGenerator) filename() string {
 		".",
 		"internal",
 		"app",
-		r.domain.AppName(),
+		r.domain.AppConfig.AppName(),
 		"repositories",
 		"kafka",
 		r.domain.DirName(),

@@ -14,16 +14,16 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/tmpl"
 
-	"github.com/mikalai-mitsin/creathor/internal/pkg/app"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 
 	"github.com/iancoleman/strcase"
 )
 
 type RepositoryGenerator struct {
-	domain *app.BaseEntity
+	domain *configs.EntityConfig
 }
 
-func NewRepositoryGenerator(domain *app.BaseEntity) *RepositoryGenerator {
+func NewRepositoryGenerator(domain *configs.EntityConfig) *RepositoryGenerator {
 	return &RepositoryGenerator{domain: domain}
 }
 
@@ -39,7 +39,7 @@ func (r RepositoryGenerator) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
-		r.domain.AppName(),
+		r.domain.AppConfig.AppName(),
 		"repositories",
 		"postgres",
 		r.domain.DirName(),
@@ -661,7 +661,7 @@ func (r RepositoryGenerator) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/errs"`, r.domain.Module),
+				Value: r.domain.AppConfig.ProjectConfig.ErrsImportPath(),
 			},
 		},
 		&ast.ImportSpec{
@@ -674,13 +674,13 @@ func (r RepositoryGenerator) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/pointer"`, r.domain.Module),
+				Value: r.domain.AppConfig.ProjectConfig.PointerImportPath(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/uuid"`, r.domain.Module),
+				Value: r.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 			},
 		},
 		&ast.ImportSpec{
@@ -701,7 +701,7 @@ func (r RepositoryGenerator) file() *ast.File {
 		specs = append(specs, &ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: fmt.Sprintf(`"%s/internal/pkg/postgres"`, r.domain.Module),
+				Value: r.domain.AppConfig.ProjectConfig.PostgresImportPath(),
 			},
 		})
 	}

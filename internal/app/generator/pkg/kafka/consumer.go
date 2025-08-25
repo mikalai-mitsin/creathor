@@ -420,6 +420,26 @@ func (u ConsumerGenerator) file() *ast.File {
 											},
 											&ast.KeyValueExpr{
 												Key: &ast.Ident{
+													Name: "handlers",
+												},
+												Value: &ast.CallExpr{
+													Fun: &ast.Ident{
+														Name: "make",
+													},
+													Args: []ast.Expr{
+														&ast.MapType{
+															Key: &ast.Ident{
+																Name: "string",
+															},
+															Value: &ast.Ident{
+																Name: "Handler",
+															},
+														},
+													},
+												},
+											},
+											&ast.KeyValueExpr{
+												Key: &ast.Ident{
 													Name: "client",
 												},
 												Value: &ast.Ident{
@@ -880,8 +900,8 @@ func (u ConsumerGenerator) file() *ast.File {
 																						},
 																					},
 																					Args: []ast.Expr{
-																						&ast.Ident{
-																							Name: "ctx",
+																						&ast.CallExpr{
+																							Fun: ast.NewIdent("context.Background"),
 																						},
 																						&ast.CompositeLit{
 																							Type: &ast.ArrayType{

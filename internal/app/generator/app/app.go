@@ -54,6 +54,9 @@ func (a App) file() *ast.File {
 	if a.app.GRPCEnabled {
 		decls = append(decls, a.registerGRPC())
 	}
+	if a.app.KafkaEnabled {
+		decls = append(decls, a.registerKafka())
+	}
 	return &ast.File{
 		Name:  ast.NewIdent(a.app.AppName()),
 		Decls: decls,
@@ -142,6 +145,18 @@ func (a App) imports() *ast.GenDecl {
 						Kind: token.STRING,
 						Value: fmt.Sprintf(
 							`"%s/internal/app/%s/repositories/kafka/%s"`,
+							a.app.Module,
+							a.app.AppName(),
+							entity.DirName(),
+						),
+					},
+				},
+				&ast.ImportSpec{
+					Name: ast.NewIdent(fmt.Sprintf("%sKafkaHandlers", entity.LowerCamelName())),
+					Path: &ast.BasicLit{
+						Kind: token.STRING,
+						Value: fmt.Sprintf(
+							`"%s/internal/app/%s/handlers/kafka/%s"`,
 							a.app.Module,
 							a.app.AppName(),
 							entity.DirName(),
@@ -424,9 +439,30 @@ func (a App) constructor() *ast.FuncDecl {
 			})
 		}
 		if a.app.KafkaEnabled {
+			body.List = append(body.List, &ast.AssignStmt{
+				Lhs: []ast.Expr{
+					ast.NewIdent(entity.GetKafkaHandlerPrivateVariableName()),
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X:   ast.NewIdent(fmt.Sprintf("%sKafkaHandlers", entity.LowerCamelName())),
+							Sel: ast.NewIdent(entity.KafkaHandlerConstructorName()),
+						},
+						Args: []ast.Expr{
+							ast.NewIdent(entity.GetUseCasePrivateVariableName()),
+							ast.NewIdent("logger"),
+						},
+					},
+				},
+			})
 			exprs = append(exprs, &ast.KeyValueExpr{
 				Key:   ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
 				Value: ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
+			}, &ast.KeyValueExpr{
+				Key:   ast.NewIdent(entity.GetKafkaHandlerPrivateVariableName()),
+				Value: ast.NewIdent(entity.GetKafkaHandlerPrivateVariableName()),
 			})
 		}
 		if a.app.GRPCEnabled {
@@ -599,6 +635,16 @@ func (a App) structure() *ast.GenDecl {
 						Sel: ast.NewIdent(entity.EventProducerTypeName()),
 					},
 				},
+			}, &ast.Field{
+				Names: []*ast.Ident{
+					ast.NewIdent(entity.GetKafkaHandlerPrivateVariableName()),
+				},
+				Type: &ast.StarExpr{
+					X: &ast.SelectorExpr{
+						X:   ast.NewIdent(fmt.Sprintf("%sKafkaHandlers", entity.LowerCamelName())),
+						Sel: ast.NewIdent(entity.KafkaHandlerTypeName()),
+					},
+				},
 			})
 		}
 		if a.app.GRPCEnabled {
@@ -761,6 +807,114 @@ func (a App) registerHTTP() *ast.FuncDecl {
 							X: &ast.SelectorExpr{
 								X:   ast.NewIdent("http"),
 								Sel: ast.NewIdent("Server"),
+							},
+						},
+					},
+				},
+			},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: ast.NewIdent("error"),
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: stmts,
+		},
+	}
+}
+
+func (a App) registerKafka() *ast.FuncDecl {
+	stmts := make([]ast.Stmt, 0, len(a.app.Entities)+1)
+	for _, entity := range a.app.Entities {
+		stmts = append(stmts,
+			&ast.ExprStmt{
+				X: &ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X:   ast.NewIdent("consumer"),
+						Sel: ast.NewIdent("AddHandler"),
+					},
+					Args: []ast.Expr{
+						&ast.CompositeLit{
+							Type: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "kafka",
+								},
+								Sel: &ast.Ident{
+									Name: "Handler",
+								},
+							},
+							Elts: []ast.Expr{
+								&ast.KeyValueExpr{
+									Key: &ast.Ident{
+										Name: "Topic",
+									},
+									Value: &ast.BasicLit{
+										Kind:  token.STRING,
+										Value: fmt.Sprintf(`"%s"`, entity.CreatedTopicName()),
+									},
+								},
+								&ast.KeyValueExpr{
+									Key: &ast.Ident{
+										Name: "GroupID",
+									},
+									Value: &ast.BasicLit{
+										Kind:  token.STRING,
+										Value: fmt.Sprintf(`"%s"`, entity.KafkaConsumerGroup()),
+									},
+								},
+								&ast.KeyValueExpr{
+									Key: &ast.Ident{
+										Name: "Handler",
+									},
+									Value: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "a",
+										},
+										Sel: &ast.Ident{
+											Name: entity.GetKafkaHandlerPrivateVariableName(),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		)
+	}
+	stmts = append(stmts, &ast.ReturnStmt{
+		Results: []ast.Expr{
+			ast.NewIdent("nil"),
+		},
+	})
+	return &ast.FuncDecl{
+		Recv: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent("a"),
+					},
+					Type: &ast.StarExpr{
+						X: ast.NewIdent("App"),
+					},
+				},
+			},
+		},
+		Name: ast.NewIdent("RegisterKafka"),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{
+							ast.NewIdent("consumer"),
+						},
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("kafka"),
+								Sel: ast.NewIdent("Consumer"),
 							},
 						},
 					},

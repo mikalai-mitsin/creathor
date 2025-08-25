@@ -206,14 +206,32 @@ func (m *EntityConfig) GetEventProducerPrivateVariableName() string {
 	return fmt.Sprintf("%sEventProducer", strcase.ToLowerCamel(m.Name))
 }
 
+func (m *EntityConfig) KafkaHandlerConstructorName() string {
+	return fmt.Sprintf("New%s", m.KafkaHandlerTypeName())
+}
+
+func (m *EntityConfig) KafkaHandlerTypeName() string {
+	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Name))
+}
+
+func (m *EntityConfig) KafkaConsumerGroup() string {
+	return fmt.Sprintf("%s.%s.%s", strcase.ToSnake(m.AppConfig.ProjectConfig.Name), strcase.ToSnake(m.AppConfig.Name), strcase.ToSnake(m.Name))
+}
+
+func (m *EntityConfig) GetKafkaHandlerPrivateVariableName() string {
+	return fmt.Sprintf("kafka%sHandler", strcase.ToCamel(m.Name))
+}
+
 func (m *EntityConfig) CreatedTopicName() string {
-	return fmt.Sprintf("%s.created", strcase.ToSnake(m.Name))
+	return fmt.Sprintf("%s.%s.%s.created", strcase.ToSnake(m.AppConfig.ProjectConfig.Name), strcase.ToSnake(m.AppConfig.Name), strcase.ToSnake(m.Name))
 }
+
 func (m *EntityConfig) UpdatedTopicName() string {
-	return fmt.Sprintf("%s.updated", strcase.ToSnake(m.Name))
+	return fmt.Sprintf("%s.%s.%s.updated", strcase.ToSnake(m.AppConfig.ProjectConfig.Name), strcase.ToSnake(m.AppConfig.Name), strcase.ToSnake(m.Name))
 }
+
 func (m *EntityConfig) DeletedTopicName() string {
-	return fmt.Sprintf("%s.deleted", strcase.ToSnake(m.Name))
+	return fmt.Sprintf("%s.%s.%s.deleted", strcase.ToSnake(m.AppConfig.ProjectConfig.Name), strcase.ToSnake(m.AppConfig.Name), strcase.ToSnake(m.Name))
 }
 
 func (m *EntityConfig) EntitiesImportPath() string {

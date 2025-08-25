@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="v0.7.5"></a>
+## [v0.7.5] - 2025-08-26
+### Docs
+- update readme
+
+
 <a name="v0.7.4"></a>
 ## [v0.7.4] - 2025-08-25
 ### Docs
@@ -494,7 +500,8 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.4...HEAD
+[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.5...HEAD
+[v0.7.5]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.4...v0.7.5
 [v0.7.4]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.3...v0.7.4
 [v0.7.3]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.2...v0.7.3
 [v0.7.2]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.1...v0.7.2

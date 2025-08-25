@@ -2,6 +2,19 @@
 ## [Unreleased]
 
 
+<a name="v0.7.3"></a>
+## [v0.7.3] - 2025-08-25
+### Feat
+- add consumer
+- move invoke to server
+- remove gateway
+- merge server containers
+- register containers
+- flat config
+- move app to configs
+- add kafka server
+
+
 <a name="v0.7.2"></a>
 ## [v0.7.2] - 2025-08-21
 ### Feat
@@ -475,7 +488,8 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.3...HEAD
+[v0.7.3]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.2...v0.7.3
 [v0.7.2]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.1...v0.7.2
 [v0.7.1]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/mikalai-mitsin/creathor/compare/v0.6.1...v0.7.0

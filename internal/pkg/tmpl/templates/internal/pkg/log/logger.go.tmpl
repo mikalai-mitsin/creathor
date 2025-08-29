@@ -23,14 +23,9 @@ type Logger interface {
 	Named(name string) Logger
 	SetLevel(lvl string) error
 	With(fields ...Field) Logger
+	WithContext(ctx context.Context) Logger
 	LogEvent(event fxevent.Event)
 }
-
-type ctxKey int
-
-const (
-    RequestIDKey ctxKey = iota + 1
-)
 
 type Field zapcore.Field
 
@@ -138,6 +133,17 @@ func (l *Log) With(fields ...Field) Logger {
 		logger: l.logger.With(zapFields...),
 		level:  l.level,
 	}
+}
+
+func (l *Log) WithContext(ctx context.Context) Logger {
+	span := trace.SpanFromContext(ctx)
+	if span.SpanContext().IsValid() {
+		return l.With(
+			String("trace_id", span.SpanContext().TraceID().String()),
+			String("span_id", span.SpanContext().SpanID().String()),
+		)
+	}
+	return l
 }
 
 func (l *Log) SetLevel(lvl string) error {

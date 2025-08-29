@@ -87,6 +87,15 @@ func (u Server) file() *ast.File {
 											},
 										},
 									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("logger"),
+										},
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("log"),
+											Sel: ast.NewIdent("Logger"),
+										},
+									},
 								},
 							},
 						},
@@ -129,6 +138,15 @@ func (u Server) file() *ast.File {
 								},
 								Type: &ast.StarExpr{
 									X: ast.NewIdent("Config"),
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("logger"),
+								},
+								Type: &ast.SelectorExpr{
+									X:   ast.NewIdent("log"),
+									Sel: ast.NewIdent("Logger"),
 								},
 							},
 						},
@@ -189,6 +207,26 @@ func (u Server) file() *ast.File {
 								},
 							},
 						},
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "router",
+									},
+									Sel: &ast.Ident{
+										Name: "Use",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.CallExpr{
+										Fun: ast.NewIdent("loggerMiddleware"),
+										Args: []ast.Expr{
+											ast.NewIdent("logger"),
+										},
+									},
+								},
+							},
+						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
 								ast.NewIdent("server"),
@@ -237,6 +275,10 @@ func (u Server) file() *ast.File {
 											&ast.KeyValueExpr{
 												Key:   ast.NewIdent("router"),
 												Value: ast.NewIdent("router"),
+											},
+											&ast.KeyValueExpr{
+												Key:   ast.NewIdent("logger"),
+												Value: ast.NewIdent("logger"),
 											},
 										},
 									},
@@ -412,30 +454,487 @@ func (u Server) file() *ast.File {
 					},
 				},
 			},
-		},
-		Imports: []*ast.ImportSpec{
-			{
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: "\"context\"",
+			&ast.FuncDecl{
+				Name: &ast.Ident{
+					Name: "loggerMiddleware",
 				},
-			},
-			{
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: "\"net/http\"",
+				Type: &ast.FuncType{
+					Params: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "logger",
+									},
+								},
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "log",
+									},
+									Sel: &ast.Ident{
+										Name: "Logger",
+									},
+								},
+							},
+						},
+					},
+					Results: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Names: []*ast.Ident{
+													{
+														Name: "next",
+													},
+												},
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "http",
+													},
+													Sel: &ast.Ident{
+														Name: "Handler",
+													},
+												},
+											},
+										},
+									},
+									Results: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "http",
+													},
+													Sel: &ast.Ident{
+														Name: "Handler",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
 				},
-			},
-			{
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: "\"github.com/go-chi/chi/v5\"",
-				},
-			},
-			{
-				Path: &ast.BasicLit{
-					Kind:  token.STRING,
-					Value: `"github.com/riandyrn/otelchi"`,
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								&ast.FuncLit{
+									Type: &ast.FuncType{
+										Params: &ast.FieldList{
+											List: []*ast.Field{
+												{
+													Names: []*ast.Ident{
+														{
+															Name: "next",
+														},
+													},
+													Type: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "http",
+														},
+														Sel: &ast.Ident{
+															Name: "Handler",
+														},
+													},
+												},
+											},
+										},
+										Results: &ast.FieldList{
+											List: []*ast.Field{
+												{
+													Type: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "http",
+														},
+														Sel: &ast.Ident{
+															Name: "Handler",
+														},
+													},
+												},
+											},
+										},
+									},
+									Body: &ast.BlockStmt{
+										List: []ast.Stmt{
+											&ast.ReturnStmt{
+												Results: []ast.Expr{
+													&ast.CallExpr{
+														Fun: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "http",
+															},
+															Sel: &ast.Ident{
+																Name: "HandlerFunc",
+															},
+														},
+														Args: []ast.Expr{
+															&ast.FuncLit{
+																Type: &ast.FuncType{
+																	Params: &ast.FieldList{
+																		List: []*ast.Field{
+																			{
+																				Names: []*ast.Ident{
+																					{
+																						Name: "w",
+																					},
+																				},
+																				Type: &ast.SelectorExpr{
+																					X: &ast.Ident{
+																						Name: "http",
+																					},
+																					Sel: &ast.Ident{
+																						Name: "ResponseWriter",
+																					},
+																				},
+																			},
+																			{
+																				Names: []*ast.Ident{
+																					{
+																						Name: "r",
+																					},
+																				},
+																				Type: &ast.StarExpr{
+																					X: &ast.SelectorExpr{
+																						X: &ast.Ident{
+																							Name: "http",
+																						},
+																						Sel: &ast.Ident{
+																							Name: "Request",
+																						},
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+																Body: &ast.BlockStmt{
+																	List: []ast.Stmt{
+																		&ast.AssignStmt{
+																			Lhs: []ast.Expr{
+																				&ast.Ident{
+																					Name: "start",
+																				},
+																			},
+																			Tok: token.DEFINE,
+																			Rhs: []ast.Expr{
+																				&ast.CallExpr{
+																					Fun: &ast.SelectorExpr{
+																						X: &ast.Ident{
+																							Name: "time",
+																						},
+																						Sel: &ast.Ident{
+																							Name: "Now",
+																						},
+																					},
+																				},
+																			},
+																		},
+																		&ast.AssignStmt{
+																			Lhs: []ast.Expr{
+																				&ast.Ident{
+																					Name: "ww",
+																				},
+																			},
+																			Tok: token.DEFINE,
+																			Rhs: []ast.Expr{
+																				&ast.CallExpr{
+																					Fun: &ast.SelectorExpr{
+																						X: &ast.Ident{
+																							Name: "middleware",
+																						},
+																						Sel: &ast.Ident{
+																							Name: "NewWrapResponseWriter",
+																						},
+																					},
+																					Args: []ast.Expr{
+																						&ast.Ident{
+																							Name: "w",
+																						},
+																						&ast.SelectorExpr{
+																							X: &ast.Ident{
+																								Name: "r",
+																							},
+																							Sel: &ast.Ident{
+																								Name: "ProtoMajor",
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		&ast.ExprStmt{
+																			X: &ast.CallExpr{
+																				Fun: &ast.SelectorExpr{
+																					X: &ast.Ident{
+																						Name: "next",
+																					},
+																					Sel: &ast.Ident{
+																						Name: "ServeHTTP",
+																					},
+																				},
+																				Args: []ast.Expr{
+																					&ast.Ident{
+																						Name: "ww",
+																					},
+																					&ast.Ident{
+																						Name: "r",
+																					},
+																				},
+																			},
+																		},
+																		&ast.ExprStmt{
+																			X: &ast.CallExpr{
+																				Fun: &ast.SelectorExpr{
+																					X: &ast.CallExpr{
+																						Fun: &ast.SelectorExpr{
+																							X: &ast.Ident{
+																								Name: "logger",
+																							},
+																							Sel: &ast.Ident{
+																								Name: "WithContext",
+																							},
+																						},
+																						Args: []ast.Expr{
+																							&ast.CallExpr{
+																								Fun: &ast.SelectorExpr{
+																									X: &ast.Ident{
+																										Name: "r",
+																									},
+																									Sel: &ast.Ident{
+																										Name: "Context",
+																									},
+																								},
+																							},
+																						},
+																					},
+																					Sel: &ast.Ident{
+																						Name: "Info",
+																					},
+																				},
+																				Args: []ast.Expr{
+																					&ast.BasicLit{
+																						Kind:  token.STRING,
+																						Value: "\"finished http request\"",
+																					},
+																					&ast.CallExpr{
+																						Fun: &ast.SelectorExpr{
+																							X: &ast.Ident{
+																								Name: "log",
+																							},
+																							Sel: &ast.Ident{
+																								Name: "String",
+																							},
+																						},
+																						Args: []ast.Expr{
+																							&ast.BasicLit{
+																								Kind:  token.STRING,
+																								Value: "\"system\"",
+																							},
+																							&ast.BasicLit{
+																								Kind:  token.STRING,
+																								Value: "\"http\"",
+																							},
+																						},
+																					},
+																					&ast.CallExpr{
+																						Fun: &ast.SelectorExpr{
+																							X: &ast.Ident{
+																								Name: "log",
+																							},
+																							Sel: &ast.Ident{
+																								Name: "String",
+																							},
+																						},
+																						Args: []ast.Expr{
+																							&ast.BasicLit{
+																								Kind:  token.STRING,
+																								Value: "\"http.method\"",
+																							},
+																							&ast.SelectorExpr{
+																								X: &ast.Ident{
+																									Name: "r",
+																								},
+																								Sel: &ast.Ident{
+																									Name: "Method",
+																								},
+																							},
+																						},
+																					},
+																					&ast.CallExpr{
+																						Fun: &ast.SelectorExpr{
+																							X: &ast.Ident{
+																								Name: "log",
+																							},
+																							Sel: &ast.Ident{
+																								Name: "String",
+																							},
+																						},
+																						Args: []ast.Expr{
+																							&ast.BasicLit{
+																								Kind:  token.STRING,
+																								Value: "\"http.path\"",
+																							},
+																							&ast.SelectorExpr{
+																								X: &ast.SelectorExpr{
+																									X: &ast.Ident{
+																										Name: "r",
+																									},
+																									Sel: &ast.Ident{
+																										Name: "URL",
+																									},
+																								},
+																								Sel: &ast.Ident{
+																									Name: "Path",
+																								},
+																							},
+																						},
+																					},
+																					&ast.CallExpr{
+																						Fun: &ast.SelectorExpr{
+																							X: &ast.Ident{
+																								Name: "log",
+																							},
+																							Sel: &ast.Ident{
+																								Name: "String",
+																							},
+																						},
+																						Args: []ast.Expr{
+																							&ast.BasicLit{
+																								Kind:  token.STRING,
+																								Value: "\"http.remote_addr\"",
+																							},
+																							&ast.SelectorExpr{
+																								X: &ast.Ident{
+																									Name: "r",
+																								},
+																								Sel: &ast.Ident{
+																									Name: "RemoteAddr",
+																								},
+																							},
+																						},
+																					},
+																					&ast.CallExpr{
+																						Fun: &ast.SelectorExpr{
+																							X: &ast.Ident{
+																								Name: "log",
+																							},
+																							Sel: &ast.Ident{
+																								Name: "Int",
+																							},
+																						},
+																						Args: []ast.Expr{
+																							&ast.BasicLit{
+																								Kind:  token.STRING,
+																								Value: "\"http.status\"",
+																							},
+																							&ast.CallExpr{
+																								Fun: &ast.SelectorExpr{
+																									X: &ast.Ident{
+																										Name: "ww",
+																									},
+																									Sel: &ast.Ident{
+																										Name: "Status",
+																									},
+																								},
+																							},
+																						},
+																					},
+																					&ast.CallExpr{
+																						Fun: &ast.SelectorExpr{
+																							X: &ast.Ident{
+																								Name: "log",
+																							},
+																							Sel: &ast.Ident{
+																								Name: "Int64",
+																							},
+																						},
+																						Args: []ast.Expr{
+																							&ast.BasicLit{
+																								Kind:  token.STRING,
+																								Value: "\"http.time_ms\"",
+																							},
+																							&ast.CallExpr{
+																								Fun: &ast.SelectorExpr{
+																									X: &ast.CallExpr{
+																										Fun: &ast.SelectorExpr{
+																											X: &ast.Ident{
+																												Name: "time",
+																											},
+																											Sel: &ast.Ident{
+																												Name: "Since",
+																											},
+																										},
+																										Args: []ast.Expr{
+																											&ast.Ident{
+																												Name: "start",
+																											},
+																										},
+																									},
+																									Sel: &ast.Ident{
+																										Name: "Milliseconds",
+																									},
+																								},
+																							},
+																						},
+																					},
+																					&ast.CallExpr{
+																						Fun: &ast.SelectorExpr{
+																							X: &ast.Ident{
+																								Name: "log",
+																							},
+																							Sel: &ast.Ident{
+																								Name: "String",
+																							},
+																						},
+																						Args: []ast.Expr{
+																							&ast.BasicLit{
+																								Kind:  token.STRING,
+																								Value: "\"http.start_time\"",
+																							},
+																							&ast.CallExpr{
+																								Fun: &ast.SelectorExpr{
+																									X: &ast.Ident{
+																										Name: "start",
+																									},
+																									Sel: &ast.Ident{
+																										Name: "Format",
+																									},
+																								},
+																								Args: []ast.Expr{
+																									&ast.SelectorExpr{
+																										X: &ast.Ident{
+																											Name: "time",
+																										},
+																										Sel: &ast.Ident{
+																											Name: "RFC3339",
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 		},

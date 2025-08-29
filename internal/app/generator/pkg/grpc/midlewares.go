@@ -94,6 +94,12 @@ func (u Middlewares) file() *ast.File {
 							Value: `"google.golang.org/grpc/status"`,
 						},
 					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: `"go.opentelemetry.io/otel/trace"`,
+						},
+					},
 				},
 			},
 			&ast.FuncDecl{
@@ -173,6 +179,156 @@ func (u Middlewares) file() *ast.File {
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
+								&ast.Ident{
+									Name: "span",
+								},
+							},
+							Tok: token.DEFINE,
+							Rhs: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "trace",
+										},
+										Sel: &ast.Ident{
+											Name: "SpanFromContext",
+										},
+									},
+									Args: []ast.Expr{
+										&ast.Ident{
+											Name: "ctx",
+										},
+									},
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "span",
+											},
+											Sel: &ast.Ident{
+												Name: "SpanContext",
+											},
+										},
+									},
+									Sel: &ast.Ident{
+										Name: "IsValid",
+									},
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.AssignStmt{
+										Lhs: []ast.Expr{
+											&ast.Ident{
+												Name: "logger",
+											},
+										},
+										Tok: token.ASSIGN,
+										Rhs: []ast.Expr{
+											&ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "logger",
+													},
+													Sel: &ast.Ident{
+														Name: "With",
+													},
+												},
+												Args: []ast.Expr{
+													&ast.CallExpr{
+														Fun: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "zap",
+															},
+															Sel: &ast.Ident{
+																Name: "String",
+															},
+														},
+														Args: []ast.Expr{
+															&ast.BasicLit{
+																Kind:  token.STRING,
+																Value: "\"trace_id\"",
+															},
+															&ast.CallExpr{
+																Fun: &ast.SelectorExpr{
+																	X: &ast.CallExpr{
+																		Fun: &ast.SelectorExpr{
+																			X: &ast.CallExpr{
+																				Fun: &ast.SelectorExpr{
+																					X: &ast.Ident{
+																						Name: "span",
+																					},
+																					Sel: &ast.Ident{
+																						Name: "SpanContext",
+																					},
+																				},
+																			},
+																			Sel: &ast.Ident{
+																				Name: "TraceID",
+																			},
+																		},
+																	},
+																	Sel: &ast.Ident{
+																		Name: "String",
+																	},
+																},
+															},
+														},
+													},
+													&ast.CallExpr{
+														Fun: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "zap",
+															},
+															Sel: &ast.Ident{
+																Name: "String",
+															},
+														},
+														Args: []ast.Expr{
+															&ast.BasicLit{
+																Kind:  token.STRING,
+																Value: "\"span_id\"",
+															},
+															&ast.CallExpr{
+																Fun: &ast.SelectorExpr{
+																	X: &ast.CallExpr{
+																		Fun: &ast.SelectorExpr{
+																			X: &ast.CallExpr{
+																				Fun: &ast.SelectorExpr{
+																					X: &ast.Ident{
+																						Name: "span",
+																					},
+																					Sel: &ast.Ident{
+																						Name: "SpanContext",
+																					},
+																				},
+																			},
+																			Sel: &ast.Ident{
+																				Name: "SpanID",
+																			},
+																		},
+																	},
+																	Sel: &ast.Ident{
+																		Name: "String",
+																	},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
 								ast.NewIdent("params"),
 							},
 							Tok: token.DEFINE,
@@ -204,30 +360,6 @@ func (u Middlewares) file() *ast.File {
 											},
 										},
 										ast.NewIdent("duration"),
-										&ast.CallExpr{
-											Fun: &ast.SelectorExpr{
-												X:   ast.NewIdent("zap"),
-												Sel: ast.NewIdent("Any"),
-											},
-											Args: []ast.Expr{
-												&ast.BasicLit{
-													Kind:  token.STRING,
-													Value: `"request_id"`,
-												},
-												&ast.CallExpr{
-													Fun: &ast.SelectorExpr{
-														X:   ast.NewIdent("ctx"),
-														Sel: ast.NewIdent("Value"),
-													},
-													Args: []ast.Expr{
-														&ast.SelectorExpr{
-															X:   ast.NewIdent("log"),
-															Sel: ast.NewIdent("RequestIDKey"),
-														},
-													},
-												},
-											},
-										},
 									},
 								},
 							},

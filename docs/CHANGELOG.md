@@ -2,6 +2,18 @@
 ## [Unreleased]
 
 
+<a name="v0.7.6"></a>
+## [v0.7.6] - 2025-08-29
+### Feat
+- fix groups
+- add default consumer
+- fix kafka consumer
+- add otel to logger
+- add otel to chi
+- fix logger
+- reuse logger interface
+
+
 <a name="v0.7.5"></a>
 ## [v0.7.5] - 2025-08-26
 ### Docs
@@ -500,7 +512,8 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.5...HEAD
+[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.6...HEAD
+[v0.7.6]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.5...v0.7.6
 [v0.7.5]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.4...v0.7.5
 [v0.7.4]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.3...v0.7.4
 [v0.7.3]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.2...v0.7.3

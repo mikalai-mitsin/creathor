@@ -159,6 +159,36 @@ func (u Server) file() *ast.File {
 								},
 							},
 						},
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "router",
+									},
+									Sel: &ast.Ident{
+										Name: "Use",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "otelchi",
+											},
+											Sel: &ast.Ident{
+												Name: "Middleware",
+											},
+										},
+										Args: []ast.Expr{
+											&ast.BasicLit{
+												Kind:  token.STRING,
+												Value: fmt.Sprintf(`"%s"`, u.project.Name),
+											},
+										},
+									},
+								},
+							},
+						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
 								ast.NewIdent("server"),
@@ -400,6 +430,12 @@ func (u Server) file() *ast.File {
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: "\"github.com/go-chi/chi/v5\"",
+				},
+			},
+			{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: `"github.com/riandyrn/otelchi"`,
 				},
 			},
 		},

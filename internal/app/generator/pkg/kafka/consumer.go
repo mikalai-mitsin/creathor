@@ -600,71 +600,6 @@ func (u ConsumerGenerator) file() *ast.File {
 								},
 							},
 						},
-						&ast.AssignStmt{
-							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "sigterm",
-								},
-							},
-							Tok: token.DEFINE,
-							Rhs: []ast.Expr{
-								&ast.CallExpr{
-									Fun: &ast.Ident{
-										Name: "make",
-									},
-									Args: []ast.Expr{
-										&ast.ChanType{
-											Dir: 3,
-											Value: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "os",
-												},
-												Sel: &ast.Ident{
-													Name: "Signal",
-												},
-											},
-										},
-										&ast.BasicLit{
-											Kind:  token.INT,
-											Value: "1",
-										},
-									},
-								},
-							},
-						},
-						&ast.ExprStmt{
-							X: &ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.Ident{
-										Name: "signal",
-									},
-									Sel: &ast.Ident{
-										Name: "Notify",
-									},
-								},
-								Args: []ast.Expr{
-									&ast.Ident{
-										Name: "sigterm",
-									},
-									&ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "syscall",
-										},
-										Sel: &ast.Ident{
-											Name: "SIGINT",
-										},
-									},
-									&ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "syscall",
-										},
-										Sel: &ast.Ident{
-											Name: "SIGTERM",
-										},
-									},
-								},
-							},
-						},
 						&ast.RangeStmt{
 							Key: &ast.Ident{
 								Name: "id",
@@ -771,18 +706,6 @@ func (u ConsumerGenerator) file() *ast.File {
 											},
 										},
 									},
-									&ast.DeferStmt{
-										Call: &ast.CallExpr{
-											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "consumerGroup",
-												},
-												Sel: &ast.Ident{
-													Name: "Close",
-												},
-											},
-										},
-									},
 									&ast.AssignStmt{
 										Lhs: []ast.Expr{
 											&ast.SelectorExpr{
@@ -827,194 +750,226 @@ func (u ConsumerGenerator) file() *ast.File {
 								},
 							},
 						},
-						&ast.ForStmt{
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
+								&ast.Ident{
+									Name: "errorgroup",
+								},
+								&ast.Ident{
+									Name: "ctx",
+								},
+							},
+							Tok: token.DEFINE,
+							Rhs: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "errgroup",
+										},
+										Sel: &ast.Ident{
+											Name: "WithContext",
+										},
+									},
+									Args: []ast.Expr{
+										&ast.Ident{
+											Name: "ctx",
+										},
+									},
+								},
+							},
+						},
+						&ast.RangeStmt{
+							Key: &ast.Ident{
+								Name: "_",
+							},
+							Value: &ast.Ident{
+								Name: "handler",
+							},
+							Tok: token.DEFINE,
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "c",
+								},
+								Sel: &ast.Ident{
+									Name: "handlers",
+								},
+							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
-									&ast.SelectStmt{
-										Body: &ast.BlockStmt{
-											List: []ast.Stmt{
-												&ast.CommClause{
-													Comm: &ast.ExprStmt{
-														X: &ast.UnaryExpr{
-															Op: token.ARROW,
-															X: &ast.Ident{
-																Name: "sigterm",
-															},
-														},
-													},
-													Body: []ast.Stmt{
-														&ast.ReturnStmt{
-															Results: []ast.Expr{
-																&ast.Ident{
-																	Name: "nil",
-																},
-															},
-														},
-													},
+									&ast.ExprStmt{
+										X: &ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "errorgroup",
 												},
-												&ast.CommClause{
-													Body: []ast.Stmt{
-														&ast.RangeStmt{
-															Key: &ast.Ident{
-																Name: "_",
-															},
-															Value: &ast.Ident{
-																Name: "handler",
-															},
-															Tok: token.DEFINE,
-															X: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "c",
-																},
-																Sel: &ast.Ident{
-																	Name: "handlers",
+												Sel: &ast.Ident{
+													Name: "Go",
+												},
+											},
+											Args: []ast.Expr{
+												&ast.FuncLit{
+													Type: &ast.FuncType{
+														Params: &ast.FieldList{},
+														Results: &ast.FieldList{
+															List: []*ast.Field{
+																{
+																	Type: &ast.Ident{
+																		Name: "error",
+																	},
 																},
 															},
-															Body: &ast.BlockStmt{
-																List: []ast.Stmt{
-																	&ast.IfStmt{
-																		Init: &ast.AssignStmt{
-																			Lhs: []ast.Expr{
-																				&ast.Ident{
-																					Name: "err",
+														},
+													},
+													Body: &ast.BlockStmt{
+														List: []ast.Stmt{
+															&ast.IfStmt{
+																Init: &ast.AssignStmt{
+																	Lhs: []ast.Expr{
+																		&ast.Ident{
+																			Name: "err",
+																		},
+																	},
+																	Tok: token.DEFINE,
+																	Rhs: []ast.Expr{
+																		&ast.CallExpr{
+																			Fun: &ast.SelectorExpr{
+																				X: &ast.SelectorExpr{
+																					X: &ast.Ident{
+																						Name: "handler",
+																					},
+																					Sel: &ast.Ident{
+																						Name: "group",
+																					},
+																				},
+																				Sel: &ast.Ident{
+																					Name: "Consume",
 																				},
 																			},
-																			Tok: token.DEFINE,
-																			Rhs: []ast.Expr{
+																			Args: []ast.Expr{
 																				&ast.CallExpr{
 																					Fun: &ast.SelectorExpr{
-																						X: &ast.SelectorExpr{
-																							X: &ast.Ident{
-																								Name: "handler",
-																							},
-																							Sel: &ast.Ident{
-																								Name: "group",
-																							},
+																						X: &ast.Ident{
+																							Name: "context",
 																						},
 																						Sel: &ast.Ident{
-																							Name: "Consume",
+																							Name: "Background",
 																						},
 																					},
-																					Args: []ast.Expr{
-																						&ast.CallExpr{
-																							Fun: ast.NewIdent("context.Background"),
+																				},
+																				&ast.CompositeLit{
+																					Type: &ast.ArrayType{
+																						Elt: &ast.Ident{
+																							Name: "string",
 																						},
-																						&ast.CompositeLit{
-																							Type: &ast.ArrayType{
-																								Elt: &ast.Ident{
-																									Name: "string",
-																								},
-																							},
-																							Elts: []ast.Expr{
-																								&ast.SelectorExpr{
-																									X: &ast.Ident{
-																										Name: "handler",
-																									},
-																									Sel: &ast.Ident{
-																										Name: "Topic",
-																									},
-																								},
-																							},
-																						},
+																					},
+																					Elts: []ast.Expr{
 																						&ast.SelectorExpr{
 																							X: &ast.Ident{
 																								Name: "handler",
 																							},
 																							Sel: &ast.Ident{
-																								Name: "Handler",
+																								Name: "Topic",
 																							},
 																						},
 																					},
 																				},
+																				&ast.SelectorExpr{
+																					X: &ast.Ident{
+																						Name: "handler",
+																					},
+																					Sel: &ast.Ident{
+																						Name: "Handler",
+																					},
+																				},
 																			},
 																		},
-																		Cond: &ast.BinaryExpr{
-																			X: &ast.Ident{
-																				Name: "err",
-																			},
-																			Op: token.NEQ,
-																			Y: &ast.Ident{
-																				Name: "nil",
-																			},
-																		},
-																		Body: &ast.BlockStmt{
-																			List: []ast.Stmt{
-																				&ast.ExprStmt{
-																					X: &ast.CallExpr{
+																	},
+																},
+																Cond: &ast.BinaryExpr{
+																	X: &ast.Ident{
+																		Name: "err",
+																	},
+																	Op: token.NEQ,
+																	Y: &ast.Ident{
+																		Name: "nil",
+																	},
+																},
+																Body: &ast.BlockStmt{
+																	List: []ast.Stmt{
+																		&ast.ExprStmt{
+																			X: &ast.CallExpr{
+																				Fun: &ast.SelectorExpr{
+																					X: &ast.Ident{
+																						Name: "logger",
+																					},
+																					Sel: &ast.Ident{
+																						Name: "Error",
+																					},
+																				},
+																				Args: []ast.Expr{
+																					&ast.BasicLit{
+																						Kind:  token.STRING,
+																						Value: "\"consume error\"",
+																					},
+																					&ast.CallExpr{
 																						Fun: &ast.SelectorExpr{
 																							X: &ast.Ident{
-																								Name: "logger",
+																								Name: "log",
 																							},
 																							Sel: &ast.Ident{
 																								Name: "Error",
 																							},
 																						},
 																						Args: []ast.Expr{
+																							&ast.Ident{
+																								Name: "err",
+																							},
+																						},
+																					},
+																					&ast.CallExpr{
+																						Fun: &ast.SelectorExpr{
+																							X: &ast.Ident{
+																								Name: "log",
+																							},
+																							Sel: &ast.Ident{
+																								Name: "String",
+																							},
+																						},
+																						Args: []ast.Expr{
 																							&ast.BasicLit{
 																								Kind:  token.STRING,
-																								Value: "\"consume error\"",
+																								Value: "\"group\"",
 																							},
-																							&ast.CallExpr{
-																								Fun: &ast.SelectorExpr{
-																									X: &ast.Ident{
-																										Name: "log",
-																									},
-																									Sel: &ast.Ident{
-																										Name: "Error",
-																									},
+																							&ast.SelectorExpr{
+																								X: &ast.Ident{
+																									Name: "handler",
 																								},
-																								Args: []ast.Expr{
-																									&ast.Ident{
-																										Name: "err",
-																									},
+																								Sel: &ast.Ident{
+																									Name: "GroupID",
 																								},
 																							},
-																							&ast.CallExpr{
-																								Fun: &ast.SelectorExpr{
-																									X: &ast.Ident{
-																										Name: "log",
-																									},
-																									Sel: &ast.Ident{
-																										Name: "String",
-																									},
-																								},
-																								Args: []ast.Expr{
-																									&ast.BasicLit{
-																										Kind:  token.STRING,
-																										Value: "\"group\"",
-																									},
-																									&ast.SelectorExpr{
-																										X: &ast.Ident{
-																											Name: "handler",
-																										},
-																										Sel: &ast.Ident{
-																											Name: "GroupID",
-																										},
-																									},
-																								},
+																						},
+																					},
+																					&ast.CallExpr{
+																						Fun: &ast.SelectorExpr{
+																							X: &ast.Ident{
+																								Name: "log",
 																							},
-																							&ast.CallExpr{
-																								Fun: &ast.SelectorExpr{
-																									X: &ast.Ident{
-																										Name: "log",
-																									},
-																									Sel: &ast.Ident{
-																										Name: "String",
-																									},
+																							Sel: &ast.Ident{
+																								Name: "String",
+																							},
+																						},
+																						Args: []ast.Expr{
+																							&ast.BasicLit{
+																								Kind:  token.STRING,
+																								Value: "\"topic\"",
+																							},
+																							&ast.SelectorExpr{
+																								X: &ast.Ident{
+																									Name: "handler",
 																								},
-																								Args: []ast.Expr{
-																									&ast.BasicLit{
-																										Kind:  token.STRING,
-																										Value: "\"topic\"",
-																									},
-																									&ast.SelectorExpr{
-																										X: &ast.Ident{
-																											Name: "handler",
-																										},
-																										Sel: &ast.Ident{
-																											Name: "Topic",
-																										},
-																									},
+																								Sel: &ast.Ident{
+																									Name: "Topic",
 																								},
 																							},
 																						},
@@ -1025,10 +980,31 @@ func (u ConsumerGenerator) file() *ast.File {
 																	},
 																},
 															},
+															&ast.ReturnStmt{
+																Results: []ast.Expr{
+																	&ast.Ident{
+																		Name: "nil",
+																	},
+																},
+															},
 														},
 													},
 												},
 											},
+										},
+									},
+								},
+							},
+						},
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "errorgroup",
+										},
+										Sel: &ast.Ident{
+											Name: "Wait",
 										},
 									},
 								},
@@ -1089,6 +1065,74 @@ func (u ConsumerGenerator) file() *ast.File {
 				},
 				Body: &ast.BlockStmt{
 					List: []ast.Stmt{
+						&ast.RangeStmt{
+							Key: &ast.Ident{
+								Name: "_",
+							},
+							Value: &ast.Ident{
+								Name: "handler",
+							},
+							Tok: token.DEFINE,
+							X: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "c",
+								},
+								Sel: &ast.Ident{
+									Name: "handlers",
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.IfStmt{
+										Init: &ast.AssignStmt{
+											Lhs: []ast.Expr{
+												&ast.Ident{
+													Name: "err",
+												},
+											},
+											Tok: token.DEFINE,
+											Rhs: []ast.Expr{
+												&ast.CallExpr{
+													Fun: &ast.SelectorExpr{
+														X: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "handler",
+															},
+															Sel: &ast.Ident{
+																Name: "group",
+															},
+														},
+														Sel: &ast.Ident{
+															Name: "Close",
+														},
+													},
+												},
+											},
+										},
+										Cond: &ast.BinaryExpr{
+											X: &ast.Ident{
+												Name: "err",
+											},
+											Op: token.NEQ,
+											Y: &ast.Ident{
+												Name: "nil",
+											},
+										},
+										Body: &ast.BlockStmt{
+											List: []ast.Stmt{
+												&ast.ReturnStmt{
+													Results: []ast.Expr{
+														&ast.Ident{
+															Name: "err",
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
 								&ast.CallExpr{

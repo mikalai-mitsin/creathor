@@ -399,12 +399,31 @@ func (h *HandlerGenerator) file() *ast.File {
 										},
 										Tok: token.DEFINE,
 										Rhs: []ast.Expr{
-											&ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "h",
+											&ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "h",
+														},
+														Sel: &ast.Ident{
+															Name: "logger",
+														},
+													},
+													Sel: &ast.Ident{
+														Name: "WithContext",
+													},
 												},
-												Sel: &ast.Ident{
-													Name: "logger",
+												Args: []ast.Expr{
+													&ast.CallExpr{
+														Fun: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "session",
+															},
+															Sel: &ast.Ident{
+																Name: "Context",
+															},
+														},
+													},
 												},
 											},
 										},

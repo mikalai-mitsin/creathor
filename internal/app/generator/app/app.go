@@ -248,11 +248,9 @@ func (a App) constructor() *ast.FuncDecl {
 			Names: []*ast.Ident{
 				ast.NewIdent("logger"),
 			},
-			Type: &ast.StarExpr{
-				X: &ast.SelectorExpr{
-					X:   ast.NewIdent("log"),
-					Sel: ast.NewIdent("Log"),
-				},
+			Type: &ast.SelectorExpr{
+				X:   ast.NewIdent("log"),
+				Sel: ast.NewIdent("Logger"),
 			},
 		},
 		{
@@ -552,11 +550,9 @@ func (a App) structure() *ast.GenDecl {
 					Names: []*ast.Ident{
 						ast.NewIdent("logger"),
 					},
-					Type: &ast.StarExpr{
-						X: &ast.SelectorExpr{
-							X:   ast.NewIdent("log"),
-							Sel: ast.NewIdent("Log"),
-						},
+					Type: &ast.SelectorExpr{
+						X:   ast.NewIdent("log"),
+						Sel: ast.NewIdent("Logger"),
 					},
 				},
 			},

@@ -849,7 +849,7 @@ func (a App) registerKafka() *ast.FuncDecl {
 								},
 								&ast.BasicLit{
 									Kind:  token.STRING,
-									Value: fmt.Sprintf(`"%s"`, entity.KafkaConsumerGroup()),
+									Value: fmt.Sprintf(`"%s"`, entity.KafkaCreatedConsumerGroup()),
 								},
 								&ast.SelectorExpr{
 									X: &ast.SelectorExpr{
@@ -862,6 +862,92 @@ func (a App) registerKafka() *ast.FuncDecl {
 									},
 									Sel: &ast.Ident{
 										Name: "Created",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			&ast.ExprStmt{
+				X: &ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X:   ast.NewIdent("consumer"),
+						Sel: ast.NewIdent("AddHandler"),
+					},
+					Args: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "kafka",
+								},
+								Sel: &ast.Ident{
+									Name: "NewHandler",
+								},
+							},
+							Args: []ast.Expr{
+								&ast.BasicLit{
+									Kind:  token.STRING,
+									Value: fmt.Sprintf(`"%s"`, entity.UpdatedTopicName()),
+								},
+								&ast.BasicLit{
+									Kind:  token.STRING,
+									Value: fmt.Sprintf(`"%s"`, entity.KafkaUpdatedConsumerGroup()),
+								},
+								&ast.SelectorExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "a",
+										},
+										Sel: &ast.Ident{
+											Name: entity.GetKafkaHandlerPrivateVariableName(),
+										},
+									},
+									Sel: &ast.Ident{
+										Name: "Updated",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			&ast.ExprStmt{
+				X: &ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X:   ast.NewIdent("consumer"),
+						Sel: ast.NewIdent("AddHandler"),
+					},
+					Args: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "kafka",
+								},
+								Sel: &ast.Ident{
+									Name: "NewHandler",
+								},
+							},
+							Args: []ast.Expr{
+								&ast.BasicLit{
+									Kind:  token.STRING,
+									Value: fmt.Sprintf(`"%s"`, entity.DeletedTopicName()),
+								},
+								&ast.BasicLit{
+									Kind:  token.STRING,
+									Value: fmt.Sprintf(`"%s"`, entity.KafkaDeletedConsumerGroup()),
+								},
+								&ast.SelectorExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "a",
+										},
+										Sel: &ast.Ident{
+											Name: entity.GetKafkaHandlerPrivateVariableName(),
+										},
+									},
+									Sel: &ast.Ident{
+										Name: "Deleted",
 									},
 								},
 							},

@@ -23,6 +23,7 @@ type Logger interface {
 	Named(name string) Logger
 	SetLevel(lvl string) error
 	With(fields ...Field) Logger
+	LogEvent(event fxevent.Event)
 }
 
 type ctxKey int

@@ -324,10 +324,12 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 				Results: &ast.FieldList{
 					List: []*ast.Field{
 						{
-							Type: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("log"),
-									Sel: ast.NewIdent("Log"),
+							Type: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "log",
+								},
+								Sel: &ast.Ident{
+									Name: "Logger",
 								},
 							},
 						},
@@ -375,10 +377,12 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 									Names: []*ast.Ident{
 										ast.NewIdent("logger"),
 									},
-									Type: &ast.StarExpr{
-										X: &ast.SelectorExpr{
-											X:   ast.NewIdent("log"),
-											Sel: ast.NewIdent("Log"),
+									Type: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "log",
+										},
+										Sel: &ast.Ident{
+											Name: "Logger",
 										},
 									},
 								},
@@ -717,10 +721,12 @@ func (f FxContainer) astServerContainer() *ast.FuncDecl {
 										Names: []*ast.Ident{
 											ast.NewIdent("logger"),
 										},
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X:   ast.NewIdent("log"),
-												Sel: ast.NewIdent("Log"),
+										Type: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "log",
+											},
+											Sel: &ast.Ident{
+												Name: "Logger",
 											},
 										},
 									},
@@ -1261,10 +1267,12 @@ func (f FxContainer) astServerContainer() *ast.FuncDecl {
 									Names: []*ast.Ident{
 										ast.NewIdent("logger"),
 									},
-									Type: &ast.StarExpr{
-										X: &ast.SelectorExpr{
-											X:   ast.NewIdent("log"),
-											Sel: ast.NewIdent("Log"),
+									Type: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "log",
+										},
+										Sel: &ast.Ident{
+											Name: "Logger",
 										},
 									},
 								},
@@ -1665,10 +1673,12 @@ func (f FxContainer) astServerContainer() *ast.FuncDecl {
 									Names: []*ast.Ident{
 										ast.NewIdent("logger"),
 									},
-									Type: &ast.StarExpr{
-										X: &ast.SelectorExpr{
-											X:   ast.NewIdent("log"),
-											Sel: ast.NewIdent("Log"),
+									Type: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "log",
+										},
+										Sel: &ast.Ident{
+											Name: "Logger",
 										},
 									},
 								},
@@ -2026,10 +2036,12 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 															Names: []*ast.Ident{
 																ast.NewIdent("logger"),
 															},
-															Type: &ast.StarExpr{
-																X: &ast.SelectorExpr{
-																	X:   ast.NewIdent("log"),
-																	Sel: ast.NewIdent("Log"),
+															Type: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "log",
+																},
+																Sel: &ast.Ident{
+																	Name: "Logger",
 																},
 															},
 														},

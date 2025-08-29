@@ -147,14 +147,12 @@ func (u ProducerGenerator) file() *ast.File {
 												Name: "logger",
 											},
 										},
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "log",
-												},
-												Sel: &ast.Ident{
-													Name: "Log",
-												},
+										Type: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "log",
+											},
+											Sel: &ast.Ident{
+												Name: "Logger",
 											},
 										},
 									},
@@ -189,14 +187,12 @@ func (u ProducerGenerator) file() *ast.File {
 										Name: "logger",
 									},
 								},
-								Type: &ast.StarExpr{
-									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "log",
-										},
-										Sel: &ast.Ident{
-											Name: "Log",
-										},
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "log",
+									},
+									Sel: &ast.Ident{
+										Name: "Logger",
 									},
 								},
 							},

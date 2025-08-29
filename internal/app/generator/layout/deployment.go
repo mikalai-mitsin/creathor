@@ -58,6 +58,15 @@ func (d *DeploymentGenerator) Sync() error {
 			Name: "development values",
 		},
 		{
+			SourcePath: "templates/deployments/docker-compose.yml.tmpl",
+			DestinationPath: filepath.Join(
+				destinationPath,
+				"deployments",
+				"docker-compose.yml",
+			),
+			Name: "docker-compose.yml",
+		},
+		{
 			SourcePath: "templates/deployments/helm_vars/staging/values.yaml.tmpl",
 			DestinationPath: filepath.Join(
 				destinationPath,
@@ -81,7 +90,7 @@ func (d *DeploymentGenerator) Sync() error {
 		},
 	}
 	for _, file := range files {
-		if err := file.RenderToFile(nil); err != nil {
+		if err := file.RenderToFile(d.project); err != nil {
 			return err
 		}
 	}

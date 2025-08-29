@@ -324,10 +324,12 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 				Results: &ast.FieldList{
 					List: []*ast.Field{
 						{
-							Type: &ast.StarExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("log"),
-									Sel: ast.NewIdent("Log"),
+							Type: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "log",
+								},
+								Sel: &ast.Ident{
+									Name: "Logger",
 								},
 							},
 						},
@@ -375,10 +377,12 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 									Names: []*ast.Ident{
 										ast.NewIdent("logger"),
 									},
-									Type: &ast.StarExpr{
-										X: &ast.SelectorExpr{
-											X:   ast.NewIdent("log"),
-											Sel: ast.NewIdent("Log"),
+									Type: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "log",
+										},
+										Sel: &ast.Ident{
+											Name: "Logger",
 										},
 									},
 								},
@@ -621,6 +625,146 @@ func (f FxContainer) astServerContainer() *ast.FuncDecl {
 		})
 	}
 	if f.project.KafkaEnabled {
+		for _, domain := range f.project.Apps {
+			args = append(args, &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X:   ast.NewIdent("fx"),
+					Sel: ast.NewIdent("Invoke"),
+				},
+				Args: []ast.Expr{
+					&ast.FuncLit{
+						Type: &ast.FuncType{
+							Params: &ast.FieldList{
+								List: []*ast.Field{
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("lifecycle"),
+										},
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("fx"),
+											Sel: ast.NewIdent("Lifecycle"),
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("app"),
+										},
+										Type: &ast.StarExpr{
+											X: &ast.SelectorExpr{
+												X:   ast.NewIdent(domain.AppAlias()),
+												Sel: ast.NewIdent("App"),
+											},
+										},
+									},
+									{
+										Names: []*ast.Ident{
+											ast.NewIdent("consumer"),
+										},
+										Type: &ast.StarExpr{
+											X: &ast.SelectorExpr{
+												X:   ast.NewIdent("kafka"),
+												Sel: ast.NewIdent("Consumer"),
+											},
+										},
+									},
+								},
+							},
+						},
+						Body: &ast.BlockStmt{
+							List: []ast.Stmt{
+								&ast.ExprStmt{
+									X: &ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X:   ast.NewIdent("lifecycle"),
+											Sel: ast.NewIdent("Append"),
+										},
+										Args: []ast.Expr{
+											&ast.CompositeLit{
+												Type: &ast.SelectorExpr{
+													X:   ast.NewIdent("fx"),
+													Sel: ast.NewIdent("Hook"),
+												},
+												Elts: []ast.Expr{
+													&ast.KeyValueExpr{
+														Key: ast.NewIdent("OnStart"),
+														Value: &ast.FuncLit{
+															Type: &ast.FuncType{
+																Params: &ast.FieldList{
+																	List: []*ast.Field{
+																		{
+																			Names: []*ast.Ident{
+																				ast.NewIdent("_"),
+																			},
+																			Type: &ast.SelectorExpr{
+																				X:   ast.NewIdent("context"),
+																				Sel: ast.NewIdent("Context"),
+																			},
+																		},
+																	},
+																},
+																Results: &ast.FieldList{
+																	List: []*ast.Field{
+																		{
+																			Type: ast.NewIdent("error"),
+																		},
+																	},
+																},
+															},
+															Body: &ast.BlockStmt{
+																List: []ast.Stmt{
+																	&ast.IfStmt{
+																		Init: &ast.AssignStmt{
+																			Lhs: []ast.Expr{
+																				ast.NewIdent("err"),
+																			},
+																			Tok: token.DEFINE,
+																			Rhs: []ast.Expr{
+																				&ast.CallExpr{
+																					Fun: &ast.SelectorExpr{
+																						X:   ast.NewIdent("app"),
+																						Sel: ast.NewIdent("RegisterKafka"),
+																					},
+																					Args: []ast.Expr{
+																						ast.NewIdent("consumer"),
+																					},
+																				},
+																			},
+																		},
+																		Cond: &ast.BinaryExpr{
+																			X:  ast.NewIdent("err"),
+																			Op: token.NEQ,
+																			Y:  ast.NewIdent("nil"),
+																		},
+																		Body: &ast.BlockStmt{
+																			List: []ast.Stmt{
+																				&ast.ReturnStmt{
+																					Results: []ast.Expr{
+																						ast.NewIdent("err"),
+																					},
+																				},
+																			},
+																		},
+																	},
+																	&ast.ReturnStmt{
+																		Results: []ast.Expr{
+																			ast.NewIdent("nil"),
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			})
+		}
 		args = append(args,
 			&ast.CallExpr{
 				Fun: &ast.SelectorExpr{
@@ -717,10 +861,12 @@ func (f FxContainer) astServerContainer() *ast.FuncDecl {
 										Names: []*ast.Ident{
 											ast.NewIdent("logger"),
 										},
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X:   ast.NewIdent("log"),
-												Sel: ast.NewIdent("Log"),
+										Type: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "log",
+											},
+											Sel: &ast.Ident{
+												Name: "Logger",
 											},
 										},
 									},
@@ -898,146 +1044,6 @@ func (f FxContainer) astServerContainer() *ast.FuncDecl {
 				},
 			},
 		)
-		for _, domain := range f.project.Apps {
-			args = append(args, &ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X:   ast.NewIdent("fx"),
-					Sel: ast.NewIdent("Invoke"),
-				},
-				Args: []ast.Expr{
-					&ast.FuncLit{
-						Type: &ast.FuncType{
-							Params: &ast.FieldList{
-								List: []*ast.Field{
-									{
-										Names: []*ast.Ident{
-											ast.NewIdent("lifecycle"),
-										},
-										Type: &ast.SelectorExpr{
-											X:   ast.NewIdent("fx"),
-											Sel: ast.NewIdent("Lifecycle"),
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											ast.NewIdent("app"),
-										},
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X:   ast.NewIdent(domain.AppAlias()),
-												Sel: ast.NewIdent("App"),
-											},
-										},
-									},
-									{
-										Names: []*ast.Ident{
-											ast.NewIdent("consumer"),
-										},
-										Type: &ast.StarExpr{
-											X: &ast.SelectorExpr{
-												X:   ast.NewIdent("kafka"),
-												Sel: ast.NewIdent("Consumer"),
-											},
-										},
-									},
-								},
-							},
-						},
-						Body: &ast.BlockStmt{
-							List: []ast.Stmt{
-								&ast.ExprStmt{
-									X: &ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X:   ast.NewIdent("lifecycle"),
-											Sel: ast.NewIdent("Append"),
-										},
-										Args: []ast.Expr{
-											&ast.CompositeLit{
-												Type: &ast.SelectorExpr{
-													X:   ast.NewIdent("fx"),
-													Sel: ast.NewIdent("Hook"),
-												},
-												Elts: []ast.Expr{
-													&ast.KeyValueExpr{
-														Key: ast.NewIdent("OnStart"),
-														Value: &ast.FuncLit{
-															Type: &ast.FuncType{
-																Params: &ast.FieldList{
-																	List: []*ast.Field{
-																		{
-																			Names: []*ast.Ident{
-																				ast.NewIdent("_"),
-																			},
-																			Type: &ast.SelectorExpr{
-																				X:   ast.NewIdent("context"),
-																				Sel: ast.NewIdent("Context"),
-																			},
-																		},
-																	},
-																},
-																Results: &ast.FieldList{
-																	List: []*ast.Field{
-																		{
-																			Type: ast.NewIdent("error"),
-																		},
-																	},
-																},
-															},
-															Body: &ast.BlockStmt{
-																List: []ast.Stmt{
-																	&ast.IfStmt{
-																		Init: &ast.AssignStmt{
-																			Lhs: []ast.Expr{
-																				ast.NewIdent("err"),
-																			},
-																			Tok: token.DEFINE,
-																			Rhs: []ast.Expr{
-																				&ast.CallExpr{
-																					Fun: &ast.SelectorExpr{
-																						X:   ast.NewIdent("app"),
-																						Sel: ast.NewIdent("RegisterKafka"),
-																					},
-																					Args: []ast.Expr{
-																						ast.NewIdent("consumer"),
-																					},
-																				},
-																			},
-																		},
-																		Cond: &ast.BinaryExpr{
-																			X:  ast.NewIdent("err"),
-																			Op: token.NEQ,
-																			Y:  ast.NewIdent("nil"),
-																		},
-																		Body: &ast.BlockStmt{
-																			List: []ast.Stmt{
-																				&ast.ReturnStmt{
-																					Results: []ast.Expr{
-																						ast.NewIdent("err"),
-																					},
-																				},
-																			},
-																		},
-																	},
-																	&ast.ReturnStmt{
-																		Results: []ast.Expr{
-																			ast.NewIdent("nil"),
-																		},
-																	},
-																},
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			})
-		}
 	}
 	if f.project.GRPCEnabled {
 		args = append(
@@ -1261,10 +1267,12 @@ func (f FxContainer) astServerContainer() *ast.FuncDecl {
 									Names: []*ast.Ident{
 										ast.NewIdent("logger"),
 									},
-									Type: &ast.StarExpr{
-										X: &ast.SelectorExpr{
-											X:   ast.NewIdent("log"),
-											Sel: ast.NewIdent("Log"),
+									Type: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "log",
+										},
+										Sel: &ast.Ident{
+											Name: "Logger",
 										},
 									},
 								},
@@ -1665,10 +1673,12 @@ func (f FxContainer) astServerContainer() *ast.FuncDecl {
 									Names: []*ast.Ident{
 										ast.NewIdent("logger"),
 									},
-									Type: &ast.StarExpr{
-										X: &ast.SelectorExpr{
-											X:   ast.NewIdent("log"),
-											Sel: ast.NewIdent("Log"),
+									Type: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "log",
+										},
+										Sel: &ast.Ident{
+											Name: "Logger",
 										},
 									},
 								},
@@ -2026,10 +2036,12 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 															Names: []*ast.Ident{
 																ast.NewIdent("logger"),
 															},
-															Type: &ast.StarExpr{
-																X: &ast.SelectorExpr{
-																	X:   ast.NewIdent("log"),
-																	Sel: ast.NewIdent("Log"),
+															Type: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "log",
+																},
+																Sel: &ast.Ident{
+																	Name: "Logger",
 																},
 															},
 														},

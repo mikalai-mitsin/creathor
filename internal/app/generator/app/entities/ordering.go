@@ -133,7 +133,7 @@ func (r Ordering) typeDecl() *ast.GenDecl {
 
 func (r Ordering) validateFunc() *ast.FuncDecl {
 	validateIn := make([]ast.Expr, 0, len(r.entityConfig.GetMainModel().Params))
-	for k, _ := range r.entityConfig.OrderingConsts() {
+	for k := range r.entityConfig.OrderingConsts() {
 		validateIn = append(
 			validateIn,
 			&ast.CallExpr{

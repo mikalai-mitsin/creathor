@@ -2,6 +2,14 @@
 ## [Unreleased]
 
 
+<a name="v0.7.7"></a>
+## [v0.7.7] - 2025-09-01
+### Feat
+- remove field
+- add data to ignore
+- use ordering as params
+
+
 <a name="v0.7.6"></a>
 ## [v0.7.6] - 2025-08-29
 ### Feat
@@ -512,7 +520,8 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.6...HEAD
+[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.7...HEAD
+[v0.7.7]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.6...v0.7.7
 [v0.7.6]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.5...v0.7.6
 [v0.7.5]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.4...v0.7.5
 [v0.7.4]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.3...v0.7.4

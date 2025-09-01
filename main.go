@@ -72,14 +72,6 @@ func initProject(_ *cli.Context) error {
 	}
 	for _, appConfig := range project.Apps {
 		for i, entity := range appConfig.Entities {
-			//baseEntity := &configs.MainEntity{
-			//	Config:      entity,
-			//	AppConfig:   &appConfig,
-			//	Name:        entity.Name,
-			//	Module:      project.Module,
-			//	ProtoModule: project.ProtoPackage(),
-			//	Entities:    []*configs.Entity{},
-			//}
 			appConfig.Entities[i].AppConfig = &appConfig
 			appConfig.Entities[i].Entities = append(appConfig.Entities[i].Entities,
 				configs.NewMainEntity(entity),

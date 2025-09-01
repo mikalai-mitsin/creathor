@@ -70,17 +70,15 @@ func (m *Model) Sync() error {
 			return err
 		}
 	}
-	if m.model.Name == "User" {
-		password := NewPassword(m.domain)
-		if err := password.Sync(); err != nil {
-			return err
-		}
-	}
 	if m.model.Mock {
 		mock := NewMock(structure.spec(), m.domain)
 		if err := mock.Sync(); err != nil {
 			return err
 		}
+	}
+	ordering := NewOrdering(m.domain)
+	if err := ordering.Sync(); err != nil {
+		return err
 	}
 	return nil
 }

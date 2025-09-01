@@ -176,6 +176,25 @@ func Value(t ast.Expr) ast.Expr {
 	}
 	return fake
 }
+func Ordering(t ast.Expr, consts []string) ast.Expr {
+	var fake ast.Expr
+	values := []ast.Expr{}
+	for _, constName := range consts {
+		values = append(values, ast.NewIdent(constName))
+	}
+	switch value := t.(type) {
+	case *ast.ArrayType:
+		fake = &ast.CompositeLit{
+			Type: &ast.ArrayType{
+				Elt: value.Elt,
+			},
+			Elts: values,
+		}
+	default:
+		fake = baseValue(ast.NewIdent("TODO"))
+	}
+	return fake
+}
 
 func baseEmail() ast.Expr {
 	return &ast.CallExpr{

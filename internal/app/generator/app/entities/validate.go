@@ -2,7 +2,6 @@ package entities
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -113,38 +112,6 @@ func (m *Validate) checker(name *ast.Ident, typeName ast.Expr) *ast.CallExpr {
 			call.Args = append(call.Args, &ast.SelectorExpr{
 				X:   ast.NewIdent("is"),
 				Sel: ast.NewIdent("EmailFormat"),
-			})
-		}
-		if strings.Contains(name.String(), "OrderBy") {
-			orderBy := make([]ast.Expr, 0, len(m.domain.GetMainModel().Params))
-			for _, param := range m.domain.GetMainModel().Params {
-				orderBy = append(
-					orderBy,
-					&ast.BasicLit{
-						Kind:  token.STRING,
-						Value: fmt.Sprintf(`"%s.%s ASC"`, m.domain.TableName(), param.Tag()),
-					},
-					&ast.BasicLit{
-						Kind:  token.STRING,
-						Value: fmt.Sprintf(`"%s.%s DESC"`, m.domain.TableName(), param.Tag()),
-					},
-				)
-			}
-			call.Args = append(call.Args, &ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X:   ast.NewIdent("validation"),
-					Sel: ast.NewIdent("Each"),
-				},
-				Args: []ast.Expr{
-					&ast.CallExpr{
-						Fun: &ast.SelectorExpr{
-							X: ast.NewIdent("validation"),
-
-							Sel: ast.NewIdent("In"),
-						},
-						Args: orderBy,
-					},
-				},
 			})
 		}
 	case strings.HasSuffix(en, "Update"):

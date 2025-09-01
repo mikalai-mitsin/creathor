@@ -11,6 +11,7 @@ import (
 	"path"
 
 	"github.com/iancoleman/strcase"
+	"golang.org/x/exp/maps"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 
@@ -93,6 +94,8 @@ func (m *Mock) values() []*ast.KeyValueExpr {
 				switch name.String() {
 				case "Email":
 					kvs = append(kvs, &ast.KeyValueExpr{Key: name, Value: fake.Email(field.Type)})
+				case "OrderBy":
+					kvs = append(kvs, &ast.KeyValueExpr{Key: name, Value: fake.Ordering(field.Type, maps.Keys(m.domain.OrderingConsts()))})
 				default:
 					kvs = append(kvs, &ast.KeyValueExpr{Key: name, Value: fake.Value(field.Type)})
 				}

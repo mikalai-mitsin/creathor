@@ -622,10 +622,16 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 						},
 						&ast.KeyValueExpr{
 							Key: ast.NewIdent("OrderBy"),
-							Value: &ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X:   ast.NewIdent("input"),
-									Sel: ast.NewIdent("GetOrderBy"),
+							Value: &ast.CompositeLit{
+								Type: &ast.ArrayType{
+									Elt: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "entities",
+										},
+										Sel: &ast.Ident{
+											Name: h.domain.OrderingTypeName(),
+										},
+									},
 								},
 							},
 						},
@@ -778,6 +784,74 @@ func (h HandlerGenerator) encodeFilter() *ast.FuncDecl {
 			},
 		})
 	}
+	stmts = append(stmts, &ast.RangeStmt{
+		Key: &ast.Ident{
+			Name: "_",
+		},
+		Value: &ast.Ident{
+			Name: "orderBy",
+		},
+		Tok: token.DEFINE,
+		X: &ast.CallExpr{
+			Fun: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "input",
+				},
+				Sel: &ast.Ident{
+					Name: "GetOrderBy",
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						&ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "filter",
+							},
+							Sel: &ast.Ident{
+								Name: "OrderBy",
+							},
+						},
+					},
+					Tok: token.ASSIGN,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.Ident{
+								Name: "append",
+							},
+							Args: []ast.Expr{
+								&ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "filter",
+									},
+									Sel: &ast.Ident{
+										Name: "OrderBy",
+									},
+								},
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "entities",
+										},
+										Sel: &ast.Ident{
+											Name: h.domain.OrderingTypeName(),
+										},
+									},
+									Args: []ast.Expr{
+										&ast.Ident{
+											Name: "orderBy",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
 	stmts = append(stmts, &ast.ReturnStmt{
 		Results: []ast.Expr{
 			ast.NewIdent("filter"),

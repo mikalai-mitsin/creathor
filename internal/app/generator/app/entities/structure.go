@@ -71,14 +71,6 @@ func (m *Structure) file() *ast.File {
 			},
 		},
 	}
-	if m.domain.SnakeName() == "user" {
-		imports.Specs = append(imports.Specs, &ast.ImportSpec{
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
-				Value: `"golang.org/x/crypto/bcrypt"`,
-			},
-		})
-	}
 	return &ast.File{
 		Name: ast.NewIdent("entities"),
 		Decls: []ast.Decl{
@@ -102,7 +94,6 @@ func (m *Structure) fill(structure *ast.TypeSpec) {
 								return false
 							}
 						}
-
 					}
 				}
 				st.Fields.List = append(st.Fields.List, param)

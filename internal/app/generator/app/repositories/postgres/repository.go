@@ -58,6 +58,12 @@ func (r RepositoryGenerator) Sync() error {
 	if err := r.syncConstructor(); err != nil {
 		return err
 	}
+	if err := r.syncOrderByMap(); err != nil {
+		return err
+	}
+	if err := r.syncEncodeOrderBy(); err != nil {
+		return err
+	}
 	if err := r.syncDTOStruct(); err != nil {
 		return err
 	}
@@ -1554,9 +1560,20 @@ func (r RepositoryGenerator) listMethod() *ast.FuncDecl {
 											Sel: ast.NewIdent("OrderBy"),
 										},
 										Args: []ast.Expr{
-											&ast.SelectorExpr{
-												X:   ast.NewIdent("filter"),
-												Sel: ast.NewIdent("OrderBy"),
+											&ast.CallExpr{
+												Fun: &ast.Ident{
+													Name: "encodeOrderBy",
+												},
+												Args: []ast.Expr{
+													&ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "filter",
+														},
+														Sel: &ast.Ident{
+															Name: "OrderBy",
+														},
+													},
+												},
 											},
 										},
 										Ellipsis: 5337,
@@ -1658,7 +1675,7 @@ func (r RepositoryGenerator) listMethod() *ast.FuncDecl {
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X:   ast.NewIdent("dto"),
-								Sel: ast.NewIdent("ToEntities"),
+								Sel: ast.NewIdent("toEntities"),
 							},
 						},
 						ast.NewIdent("nil"),
@@ -1880,7 +1897,7 @@ func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 						Specs: []ast.Spec{
 							&ast.ValueSpec{
 								Names: []*ast.Ident{
-									&ast.Ident{
+									{
 										Name: "count",
 									},
 								},
@@ -3278,7 +3295,7 @@ func (r RepositoryGenerator) astDTOToEntities() *ast.FuncDecl {
 				},
 			},
 		},
-		Name: ast.NewIdent("ToEntities"),
+		Name: ast.NewIdent("toEntities"),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{},
 			Results: &ast.FieldList{
@@ -3360,15 +3377,263 @@ func (r RepositoryGenerator) astDTOToEntities() *ast.FuncDecl {
 	}
 }
 
+func (r RepositoryGenerator) astOrderByMap() *ast.GenDecl {
+	var values []ast.Expr
+	for cnt, column := range r.domain.OrderingMap() {
+		values = append(values, &ast.KeyValueExpr{
+			Key: &ast.SelectorExpr{
+				X: &ast.Ident{
+					Name: "entities",
+				},
+				Sel: &ast.Ident{
+					Name: cnt,
+				},
+			},
+			Value: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: column,
+			},
+		})
+	}
+	return &ast.GenDecl{
+		Tok: token.VAR,
+		Specs: []ast.Spec{
+			&ast.ValueSpec{
+				Names: []*ast.Ident{
+					{
+						Name: "orderByMap",
+					},
+				},
+				Values: []ast.Expr{
+					&ast.CompositeLit{
+						Type: &ast.MapType{
+							Key: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "entities",
+								},
+								Sel: &ast.Ident{
+									Name: r.domain.OrderingTypeName(),
+								},
+							},
+							Value: &ast.Ident{
+								Name: "string",
+							},
+						},
+						Elts: values,
+					},
+				},
+			},
+		},
+	}
+}
+
+func (r RepositoryGenerator) syncOrderByMap() error {
+	fileset := token.NewFileSet()
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	varExists := astfile.VarExists(file, "orderByMap")
+	if !varExists {
+		file.Decls = append(file.Decls, r.astOrderByMap())
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r RepositoryGenerator) syncDTOListToEntities() error {
 	fileset := token.NewFileSet()
 	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
-	method, methodExist := astfile.FindFunc(file, "ToEntities")
+	method, methodExist := astfile.FindFunc(file, "toEntities")
 	if method == nil {
 		method = r.astDTOToEntities()
+	}
+	if !methodExist {
+		file.Decls = append(file.Decls, method)
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(r.filename(), buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r RepositoryGenerator) astEncodeOrderBy() *ast.FuncDecl {
+	return &ast.FuncDecl{
+		Name: &ast.Ident{
+			Name: "encodeOrderBy",
+		},
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{
+							{
+								Name: "orderBy",
+							},
+						},
+						Type: &ast.ArrayType{
+							Elt: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "entities",
+								},
+								Sel: &ast.Ident{
+									Name: r.domain.OrderingTypeName(),
+								},
+							},
+						},
+					},
+				},
+			},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: &ast.ArrayType{
+							Elt: &ast.Ident{
+								Name: "string",
+							},
+						},
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						&ast.Ident{
+							Name: "columns",
+						},
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.Ident{
+								Name: "make",
+							},
+							Args: []ast.Expr{
+								&ast.ArrayType{
+									Elt: &ast.Ident{
+										Name: "string",
+									},
+								},
+								&ast.CallExpr{
+									Fun: &ast.Ident{
+										Name: "len",
+									},
+									Args: []ast.Expr{
+										&ast.Ident{
+											Name: "orderBy",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				&ast.RangeStmt{
+					Key: &ast.Ident{
+						Name: "i",
+					},
+					Value: &ast.Ident{
+						Name: "item",
+					},
+					Tok: token.DEFINE,
+					X: &ast.Ident{
+						Name: "orderBy",
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.AssignStmt{
+								Lhs: []ast.Expr{
+									&ast.Ident{
+										Name: "column",
+									},
+									&ast.Ident{
+										Name: "exists",
+									},
+								},
+								Tok: token.DEFINE,
+								Rhs: []ast.Expr{
+									&ast.IndexExpr{
+										X: &ast.Ident{
+											Name: "orderByMap",
+										},
+										Index: &ast.Ident{
+											Name: "item",
+										},
+									},
+								},
+							},
+							&ast.IfStmt{
+								Cond: &ast.UnaryExpr{
+									Op: token.NOT,
+									X: &ast.Ident{
+										Name: "exists",
+									},
+								},
+								Body: &ast.BlockStmt{
+									List: []ast.Stmt{
+										&ast.BranchStmt{
+											Tok: token.CONTINUE,
+										},
+									},
+								},
+							},
+							&ast.AssignStmt{
+								Lhs: []ast.Expr{
+									&ast.IndexExpr{
+										X: &ast.Ident{
+											Name: "columns",
+										},
+										Index: &ast.Ident{
+											Name: "i",
+										},
+									},
+								},
+								Tok: token.ASSIGN,
+								Rhs: []ast.Expr{
+									&ast.Ident{
+										Name: "column",
+									},
+								},
+							},
+						},
+					},
+				},
+				&ast.ReturnStmt{
+					Results: []ast.Expr{
+						&ast.Ident{
+							Name: "columns",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (r RepositoryGenerator) syncEncodeOrderBy() error {
+	fileset := token.NewFileSet()
+	file, err := parser.ParseFile(fileset, r.filename(), nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	method, methodExist := astfile.FindFunc(file, "encodeOrderBy")
+	if method == nil {
+		method = r.astEncodeOrderBy()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)

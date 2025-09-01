@@ -1401,9 +1401,17 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 		},
 		&ast.KeyValueExpr{
 			Key: ast.NewIdent("OrderBy"),
-			Value: &ast.SelectorExpr{
-				X:   ast.NewIdent("dto"),
-				Sel: ast.NewIdent("OrderBy"),
+			Value: &ast.CompositeLit{
+				Type: &ast.ArrayType{
+					Elt: &ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "entities",
+						},
+						Sel: &ast.Ident{
+							Name: g.domain.OrderingTypeName(),
+						},
+					},
+				},
 			},
 		},
 	}
@@ -1424,6 +1432,95 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 			},
 		})
 	}
+	body := []ast.Stmt{
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				ast.NewIdent("filter"),
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CompositeLit{
+					Type: &ast.SelectorExpr{
+						X:   ast.NewIdent("entities"),
+						Sel: ast.NewIdent(g.domain.GetFilterModel().Name),
+					},
+					Elts: exprs,
+				},
+			},
+		},
+	}
+	body = append(body, &ast.RangeStmt{
+		Key: &ast.Ident{
+			Name: "_",
+		},
+		Value: &ast.Ident{
+			Name: "orderBy",
+		},
+		Tok: token.DEFINE,
+		X: &ast.SelectorExpr{
+			X: &ast.Ident{
+				Name: "dto",
+			},
+			Sel: &ast.Ident{
+				Name: "OrderBy",
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						&ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "filter",
+							},
+							Sel: &ast.Ident{
+								Name: "OrderBy",
+							},
+						},
+					},
+					Tok: token.ASSIGN,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.Ident{
+								Name: "append",
+							},
+							Args: []ast.Expr{
+								&ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "filter",
+									},
+									Sel: &ast.Ident{
+										Name: "OrderBy",
+									},
+								},
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "entities",
+										},
+										Sel: &ast.Ident{
+											Name: g.domain.OrderingTypeName(),
+										},
+									},
+									Args: []ast.Expr{
+										&ast.Ident{
+											Name: "orderBy",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	body = append(body, &ast.ReturnStmt{
+		Results: []ast.Expr{
+			ast.NewIdent("filter"),
+			ast.NewIdent("nil"),
+		},
+	})
 	return &ast.FuncDecl{
 		Recv: &ast.FieldList{
 			List: []*ast.Field{
@@ -1453,29 +1550,7 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 			},
 		},
 		Body: &ast.BlockStmt{
-			List: []ast.Stmt{
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent("filter"),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						&ast.CompositeLit{
-							Type: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(g.domain.GetFilterModel().Name),
-							},
-							Elts: exprs,
-						},
-					},
-				},
-				&ast.ReturnStmt{
-					Results: []ast.Expr{
-						ast.NewIdent("filter"),
-						ast.NewIdent("nil"),
-					},
-				},
-			},
+			List: body,
 		},
 	}
 }

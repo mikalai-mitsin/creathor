@@ -483,6 +483,28 @@ func (m *EntityConfig) GetHTTPFilterDTOConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetHTTPFilterDTOName())
 }
 
+func (m *EntityConfig) OrderingTypeName() string {
+	return fmt.Sprintf("%sOrdering", strcase.ToCamel(m.Name))
+}
+
+func (m *EntityConfig) OrderingConsts() map[string]string {
+	consts := map[string]string{}
+	for _, param := range m.GetMainModel().Params {
+		consts[fmt.Sprintf("%s%sASC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(`"%s"`, param.Tag())
+		consts[fmt.Sprintf("%s%sDESC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(`"-%s"`, param.Tag())
+	}
+	return consts
+}
+
+func (m *EntityConfig) OrderingMap() map[string]string {
+	consts := map[string]string{}
+	for _, param := range m.GetMainModel().Params {
+		consts[fmt.Sprintf("%s%sASC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(`"%s.%s ASC"`, m.TableName(), param.Tag())
+		consts[fmt.Sprintf("%s%sDESC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(`"%s.%s DESC"`, m.TableName(), param.Tag())
+	}
+	return consts
+}
+
 func lastMigration() (int, error) {
 	dir, err := os.ReadDir(path.Join("internal", "pkg", "postgres", "migrations"))
 	if err != nil {
@@ -607,7 +629,7 @@ func NewFilterEntity(modelConfig EntityConfig) *Entity {
 			},
 			{
 				Name:   "OrderBy",
-				Type:   "[]string",
+				Type:   fmt.Sprintf("[]%s", modelConfig.OrderingTypeName()),
 				Search: false,
 			},
 		},

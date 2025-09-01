@@ -526,6 +526,39 @@ func (u ServiceGenerator) list() *ast.FuncDecl {
 		},
 		Body: &ast.BlockStmt{
 			List: []ast.Stmt{
+				// Create validation
+				&ast.IfStmt{
+					Init: &ast.AssignStmt{
+						Lhs: []ast.Expr{
+							ast.NewIdent("err"),
+						},
+						Tok: token.DEFINE,
+						Rhs: []ast.Expr{
+							&ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X:   ast.NewIdent("filter"),
+									Sel: ast.NewIdent("Validate"),
+								},
+							},
+						},
+					},
+					Cond: &ast.BinaryExpr{
+						X:  ast.NewIdent("err"),
+						Op: token.NEQ,
+						Y:  ast.NewIdent("nil"),
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.ReturnStmt{
+								Results: []ast.Expr{
+									ast.NewIdent("nil"),
+									ast.NewIdent("0"),
+									ast.NewIdent("err"),
+								},
+							},
+						},
+					},
+				},
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						ast.NewIdent(u.domain.GetMainModel().Variable),

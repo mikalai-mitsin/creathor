@@ -77,3 +77,53 @@ func FindFunc(file ast.Node, name string) (*ast.FuncDecl, bool) {
 	})
 	return function, funcExists
 }
+
+func FindMethod(file ast.Node, receiver, name string) (*ast.FuncDecl, bool) {
+	var funcExists bool
+	var function *ast.FuncDecl
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == name {
+			for _, ident := range t.Recv.List {
+				if ti, ok := ident.Type.(*ast.Ident); ok && ti.String() == receiver {
+					funcExists = true
+					function = t
+				}
+			}
+			return false
+		}
+		return true
+	})
+	return function, funcExists
+}
+
+func ConstExists(file ast.Node, name string) bool {
+	var constExists bool
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.GenDecl); ok && t.Tok == token.CONST {
+			for _, spec := range t.Specs {
+				if s, ok := spec.(*ast.ValueSpec); ok && s.Names[0].Name == name {
+					constExists = true
+				}
+			}
+			return false
+		}
+		return true
+	})
+	return constExists
+}
+
+func VarExists(file ast.Node, name string) bool {
+	var constExists bool
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.GenDecl); ok && t.Tok == token.VAR {
+			for _, spec := range t.Specs {
+				if s, ok := spec.(*ast.ValueSpec); ok && s.Names[0].Name == name {
+					constExists = true
+				}
+			}
+			return false
+		}
+		return true
+	})
+	return constExists
+}

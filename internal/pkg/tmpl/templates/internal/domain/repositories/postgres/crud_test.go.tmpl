@@ -285,9 +285,9 @@ func Test{{ .RepositoryTypeName }}_List(t *testing.T) {
 		PageSize:   pointer.Of(uint64(10)),
 		PageNumber: pointer.Of(uint64(2)),
 		Search:     nil,
-		OrderBy:    []string{"id ASC"},
+		OrderBy:    []entities.{{ .OrderingTypeName }}{"id"},
 	}
-    query := "SELECT {{ .TableName }}.id, {{ .TableName }}.created_at, {{ .TableName }}.updated_at{{ range $key, $value := .Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }} ORDER BY id ASC LIMIT 10 OFFSET 10"
+    query := "SELECT {{ .TableName }}.id, {{ .TableName }}.created_at, {{ .TableName }}.updated_at{{ range $key, $value := .Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }} ORDER BY {{ .TableName }}.id ASC LIMIT 10 OFFSET 10"
     type fields struct {
         writeDB database
         readDB database

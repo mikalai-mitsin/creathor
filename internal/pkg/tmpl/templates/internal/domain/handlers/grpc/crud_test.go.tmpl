@@ -345,7 +345,7 @@ func Test{{ .GRPCHandlerTypeName }}_List(t *testing.T) {
 {{- if .SearchEnabled }}
                     Search:     wrapperspb.String(*filter.Search),
 {{- end}}
-                    OrderBy:    filter.OrderBy,
+                    OrderBy:    nil,
                 },
             },
             want:    response,
@@ -373,7 +373,7 @@ func Test{{ .GRPCHandlerTypeName }}_List(t *testing.T) {
 {{- if .SearchEnabled }}
                     Search:     wrapperspb.String(*filter.Search),
 {{- end }}
-                    OrderBy:    filter.OrderBy,
+                    OrderBy:    nil,
                 },
             },
             want:    nil,
@@ -542,7 +542,7 @@ func Test_encode{{ .FilterTypeName }}(t *testing.T) {
             want: entities.{{ .FilterTypeName }}{
                 PageSize:   pointer.Of(uint64(5)),
                 PageNumber: pointer.Of(uint64(2)),
-                OrderBy:    []string{"created_at", "id"},
+                OrderBy:    []entities.{{ .OrderingTypeName }}{"created_at", "id"},
 {{- if .SearchEnabled }}
                 Search:     pointer.Of("my name is"),
 {{- end}}

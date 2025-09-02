@@ -1,14 +1,14 @@
 module github.com/mikalai-mitsin/creathor
 
-go 1.24
+go 1.25
 
 require (
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jinzhu/inflection v1.0.0
 	github.com/urfave/cli/v2 v2.27.7
-	golang.org/x/exp v0.0.0-20250718183923-645b1fa84792
-	golang.org/x/text v0.27.0
+	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b
+	golang.org/x/text v0.28.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

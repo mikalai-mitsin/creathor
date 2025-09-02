@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
@@ -32,32 +33,17 @@ func (i InterfacesGenerator) Sync() error {
 	if err != nil {
 		file = i.file()
 	}
-	appServiceExists := false
-	loggerExists := false
-	eventProducerExists := false
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok {
-			if t.Name.String() == i.domain.GetServiceInterfaceName() {
-				appServiceExists = true
-			}
-			if t.Name.String() == "logger" {
-				loggerExists = true
-			}
-			if t.Name.String() == i.domain.EventProducerInterfaceName() {
-				eventProducerExists = true
-			}
-			return true
-		}
-		return true
-	})
-	if !appServiceExists {
+	if !astfile.TypeExists(file, i.domain.GetServiceInterfaceName()) {
 		file.Decls = append(file.Decls, i.appServiceInterface())
 	}
-	if !loggerExists {
+	if !astfile.TypeExists(file, i.domain.EventProducerInterfaceName()) && i.domain.AppConfig.ProjectConfig.KafkaEnabled {
+		file.Decls = append(file.Decls, i.appEventProducerInterface())
+	}
+	if !astfile.TypeExists(file, "logger") {
 		file.Decls = append(file.Decls, i.loggerInterface())
 	}
-	if !eventProducerExists && i.domain.AppConfig.ProjectConfig.KafkaEnabled {
-		file.Decls = append(file.Decls, i.appEventProducerInterface())
+	if !astfile.TypeExists(file, "dtxManager") {
+		file.Decls = append(file.Decls, i.dtxManagerInterface())
 	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
@@ -113,6 +99,12 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: i.domain.AppConfig.ProjectConfig.LogImportPath(),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: i.domain.AppConfig.ProjectConfig.DTXImportPath(),
 				},
 			},
 		},
@@ -468,6 +460,49 @@ func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 									},
 									Sel: &ast.Ident{
 										Name: "Logger",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (i InterfacesGenerator) dtxManagerInterface() *ast.GenDecl {
+	return &ast.GenDecl{
+		Tok: token.TYPE,
+		Specs: []ast.Spec{
+			&ast.TypeSpec{
+				Name: &ast.Ident{
+					Name: "dtxManager",
+				},
+				Type: &ast.InterfaceType{
+					Methods: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "NewTx",
+									},
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{},
+									Results: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "dtx",
+													},
+													Sel: &ast.Ident{
+														Name: "TX",
+													},
+												},
+											},
+										},
 									},
 								},
 							},

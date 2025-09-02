@@ -10,6 +10,7 @@ import (
     "github.com/jaswdr/faker"
     "github.com/stretchr/testify/assert"
 
+    "{{ .Module }}/internal/pkg/dtx"
     "{{ .Module }}/internal/pkg/uuid"
 )
 
@@ -20,12 +21,14 @@ func TestNew{{ .GetUseCaseTypeName }}(t *testing.T) {
 {{- if .KafkaEnabled }}
     mock{{ .GetEventProducerPrivateVariableName }} := NewMock{{ .EventProducerInterfaceName }}(ctrl)
 {{- end}}
+    mockDtxManager := NewMockdtxManager(ctrl)
     mockLogger := NewMocklogger(ctrl)
     type args struct {
         {{ .ServiceVariableName }} {{ .GetServiceInterfaceName }}
 {{- if .KafkaEnabled }}
         {{ .GetEventProducerPrivateVariableName }} {{ .EventProducerInterfaceName }}
 {{- end}}
+        dtxManager dtxManager
         logger          logger
     }
     tests := []struct {
@@ -42,6 +45,7 @@ func TestNew{{ .GetUseCaseTypeName }}(t *testing.T) {
 {{- if .KafkaEnabled }}
                 {{ .GetEventProducerPrivateVariableName }} : mock{{ .GetEventProducerPrivateVariableName }},
 {{- end}}
+                dtxManager: mockDtxManager,
                 logger: mockLogger,
             },
             want: &{{ .GetUseCaseTypeName }}{
@@ -49,6 +53,7 @@ func TestNew{{ .GetUseCaseTypeName }}(t *testing.T) {
 {{- if .KafkaEnabled }}
                 {{ .GetEventProducerPrivateVariableName }} : mock{{ .GetEventProducerPrivateVariableName }},
 {{- end}}
+                dtxManager: mockDtxManager,
                 logger: mockLogger,
             },
         },
@@ -56,7 +61,7 @@ func TestNew{{ .GetUseCaseTypeName }}(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
-            got := New{{ .GetUseCaseTypeName }}(tt.args.{{ .ServiceVariableName }}, {{- if .KafkaEnabled }}tt.args.{{ .GetEventProducerPrivateVariableName }},{{- end}} tt.args.logger)
+            got := New{{ .GetUseCaseTypeName }}(tt.args.{{ .ServiceVariableName }}, {{- if .KafkaEnabled }}tt.args.{{ .GetEventProducerPrivateVariableName }},{{- end}} tt.args.dtxManager, tt.args.logger)
             assert.Equal(t, tt.want, got)
         })
     }

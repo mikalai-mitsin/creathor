@@ -70,6 +70,9 @@ func (i UseCaseGenerator) structure() *ast.TypeSpec {
 		})
 	}
 	fields = append(fields, &ast.Field{
+		Names: []*ast.Ident{ast.NewIdent("dtxManager")},
+		Type:  ast.NewIdent("dtxManager"),
+	}, &ast.Field{
 		Names: []*ast.Ident{ast.NewIdent("logger")},
 		Type:  ast.NewIdent("logger"),
 	})
@@ -125,6 +128,9 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 		})
 	}
 	fields = append(fields, &ast.Field{
+		Names: []*ast.Ident{ast.NewIdent("dtxManager")},
+		Type:  ast.NewIdent("dtxManager"),
+	}, &ast.Field{
 		Names: []*ast.Ident{ast.NewIdent("logger")},
 		Type:  ast.NewIdent("logger"),
 	})
@@ -141,6 +147,9 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 		})
 	}
 	exprs = append(exprs, &ast.KeyValueExpr{
+		Key:   ast.NewIdent("dtxManager"),
+		Value: ast.NewIdent("dtxManager"),
+	}, &ast.KeyValueExpr{
 		Key:   ast.NewIdent("logger"),
 		Value: ast.NewIdent("logger"),
 	})

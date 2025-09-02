@@ -92,6 +92,12 @@ func (a App) imports() *ast.GenDecl {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
+				Value: a.app.ProjectConfig.DTXImportPath(),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
 				Value: `"github.com/jmoiron/sqlx"`,
 			},
 		},
@@ -246,6 +252,17 @@ func (a App) constructor() *ast.FuncDecl {
 		},
 		{
 			Names: []*ast.Ident{
+				ast.NewIdent("dtxManager"),
+			},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X:   ast.NewIdent("dtx"),
+					Sel: ast.NewIdent("Manager"),
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{
 				ast.NewIdent("logger"),
 			},
 			Type: &ast.SelectorExpr{
@@ -297,6 +314,10 @@ func (a App) constructor() *ast.FuncDecl {
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("writeDB"),
 			Value: ast.NewIdent("writeDB"),
+		},
+		&ast.KeyValueExpr{
+			Key:   ast.NewIdent("dtxManager"),
+			Value: ast.NewIdent("dtxManager"),
 		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("logger"),
@@ -395,7 +416,7 @@ func (a App) constructor() *ast.FuncDecl {
 		if a.app.KafkaEnabled {
 			useCaseArgs = append(useCaseArgs, ast.NewIdent(entity.GetEventProducerPrivateVariableName()))
 		}
-		useCaseArgs = append(useCaseArgs, ast.NewIdent("logger"))
+		useCaseArgs = append(useCaseArgs, ast.NewIdent("dtxManager"), ast.NewIdent("logger"))
 		body.List = append(body.List, &ast.AssignStmt{
 			Lhs: []ast.Expr{
 				ast.NewIdent(entity.GetUseCasePrivateVariableName()),
@@ -543,6 +564,17 @@ func (a App) structure() *ast.GenDecl {
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("sqlx"),
 							Sel: ast.NewIdent("DB"),
+						},
+					},
+				},
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent("dtxManager"),
+					},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent("dtx"),
+							Sel: ast.NewIdent("Manager"),
 						},
 					},
 				},

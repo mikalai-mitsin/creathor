@@ -34,6 +34,7 @@ func (p *{{ .EventProducerTypeName }}) Created(ctx context.Context, {{ .GetOneVa
 	message := &kafka.Message{
 		Topic: topicEventCreated,
 		Value: data,
+        Key:   {{ .GetOneVariableName }}.ID.String(),
 	}
 	if err := p.producer.Send(ctx, message); err != nil {
 		return errs.FromKafkaError(err)
@@ -49,6 +50,7 @@ func (p *{{ .EventProducerTypeName }}) Updated(ctx context.Context, {{ .GetOneVa
 	message := &kafka.Message{
 		Topic: topicEventUpdated,
 		Value: data,
+        Key:   {{ .GetOneVariableName }}.ID.String(),
 	}
 	if err := p.producer.Send(ctx, message); err != nil {
 		return errs.FromKafkaError(err)
@@ -60,6 +62,7 @@ func (p *{{ .EventProducerTypeName }}) Deleted(ctx context.Context, id uuid.UUID
 	message := &kafka.Message{
 		Topic: topicEventDeleted,
 		Value: []byte(id.String()),
+        Key:   id.String(),
 	}
 	if err := p.producer.Send(ctx, message); err != nil {
 		return errs.FromKafkaError(err)

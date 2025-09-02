@@ -87,6 +87,7 @@ func Test{{ .EventProducerTypeName }}_Created(t *testing.T) {
 				mockProducer.EXPECT().Send(gomock.Any(), &kafka.Message{
 					Topic: topicEventCreated,
 					Value: data,
+					Key:   {{ .GetOneVariableName }}.ID.String(),
 				}).Return(nil)
 			},
 			wantErr: nil,
@@ -106,6 +107,7 @@ func Test{{ .EventProducerTypeName }}_Created(t *testing.T) {
 				mockProducer.EXPECT().Send(gomock.Any(), &kafka.Message{
 					Topic: topicEventCreated,
 					Value: data,
+					Key:   {{ .GetOneVariableName }}.ID.String(),
 				}).Return(errors.New("test error"))
 			},
 			wantErr: errs.FromKafkaError(errors.New("test error")),
@@ -161,6 +163,7 @@ func Test{{ .EventProducerTypeName }}_Updated(t *testing.T) {
 				mockProducer.EXPECT().Send(gomock.Any(), &kafka.Message{
 					Topic: topicEventUpdated,
 					Value: data,
+					Key:   {{ .GetOneVariableName }}.ID.String(),
 				}).Return(nil)
 			},
 			wantErr: nil,
@@ -180,6 +183,7 @@ func Test{{ .EventProducerTypeName }}_Updated(t *testing.T) {
 				mockProducer.EXPECT().Send(gomock.Any(), &kafka.Message{
 					Topic: topicEventUpdated,
 					Value: data,
+					Key:   {{ .GetOneVariableName }}.ID.String(),
 				}).Return(errors.New("test error"))
 			},
 			wantErr: errs.FromKafkaError(errors.New("test error")),
@@ -234,6 +238,7 @@ func Test{{ .EventProducerTypeName }}_Deleted(t *testing.T) {
 				mockProducer.EXPECT().Send(gomock.Any(), &kafka.Message{
 					Topic: topicEventDeleted,
 					Value: sarama.ByteEncoder({{ .GetOneVariableName }}.ID.String()),
+					Key:   {{ .GetOneVariableName }}.ID.String(),
 				}).Return(nil)
 			},
 			wantErr: nil,
@@ -252,6 +257,7 @@ func Test{{ .EventProducerTypeName }}_Deleted(t *testing.T) {
 				mockProducer.EXPECT().Send(gomock.Any(), &kafka.Message{
 					Topic: topicEventDeleted,
 					Value: []byte({{ .GetOneVariableName }}.ID.String()),
+                    Key:   {{ .GetOneVariableName }}.ID.String(),
 				}).Return(errors.New("test error"))
 			},
 			wantErr: errs.FromKafkaError(errors.New("test error")),

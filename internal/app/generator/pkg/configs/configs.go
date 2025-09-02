@@ -9,15 +9,15 @@ import (
 
 var destinationPath = "."
 
-type ConfigGenerator struct {
+type Generator struct {
 	project *configs.Project
 }
 
-func NewConfigGenerator(project *configs.Project) *ConfigGenerator {
-	return &ConfigGenerator{project: project}
+func NewGenerator(project *configs.Project) *Generator {
+	return &Generator{project: project}
 }
 
-func (c *ConfigGenerator) Sync() error {
+func (c *Generator) Sync() error {
 	files := []*tmpl.Template{
 		{
 			SourcePath:      "templates/configs/config.toml.tmpl",

@@ -14,15 +14,15 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
-type FxContainer struct {
+type Generator struct {
 	project *configs.Project
 }
 
-func NewFxContainer(project *configs.Project) *FxContainer {
-	return &FxContainer{project: project}
+func NewGenerator(project *configs.Project) *Generator {
+	return &Generator{project: project}
 }
 
-func (f FxContainer) Sync() error {
+func (f Generator) Sync() error {
 	if err := f.syncFxModule(); err != nil {
 		return err
 	}
@@ -37,11 +37,11 @@ func (f FxContainer) Sync() error {
 	return nil
 }
 
-func (f FxContainer) filename() string {
+func (f Generator) filename() string {
 	return filepath.Join("internal", "pkg", "containers", "fx.go")
 }
 
-func (f FxContainer) file() *ast.File {
+func (f Generator) file() *ast.File {
 	imports := []ast.Spec{
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
@@ -66,6 +66,12 @@ func (f FxContainer) file() *ast.File {
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
 				Value: f.project.UUIDImportPath(),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
+				Value: f.project.DTXImportPath(),
 			},
 		},
 		&ast.ImportSpec{
@@ -155,7 +161,7 @@ func (f FxContainer) file() *ast.File {
 	}
 }
 
-func (f FxContainer) toProvide() []ast.Expr {
+func (f Generator) toProvide() []ast.Expr {
 	toProvide := []ast.Expr{
 		&ast.SelectorExpr{
 			X:   ast.NewIdent("context"),
@@ -223,6 +229,10 @@ func (f FxContainer) toProvide() []ast.Expr {
 		&ast.SelectorExpr{
 			X:   ast.NewIdent("postgres"),
 			Sel: ast.NewIdent("NewMigrateManager"),
+		},
+		&ast.SelectorExpr{
+			X:   ast.NewIdent("dtx"),
+			Sel: ast.NewIdent("NewManager"),
 		},
 	}
 	if f.project.KafkaEnabled {
@@ -302,7 +312,7 @@ func (f FxContainer) toProvide() []ast.Expr {
 	return toProvide
 }
 
-func (f FxContainer) astFxModule() *ast.ValueSpec {
+func (f Generator) astFxModule() *ast.ValueSpec {
 	toProvide := []ast.Expr{
 		&ast.FuncLit{
 			Type: &ast.FuncType{
@@ -435,7 +445,7 @@ func (f FxContainer) astFxModule() *ast.ValueSpec {
 	}
 }
 
-func (f FxContainer) syncFxModule() error {
+func (f Generator) syncFxModule() error {
 	fileset := token.NewFileSet()
 	filename := f.filename()
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
@@ -506,7 +516,7 @@ func (f FxContainer) syncFxModule() error {
 	return nil
 }
 
-func (f FxContainer) astServerContainer() *ast.FuncDecl {
+func (f Generator) astServerContainer() *ast.FuncDecl {
 	args := []ast.Expr{
 		&ast.CallExpr{
 			Fun: &ast.SelectorExpr{
@@ -1909,7 +1919,7 @@ func (f FxContainer) astServerContainer() *ast.FuncDecl {
 	}
 }
 
-func (f FxContainer) syncServerContainer() error {
+func (f Generator) syncServerContainer() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "containers", "fx.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
@@ -1942,7 +1952,7 @@ func (f FxContainer) syncServerContainer() error {
 	return nil
 }
 
-func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
+func (f Generator) astMigrateContainer() *ast.FuncDecl {
 	return &ast.FuncDecl{
 		Name: ast.NewIdent("NewMigrateContainer"),
 		Type: &ast.FuncType{
@@ -2225,7 +2235,7 @@ func (f FxContainer) astMigrateContainer() *ast.FuncDecl {
 	}
 }
 
-func (f FxContainer) syncMigrateContainer() error {
+func (f Generator) syncMigrateContainer() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "containers", "fx.go")
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)

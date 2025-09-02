@@ -101,6 +101,10 @@ func (p *Project) UUIDImportPath() string {
 	return fmt.Sprintf(`"%s/internal/pkg/uuid"`, p.Module)
 }
 
+func (p *Project) DTXImportPath() string {
+	return fmt.Sprintf(`"%s/internal/pkg/dtx"`, p.Module)
+}
+
 func (p *Project) UptraceImportPath() string {
 	return fmt.Sprintf(`"%s/internal/pkg/uptrace"`, p.Module)
 }

@@ -1,10 +1,11 @@
 package pkg
 
 import (
-	generators2 "github.com/mikalai-mitsin/creathor/internal/app/generator"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/clock"
-	cg "github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/configs"
+	cfg "github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/configs"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/containers"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/dtx"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/errs"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/grpc"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/http"
@@ -26,15 +27,16 @@ func NewGenerator(project *configs.Project) *Generator {
 }
 
 func (g *Generator) Sync() error {
-	generators := []generators2.Generator{
+	generators := []generator.Generator{
 		clock.NewGenerator(g.project),
-		cg.NewConfigGenerator(g.project),
-		containers.NewFxContainer(g.project),
-		errs.NewErrors(g.project),
+		cfg.NewGenerator(g.project),
+		containers.NewGenerator(g.project),
+		errs.NewGenerator(g.project),
 		log.NewGenerator(g.project),
 		pointer.NewGenerator(g.project),
 		postgres.NewGenerator(g.project),
 		uuid.NewGenerator(g.project),
+		dtx.NewGenerator(g.project),
 	}
 	if g.project.KafkaEnabled {
 		generators = append(
@@ -58,8 +60,8 @@ func (g *Generator) Sync() error {
 	if g.project.UptraceEnabled {
 		generators = append(generators, uptrace.NewProvider(g.project))
 	}
-	for _, generator := range generators {
-		if err := generator.Sync(); err != nil {
+	for _, gen := range generators {
+		if err := gen.Sync(); err != nil {
 			return err
 		}
 	}

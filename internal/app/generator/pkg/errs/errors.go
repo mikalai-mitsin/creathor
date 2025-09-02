@@ -14,17 +14,17 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
-type Errors struct {
+type Generator struct {
 	project *configs.Project
 }
 
-func NewErrors(project *configs.Project) *Errors {
-	return &Errors{
+func NewGenerator(project *configs.Project) *Generator {
+	return &Generator{
 		project: project,
 	}
 }
 
-func (i Errors) file() *ast.File {
+func (i Generator) file() *ast.File {
 	return &ast.File{
 		Name: ast.NewIdent("errs"),
 		Decls: []ast.Decl{
@@ -1655,7 +1655,7 @@ func (i Errors) file() *ast.File {
 	}
 }
 
-func (i Errors) fileHttp() *ast.File {
+func (i Generator) fileHttp() *ast.File {
 	return &ast.File{
 		Package: 1,
 		Name:    ast.NewIdent("errs"),
@@ -2237,13 +2237,13 @@ func (i Errors) fileHttp() *ast.File {
 	}
 }
 
-func (i Errors) fileGrpc() *ast.File {
+func (i Generator) fileGrpc() *ast.File {
 	return &ast.File{
 		Name: ast.NewIdent("errs"),
 	}
 }
 
-func (i Errors) filePostgres() *ast.File {
+func (i Generator) filePostgres() *ast.File {
 	return &ast.File{
 		Package: 1,
 		Name:    ast.NewIdent("errs"),
@@ -2572,7 +2572,7 @@ func (i Errors) filePostgres() *ast.File {
 		},
 	}
 }
-func (i Errors) fileKafka() *ast.File {
+func (i Generator) fileKafka() *ast.File {
 	return &ast.File{
 		Package: 1,
 		Name: &ast.Ident{
@@ -2817,7 +2817,7 @@ func (i Errors) fileKafka() *ast.File {
 	}
 }
 
-func (i Errors) fileValidation() *ast.File {
+func (i Generator) fileValidation() *ast.File {
 	return &ast.File{
 		Package: 1,
 		Name:    ast.NewIdent("errs"),
@@ -3275,7 +3275,7 @@ func (i Errors) fileValidation() *ast.File {
 
 var destinationPath = "."
 
-func (i Errors) Sync() error {
+func (i Generator) Sync() error {
 	if err := i.syncErrs(); err != nil {
 		return err
 	}
@@ -3303,7 +3303,7 @@ func (i Errors) Sync() error {
 	return nil
 }
 
-func (i Errors) syncErrs() error {
+func (i Generator) syncErrs() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "errs", "errors.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
@@ -3339,7 +3339,7 @@ func (i Errors) syncErrs() error {
 	return nil
 }
 
-func (i Errors) syncGrpc() error {
+func (i Generator) syncGrpc() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "errs", "grpc.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
@@ -3375,7 +3375,7 @@ func (i Errors) syncGrpc() error {
 	return nil
 }
 
-func (i Errors) syncHttp() error {
+func (i Generator) syncHttp() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "errs", "http.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
@@ -3411,7 +3411,7 @@ func (i Errors) syncHttp() error {
 	return nil
 }
 
-func (i Errors) syncPostgres() error {
+func (i Generator) syncPostgres() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "errs", "postgres.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
@@ -3447,7 +3447,7 @@ func (i Errors) syncPostgres() error {
 	return nil
 }
 
-func (i Errors) syncKafka() error {
+func (i Generator) syncKafka() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "errs", "kafka.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
@@ -3468,7 +3468,7 @@ func (i Errors) syncKafka() error {
 	return nil
 }
 
-func (i Errors) syncValidation() error {
+func (i Generator) syncValidation() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "errs", "validation.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)

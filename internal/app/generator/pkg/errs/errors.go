@@ -14,17 +14,17 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
-type Errors struct {
+type Generator struct {
 	project *configs.Project
 }
 
-func NewErrors(project *configs.Project) *Errors {
-	return &Errors{
+func NewGenerator(project *configs.Project) *Generator {
+	return &Generator{
 		project: project,
 	}
 }
 
-func (i Errors) file() *ast.File {
+func (i Generator) file() *ast.File {
 	return &ast.File{
 		Name: ast.NewIdent("errs"),
 		Decls: []ast.Decl{
@@ -1655,7 +1655,7 @@ func (i Errors) file() *ast.File {
 	}
 }
 
-func (i Errors) fileHttp() *ast.File {
+func (i Generator) fileHttp() *ast.File {
 	return &ast.File{
 		Package: 1,
 		Name:    ast.NewIdent("errs"),
@@ -1739,8 +1739,10 @@ func (i Errors) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -1769,8 +1771,10 @@ func (i Errors) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -1829,8 +1833,10 @@ func (i Errors) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -1859,8 +1865,10 @@ func (i Errors) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -1874,8 +1882,10 @@ func (i Errors) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -1904,8 +1914,10 @@ func (i Errors) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -1919,8 +1931,10 @@ func (i Errors) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusServiceUnavailable"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusServiceUnavailable",
+														),
 													},
 												},
 											},
@@ -1934,8 +1948,10 @@ func (i Errors) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -1961,8 +1977,10 @@ func (i Errors) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -2164,8 +2182,10 @@ func (i Errors) fileHttp() *ast.File {
 														Args: []ast.Expr{
 															ast.NewIdent("r"),
 															&ast.SelectorExpr{
-																X:   ast.NewIdent("http"),
-																Sel: ast.NewIdent("StatusInternalServerError"),
+																X: ast.NewIdent("http"),
+																Sel: ast.NewIdent(
+																	"StatusInternalServerError",
+																),
 															},
 														},
 													},
@@ -2237,13 +2257,13 @@ func (i Errors) fileHttp() *ast.File {
 	}
 }
 
-func (i Errors) fileGrpc() *ast.File {
+func (i Generator) fileGrpc() *ast.File {
 	return &ast.File{
 		Name: ast.NewIdent("errs"),
 	}
 }
 
-func (i Errors) filePostgres() *ast.File {
+func (i Generator) filePostgres() *ast.File {
 	return &ast.File{
 		Package: 1,
 		Name:    ast.NewIdent("errs"),
@@ -2469,7 +2489,9 @@ func (i Errors) filePostgres() *ast.File {
 														&ast.CallExpr{
 															Fun: &ast.SelectorExpr{
 																X: &ast.CallExpr{
-																	Fun: ast.NewIdent("NewInvalidFormError"),
+																	Fun: ast.NewIdent(
+																		"NewInvalidFormError",
+																	),
 																},
 																Sel: ast.NewIdent("WithCause"),
 															},
@@ -2572,7 +2594,7 @@ func (i Errors) filePostgres() *ast.File {
 		},
 	}
 }
-func (i Errors) fileKafka() *ast.File {
+func (i Generator) fileKafka() *ast.File {
 	return &ast.File{
 		Package: 1,
 		Name: &ast.Ident{
@@ -2817,7 +2839,7 @@ func (i Errors) fileKafka() *ast.File {
 	}
 }
 
-func (i Errors) fileValidation() *ast.File {
+func (i Generator) fileValidation() *ast.File {
 	return &ast.File{
 		Package: 1,
 		Name:    ast.NewIdent("errs"),
@@ -2967,23 +2989,35 @@ func (i Errors) fileValidation() *ast.File {
 															&ast.CaseClause{
 																List: []ast.Expr{
 																	&ast.SelectorExpr{
-																		X:   ast.NewIdent("validation"),
-																		Sel: ast.NewIdent("ErrorObject"),
+																		X: ast.NewIdent(
+																			"validation",
+																		),
+																		Sel: ast.NewIdent(
+																			"ErrorObject",
+																		),
 																	},
 																},
 																Body: []ast.Stmt{
 																	&ast.ExprStmt{
 																		X: &ast.CallExpr{
 																			Fun: &ast.SelectorExpr{
-																				X:   ast.NewIdent("e"),
-																				Sel: ast.NewIdent("AddParam"),
+																				X: ast.NewIdent(
+																					"e",
+																				),
+																				Sel: ast.NewIdent(
+																					"AddParam",
+																				),
 																			},
 																			Args: []ast.Expr{
 																				ast.NewIdent("key"),
 																				&ast.CallExpr{
-																					Fun: ast.NewIdent("renderErrorMessage"),
+																					Fun: ast.NewIdent(
+																						"renderErrorMessage",
+																					),
 																					Args: []ast.Expr{
-																						ast.NewIdent("t"),
+																						ast.NewIdent(
+																							"t",
+																						),
 																					},
 																				},
 																			},
@@ -3001,14 +3035,22 @@ func (i Errors) fileValidation() *ast.File {
 																	&ast.ExprStmt{
 																		X: &ast.CallExpr{
 																			Fun: &ast.SelectorExpr{
-																				X:   ast.NewIdent("e"),
-																				Sel: ast.NewIdent("AddParam"),
+																				X: ast.NewIdent(
+																					"e",
+																				),
+																				Sel: ast.NewIdent(
+																					"AddParam",
+																				),
 																			},
 																			Args: []ast.Expr{
 																				ast.NewIdent("key"),
 																				&ast.SelectorExpr{
-																					X:   ast.NewIdent("t"),
-																					Sel: ast.NewIdent("Message"),
+																					X: ast.NewIdent(
+																						"t",
+																					),
+																					Sel: ast.NewIdent(
+																						"Message",
+																					),
 																				},
 																			},
 																		},
@@ -3020,15 +3062,23 @@ func (i Errors) fileValidation() *ast.File {
 																	&ast.ExprStmt{
 																		X: &ast.CallExpr{
 																			Fun: &ast.SelectorExpr{
-																				X:   ast.NewIdent("e"),
-																				Sel: ast.NewIdent("AddParam"),
+																				X: ast.NewIdent(
+																					"e",
+																				),
+																				Sel: ast.NewIdent(
+																					"AddParam",
+																				),
 																			},
 																			Args: []ast.Expr{
 																				ast.NewIdent("key"),
 																				&ast.CallExpr{
 																					Fun: &ast.SelectorExpr{
-																						X:   ast.NewIdent("value"),
-																						Sel: ast.NewIdent("Error"),
+																						X: ast.NewIdent(
+																							"value",
+																						),
+																						Sel: ast.NewIdent(
+																							"Error",
+																						),
 																					},
 																				},
 																			},
@@ -3082,9 +3132,13 @@ func (i Errors) fileValidation() *ast.File {
 														Fun: ast.NewIdent("NewInvalidParameter"),
 														Args: []ast.Expr{
 															&ast.CallExpr{
-																Fun: ast.NewIdent("renderErrorMessage"),
+																Fun: ast.NewIdent(
+																	"renderErrorMessage",
+																),
 																Args: []ast.Expr{
-																	ast.NewIdent("validationErrorObject"),
+																	ast.NewIdent(
+																		"validationErrorObject",
+																	),
 																},
 															},
 														},
@@ -3275,7 +3329,7 @@ func (i Errors) fileValidation() *ast.File {
 
 var destinationPath = "."
 
-func (i Errors) Sync() error {
+func (i Generator) Sync() error {
 	if err := i.syncErrs(); err != nil {
 		return err
 	}
@@ -3303,7 +3357,7 @@ func (i Errors) Sync() error {
 	return nil
 }
 
-func (i Errors) syncErrs() error {
+func (i Generator) syncErrs() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "errs", "errors.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
@@ -3339,7 +3393,7 @@ func (i Errors) syncErrs() error {
 	return nil
 }
 
-func (i Errors) syncGrpc() error {
+func (i Generator) syncGrpc() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "errs", "grpc.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
@@ -3375,7 +3429,7 @@ func (i Errors) syncGrpc() error {
 	return nil
 }
 
-func (i Errors) syncHttp() error {
+func (i Generator) syncHttp() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "errs", "http.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
@@ -3411,7 +3465,7 @@ func (i Errors) syncHttp() error {
 	return nil
 }
 
-func (i Errors) syncPostgres() error {
+func (i Generator) syncPostgres() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "errs", "postgres.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
@@ -3447,7 +3501,7 @@ func (i Errors) syncPostgres() error {
 	return nil
 }
 
-func (i Errors) syncKafka() error {
+func (i Generator) syncKafka() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "errs", "kafka.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)
@@ -3468,7 +3522,7 @@ func (i Errors) syncKafka() error {
 	return nil
 }
 
-func (i Errors) syncValidation() error {
+func (i Generator) syncValidation() error {
 	fileset := token.NewFileSet()
 	filename := path.Join("internal", "pkg", "errs", "validation.go")
 	err := os.MkdirAll(path.Dir(filename), 0777)

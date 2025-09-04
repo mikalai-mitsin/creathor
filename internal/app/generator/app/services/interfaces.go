@@ -24,7 +24,14 @@ func NewInterfacesGenerator(domain *configs.EntityConfig) *InterfacesGenerator {
 
 func (i InterfacesGenerator) Sync() error {
 	fileset := token.NewFileSet()
-	filename := filepath.Join("internal", "app", i.domain.AppConfig.AppName(), "services", i.domain.DirName(), fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()))
+	filename := filepath.Join(
+		"internal",
+		"app",
+		i.domain.AppConfig.AppName(),
+		"services",
+		i.domain.DirName(),
+		fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()),
+	)
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err
@@ -93,7 +100,11 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text:  fmt.Sprintf("//go:generate mockgen -source=%s_interfaces.go -package=services -destination=%s_interfaces_mock.go", i.domain.SnakeName(), i.domain.SnakeName()),
+					Text: fmt.Sprintf(
+						"//go:generate mockgen -source=%s_interfaces.go -package=services -destination=%s_interfaces_mock.go",
+						i.domain.SnakeName(),
+						i.domain.SnakeName(),
+					),
 				},
 			},
 		},
@@ -128,6 +139,12 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 					Value: i.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 				},
 			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: i.domain.AppConfig.ProjectConfig.DTXImportPath(),
+				},
+			},
 		},
 	}
 }
@@ -143,6 +160,12 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("context"),
 								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("dtx"),
+								Sel: ast.NewIdent("TX"),
 							},
 						},
 						{
@@ -276,6 +299,12 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 						},
 						{
 							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("dtx"),
+								Sel: ast.NewIdent("TX"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
 							},
@@ -304,6 +333,12 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 						},
 						{
 							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("dtx"),
+								Sel: ast.NewIdent("TX"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("uuid"),
 								Sel: ast.NewIdent("UUID"),
 							},
@@ -319,39 +354,6 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 				},
 			},
 		},
-	}
-	if i.domain.SnakeName() == "user" {
-		methods = append(methods, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent("GetByEmail")},
-			Type: &ast.FuncType{
-				Params: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Type: &ast.SelectorExpr{
-								X:   ast.NewIdent("context"),
-								Sel: ast.NewIdent("Context"),
-							},
-						},
-						{
-							Type: ast.NewIdent("string"),
-						},
-					},
-				},
-				Results: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Type: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
-							},
-						},
-						{
-							Type: ast.NewIdent("error"),
-						},
-					},
-				},
-			},
-		})
 	}
 	return &ast.GenDecl{
 		Tok: token.TYPE,

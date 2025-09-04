@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
@@ -23,7 +24,14 @@ func NewInterfacesGenerator(domain *configs.EntityConfig) *InterfacesGenerator {
 
 func (i InterfacesGenerator) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", i.domain.AppConfig.AppName(), "usecases", i.domain.DirName(), fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()))
+	filename := path.Join(
+		"internal",
+		"app",
+		i.domain.AppConfig.AppName(),
+		"usecases",
+		i.domain.DirName(),
+		fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()),
+	)
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err
@@ -32,32 +40,18 @@ func (i InterfacesGenerator) Sync() error {
 	if err != nil {
 		file = i.file()
 	}
-	appServiceExists := false
-	loggerExists := false
-	eventProducerExists := false
-	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok {
-			if t.Name.String() == i.domain.GetServiceInterfaceName() {
-				appServiceExists = true
-			}
-			if t.Name.String() == "logger" {
-				loggerExists = true
-			}
-			if t.Name.String() == i.domain.EventProducerInterfaceName() {
-				eventProducerExists = true
-			}
-			return true
-		}
-		return true
-	})
-	if !appServiceExists {
+	if !astfile.TypeExists(file, i.domain.GetServiceInterfaceName()) {
 		file.Decls = append(file.Decls, i.appServiceInterface())
 	}
-	if !loggerExists {
+	if !astfile.TypeExists(file, i.domain.EventProducerInterfaceName()) &&
+		i.domain.AppConfig.ProjectConfig.KafkaEnabled {
+		file.Decls = append(file.Decls, i.appEventProducerInterface())
+	}
+	if !astfile.TypeExists(file, "logger") {
 		file.Decls = append(file.Decls, i.loggerInterface())
 	}
-	if !eventProducerExists && i.domain.AppConfig.ProjectConfig.KafkaEnabled {
-		file.Decls = append(file.Decls, i.appEventProducerInterface())
+	if !astfile.TypeExists(file, "dtxManager") {
+		file.Decls = append(file.Decls, i.dtxManagerInterface())
 	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
@@ -86,7 +80,11 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text:  fmt.Sprintf("//go:generate mockgen -source=%s_interfaces.go -package=usecases -destination=%s_interfaces_mock.go", i.domain.SnakeName(), i.domain.SnakeName()),
+					Text: fmt.Sprintf(
+						"//go:generate mockgen -source=%s_interfaces.go -package=usecases -destination=%s_interfaces_mock.go",
+						i.domain.SnakeName(),
+						i.domain.SnakeName(),
+					),
 				},
 			},
 		},
@@ -115,6 +113,12 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 					Value: i.domain.AppConfig.ProjectConfig.LogImportPath(),
 				},
 			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: i.domain.AppConfig.ProjectConfig.DTXImportPath(),
+				},
+			},
 		},
 	}
 	return imports
@@ -131,6 +135,12 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("context"),
 								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("dtx"),
+								Sel: ast.NewIdent("TX"),
 							},
 						},
 						{
@@ -242,6 +252,12 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 						},
 						{
 							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("dtx"),
+								Sel: ast.NewIdent("TX"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(i.domain.GetUpdateModel().Name),
 							},
@@ -272,6 +288,12 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("context"),
 								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("dtx"),
+								Sel: ast.NewIdent("TX"),
 							},
 						},
 						{
@@ -339,6 +361,12 @@ func (i InterfacesGenerator) appEventProducerInterface() *ast.GenDecl {
 											},
 											{
 												Type: &ast.SelectorExpr{
+													X:   ast.NewIdent("dtx"),
+													Sel: ast.NewIdent("TX"),
+												},
+											},
+											{
+												Type: &ast.SelectorExpr{
 													X: &ast.Ident{
 														Name: "entities",
 													},
@@ -381,6 +409,12 @@ func (i InterfacesGenerator) appEventProducerInterface() *ast.GenDecl {
 											},
 											{
 												Type: &ast.SelectorExpr{
+													X:   ast.NewIdent("dtx"),
+													Sel: ast.NewIdent("TX"),
+												},
+											},
+											{
+												Type: &ast.SelectorExpr{
 													X: &ast.Ident{
 														Name: "entities",
 													},
@@ -419,6 +453,12 @@ func (i InterfacesGenerator) appEventProducerInterface() *ast.GenDecl {
 													Sel: &ast.Ident{
 														Name: "Context",
 													},
+												},
+											},
+											{
+												Type: &ast.SelectorExpr{
+													X:   ast.NewIdent("dtx"),
+													Sel: ast.NewIdent("TX"),
 												},
 											},
 											{
@@ -468,6 +508,49 @@ func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 									},
 									Sel: &ast.Ident{
 										Name: "Logger",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (i InterfacesGenerator) dtxManagerInterface() *ast.GenDecl {
+	return &ast.GenDecl{
+		Tok: token.TYPE,
+		Specs: []ast.Spec{
+			&ast.TypeSpec{
+				Name: &ast.Ident{
+					Name: "dtxManager",
+				},
+				Type: &ast.InterfaceType{
+					Methods: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "NewTx",
+									},
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{},
+									Results: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "dtx",
+													},
+													Sel: &ast.Ident{
+														Name: "TX",
+													},
+												},
+											},
+										},
 									},
 								},
 							},

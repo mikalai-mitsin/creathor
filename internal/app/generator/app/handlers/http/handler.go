@@ -46,7 +46,15 @@ func (h *HandlerGenerator) Sync() error {
 }
 
 func (h *HandlerGenerator) filename() string {
-	return path.Join("internal", "app", h.domain.AppConfig.AppName(), "handlers", "http", h.domain.DirName(), h.domain.FileName())
+	return path.Join(
+		"internal",
+		"app",
+		h.domain.AppConfig.AppName(),
+		"handlers",
+		"http",
+		h.domain.DirName(),
+		h.domain.FileName(),
+	)
 }
 
 func (h *HandlerGenerator) file() *ast.File {
@@ -195,7 +203,10 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "//",
 						},
 						{
-							Text: fmt.Sprintf("// @Summary Create %s", h.domain.GetOneVariableName()),
+							Text: fmt.Sprintf(
+								"// @Summary Create %s",
+								h.domain.GetOneVariableName(),
+							),
 						},
 						{
 							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
@@ -210,10 +221,18 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Produce json",
 						},
 						{
-							Text: fmt.Sprintf("// @Param form body %s true \"Create %s request\"", h.domain.GetHTTPCreateDTOName(), h.domain.GetOneVariableName()),
+							Text: fmt.Sprintf(
+								"// @Param form body %s true \"Create %s request\"",
+								h.domain.GetHTTPCreateDTOName(),
+								h.domain.GetOneVariableName(),
+							),
 						},
 						{
-							Text: fmt.Sprintf("// @Success 201 {object} %s \"Created %s\"", h.domain.GetHTTPItemDTOName(), h.domain.GetOneVariableName()),
+							Text: fmt.Sprintf(
+								"// @Success 201 {object} %s \"Created %s\"",
+								h.domain.GetHTTPItemDTOName(),
+								h.domain.GetOneVariableName(),
+							),
 						},
 						{
 							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
@@ -228,7 +247,11 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/ [POST]", h.domain.AppConfig.AppName(), h.domain.GetHTTPPath()),
+							Text: fmt.Sprintf(
+								"// @Router /api/v1/%s/%s/ [POST]",
+								h.domain.AppConfig.AppName(),
+								h.domain.GetHTTPPath(),
+							),
 						},
 					},
 				},
@@ -488,7 +511,10 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "//",
 						},
 						{
-							Text: fmt.Sprintf("// @Summary Get %s by id", h.domain.GetOneVariableName()),
+							Text: fmt.Sprintf(
+								"// @Summary Get %s by id",
+								h.domain.GetOneVariableName(),
+							),
 						},
 						{
 							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
@@ -506,7 +532,11 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Param id path string true \"UUID\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Success 200 {object} %s \"Requested %s\"", h.domain.GetHTTPItemDTOName(), h.domain.GetOneVariableName()),
+							Text: fmt.Sprintf(
+								"// @Success 200 {object} %s \"Requested %s\"",
+								h.domain.GetHTTPItemDTOName(),
+								h.domain.GetOneVariableName(),
+							),
 						},
 						{
 							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
@@ -521,7 +551,11 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/{id} [GET]", h.domain.AppConfig.AppName(), h.domain.GetHTTPPath()),
+							Text: fmt.Sprintf(
+								"// @Router /api/v1/%s/%s/{id} [GET]",
+								h.domain.AppConfig.AppName(),
+								h.domain.GetHTTPPath(),
+							),
 						},
 					},
 				},
@@ -730,7 +764,10 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "//",
 						},
 						{
-							Text: fmt.Sprintf("// @Summary List of %s", h.domain.GetManyVariableName()),
+							Text: fmt.Sprintf(
+								"// @Summary List of %s",
+								h.domain.GetManyVariableName(),
+							),
 						},
 						{
 							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
@@ -745,10 +782,18 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Produce json",
 						},
 						{
-							Text: fmt.Sprintf("// @Param filter query %s true \"Filter of %s\"", h.domain.GetHTTPFilterDTOName(), h.domain.GetManyVariableName()),
+							Text: fmt.Sprintf(
+								"// @Param filter query %s true \"Filter of %s\"",
+								h.domain.GetHTTPFilterDTOName(),
+								h.domain.GetManyVariableName(),
+							),
 						},
 						{
-							Text: fmt.Sprintf("// @Success 200 {object} %s \"Filtered list of %s\"", h.domain.GetHTTPListDTOName(), h.domain.GetManyVariableName()),
+							Text: fmt.Sprintf(
+								"// @Success 200 {object} %s \"Filtered list of %s\"",
+								h.domain.GetHTTPListDTOName(),
+								h.domain.GetManyVariableName(),
+							),
 						},
 						{
 							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
@@ -763,7 +808,11 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/ [GET]", h.domain.AppConfig.AppName(), h.domain.GetHTTPPath()),
+							Text: fmt.Sprintf(
+								"// @Router /api/v1/%s/%s/ [GET]",
+								h.domain.AppConfig.AppName(),
+								h.domain.GetHTTPPath(),
+							),
 						},
 					},
 				},
@@ -1025,7 +1074,10 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "//",
 						},
 						{
-							Text: fmt.Sprintf("// @Summary Update %s", h.domain.GetOneVariableName()),
+							Text: fmt.Sprintf(
+								"// @Summary Update %s",
+								h.domain.GetOneVariableName(),
+							),
 						},
 						{
 							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
@@ -1043,10 +1095,18 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Param id path string true \"UUID\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Param form body %s true \"Update %s request\"", h.domain.GetHTTPUpdateDTOName(), h.domain.GetOneVariableName()),
+							Text: fmt.Sprintf(
+								"// @Param form body %s true \"Update %s request\"",
+								h.domain.GetHTTPUpdateDTOName(),
+								h.domain.GetOneVariableName(),
+							),
 						},
 						{
-							Text: fmt.Sprintf("// @Success 200 {object} %s \"Updated %s\"", h.domain.GetHTTPItemDTOName(), h.domain.GetOneVariableName()),
+							Text: fmt.Sprintf(
+								"// @Success 200 {object} %s \"Updated %s\"",
+								h.domain.GetHTTPItemDTOName(),
+								h.domain.GetOneVariableName(),
+							),
 						},
 						{
 							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
@@ -1061,7 +1121,11 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/{id} [PATCH]", h.domain.AppConfig.AppName(), h.domain.GetHTTPPath()),
+							Text: fmt.Sprintf(
+								"// @Router /api/v1/%s/%s/{id} [PATCH]",
+								h.domain.AppConfig.AppName(),
+								h.domain.GetHTTPPath(),
+							),
 						},
 					},
 				},
@@ -1321,7 +1385,10 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "//",
 						},
 						{
-							Text: fmt.Sprintf("// @Summary Delete %s by id", h.domain.GetOneVariableName()),
+							Text: fmt.Sprintf(
+								"// @Summary Delete %s by id",
+								h.domain.GetOneVariableName(),
+							),
 						},
 						{
 							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
@@ -1354,7 +1421,11 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Failure 500 {object} errs.Error \"Internal server error\"",
 						},
 						{
-							Text: fmt.Sprintf("// @Router /api/v1/%s/%s/{id} [DELETE]", h.domain.AppConfig.AppName(), h.domain.GetHTTPPath()),
+							Text: fmt.Sprintf(
+								"// @Router /api/v1/%s/%s/{id} [DELETE]",
+								h.domain.AppConfig.AppName(),
+								h.domain.GetHTTPPath(),
+							),
 						},
 					},
 				},

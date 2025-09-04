@@ -53,7 +53,14 @@ func (i UseCaseGenerator) Sync() error {
 }
 
 func (i UseCaseGenerator) filename() string {
-	return filepath.Join("internal", "app", i.domain.AppConfig.AppName(), "usecases", i.domain.DirName(), i.domain.FileName())
+	return filepath.Join(
+		"internal",
+		"app",
+		i.domain.AppConfig.AppName(),
+		"usecases",
+		i.domain.DirName(),
+		i.domain.FileName(),
+	)
 }
 
 func (i UseCaseGenerator) structure() *ast.TypeSpec {
@@ -70,6 +77,9 @@ func (i UseCaseGenerator) structure() *ast.TypeSpec {
 		})
 	}
 	fields = append(fields, &ast.Field{
+		Names: []*ast.Ident{ast.NewIdent("dtxManager")},
+		Type:  ast.NewIdent("dtxManager"),
+	}, &ast.Field{
 		Names: []*ast.Ident{ast.NewIdent("logger")},
 		Type:  ast.NewIdent("logger"),
 	})
@@ -125,6 +135,9 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 		})
 	}
 	fields = append(fields, &ast.Field{
+		Names: []*ast.Ident{ast.NewIdent("dtxManager")},
+		Type:  ast.NewIdent("dtxManager"),
+	}, &ast.Field{
 		Names: []*ast.Ident{ast.NewIdent("logger")},
 		Type:  ast.NewIdent("logger"),
 	})
@@ -141,6 +154,9 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 		})
 	}
 	exprs = append(exprs, &ast.KeyValueExpr{
+		Key:   ast.NewIdent("dtxManager"),
+		Value: ast.NewIdent("dtxManager"),
+	}, &ast.KeyValueExpr{
 		Key:   ast.NewIdent("logger"),
 		Value: ast.NewIdent("logger"),
 	})
@@ -207,6 +223,165 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 	body = append(body,
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
+				&ast.Ident{
+					Name: "logger",
+				},
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "u",
+							},
+							Sel: &ast.Ident{
+								Name: "logger",
+							},
+						},
+						Sel: &ast.Ident{
+							Name: "WithContext",
+						},
+					},
+					Args: []ast.Expr{
+						&ast.Ident{
+							Name: "ctx",
+						},
+					},
+				},
+			},
+		},
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				&ast.Ident{
+					Name: "tx",
+				},
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "u",
+							},
+							Sel: &ast.Ident{
+								Name: "dtxManager",
+							},
+						},
+						Sel: &ast.Ident{
+							Name: "NewTx",
+						},
+					},
+				},
+			},
+		},
+		&ast.DeferStmt{
+			Call: &ast.CallExpr{
+				Fun: &ast.FuncLit{
+					Type: &ast.FuncType{
+						Params: &ast.FieldList{
+							List: []*ast.Field{
+								{
+									Names: []*ast.Ident{
+										{
+											Name: "tx",
+										},
+									},
+									Type: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "dtx",
+										},
+										Sel: &ast.Ident{
+											Name: "TX",
+										},
+									},
+								},
+							},
+						},
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.IfStmt{
+								Init: &ast.AssignStmt{
+									Lhs: []ast.Expr{
+										&ast.Ident{
+											Name: "err",
+										},
+									},
+									Tok: token.DEFINE,
+									Rhs: []ast.Expr{
+										&ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "tx",
+												},
+												Sel: &ast.Ident{
+													Name: "Rollback",
+												},
+											},
+										},
+									},
+								},
+								Cond: &ast.BinaryExpr{
+									X: &ast.Ident{
+										Name: "err",
+									},
+									Op: token.NEQ,
+									Y: &ast.Ident{
+										Name: "nil",
+									},
+								},
+								Body: &ast.BlockStmt{
+									List: []ast.Stmt{
+										&ast.ExprStmt{
+											X: &ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "logger",
+													},
+													Sel: &ast.Ident{
+														Name: "Error",
+													},
+												},
+												Args: []ast.Expr{
+													&ast.BasicLit{
+														Kind:  token.STRING,
+														Value: "\"cant rollback transaction\"",
+													},
+													&ast.CallExpr{
+														Fun: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "log",
+															},
+															Sel: &ast.Ident{
+																Name: "Error",
+															},
+														},
+														Args: []ast.Expr{
+															&ast.Ident{
+																Name: "err",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				Args: []ast.Expr{
+					&ast.Ident{
+						Name: "tx",
+					},
+				},
+			},
+		},
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
 				ast.NewIdent(i.domain.GetOneVariableName()),
 				ast.NewIdent("err"),
 			},
@@ -215,13 +390,14 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 				&ast.CallExpr{
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
-							X:   ast.NewIdent("i"),
+							X:   ast.NewIdent("u"),
 							Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("Create"),
 					},
 					Args: []ast.Expr{
 						ast.NewIdent("ctx"),
+						ast.NewIdent("tx"),
 						ast.NewIdent("create"),
 					},
 				},
@@ -267,7 +443,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "i",
+									Name: "u",
 								},
 								Sel: &ast.Ident{
 									Name: i.domain.GetEventProducerPrivateVariableName(),
@@ -281,6 +457,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 							&ast.Ident{
 								Name: "ctx",
 							},
+							ast.NewIdent("tx"),
 							&ast.Ident{
 								Name: i.domain.GetOneVariableName(),
 							},
@@ -321,6 +498,59 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 		})
 	}
 	body = append(body,
+		// Commit transaction
+		&ast.IfStmt{
+			Init: &ast.AssignStmt{
+				Lhs: []ast.Expr{
+					&ast.Ident{
+						Name: "err",
+					},
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "tx",
+							},
+							Sel: &ast.Ident{
+								Name: "Commit",
+							},
+						},
+					},
+				},
+			},
+			Cond: &ast.BinaryExpr{
+				X: &ast.Ident{
+					Name: "err",
+				},
+				Op: token.NEQ,
+				Y: &ast.Ident{
+					Name: "nil",
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							&ast.CompositeLit{
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "entities",
+									},
+									Sel: &ast.Ident{
+										Name: i.domain.GetMainModel().Name,
+									},
+								},
+							},
+							&ast.Ident{
+								Name: "err",
+							},
+						},
+					},
+				},
+			},
+		},
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
@@ -334,7 +564,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent("i"),
+						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
 						X: ast.NewIdent(i.domain.GetUseCaseTypeName()),
@@ -421,7 +651,7 @@ func (i UseCaseGenerator) astListMethod() *ast.FuncDecl {
 				&ast.CallExpr{
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
-							X:   ast.NewIdent("i"),
+							X:   ast.NewIdent("u"),
 							Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("List"),
@@ -468,7 +698,7 @@ func (i UseCaseGenerator) astListMethod() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent("i"),
+						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
 						X: ast.NewIdent(i.domain.GetUseCaseTypeName()),
@@ -559,7 +789,7 @@ func (i UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 				&ast.CallExpr{
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
-							X:   ast.NewIdent("i"),
+							X:   ast.NewIdent("u"),
 							Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("Get"),
@@ -612,7 +842,7 @@ func (i UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent("i"),
+						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
 						X: ast.NewIdent(i.domain.GetUseCaseTypeName()),
@@ -686,6 +916,168 @@ func (i UseCaseGenerator) syncGetMethod() error {
 func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
+		// Setup logger
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				&ast.Ident{
+					Name: "logger",
+				},
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "u",
+							},
+							Sel: &ast.Ident{
+								Name: "logger",
+							},
+						},
+						Sel: &ast.Ident{
+							Name: "WithContext",
+						},
+					},
+					Args: []ast.Expr{
+						&ast.Ident{
+							Name: "ctx",
+						},
+					},
+				},
+			},
+		},
+		// Begin transaction
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				&ast.Ident{
+					Name: "tx",
+				},
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "u",
+							},
+							Sel: &ast.Ident{
+								Name: "dtxManager",
+							},
+						},
+						Sel: &ast.Ident{
+							Name: "NewTx",
+						},
+					},
+				},
+			},
+		},
+		// Defer rollback transaction
+		&ast.DeferStmt{
+			Call: &ast.CallExpr{
+				Fun: &ast.FuncLit{
+					Type: &ast.FuncType{
+						Params: &ast.FieldList{
+							List: []*ast.Field{
+								{
+									Names: []*ast.Ident{
+										{
+											Name: "tx",
+										},
+									},
+									Type: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "dtx",
+										},
+										Sel: &ast.Ident{
+											Name: "TX",
+										},
+									},
+								},
+							},
+						},
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.IfStmt{
+								Init: &ast.AssignStmt{
+									Lhs: []ast.Expr{
+										&ast.Ident{
+											Name: "err",
+										},
+									},
+									Tok: token.DEFINE,
+									Rhs: []ast.Expr{
+										&ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "tx",
+												},
+												Sel: &ast.Ident{
+													Name: "Rollback",
+												},
+											},
+										},
+									},
+								},
+								Cond: &ast.BinaryExpr{
+									X: &ast.Ident{
+										Name: "err",
+									},
+									Op: token.NEQ,
+									Y: &ast.Ident{
+										Name: "nil",
+									},
+								},
+								Body: &ast.BlockStmt{
+									List: []ast.Stmt{
+										&ast.ExprStmt{
+											X: &ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "logger",
+													},
+													Sel: &ast.Ident{
+														Name: "Error",
+													},
+												},
+												Args: []ast.Expr{
+													&ast.BasicLit{
+														Kind:  token.STRING,
+														Value: "\"cant rollback transaction\"",
+													},
+													&ast.CallExpr{
+														Fun: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "log",
+															},
+															Sel: &ast.Ident{
+																Name: "Error",
+															},
+														},
+														Args: []ast.Expr{
+															&ast.Ident{
+																Name: "err",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				Args: []ast.Expr{
+					&ast.Ident{
+						Name: "tx",
+					},
+				},
+			},
+		},
 		// Try to update model at use case
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
@@ -697,13 +1089,14 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 				&ast.CallExpr{
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
-							X:   ast.NewIdent("i"),
+							X:   ast.NewIdent("u"),
 							Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("Update"),
 					},
 					Args: []ast.Expr{
 						ast.NewIdent("ctx"),
+						ast.NewIdent("tx"),
 						ast.NewIdent("update"),
 					},
 				},
@@ -749,7 +1142,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "i",
+									Name: "u",
 								},
 								Sel: &ast.Ident{
 									Name: i.domain.GetEventProducerPrivateVariableName(),
@@ -763,6 +1156,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 							&ast.Ident{
 								Name: "ctx",
 							},
+							ast.NewIdent("tx"),
 							&ast.Ident{
 								Name: i.domain.GetOneVariableName(),
 							},
@@ -803,6 +1197,59 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 		})
 	}
 	body = append(body,
+		// Commit transaction
+		&ast.IfStmt{
+			Init: &ast.AssignStmt{
+				Lhs: []ast.Expr{
+					&ast.Ident{
+						Name: "err",
+					},
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "tx",
+							},
+							Sel: &ast.Ident{
+								Name: "Commit",
+							},
+						},
+					},
+				},
+			},
+			Cond: &ast.BinaryExpr{
+				X: &ast.Ident{
+					Name: "err",
+				},
+				Op: token.NEQ,
+				Y: &ast.Ident{
+					Name: "nil",
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							&ast.CompositeLit{
+								Type: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "entities",
+									},
+									Sel: &ast.Ident{
+										Name: i.domain.GetMainModel().Name,
+									},
+								},
+							},
+							&ast.Ident{
+								Name: "err",
+							},
+						},
+					},
+				},
+			},
+		},
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
@@ -816,7 +1263,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent("i"),
+						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
 						X: ast.NewIdent(i.domain.GetUseCaseTypeName()),
@@ -890,6 +1337,168 @@ func (i UseCaseGenerator) syncUpdateMethod() error {
 func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
+		// Setup logger
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				&ast.Ident{
+					Name: "logger",
+				},
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "u",
+							},
+							Sel: &ast.Ident{
+								Name: "logger",
+							},
+						},
+						Sel: &ast.Ident{
+							Name: "WithContext",
+						},
+					},
+					Args: []ast.Expr{
+						&ast.Ident{
+							Name: "ctx",
+						},
+					},
+				},
+			},
+		},
+		// Begin transaction
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				&ast.Ident{
+					Name: "tx",
+				},
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "u",
+							},
+							Sel: &ast.Ident{
+								Name: "dtxManager",
+							},
+						},
+						Sel: &ast.Ident{
+							Name: "NewTx",
+						},
+					},
+				},
+			},
+		},
+		// Defer rollback transaction
+		&ast.DeferStmt{
+			Call: &ast.CallExpr{
+				Fun: &ast.FuncLit{
+					Type: &ast.FuncType{
+						Params: &ast.FieldList{
+							List: []*ast.Field{
+								{
+									Names: []*ast.Ident{
+										{
+											Name: "tx",
+										},
+									},
+									Type: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "dtx",
+										},
+										Sel: &ast.Ident{
+											Name: "TX",
+										},
+									},
+								},
+							},
+						},
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.IfStmt{
+								Init: &ast.AssignStmt{
+									Lhs: []ast.Expr{
+										&ast.Ident{
+											Name: "err",
+										},
+									},
+									Tok: token.DEFINE,
+									Rhs: []ast.Expr{
+										&ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "tx",
+												},
+												Sel: &ast.Ident{
+													Name: "Rollback",
+												},
+											},
+										},
+									},
+								},
+								Cond: &ast.BinaryExpr{
+									X: &ast.Ident{
+										Name: "err",
+									},
+									Op: token.NEQ,
+									Y: &ast.Ident{
+										Name: "nil",
+									},
+								},
+								Body: &ast.BlockStmt{
+									List: []ast.Stmt{
+										&ast.ExprStmt{
+											X: &ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "logger",
+													},
+													Sel: &ast.Ident{
+														Name: "Error",
+													},
+												},
+												Args: []ast.Expr{
+													&ast.BasicLit{
+														Kind:  token.STRING,
+														Value: "\"cant rollback transaction\"",
+													},
+													&ast.CallExpr{
+														Fun: &ast.SelectorExpr{
+															X: &ast.Ident{
+																Name: "log",
+															},
+															Sel: &ast.Ident{
+																Name: "Error",
+															},
+														},
+														Args: []ast.Expr{
+															&ast.Ident{
+																Name: "err",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				Args: []ast.Expr{
+					&ast.Ident{
+						Name: "tx",
+					},
+				},
+			},
+		},
 		// Try to delete model at use case
 		&ast.IfStmt{
 			Init: &ast.AssignStmt{
@@ -901,13 +1510,14 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("i"),
+								X:   ast.NewIdent("u"),
 								Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 							},
 							Sel: ast.NewIdent("Delete"),
 						},
 						Args: []ast.Expr{
 							ast.NewIdent("ctx"),
+							ast.NewIdent("tx"),
 							ast.NewIdent("id"),
 						},
 					},
@@ -943,7 +1553,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 						Fun: &ast.SelectorExpr{
 							X: &ast.SelectorExpr{
 								X: &ast.Ident{
-									Name: "i",
+									Name: "u",
 								},
 								Sel: &ast.Ident{
 									Name: i.domain.GetEventProducerPrivateVariableName(),
@@ -957,6 +1567,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 							&ast.Ident{
 								Name: "ctx",
 							},
+							ast.NewIdent("tx"),
 							&ast.Ident{
 								Name: "id",
 							},
@@ -987,6 +1598,49 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 		})
 	}
 	body = append(body,
+		// Commit transaction
+		&ast.IfStmt{
+			Init: &ast.AssignStmt{
+				Lhs: []ast.Expr{
+					&ast.Ident{
+						Name: "err",
+					},
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "tx",
+							},
+							Sel: &ast.Ident{
+								Name: "Commit",
+							},
+						},
+					},
+				},
+			},
+			Cond: &ast.BinaryExpr{
+				X: &ast.Ident{
+					Name: "err",
+				},
+				Op: token.NEQ,
+				Y: &ast.Ident{
+					Name: "nil",
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							&ast.Ident{
+								Name: "err",
+							},
+						},
+					},
+				},
+			},
+		},
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
@@ -999,7 +1653,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent("i"),
+						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
 						X: ast.NewIdent(i.domain.GetUseCaseTypeName()),

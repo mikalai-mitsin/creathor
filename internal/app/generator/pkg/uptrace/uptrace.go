@@ -231,8 +231,10 @@ func (u Provider) file() *ast.File {
 												},
 												&ast.CallExpr{
 													Fun: &ast.SelectorExpr{
-														X:   ast.NewIdent("uptrace"),
-														Sel: ast.NewIdent("WithDeploymentEnvironment"),
+														X: ast.NewIdent("uptrace"),
+														Sel: ast.NewIdent(
+															"WithDeploymentEnvironment",
+														),
 													},
 													Args: []ast.Expr{
 														&ast.SelectorExpr{

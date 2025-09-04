@@ -92,6 +92,12 @@ func (a App) imports() *ast.GenDecl {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
+				Value: a.app.ProjectConfig.DTXImportPath(),
+			},
+		},
+		&ast.ImportSpec{
+			Path: &ast.BasicLit{
+				Kind:  token.STRING,
 				Value: `"github.com/jmoiron/sqlx"`,
 			},
 		},
@@ -246,6 +252,17 @@ func (a App) constructor() *ast.FuncDecl {
 		},
 		{
 			Names: []*ast.Ident{
+				ast.NewIdent("dtxManager"),
+			},
+			Type: &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X:   ast.NewIdent("dtx"),
+					Sel: ast.NewIdent("Manager"),
+				},
+			},
+		},
+		{
+			Names: []*ast.Ident{
 				ast.NewIdent("logger"),
 			},
 			Type: &ast.SelectorExpr{
@@ -299,6 +316,10 @@ func (a App) constructor() *ast.FuncDecl {
 			Value: ast.NewIdent("writeDB"),
 		},
 		&ast.KeyValueExpr{
+			Key:   ast.NewIdent("dtxManager"),
+			Value: ast.NewIdent("dtxManager"),
+		},
+		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("logger"),
 			Value: ast.NewIdent("logger"),
 		},
@@ -338,7 +359,9 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent(fmt.Sprintf("%sRepositories", entity.LowerCamelName())),
+							X: ast.NewIdent(
+								fmt.Sprintf("%sRepositories", entity.LowerCamelName()),
+							),
 							Sel: ast.NewIdent(entity.GetRepositoryConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -393,9 +416,12 @@ func (a App) constructor() *ast.FuncDecl {
 			ast.NewIdent(entity.GetServicePrivateVariableName()),
 		}
 		if a.app.KafkaEnabled {
-			useCaseArgs = append(useCaseArgs, ast.NewIdent(entity.GetEventProducerPrivateVariableName()))
+			useCaseArgs = append(
+				useCaseArgs,
+				ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
+			)
 		}
-		useCaseArgs = append(useCaseArgs, ast.NewIdent("logger"))
+		useCaseArgs = append(useCaseArgs, ast.NewIdent("dtxManager"), ast.NewIdent("logger"))
 		body.List = append(body.List, &ast.AssignStmt{
 			Lhs: []ast.Expr{
 				ast.NewIdent(entity.GetUseCasePrivateVariableName()),
@@ -421,7 +447,9 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent(fmt.Sprintf("%sHttpHandlers", entity.LowerCamelName())),
+							X: ast.NewIdent(
+								fmt.Sprintf("%sHttpHandlers", entity.LowerCamelName()),
+							),
 							Sel: ast.NewIdent(entity.GetHTTPHandlerConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -445,7 +473,9 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent(fmt.Sprintf("%sKafkaHandlers", entity.LowerCamelName())),
+							X: ast.NewIdent(
+								fmt.Sprintf("%sKafkaHandlers", entity.LowerCamelName()),
+							),
 							Sel: ast.NewIdent(entity.KafkaHandlerConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -472,7 +502,9 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent(fmt.Sprintf("%sGrpcHandlers", entity.LowerCamelName())),
+							X: ast.NewIdent(
+								fmt.Sprintf("%sGrpcHandlers", entity.LowerCamelName()),
+							),
 							Sel: ast.NewIdent(entity.GetGRPCHandlerConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -543,6 +575,17 @@ func (a App) structure() *ast.GenDecl {
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("sqlx"),
 							Sel: ast.NewIdent("DB"),
+						},
+					},
+				},
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent("dtxManager"),
+					},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent("dtx"),
+							Sel: ast.NewIdent("Manager"),
 						},
 					},
 				},
@@ -754,8 +797,12 @@ func (a App) registerHTTP() *ast.FuncDecl {
 					},
 					Args: []ast.Expr{
 						&ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"/api/v1/%s/%s"`, a.app.AppName(), entity.GetHTTPPath()),
+							Kind: token.STRING,
+							Value: fmt.Sprintf(
+								`"/api/v1/%s/%s"`,
+								a.app.AppName(),
+								entity.GetHTTPPath(),
+							),
 						},
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{

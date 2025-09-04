@@ -95,7 +95,13 @@ func (m *Mock) values() []*ast.KeyValueExpr {
 				case "Email":
 					kvs = append(kvs, &ast.KeyValueExpr{Key: name, Value: fake.Email(field.Type)})
 				case "OrderBy":
-					kvs = append(kvs, &ast.KeyValueExpr{Key: name, Value: fake.Ordering(field.Type, maps.Keys(m.domain.OrderingConsts()))})
+					kvs = append(
+						kvs,
+						&ast.KeyValueExpr{
+							Key:   name,
+							Value: fake.Ordering(field.Type, maps.Keys(m.domain.OrderingConsts())),
+						},
+					)
 				default:
 					kvs = append(kvs, &ast.KeyValueExpr{Key: name, Value: fake.Value(field.Type)})
 				}
@@ -167,7 +173,14 @@ func (m *Mock) file() *ast.File {
 
 func (m *Mock) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", m.domain.AppConfig.AppName(), "entities", m.domain.DirName(), fmt.Sprintf("%s_mock.go", strcase.ToSnake(m.domain.Name)))
+	filename := path.Join(
+		"internal",
+		"app",
+		m.domain.AppConfig.AppName(),
+		"entities",
+		m.domain.DirName(),
+		fmt.Sprintf("%s_mock.go", strcase.ToSnake(m.domain.Name)),
+	)
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err

@@ -14,7 +14,7 @@ import (
 )
 
 type EntityConfig struct {
-	Name         string   `json:"name" yaml:"name"`
+	Name         string   `json:"name"          yaml:"name"`
 	Module       string   `json:"module"        yaml:"module"`
 	ProjectName  string   `json:"project_name"  yaml:"projectName"`
 	ProtoPackage string   `json:"proto_package" yaml:"protoPackage"`
@@ -215,13 +215,28 @@ func (m *EntityConfig) KafkaHandlerTypeName() string {
 }
 
 func (m *EntityConfig) KafkaCreatedConsumerGroup() string {
-	return fmt.Sprintf("%s.%s.%s.created", strcase.ToSnake(m.AppConfig.ProjectConfig.Name), strcase.ToSnake(m.AppConfig.Name), strcase.ToSnake(m.Name))
+	return fmt.Sprintf(
+		"%s.%s.%s.created",
+		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
+		strcase.ToSnake(m.AppConfig.Name),
+		strcase.ToSnake(m.Name),
+	)
 }
 func (m *EntityConfig) KafkaUpdatedConsumerGroup() string {
-	return fmt.Sprintf("%s.%s.%s.updated", strcase.ToSnake(m.AppConfig.ProjectConfig.Name), strcase.ToSnake(m.AppConfig.Name), strcase.ToSnake(m.Name))
+	return fmt.Sprintf(
+		"%s.%s.%s.updated",
+		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
+		strcase.ToSnake(m.AppConfig.Name),
+		strcase.ToSnake(m.Name),
+	)
 }
 func (m *EntityConfig) KafkaDeletedConsumerGroup() string {
-	return fmt.Sprintf("%s.%s.%s.deleted", strcase.ToSnake(m.AppConfig.ProjectConfig.Name), strcase.ToSnake(m.AppConfig.Name), strcase.ToSnake(m.Name))
+	return fmt.Sprintf(
+		"%s.%s.%s.deleted",
+		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
+		strcase.ToSnake(m.AppConfig.Name),
+		strcase.ToSnake(m.Name),
+	)
 }
 
 func (m *EntityConfig) GetKafkaHandlerPrivateVariableName() string {
@@ -229,15 +244,30 @@ func (m *EntityConfig) GetKafkaHandlerPrivateVariableName() string {
 }
 
 func (m *EntityConfig) CreatedTopicName() string {
-	return fmt.Sprintf("%s.%s.%s.created", strcase.ToSnake(m.AppConfig.ProjectConfig.Name), strcase.ToSnake(m.AppConfig.Name), strcase.ToSnake(m.Name))
+	return fmt.Sprintf(
+		"%s.%s.%s.created",
+		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
+		strcase.ToSnake(m.AppConfig.Name),
+		strcase.ToSnake(m.Name),
+	)
 }
 
 func (m *EntityConfig) UpdatedTopicName() string {
-	return fmt.Sprintf("%s.%s.%s.updated", strcase.ToSnake(m.AppConfig.ProjectConfig.Name), strcase.ToSnake(m.AppConfig.Name), strcase.ToSnake(m.Name))
+	return fmt.Sprintf(
+		"%s.%s.%s.updated",
+		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
+		strcase.ToSnake(m.AppConfig.Name),
+		strcase.ToSnake(m.Name),
+	)
 }
 
 func (m *EntityConfig) DeletedTopicName() string {
-	return fmt.Sprintf("%s.%s.%s.deleted", strcase.ToSnake(m.AppConfig.ProjectConfig.Name), strcase.ToSnake(m.AppConfig.Name), strcase.ToSnake(m.Name))
+	return fmt.Sprintf(
+		"%s.%s.%s.deleted",
+		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
+		strcase.ToSnake(m.AppConfig.Name),
+		strcase.ToSnake(m.Name),
+	)
 }
 
 func (m *EntityConfig) EntitiesImportPath() string {
@@ -490,8 +520,14 @@ func (m *EntityConfig) OrderingTypeName() string {
 func (m *EntityConfig) OrderingConsts() map[string]string {
 	consts := map[string]string{}
 	for _, param := range m.GetMainModel().Params {
-		consts[fmt.Sprintf("%s%sASC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(`"%s"`, param.Tag())
-		consts[fmt.Sprintf("%s%sDESC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(`"-%s"`, param.Tag())
+		consts[fmt.Sprintf("%s%sASC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(
+			`"%s"`,
+			param.Tag(),
+		)
+		consts[fmt.Sprintf("%s%sDESC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(
+			`"-%s"`,
+			param.Tag(),
+		)
 	}
 	return consts
 }
@@ -499,8 +535,16 @@ func (m *EntityConfig) OrderingConsts() map[string]string {
 func (m *EntityConfig) OrderingMap() map[string]string {
 	consts := map[string]string{}
 	for _, param := range m.GetMainModel().Params {
-		consts[fmt.Sprintf("%s%sASC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(`"%s.%s ASC"`, m.TableName(), param.Tag())
-		consts[fmt.Sprintf("%s%sDESC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(`"%s.%s DESC"`, m.TableName(), param.Tag())
+		consts[fmt.Sprintf("%s%sASC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(
+			`"%s.%s ASC"`,
+			m.TableName(),
+			param.Tag(),
+		)
+		consts[fmt.Sprintf("%s%sDESC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(
+			`"%s.%s DESC"`,
+			m.TableName(),
+			param.Tag(),
+		)
 	}
 	return consts
 }

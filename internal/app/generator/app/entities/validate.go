@@ -23,7 +23,14 @@ func NewValidate(typeSpec *ast.TypeSpec, domain *configs.EntityConfig) *Validate
 }
 func (m *Validate) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", m.domain.AppConfig.AppName(), "entities", m.domain.DirName(), m.domain.FileName())
+	filename := path.Join(
+		"internal",
+		"app",
+		m.domain.AppConfig.AppName(),
+		"entities",
+		m.domain.DirName(),
+		m.domain.FileName(),
+	)
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
 		return err

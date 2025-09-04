@@ -1739,8 +1739,10 @@ func (i Generator) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -1769,8 +1771,10 @@ func (i Generator) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -1829,8 +1833,10 @@ func (i Generator) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -1859,8 +1865,10 @@ func (i Generator) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -1874,8 +1882,10 @@ func (i Generator) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -1904,8 +1914,10 @@ func (i Generator) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -1919,8 +1931,10 @@ func (i Generator) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusServiceUnavailable"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusServiceUnavailable",
+														),
 													},
 												},
 											},
@@ -1934,8 +1948,10 @@ func (i Generator) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -1961,8 +1977,10 @@ func (i Generator) fileHttp() *ast.File {
 											&ast.ReturnStmt{
 												Results: []ast.Expr{
 													&ast.SelectorExpr{
-														X:   ast.NewIdent("http"),
-														Sel: ast.NewIdent("StatusInternalServerError"),
+														X: ast.NewIdent("http"),
+														Sel: ast.NewIdent(
+															"StatusInternalServerError",
+														),
 													},
 												},
 											},
@@ -2164,8 +2182,10 @@ func (i Generator) fileHttp() *ast.File {
 														Args: []ast.Expr{
 															ast.NewIdent("r"),
 															&ast.SelectorExpr{
-																X:   ast.NewIdent("http"),
-																Sel: ast.NewIdent("StatusInternalServerError"),
+																X: ast.NewIdent("http"),
+																Sel: ast.NewIdent(
+																	"StatusInternalServerError",
+																),
 															},
 														},
 													},
@@ -2469,7 +2489,9 @@ func (i Generator) filePostgres() *ast.File {
 														&ast.CallExpr{
 															Fun: &ast.SelectorExpr{
 																X: &ast.CallExpr{
-																	Fun: ast.NewIdent("NewInvalidFormError"),
+																	Fun: ast.NewIdent(
+																		"NewInvalidFormError",
+																	),
 																},
 																Sel: ast.NewIdent("WithCause"),
 															},
@@ -2967,23 +2989,35 @@ func (i Generator) fileValidation() *ast.File {
 															&ast.CaseClause{
 																List: []ast.Expr{
 																	&ast.SelectorExpr{
-																		X:   ast.NewIdent("validation"),
-																		Sel: ast.NewIdent("ErrorObject"),
+																		X: ast.NewIdent(
+																			"validation",
+																		),
+																		Sel: ast.NewIdent(
+																			"ErrorObject",
+																		),
 																	},
 																},
 																Body: []ast.Stmt{
 																	&ast.ExprStmt{
 																		X: &ast.CallExpr{
 																			Fun: &ast.SelectorExpr{
-																				X:   ast.NewIdent("e"),
-																				Sel: ast.NewIdent("AddParam"),
+																				X: ast.NewIdent(
+																					"e",
+																				),
+																				Sel: ast.NewIdent(
+																					"AddParam",
+																				),
 																			},
 																			Args: []ast.Expr{
 																				ast.NewIdent("key"),
 																				&ast.CallExpr{
-																					Fun: ast.NewIdent("renderErrorMessage"),
+																					Fun: ast.NewIdent(
+																						"renderErrorMessage",
+																					),
 																					Args: []ast.Expr{
-																						ast.NewIdent("t"),
+																						ast.NewIdent(
+																							"t",
+																						),
 																					},
 																				},
 																			},
@@ -3001,14 +3035,22 @@ func (i Generator) fileValidation() *ast.File {
 																	&ast.ExprStmt{
 																		X: &ast.CallExpr{
 																			Fun: &ast.SelectorExpr{
-																				X:   ast.NewIdent("e"),
-																				Sel: ast.NewIdent("AddParam"),
+																				X: ast.NewIdent(
+																					"e",
+																				),
+																				Sel: ast.NewIdent(
+																					"AddParam",
+																				),
 																			},
 																			Args: []ast.Expr{
 																				ast.NewIdent("key"),
 																				&ast.SelectorExpr{
-																					X:   ast.NewIdent("t"),
-																					Sel: ast.NewIdent("Message"),
+																					X: ast.NewIdent(
+																						"t",
+																					),
+																					Sel: ast.NewIdent(
+																						"Message",
+																					),
 																				},
 																			},
 																		},
@@ -3020,15 +3062,23 @@ func (i Generator) fileValidation() *ast.File {
 																	&ast.ExprStmt{
 																		X: &ast.CallExpr{
 																			Fun: &ast.SelectorExpr{
-																				X:   ast.NewIdent("e"),
-																				Sel: ast.NewIdent("AddParam"),
+																				X: ast.NewIdent(
+																					"e",
+																				),
+																				Sel: ast.NewIdent(
+																					"AddParam",
+																				),
 																			},
 																			Args: []ast.Expr{
 																				ast.NewIdent("key"),
 																				&ast.CallExpr{
 																					Fun: &ast.SelectorExpr{
-																						X:   ast.NewIdent("value"),
-																						Sel: ast.NewIdent("Error"),
+																						X: ast.NewIdent(
+																							"value",
+																						),
+																						Sel: ast.NewIdent(
+																							"Error",
+																						),
 																					},
 																				},
 																			},
@@ -3082,9 +3132,13 @@ func (i Generator) fileValidation() *ast.File {
 														Fun: ast.NewIdent("NewInvalidParameter"),
 														Args: []ast.Expr{
 															&ast.CallExpr{
-																Fun: ast.NewIdent("renderErrorMessage"),
+																Fun: ast.NewIdent(
+																	"renderErrorMessage",
+																),
 																Args: []ast.Expr{
-																	ast.NewIdent("validationErrorObject"),
+																	ast.NewIdent(
+																		"validationErrorObject",
+																	),
 																},
 															},
 														},

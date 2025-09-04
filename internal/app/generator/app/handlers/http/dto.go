@@ -989,8 +989,10 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 													Fun: &ast.SelectorExpr{
 														X: &ast.CallExpr{
 															Fun: &ast.SelectorExpr{
-																X:   ast.NewIdent("errs"),
-																Sel: ast.NewIdent("NewInvalidFormError"),
+																X: ast.NewIdent("errs"),
+																Sel: ast.NewIdent(
+																	"NewInvalidFormError",
+																),
 															},
 														},
 														Sel: ast.NewIdent("WithParam"),
@@ -1124,8 +1126,10 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 													Fun: &ast.SelectorExpr{
 														X: &ast.CallExpr{
 															Fun: &ast.SelectorExpr{
-																X:   ast.NewIdent("errs"),
-																Sel: ast.NewIdent("NewInvalidFormError"),
+																X: ast.NewIdent("errs"),
+																Sel: ast.NewIdent(
+																	"NewInvalidFormError",
+																),
 															},
 														},
 														Sel: ast.NewIdent("WithParam"),

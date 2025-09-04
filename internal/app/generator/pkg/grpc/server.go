@@ -229,16 +229,20 @@ func (u Server) file() *ast.File {
 												Value: &ast.CompositeLit{
 													Type: &ast.ArrayType{
 														Elt: &ast.SelectorExpr{
-															X:   ast.NewIdent("grpc"),
-															Sel: ast.NewIdent("UnaryServerInterceptor"),
+															X: ast.NewIdent("grpc"),
+															Sel: ast.NewIdent(
+																"UnaryServerInterceptor",
+															),
 														},
 													},
 													Elts: []ast.Expr{
 														ast.NewIdent("unaryErrorServerInterceptor"),
 														&ast.CallExpr{
 															Fun: &ast.SelectorExpr{
-																X:   ast.NewIdent("grpc_zap"),
-																Sel: ast.NewIdent("UnaryServerInterceptor"),
+																X: ast.NewIdent("grpc_zap"),
+																Sel: ast.NewIdent(
+																	"UnaryServerInterceptor",
+																),
 															},
 															Args: []ast.Expr{
 																&ast.CallExpr{
@@ -249,11 +253,17 @@ func (u Server) file() *ast.File {
 																},
 																&ast.CallExpr{
 																	Fun: &ast.SelectorExpr{
-																		X:   ast.NewIdent("grpc_zap"),
-																		Sel: ast.NewIdent("WithMessageProducer"),
+																		X: ast.NewIdent(
+																			"grpc_zap",
+																		),
+																		Sel: ast.NewIdent(
+																			"WithMessageProducer",
+																		),
 																	},
 																	Args: []ast.Expr{
-																		ast.NewIdent("defaultMessageProducer"),
+																		ast.NewIdent(
+																			"defaultMessageProducer",
+																		),
 																	},
 																},
 															},
@@ -433,8 +443,10 @@ func (u Server) file() *ast.File {
 											Args: []ast.Expr{
 												ast.NewIdent("service"),
 												&ast.SelectorExpr{
-													X:   ast.NewIdent("grpc_health_v1"),
-													Sel: ast.NewIdent("HealthCheckResponse_SERVING"),
+													X: ast.NewIdent("grpc_health_v1"),
+													Sel: ast.NewIdent(
+														"HealthCheckResponse_SERVING",
+													),
 												},
 											},
 										},

@@ -53,7 +53,14 @@ func (i UseCaseGenerator) Sync() error {
 }
 
 func (i UseCaseGenerator) filename() string {
-	return filepath.Join("internal", "app", i.domain.AppConfig.AppName(), "usecases", i.domain.DirName(), i.domain.FileName())
+	return filepath.Join(
+		"internal",
+		"app",
+		i.domain.AppConfig.AppName(),
+		"usecases",
+		i.domain.DirName(),
+		i.domain.FileName(),
+	)
 }
 
 func (i UseCaseGenerator) structure() *ast.TypeSpec {

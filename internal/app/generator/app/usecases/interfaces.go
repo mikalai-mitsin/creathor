@@ -24,7 +24,14 @@ func NewInterfacesGenerator(domain *configs.EntityConfig) *InterfacesGenerator {
 
 func (i InterfacesGenerator) Sync() error {
 	fileset := token.NewFileSet()
-	filename := path.Join("internal", "app", i.domain.AppConfig.AppName(), "usecases", i.domain.DirName(), fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()))
+	filename := path.Join(
+		"internal",
+		"app",
+		i.domain.AppConfig.AppName(),
+		"usecases",
+		i.domain.DirName(),
+		fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()),
+	)
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
 		return err
@@ -36,7 +43,8 @@ func (i InterfacesGenerator) Sync() error {
 	if !astfile.TypeExists(file, i.domain.GetServiceInterfaceName()) {
 		file.Decls = append(file.Decls, i.appServiceInterface())
 	}
-	if !astfile.TypeExists(file, i.domain.EventProducerInterfaceName()) && i.domain.AppConfig.ProjectConfig.KafkaEnabled {
+	if !astfile.TypeExists(file, i.domain.EventProducerInterfaceName()) &&
+		i.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		file.Decls = append(file.Decls, i.appEventProducerInterface())
 	}
 	if !astfile.TypeExists(file, "logger") {
@@ -72,7 +80,11 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text:  fmt.Sprintf("//go:generate mockgen -source=%s_interfaces.go -package=usecases -destination=%s_interfaces_mock.go", i.domain.SnakeName(), i.domain.SnakeName()),
+					Text: fmt.Sprintf(
+						"//go:generate mockgen -source=%s_interfaces.go -package=usecases -destination=%s_interfaces_mock.go",
+						i.domain.SnakeName(),
+						i.domain.SnakeName(),
+					),
 				},
 			},
 		},

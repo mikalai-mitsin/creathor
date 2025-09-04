@@ -43,7 +43,15 @@ func (h *HandlerGenerator) Sync() error {
 }
 
 func (h *HandlerGenerator) filename() string {
-	return path.Join("internal", "app", h.domain.AppConfig.AppName(), "handlers", "kafka", h.domain.DirName(), h.domain.FileName())
+	return path.Join(
+		"internal",
+		"app",
+		h.domain.AppConfig.AppName(),
+		"handlers",
+		"kafka",
+		h.domain.DirName(),
+		h.domain.FileName(),
+	)
 }
 
 func (h *HandlerGenerator) file() *ast.File {

@@ -359,7 +359,9 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent(fmt.Sprintf("%sRepositories", entity.LowerCamelName())),
+							X: ast.NewIdent(
+								fmt.Sprintf("%sRepositories", entity.LowerCamelName()),
+							),
 							Sel: ast.NewIdent(entity.GetRepositoryConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -414,7 +416,10 @@ func (a App) constructor() *ast.FuncDecl {
 			ast.NewIdent(entity.GetServicePrivateVariableName()),
 		}
 		if a.app.KafkaEnabled {
-			useCaseArgs = append(useCaseArgs, ast.NewIdent(entity.GetEventProducerPrivateVariableName()))
+			useCaseArgs = append(
+				useCaseArgs,
+				ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
+			)
 		}
 		useCaseArgs = append(useCaseArgs, ast.NewIdent("dtxManager"), ast.NewIdent("logger"))
 		body.List = append(body.List, &ast.AssignStmt{
@@ -442,7 +447,9 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent(fmt.Sprintf("%sHttpHandlers", entity.LowerCamelName())),
+							X: ast.NewIdent(
+								fmt.Sprintf("%sHttpHandlers", entity.LowerCamelName()),
+							),
 							Sel: ast.NewIdent(entity.GetHTTPHandlerConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -466,7 +473,9 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent(fmt.Sprintf("%sKafkaHandlers", entity.LowerCamelName())),
+							X: ast.NewIdent(
+								fmt.Sprintf("%sKafkaHandlers", entity.LowerCamelName()),
+							),
 							Sel: ast.NewIdent(entity.KafkaHandlerConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -493,7 +502,9 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent(fmt.Sprintf("%sGrpcHandlers", entity.LowerCamelName())),
+							X: ast.NewIdent(
+								fmt.Sprintf("%sGrpcHandlers", entity.LowerCamelName()),
+							),
 							Sel: ast.NewIdent(entity.GetGRPCHandlerConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -786,8 +797,12 @@ func (a App) registerHTTP() *ast.FuncDecl {
 					},
 					Args: []ast.Expr{
 						&ast.BasicLit{
-							Kind:  token.STRING,
-							Value: fmt.Sprintf(`"/api/v1/%s/%s"`, a.app.AppName(), entity.GetHTTPPath()),
+							Kind: token.STRING,
+							Value: fmt.Sprintf(
+								`"/api/v1/%s/%s"`,
+								a.app.AppName(),
+								entity.GetHTTPPath(),
+							),
 						},
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{

@@ -53,7 +53,14 @@ func (u ServiceGenerator) Sync() error {
 }
 
 func (u ServiceGenerator) filename() string {
-	return filepath.Join("internal", "app", u.domain.AppConfig.AppName(), "services", u.domain.DirName(), u.domain.FileName())
+	return filepath.Join(
+		"internal",
+		"app",
+		u.domain.AppConfig.AppName(),
+		"services",
+		u.domain.DirName(),
+		u.domain.FileName(),
+	)
 }
 
 func (u ServiceGenerator) file() *ast.File {

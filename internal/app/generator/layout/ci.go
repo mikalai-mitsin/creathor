@@ -43,14 +43,24 @@ func (c *CIGenerator) Sync() error {
 		files = append(
 			files,
 			&tmpl.Template{
-				SourcePath:      "templates/ci/github/workflows/tests.yaml.tmpl",
-				DestinationPath: filepath.Join(destinationPath, ".github", "workflows", "tests.yaml"),
-				Name:            "github-tests",
+				SourcePath: "templates/ci/github/workflows/tests.yaml.tmpl",
+				DestinationPath: filepath.Join(
+					destinationPath,
+					".github",
+					"workflows",
+					"tests.yaml",
+				),
+				Name: "github-tests",
 			},
 			&tmpl.Template{
-				SourcePath:      "templates/ci/github/workflows/docker-publish.yml.tmpl",
-				DestinationPath: filepath.Join(destinationPath, ".github", "workflows", "docker-publish.yml"),
-				Name:            "github-docker-publish",
+				SourcePath: "templates/ci/github/workflows/docker-publish.yml.tmpl",
+				DestinationPath: filepath.Join(
+					destinationPath,
+					".github",
+					"workflows",
+					"docker-publish.yml",
+				),
+				Name: "github-docker-publish",
 			},
 		)
 		directories = append(directories, filepath.Join(destinationPath, ".github", "workflows"))

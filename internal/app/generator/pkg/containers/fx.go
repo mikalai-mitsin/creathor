@@ -706,8 +706,12 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																				ast.NewIdent("_"),
 																			},
 																			Type: &ast.SelectorExpr{
-																				X:   ast.NewIdent("context"),
-																				Sel: ast.NewIdent("Context"),
+																				X: ast.NewIdent(
+																					"context",
+																				),
+																				Sel: ast.NewIdent(
+																					"Context",
+																				),
 																			},
 																		},
 																	},
@@ -715,7 +719,9 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																Results: &ast.FieldList{
 																	List: []*ast.Field{
 																		{
-																			Type: ast.NewIdent("error"),
+																			Type: ast.NewIdent(
+																				"error",
+																			),
 																		},
 																	},
 																},
@@ -731,11 +737,17 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																			Rhs: []ast.Expr{
 																				&ast.CallExpr{
 																					Fun: &ast.SelectorExpr{
-																						X:   ast.NewIdent("app"),
-																						Sel: ast.NewIdent("RegisterKafka"),
+																						X: ast.NewIdent(
+																							"app",
+																						),
+																						Sel: ast.NewIdent(
+																							"RegisterKafka",
+																						),
 																					},
 																					Args: []ast.Expr{
-																						ast.NewIdent("consumer"),
+																						ast.NewIdent(
+																							"consumer",
+																						),
 																					},
 																				},
 																			},
@@ -749,7 +761,9 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																			List: []ast.Stmt{
 																				&ast.ReturnStmt{
 																					Results: []ast.Expr{
-																						ast.NewIdent("err"),
+																						ast.NewIdent(
+																							"err",
+																						),
 																					},
 																				},
 																			},
@@ -929,8 +943,12 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																				ast.NewIdent("ctx"),
 																			},
 																			Type: &ast.SelectorExpr{
-																				X:   ast.NewIdent("context"),
-																				Sel: ast.NewIdent("Context"),
+																				X: ast.NewIdent(
+																					"context",
+																				),
+																				Sel: ast.NewIdent(
+																					"Context",
+																				),
 																			},
 																		},
 																	},
@@ -938,7 +956,9 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																Results: &ast.FieldList{
 																	List: []*ast.Field{
 																		{
-																			Type: ast.NewIdent("error"),
+																			Type: ast.NewIdent(
+																				"error",
+																			),
 																		},
 																	},
 																},
@@ -955,34 +975,50 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																					List: []ast.Stmt{
 																						&ast.AssignStmt{
 																							Lhs: []ast.Expr{
-																								ast.NewIdent("err"),
+																								ast.NewIdent(
+																									"err",
+																								),
 																							},
 																							Tok: token.DEFINE,
 																							Rhs: []ast.Expr{
 																								&ast.CallExpr{
 																									Fun: &ast.SelectorExpr{
-																										X:   ast.NewIdent("consumer"),
-																										Sel: ast.NewIdent("Start"),
+																										X: ast.NewIdent(
+																											"consumer",
+																										),
+																										Sel: ast.NewIdent(
+																											"Start",
+																										),
 																									},
 																									Args: []ast.Expr{
-																										ast.NewIdent("ctx"),
+																										ast.NewIdent(
+																											"ctx",
+																										),
 																									},
 																								},
 																							},
 																						},
 																						&ast.IfStmt{
 																							Cond: &ast.BinaryExpr{
-																								X:  ast.NewIdent("err"),
+																								X: ast.NewIdent(
+																									"err",
+																								),
 																								Op: token.NEQ,
-																								Y:  ast.NewIdent("nil"),
+																								Y: ast.NewIdent(
+																									"nil",
+																								),
 																							},
 																							Body: &ast.BlockStmt{
 																								List: []ast.Stmt{
 																									&ast.ExprStmt{
 																										X: &ast.CallExpr{
 																											Fun: &ast.SelectorExpr{
-																												X:   ast.NewIdent("logger"),
-																												Sel: ast.NewIdent("Error"),
+																												X: ast.NewIdent(
+																													"logger",
+																												),
+																												Sel: ast.NewIdent(
+																													"Error",
+																												),
 																											},
 																											Args: []ast.Expr{
 																												&ast.BasicLit{
@@ -991,15 +1027,21 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																												},
 																												&ast.CallExpr{
 																													Fun: &ast.SelectorExpr{
-																														X:   ast.NewIdent("log"),
-																														Sel: ast.NewIdent("Any"),
+																														X: ast.NewIdent(
+																															"log",
+																														),
+																														Sel: ast.NewIdent(
+																															"Any",
+																														),
 																													},
 																													Args: []ast.Expr{
 																														&ast.BasicLit{
 																															Kind:  token.STRING,
 																															Value: `"error"`,
 																														},
-																														ast.NewIdent("err"),
+																														ast.NewIdent(
+																															"err",
+																														),
 																													},
 																												},
 																											},
@@ -1007,14 +1049,20 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																									},
 																									&ast.AssignStmt{
 																										Lhs: []ast.Expr{
-																											ast.NewIdent("_"),
+																											ast.NewIdent(
+																												"_",
+																											),
 																										},
 																										Tok: token.ASSIGN,
 																										Rhs: []ast.Expr{
 																											&ast.CallExpr{
 																												Fun: &ast.SelectorExpr{
-																													X:   ast.NewIdent("shutdowner"),
-																													Sel: ast.NewIdent("Shutdown"),
+																													X: ast.NewIdent(
+																														"shutdowner",
+																													),
+																													Sel: ast.NewIdent(
+																														"Shutdown",
+																													),
 																												},
 																											},
 																										},
@@ -1185,8 +1233,12 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																				ast.NewIdent("_"),
 																			},
 																			Type: &ast.SelectorExpr{
-																				X:   ast.NewIdent("context"),
-																				Sel: ast.NewIdent("Context"),
+																				X: ast.NewIdent(
+																					"context",
+																				),
+																				Sel: ast.NewIdent(
+																					"Context",
+																				),
 																			},
 																		},
 																	},
@@ -1194,7 +1246,9 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																Results: &ast.FieldList{
 																	List: []*ast.Field{
 																		{
-																			Type: ast.NewIdent("error"),
+																			Type: ast.NewIdent(
+																				"error",
+																			),
 																		},
 																	},
 																},
@@ -1210,11 +1264,17 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																			Rhs: []ast.Expr{
 																				&ast.CallExpr{
 																					Fun: &ast.SelectorExpr{
-																						X:   ast.NewIdent("app"),
-																						Sel: ast.NewIdent("RegisterGRPC"),
+																						X: ast.NewIdent(
+																							"app",
+																						),
+																						Sel: ast.NewIdent(
+																							"RegisterGRPC",
+																						),
 																					},
 																					Args: []ast.Expr{
-																						ast.NewIdent("server"),
+																						ast.NewIdent(
+																							"server",
+																						),
 																					},
 																				},
 																			},
@@ -1228,7 +1288,9 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																			List: []ast.Stmt{
 																				&ast.ReturnStmt{
 																					Results: []ast.Expr{
-																						ast.NewIdent("err"),
+																						ast.NewIdent(
+																							"err",
+																						),
 																					},
 																				},
 																			},
@@ -1335,8 +1397,12 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																			ast.NewIdent("ctx"),
 																		},
 																		Type: &ast.SelectorExpr{
-																			X:   ast.NewIdent("context"),
-																			Sel: ast.NewIdent("Context"),
+																			X: ast.NewIdent(
+																				"context",
+																			),
+																			Sel: ast.NewIdent(
+																				"Context",
+																			),
 																		},
 																	},
 																},
@@ -1361,34 +1427,50 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																				List: []ast.Stmt{
 																					&ast.AssignStmt{
 																						Lhs: []ast.Expr{
-																							ast.NewIdent("err"),
+																							ast.NewIdent(
+																								"err",
+																							),
 																						},
 																						Tok: token.DEFINE,
 																						Rhs: []ast.Expr{
 																							&ast.CallExpr{
 																								Fun: &ast.SelectorExpr{
-																									X:   ast.NewIdent("server"),
-																									Sel: ast.NewIdent("Start"),
+																									X: ast.NewIdent(
+																										"server",
+																									),
+																									Sel: ast.NewIdent(
+																										"Start",
+																									),
 																								},
 																								Args: []ast.Expr{
-																									ast.NewIdent("ctx"),
+																									ast.NewIdent(
+																										"ctx",
+																									),
 																								},
 																							},
 																						},
 																					},
 																					&ast.IfStmt{
 																						Cond: &ast.BinaryExpr{
-																							X:  ast.NewIdent("err"),
+																							X: ast.NewIdent(
+																								"err",
+																							),
 																							Op: token.NEQ,
-																							Y:  ast.NewIdent("nil"),
+																							Y: ast.NewIdent(
+																								"nil",
+																							),
 																						},
 																						Body: &ast.BlockStmt{
 																							List: []ast.Stmt{
 																								&ast.ExprStmt{
 																									X: &ast.CallExpr{
 																										Fun: &ast.SelectorExpr{
-																											X:   ast.NewIdent("logger"),
-																											Sel: ast.NewIdent("Error"),
+																											X: ast.NewIdent(
+																												"logger",
+																											),
+																											Sel: ast.NewIdent(
+																												"Error",
+																											),
 																										},
 																										Args: []ast.Expr{
 																											&ast.BasicLit{
@@ -1397,15 +1479,21 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																											},
 																											&ast.CallExpr{
 																												Fun: &ast.SelectorExpr{
-																													X:   ast.NewIdent("log"),
-																													Sel: ast.NewIdent("Any"),
+																													X: ast.NewIdent(
+																														"log",
+																													),
+																													Sel: ast.NewIdent(
+																														"Any",
+																													),
 																												},
 																												Args: []ast.Expr{
 																													&ast.BasicLit{
 																														Kind:  token.STRING,
 																														Value: `"error"`,
 																													},
-																													ast.NewIdent("err"),
+																													ast.NewIdent(
+																														"err",
+																													),
 																												},
 																											},
 																										},
@@ -1413,14 +1501,20 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																								},
 																								&ast.AssignStmt{
 																									Lhs: []ast.Expr{
-																										ast.NewIdent("_"),
+																										ast.NewIdent(
+																											"_",
+																										),
 																									},
 																									Tok: token.ASSIGN,
 																									Rhs: []ast.Expr{
 																										&ast.CallExpr{
 																											Fun: &ast.SelectorExpr{
-																												X:   ast.NewIdent("shutdowner"),
-																												Sel: ast.NewIdent("Shutdown"),
+																												X: ast.NewIdent(
+																													"shutdowner",
+																												),
+																												Sel: ast.NewIdent(
+																													"Shutdown",
+																												),
 																											},
 																										},
 																									},
@@ -1591,8 +1685,12 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																				ast.NewIdent("_"),
 																			},
 																			Type: &ast.SelectorExpr{
-																				X:   ast.NewIdent("context"),
-																				Sel: ast.NewIdent("Context"),
+																				X: ast.NewIdent(
+																					"context",
+																				),
+																				Sel: ast.NewIdent(
+																					"Context",
+																				),
 																			},
 																		},
 																	},
@@ -1600,7 +1698,9 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																Results: &ast.FieldList{
 																	List: []*ast.Field{
 																		{
-																			Type: ast.NewIdent("error"),
+																			Type: ast.NewIdent(
+																				"error",
+																			),
 																		},
 																	},
 																},
@@ -1616,11 +1716,17 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																			Rhs: []ast.Expr{
 																				&ast.CallExpr{
 																					Fun: &ast.SelectorExpr{
-																						X:   ast.NewIdent("app"),
-																						Sel: ast.NewIdent("RegisterHTTP"),
+																						X: ast.NewIdent(
+																							"app",
+																						),
+																						Sel: ast.NewIdent(
+																							"RegisterHTTP",
+																						),
 																					},
 																					Args: []ast.Expr{
-																						ast.NewIdent("server"),
+																						ast.NewIdent(
+																							"server",
+																						),
 																					},
 																				},
 																			},
@@ -1634,7 +1740,9 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																			List: []ast.Stmt{
 																				&ast.ReturnStmt{
 																					Results: []ast.Expr{
-																						ast.NewIdent("err"),
+																						ast.NewIdent(
+																							"err",
+																						),
 																					},
 																				},
 																			},
@@ -1741,8 +1849,12 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																			ast.NewIdent("ctx"),
 																		},
 																		Type: &ast.SelectorExpr{
-																			X:   ast.NewIdent("context"),
-																			Sel: ast.NewIdent("Context"),
+																			X: ast.NewIdent(
+																				"context",
+																			),
+																			Sel: ast.NewIdent(
+																				"Context",
+																			),
 																		},
 																	},
 																},
@@ -1767,34 +1879,50 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																				List: []ast.Stmt{
 																					&ast.AssignStmt{
 																						Lhs: []ast.Expr{
-																							ast.NewIdent("err"),
+																							ast.NewIdent(
+																								"err",
+																							),
 																						},
 																						Tok: token.DEFINE,
 																						Rhs: []ast.Expr{
 																							&ast.CallExpr{
 																								Fun: &ast.SelectorExpr{
-																									X:   ast.NewIdent("server"),
-																									Sel: ast.NewIdent("Start"),
+																									X: ast.NewIdent(
+																										"server",
+																									),
+																									Sel: ast.NewIdent(
+																										"Start",
+																									),
 																								},
 																								Args: []ast.Expr{
-																									ast.NewIdent("ctx"),
+																									ast.NewIdent(
+																										"ctx",
+																									),
 																								},
 																							},
 																						},
 																					},
 																					&ast.IfStmt{
 																						Cond: &ast.BinaryExpr{
-																							X:  ast.NewIdent("err"),
+																							X: ast.NewIdent(
+																								"err",
+																							),
 																							Op: token.NEQ,
-																							Y:  ast.NewIdent("nil"),
+																							Y: ast.NewIdent(
+																								"nil",
+																							),
 																						},
 																						Body: &ast.BlockStmt{
 																							List: []ast.Stmt{
 																								&ast.ExprStmt{
 																									X: &ast.CallExpr{
 																										Fun: &ast.SelectorExpr{
-																											X:   ast.NewIdent("logger"),
-																											Sel: ast.NewIdent("Error"),
+																											X: ast.NewIdent(
+																												"logger",
+																											),
+																											Sel: ast.NewIdent(
+																												"Error",
+																											),
 																										},
 																										Args: []ast.Expr{
 																											&ast.BasicLit{
@@ -1803,15 +1931,21 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																											},
 																											&ast.CallExpr{
 																												Fun: &ast.SelectorExpr{
-																													X:   ast.NewIdent("log"),
-																													Sel: ast.NewIdent("Any"),
+																													X: ast.NewIdent(
+																														"log",
+																													),
+																													Sel: ast.NewIdent(
+																														"Any",
+																													),
 																												},
 																												Args: []ast.Expr{
 																													&ast.BasicLit{
 																														Kind:  token.STRING,
 																														Value: `"error"`,
 																													},
-																													ast.NewIdent("err"),
+																													ast.NewIdent(
+																														"err",
+																													),
 																												},
 																											},
 																										},
@@ -1819,14 +1953,20 @@ func (f Generator) astServerContainer() *ast.FuncDecl {
 																								},
 																								&ast.AssignStmt{
 																									Lhs: []ast.Expr{
-																										ast.NewIdent("_"),
+																										ast.NewIdent(
+																											"_",
+																										),
 																									},
 																									Tok: token.ASSIGN,
 																									Rhs: []ast.Expr{
 																										&ast.CallExpr{
 																											Fun: &ast.SelectorExpr{
-																												X:   ast.NewIdent("shutdowner"),
-																												Sel: ast.NewIdent("Shutdown"),
+																												X: ast.NewIdent(
+																													"shutdowner",
+																												),
+																												Sel: ast.NewIdent(
+																													"Shutdown",
+																												),
 																											},
 																										},
 																									},
@@ -2061,8 +2201,10 @@ func (f Generator) astMigrateContainer() *ast.FuncDecl {
 															},
 															Type: &ast.StarExpr{
 																X: &ast.SelectorExpr{
-																	X:   ast.NewIdent("postgres"),
-																	Sel: ast.NewIdent("MigrateManager"),
+																	X: ast.NewIdent("postgres"),
+																	Sel: ast.NewIdent(
+																		"MigrateManager",
+																	),
 																},
 															},
 														},
@@ -2094,18 +2236,26 @@ func (f Generator) astMigrateContainer() *ast.FuncDecl {
 																	},
 																	Elts: []ast.Expr{
 																		&ast.KeyValueExpr{
-																			Key: ast.NewIdent("OnStart"),
+																			Key: ast.NewIdent(
+																				"OnStart",
+																			),
 																			Value: &ast.FuncLit{
 																				Type: &ast.FuncType{
 																					Params: &ast.FieldList{
 																						List: []*ast.Field{
 																							{
 																								Names: []*ast.Ident{
-																									ast.NewIdent("ctx"),
+																									ast.NewIdent(
+																										"ctx",
+																									),
 																								},
 																								Type: &ast.SelectorExpr{
-																									X:   ast.NewIdent("context"),
-																									Sel: ast.NewIdent("Context"),
+																									X: ast.NewIdent(
+																										"context",
+																									),
+																									Sel: ast.NewIdent(
+																										"Context",
+																									),
 																								},
 																							},
 																						},
@@ -2113,7 +2263,9 @@ func (f Generator) astMigrateContainer() *ast.FuncDecl {
 																					Results: &ast.FieldList{
 																						List: []*ast.Field{
 																							{
-																								Type: ast.NewIdent("error"),
+																								Type: ast.NewIdent(
+																									"error",
+																								),
 																							},
 																						},
 																					},
@@ -2130,34 +2282,50 @@ func (f Generator) astMigrateContainer() *ast.FuncDecl {
 																										List: []ast.Stmt{
 																											&ast.AssignStmt{
 																												Lhs: []ast.Expr{
-																													ast.NewIdent("err"),
+																													ast.NewIdent(
+																														"err",
+																													),
 																												},
 																												Tok: token.DEFINE,
 																												Rhs: []ast.Expr{
 																													&ast.CallExpr{
 																														Fun: &ast.SelectorExpr{
-																															X:   ast.NewIdent("manager"),
-																															Sel: ast.NewIdent("Up"),
+																															X: ast.NewIdent(
+																																"manager",
+																															),
+																															Sel: ast.NewIdent(
+																																"Up",
+																															),
 																														},
 																														Args: []ast.Expr{
-																															ast.NewIdent("ctx"),
+																															ast.NewIdent(
+																																"ctx",
+																															),
 																														},
 																													},
 																												},
 																											},
 																											&ast.IfStmt{
 																												Cond: &ast.BinaryExpr{
-																													X:  ast.NewIdent("err"),
+																													X: ast.NewIdent(
+																														"err",
+																													),
 																													Op: token.NEQ,
-																													Y:  ast.NewIdent("nil"),
+																													Y: ast.NewIdent(
+																														"nil",
+																													),
 																												},
 																												Body: &ast.BlockStmt{
 																													List: []ast.Stmt{
 																														&ast.ExprStmt{
 																															X: &ast.CallExpr{
 																																Fun: &ast.SelectorExpr{
-																																	X:   ast.NewIdent("logger"),
-																																	Sel: ast.NewIdent("Error"),
+																																	X: ast.NewIdent(
+																																		"logger",
+																																	),
+																																	Sel: ast.NewIdent(
+																																		"Error",
+																																	),
 																																},
 																																Args: []ast.Expr{
 																																	&ast.BasicLit{
@@ -2166,15 +2334,21 @@ func (f Generator) astMigrateContainer() *ast.FuncDecl {
 																																	},
 																																	&ast.CallExpr{
 																																		Fun: &ast.SelectorExpr{
-																																			X:   ast.NewIdent("log"),
-																																			Sel: ast.NewIdent("Any"),
+																																			X: ast.NewIdent(
+																																				"log",
+																																			),
+																																			Sel: ast.NewIdent(
+																																				"Any",
+																																			),
 																																		},
 																																		Args: []ast.Expr{
 																																			&ast.BasicLit{
 																																				Kind:  token.STRING,
 																																				Value: `"error"`,
 																																			},
-																																			ast.NewIdent("err"),
+																																			ast.NewIdent(
+																																				"err",
+																																			),
 																																		},
 																																	},
 																																},
@@ -2190,21 +2364,29 @@ func (f Generator) astMigrateContainer() *ast.FuncDecl {
 																						},
 																						&ast.AssignStmt{
 																							Lhs: []ast.Expr{
-																								ast.NewIdent("_"),
+																								ast.NewIdent(
+																									"_",
+																								),
 																							},
 																							Tok: token.ASSIGN,
 																							Rhs: []ast.Expr{
 																								&ast.CallExpr{
 																									Fun: &ast.SelectorExpr{
-																										X:   ast.NewIdent("shutdowner"),
-																										Sel: ast.NewIdent("Shutdown"),
+																										X: ast.NewIdent(
+																											"shutdowner",
+																										),
+																										Sel: ast.NewIdent(
+																											"Shutdown",
+																										),
 																									},
 																								},
 																							},
 																						},
 																						&ast.ReturnStmt{
 																							Results: []ast.Expr{
-																								ast.NewIdent("nil"),
+																								ast.NewIdent(
+																									"nil",
+																								),
 																							},
 																						},
 																					},

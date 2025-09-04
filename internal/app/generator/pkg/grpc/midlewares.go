@@ -457,43 +457,69 @@ func (u Middlewares) file() *ast.File {
 																Tok:   token.DEFINE,
 																X: &ast.CallExpr{
 																	Fun: &ast.SelectorExpr{
-																		X:   ast.NewIdent("badRequest"),
-																		Sel: ast.NewIdent("GetFieldViolations"),
+																		X: ast.NewIdent(
+																			"badRequest",
+																		),
+																		Sel: ast.NewIdent(
+																			"GetFieldViolations",
+																		),
 																	},
 																},
 																Body: &ast.BlockStmt{
 																	List: []ast.Stmt{
 																		&ast.AssignStmt{
 																			Lhs: []ast.Expr{
-																				ast.NewIdent("errParams"),
+																				ast.NewIdent(
+																					"errParams",
+																				),
 																			},
 																			Tok: token.ASSIGN,
 																			Rhs: []ast.Expr{
 																				&ast.CallExpr{
-																					Fun: ast.NewIdent("append"),
+																					Fun: ast.NewIdent(
+																						"append",
+																					),
 																					Args: []ast.Expr{
-																						ast.NewIdent("errParams"),
+																						ast.NewIdent(
+																							"errParams",
+																						),
 																						&ast.CompositeLit{
 																							Type: &ast.SelectorExpr{
-																								X:   ast.NewIdent("errs"),
-																								Sel: ast.NewIdent("Param"),
+																								X: ast.NewIdent(
+																									"errs",
+																								),
+																								Sel: ast.NewIdent(
+																									"Param",
+																								),
 																							},
 																							Elts: []ast.Expr{
 																								&ast.KeyValueExpr{
-																									Key: ast.NewIdent("Key"),
+																									Key: ast.NewIdent(
+																										"Key",
+																									),
 																									Value: &ast.CallExpr{
 																										Fun: &ast.SelectorExpr{
-																											X:   ast.NewIdent("violation"),
-																											Sel: ast.NewIdent("GetField"),
+																											X: ast.NewIdent(
+																												"violation",
+																											),
+																											Sel: ast.NewIdent(
+																												"GetField",
+																											),
 																										},
 																									},
 																								},
 																								&ast.KeyValueExpr{
-																									Key: ast.NewIdent("Value"),
+																									Key: ast.NewIdent(
+																										"Value",
+																									),
 																									Value: &ast.CallExpr{
 																										Fun: &ast.SelectorExpr{
-																											X:   ast.NewIdent("violation"),
-																											Sel: ast.NewIdent("GetDescription"),
+																											X: ast.NewIdent(
+																												"violation",
+																											),
+																											Sel: ast.NewIdent(
+																												"GetDescription",
+																											),
 																										},
 																									},
 																								},
@@ -537,35 +563,57 @@ func (u Middlewares) file() *ast.File {
 																Tok:   token.DEFINE,
 																X: &ast.CallExpr{
 																	Fun: &ast.SelectorExpr{
-																		X:   ast.NewIdent("errorInfo"),
-																		Sel: ast.NewIdent("GetMetadata"),
+																		X: ast.NewIdent(
+																			"errorInfo",
+																		),
+																		Sel: ast.NewIdent(
+																			"GetMetadata",
+																		),
 																	},
 																},
 																Body: &ast.BlockStmt{
 																	List: []ast.Stmt{
 																		&ast.AssignStmt{
 																			Lhs: []ast.Expr{
-																				ast.NewIdent("errParams"),
+																				ast.NewIdent(
+																					"errParams",
+																				),
 																			},
 																			Tok: token.ASSIGN,
 																			Rhs: []ast.Expr{
 																				&ast.CallExpr{
-																					Fun: ast.NewIdent("append"),
+																					Fun: ast.NewIdent(
+																						"append",
+																					),
 																					Args: []ast.Expr{
-																						ast.NewIdent("errParams"),
+																						ast.NewIdent(
+																							"errParams",
+																						),
 																						&ast.CompositeLit{
 																							Type: &ast.SelectorExpr{
-																								X:   ast.NewIdent("errs"),
-																								Sel: ast.NewIdent("Param"),
+																								X: ast.NewIdent(
+																									"errs",
+																								),
+																								Sel: ast.NewIdent(
+																									"Param",
+																								),
 																							},
 																							Elts: []ast.Expr{
 																								&ast.KeyValueExpr{
-																									Key:   ast.NewIdent("Key"),
-																									Value: ast.NewIdent("key"),
+																									Key: ast.NewIdent(
+																										"Key",
+																									),
+																									Value: ast.NewIdent(
+																										"key",
+																									),
 																								},
 																								&ast.KeyValueExpr{
-																									Key:   ast.NewIdent("Value"),
-																									Value: ast.NewIdent("value"),
+																									Key: ast.NewIdent(
+																										"Value",
+																									),
+																									Value: ast.NewIdent(
+																										"value",
+																									),
 																								},
 																							},
 																						},
@@ -887,8 +935,10 @@ func (u Middlewares) file() *ast.File {
 												&ast.CaseClause{
 													List: []ast.Expr{
 														&ast.SelectorExpr{
-															X:   ast.NewIdent("errs"),
-															Sel: ast.NewIdent("ErrorCodeInvalidArgument"),
+															X: ast.NewIdent("errs"),
+															Sel: ast.NewIdent(
+																"ErrorCodeInvalidArgument",
+															),
 														},
 													},
 													Body: []ast.Stmt{
@@ -902,8 +952,12 @@ func (u Middlewares) file() *ast.File {
 																	Op: token.AND,
 																	X: &ast.CompositeLit{
 																		Type: &ast.SelectorExpr{
-																			X:   ast.NewIdent("errdetails"),
-																			Sel: ast.NewIdent("BadRequest"),
+																			X: ast.NewIdent(
+																				"errdetails",
+																			),
+																			Sel: ast.NewIdent(
+																				"BadRequest",
+																			),
 																		},
 																	},
 																},
@@ -922,39 +976,65 @@ func (u Middlewares) file() *ast.File {
 																	&ast.AssignStmt{
 																		Lhs: []ast.Expr{
 																			&ast.SelectorExpr{
-																				X:   ast.NewIdent("d"),
-																				Sel: ast.NewIdent("FieldViolations"),
+																				X: ast.NewIdent(
+																					"d",
+																				),
+																				Sel: ast.NewIdent(
+																					"FieldViolations",
+																				),
 																			},
 																		},
 																		Tok: token.ASSIGN,
 																		Rhs: []ast.Expr{
 																			&ast.CallExpr{
-																				Fun: ast.NewIdent("append"),
+																				Fun: ast.NewIdent(
+																					"append",
+																				),
 																				Args: []ast.Expr{
 																					&ast.SelectorExpr{
-																						X:   ast.NewIdent("d"),
-																						Sel: ast.NewIdent("FieldViolations"),
+																						X: ast.NewIdent(
+																							"d",
+																						),
+																						Sel: ast.NewIdent(
+																							"FieldViolations",
+																						),
 																					},
 																					&ast.UnaryExpr{
 																						Op: token.AND,
 																						X: &ast.CompositeLit{
 																							Type: &ast.SelectorExpr{
-																								X:   ast.NewIdent("errdetails"),
-																								Sel: ast.NewIdent("BadRequest_FieldViolation"),
+																								X: ast.NewIdent(
+																									"errdetails",
+																								),
+																								Sel: ast.NewIdent(
+																									"BadRequest_FieldViolation",
+																								),
 																							},
 																							Elts: []ast.Expr{
 																								&ast.KeyValueExpr{
-																									Key: ast.NewIdent("Field"),
+																									Key: ast.NewIdent(
+																										"Field",
+																									),
 																									Value: &ast.SelectorExpr{
-																										X:   ast.NewIdent("param"),
-																										Sel: ast.NewIdent("Key"),
+																										X: ast.NewIdent(
+																											"param",
+																										),
+																										Sel: ast.NewIdent(
+																											"Key",
+																										),
 																									},
 																								},
 																								&ast.KeyValueExpr{
-																									Key: ast.NewIdent("Description"),
+																									Key: ast.NewIdent(
+																										"Description",
+																									),
 																									Value: &ast.SelectorExpr{
-																										X:   ast.NewIdent("param"),
-																										Sel: ast.NewIdent("Value"),
+																										X: ast.NewIdent(
+																											"param",
+																										),
+																										Sel: ast.NewIdent(
+																											"Value",
+																										),
 																									},
 																								},
 																							},
@@ -976,8 +1056,10 @@ func (u Middlewares) file() *ast.File {
 															Rhs: []ast.Expr{
 																&ast.CallExpr{
 																	Fun: &ast.SelectorExpr{
-																		X:   ast.NewIdent("stat"),
-																		Sel: ast.NewIdent("WithDetails"),
+																		X: ast.NewIdent("stat"),
+																		Sel: ast.NewIdent(
+																			"WithDetails",
+																		),
 																	},
 																	Args: []ast.Expr{
 																		ast.NewIdent("d"),
@@ -997,18 +1079,30 @@ func (u Middlewares) file() *ast.File {
 																		Results: []ast.Expr{
 																			&ast.CallExpr{
 																				Fun: &ast.SelectorExpr{
-																					X:   ast.NewIdent("status"),
-																					Sel: ast.NewIdent("Error"),
+																					X: ast.NewIdent(
+																						"status",
+																					),
+																					Sel: ast.NewIdent(
+																						"Error",
+																					),
 																				},
 																				Args: []ast.Expr{
 																					&ast.SelectorExpr{
-																						X:   ast.NewIdent("codes"),
-																						Sel: ast.NewIdent("Internal"),
+																						X: ast.NewIdent(
+																							"codes",
+																						),
+																						Sel: ast.NewIdent(
+																							"Internal",
+																						),
 																					},
 																					&ast.CallExpr{
 																						Fun: &ast.SelectorExpr{
-																							X:   ast.NewIdent("err"),
-																							Sel: ast.NewIdent("Error"),
+																							X: ast.NewIdent(
+																								"err",
+																							),
+																							Sel: ast.NewIdent(
+																								"Error",
+																							),
 																						},
 																					},
 																				},
@@ -1032,32 +1126,52 @@ func (u Middlewares) file() *ast.File {
 																	Op: token.AND,
 																	X: &ast.CompositeLit{
 																		Type: &ast.SelectorExpr{
-																			X:   ast.NewIdent("errdetails"),
-																			Sel: ast.NewIdent("ErrorInfo"),
+																			X: ast.NewIdent(
+																				"errdetails",
+																			),
+																			Sel: ast.NewIdent(
+																				"ErrorInfo",
+																			),
 																		},
 																		Elts: []ast.Expr{
 																			&ast.KeyValueExpr{
-																				Key: ast.NewIdent("Reason"),
+																				Key: ast.NewIdent(
+																					"Reason",
+																				),
 																				Value: &ast.SelectorExpr{
-																					X:   ast.NewIdent("domainError"),
-																					Sel: ast.NewIdent("Message"),
+																					X: ast.NewIdent(
+																						"domainError",
+																					),
+																					Sel: ast.NewIdent(
+																						"Message",
+																					),
 																				},
 																			},
 																			&ast.KeyValueExpr{
-																				Key: ast.NewIdent("Domain"),
+																				Key: ast.NewIdent(
+																					"Domain",
+																				),
 																				Value: &ast.BasicLit{
 																					Kind:  token.STRING,
 																					Value: `""`,
 																				},
 																			},
 																			&ast.KeyValueExpr{
-																				Key: ast.NewIdent("Metadata"),
+																				Key: ast.NewIdent(
+																					"Metadata",
+																				),
 																				Value: &ast.CallExpr{
-																					Fun: ast.NewIdent("make"),
+																					Fun: ast.NewIdent(
+																						"make",
+																					),
 																					Args: []ast.Expr{
 																						&ast.MapType{
-																							Key:   ast.NewIdent("string"),
-																							Value: ast.NewIdent("string"),
+																							Key: ast.NewIdent(
+																								"string",
+																							),
+																							Value: ast.NewIdent(
+																								"string",
+																							),
 																						},
 																					},
 																				},
@@ -1081,20 +1195,32 @@ func (u Middlewares) file() *ast.File {
 																		Lhs: []ast.Expr{
 																			&ast.IndexExpr{
 																				X: &ast.SelectorExpr{
-																					X:   ast.NewIdent("d"),
-																					Sel: ast.NewIdent("Metadata"),
+																					X: ast.NewIdent(
+																						"d",
+																					),
+																					Sel: ast.NewIdent(
+																						"Metadata",
+																					),
 																				},
 																				Index: &ast.SelectorExpr{
-																					X:   ast.NewIdent("param"),
-																					Sel: ast.NewIdent("Key"),
+																					X: ast.NewIdent(
+																						"param",
+																					),
+																					Sel: ast.NewIdent(
+																						"Key",
+																					),
 																				},
 																			},
 																		},
 																		Tok: token.ASSIGN,
 																		Rhs: []ast.Expr{
 																			&ast.SelectorExpr{
-																				X:   ast.NewIdent("param"),
-																				Sel: ast.NewIdent("Value"),
+																				X: ast.NewIdent(
+																					"param",
+																				),
+																				Sel: ast.NewIdent(
+																					"Value",
+																				),
 																			},
 																		},
 																	},
@@ -1110,8 +1236,10 @@ func (u Middlewares) file() *ast.File {
 															Rhs: []ast.Expr{
 																&ast.CallExpr{
 																	Fun: &ast.SelectorExpr{
-																		X:   ast.NewIdent("stat"),
-																		Sel: ast.NewIdent("WithDetails"),
+																		X: ast.NewIdent("stat"),
+																		Sel: ast.NewIdent(
+																			"WithDetails",
+																		),
 																	},
 																	Args: []ast.Expr{
 																		ast.NewIdent("d"),
@@ -1131,18 +1259,30 @@ func (u Middlewares) file() *ast.File {
 																		Results: []ast.Expr{
 																			&ast.CallExpr{
 																				Fun: &ast.SelectorExpr{
-																					X:   ast.NewIdent("status"),
-																					Sel: ast.NewIdent("Error"),
+																					X: ast.NewIdent(
+																						"status",
+																					),
+																					Sel: ast.NewIdent(
+																						"Error",
+																					),
 																				},
 																				Args: []ast.Expr{
 																					&ast.SelectorExpr{
-																						X:   ast.NewIdent("codes"),
-																						Sel: ast.NewIdent("Internal"),
+																						X: ast.NewIdent(
+																							"codes",
+																						),
+																						Sel: ast.NewIdent(
+																							"Internal",
+																						),
 																					},
 																					&ast.CallExpr{
 																						Fun: &ast.SelectorExpr{
-																							X:   ast.NewIdent("err"),
-																							Sel: ast.NewIdent("Error"),
+																							X: ast.NewIdent(
+																								"err",
+																							),
+																							Sel: ast.NewIdent(
+																								"Error",
+																							),
 																						},
 																					},
 																				},

@@ -896,6 +896,10 @@ func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 						Type:  ast.NewIdent("context.Context"),
 					},
 					{
+						Names: []*ast.Ident{ast.NewIdent("tx")},
+						Type:  &ast.SelectorExpr{X: ast.NewIdent("dtx"), Sel: ast.NewIdent("TX")},
+					},
+					{
 						Names: []*ast.Ident{ast.NewIdent("entity")},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
@@ -1034,9 +1038,11 @@ func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("r"),
-										Sel: ast.NewIdent("writeDB"),
+									X: &ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X:   ast.NewIdent("tx"),
+											Sel: ast.NewIdent("GetSQLTx"),
+										},
 									},
 									Sel: ast.NewIdent("ExecContext"),
 								},
@@ -2427,6 +2433,13 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 						},
 					},
 					{
+						Names: []*ast.Ident{ast.NewIdent("tx")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("dtx"),
+							Sel: ast.NewIdent("TX"),
+						},
+					},
+					{
 						Names: []*ast.Ident{
 							ast.NewIdent("entity"),
 						},
@@ -2569,9 +2582,11 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("r"),
-									Sel: ast.NewIdent("writeDB"),
+								X: &ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X:   ast.NewIdent("tx"),
+										Sel: ast.NewIdent("GetSQLTx"),
+									},
 								},
 								Sel: ast.NewIdent("ExecContext"),
 							},
@@ -2889,6 +2904,13 @@ func (r RepositoryGenerator) astDeleteMethod() *ast.FuncDecl {
 						},
 					},
 					{
+						Names: []*ast.Ident{ast.NewIdent("tx")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("dtx"),
+							Sel: ast.NewIdent("TX"),
+						},
+					},
+					{
 						Names: []*ast.Ident{
 							ast.NewIdent("id"),
 						},
@@ -3016,9 +3038,11 @@ func (r RepositoryGenerator) astDeleteMethod() *ast.FuncDecl {
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("r"),
-									Sel: ast.NewIdent("writeDB"),
+								X: &ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X:   ast.NewIdent("tx"),
+										Sel: ast.NewIdent("GetSQLTx"),
+									},
 								},
 								Sel: ast.NewIdent("ExecContext"),
 							},

@@ -288,6 +288,13 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 						Type:  ast.NewIdent("context.Context"),
 					},
 					{
+						Names: []*ast.Ident{ast.NewIdent("tx")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("dtx"),
+							Sel: ast.NewIdent("TX"),
+						},
+					},
+					{
 						Names: []*ast.Ident{ast.NewIdent("create")},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
@@ -406,6 +413,7 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 								},
 								Args: []ast.Expr{
 									ast.NewIdent("ctx"),
+									ast.NewIdent("tx"),
 									ast.NewIdent(u.domain.GetMainModel().Variable),
 								},
 							},
@@ -865,6 +873,13 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 						Type:  ast.NewIdent("context.Context"),
 					},
 					{
+						Names: []*ast.Ident{ast.NewIdent("tx")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("dtx"),
+							Sel: ast.NewIdent("TX"),
+						},
+					},
+					{
 						Names: []*ast.Ident{ast.NewIdent("update")},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
@@ -1021,6 +1036,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 								},
 								Args: []ast.Expr{
 									ast.NewIdent("ctx"),
+									ast.NewIdent("tx"),
 									ast.NewIdent(u.domain.GetMainModel().Variable),
 								},
 							},
@@ -1169,6 +1185,13 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 						Type:  ast.NewIdent("context.Context"),
 					},
 					{
+						Names: []*ast.Ident{ast.NewIdent("tx")},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("dtx"),
+							Sel: ast.NewIdent("TX"),
+						},
+					},
+					{
 						Names: []*ast.Ident{ast.NewIdent("id")},
 						Type:  ast.NewIdent("uuid.UUID"),
 					},
@@ -1203,6 +1226,7 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 								},
 								Args: []ast.Expr{
 									ast.NewIdent("ctx"),
+									ast.NewIdent("tx"),
 									ast.NewIdent("id"),
 								},
 							},

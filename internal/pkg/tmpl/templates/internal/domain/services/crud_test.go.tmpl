@@ -7,6 +7,7 @@ import (
 
     "{{ .Module }}/internal/pkg/errs"
     "{{ .Module }}/internal/app/{{ .AppName }}/entities/{{ .DirName }}"
+    "{{ .Module }}/internal/pkg/dtx"
     "{{ .Module }}/internal/pkg/uuid"
     "go.uber.org/mock/gomock"
     "github.com/jaswdr/faker"
@@ -234,6 +235,7 @@ func Test{{ .ServiceTypeName }}_Create(t *testing.T) {
     mockClock := NewMockclock(ctrl)
     mockLogger := NewMocklogger(ctrl)
     mockUUID := NewMockuuidGenerator(ctrl)
+    mockTx := dtx.NewMockTX(ctrl)
     ctx := context.Background()
     create := entities.NewMock{{ .CreateTypeName }}(t)
     now := time.Now().UTC()
@@ -245,6 +247,7 @@ func Test{{ .ServiceTypeName }}_Create(t *testing.T) {
     }
     type args struct {
         ctx    context.Context
+        tx dtx.TX
         create entities.{{ .CreateTypeName }}
     }
     tests := []struct {
@@ -263,6 +266,7 @@ func Test{{ .ServiceTypeName }}_Create(t *testing.T) {
                 mock{{ .RepositoryTypeName }}.EXPECT().
                     Create(
                         ctx,
+                        mockTx,
                         entities.{{ .EntityName }}{
                             ID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 {{- range $key, $value := .Params }}
@@ -282,6 +286,7 @@ func Test{{ .ServiceTypeName }}_Create(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
+                tx: mockTx,
                 create: create,
             },
             want: entities.{{ .EntityName }}{
@@ -302,6 +307,7 @@ func Test{{ .ServiceTypeName }}_Create(t *testing.T) {
                 mock{{ .RepositoryTypeName }}.EXPECT().
                     Create(
                         ctx,
+                        mockTx,
                         entities.{{ .EntityName }}{
                             ID: uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 {{- range $key, $value := .Params }}
@@ -321,6 +327,7 @@ func Test{{ .ServiceTypeName }}_Create(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
+                tx: mockTx,
                 create: create,
             },
             want:    entities.{{ .EntityName }}{},
@@ -338,6 +345,7 @@ func Test{{ .ServiceTypeName }}_Create(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
+                tx: mockTx,
                 create: entities.{{ .CreateTypeName }}{},
             },
             want: entities.{{ .EntityName }}{},
@@ -359,7 +367,7 @@ func Test{{ .ServiceTypeName }}_Create(t *testing.T) {
                 logger:           tt.fields.logger,
                 uuid:             tt.fields.uuid,
             }
-            got, err := u.Create(tt.args.ctx, tt.args.create)
+            got, err := u.Create(tt.args.ctx, tt.args.tx, tt.args.create)
             assert.ErrorIs(t, err, tt.wantErr)
             assert.Equal(t, tt.want, got)
         })
@@ -374,6 +382,7 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
     ctx := context.Background()
     {{ .Variable }} := entities.NewMock{{ .EntityName }}(t)
     mockClock := NewMockclock(ctrl)
+    mockTx := dtx.NewMockTX(ctrl)
     update := entities.NewMock{{ .UpdateTypeName }}(t)
     now := time.Now().UTC()
     updated{{ .EntityName }} := entities.{{ .EntityName }} {
@@ -391,6 +400,7 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
     }
     type args struct {
         ctx    context.Context
+        tx dtx.TX
         update entities.{{ .UpdateTypeName }}
     }
     tests := []struct {
@@ -408,7 +418,7 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
                 mock{{ .RepositoryTypeName }}.EXPECT().
                     Get(ctx, update.ID).Return({{ .Variable }}, nil)
                 mock{{ .RepositoryTypeName }}.EXPECT().
-                    Update(ctx, updated{{ .EntityName }}).Return(nil)
+                    Update(ctx, mockTx, updated{{ .EntityName }}).Return(nil)
             },
             fields: fields{
                 {{ .RepositoryVariableName }}: mock{{ .RepositoryTypeName }},
@@ -417,6 +427,7 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
+                tx: mockTx,
                 update: update,
             },
             want:    updated{{ .EntityName }},
@@ -430,7 +441,7 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
                     Get(ctx, update.ID).
                     Return({{ .Variable }}, nil)
                 mock{{ .RepositoryTypeName }}.EXPECT().
-                    Update(ctx, updated{{ .EntityName }}).
+                    Update(ctx, mockTx, updated{{ .EntityName }}).
                     Return(errs.NewUnexpectedBehaviorError("test error"))
             },
             fields: fields{
@@ -440,6 +451,7 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
+                tx: mockTx,
                 update: update,
             },
             want:    entities.{{ .EntityName }}{},
@@ -457,6 +469,7 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
+                tx: mockTx,
                 update: update,
             },
             want:    entities.{{ .EntityName }}{},
@@ -471,7 +484,7 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
                 clock:            tt.fields.clock,
                 logger:           tt.fields.logger,
             }
-            got, err := u.Update(tt.args.ctx, tt.args.update)
+            got, err := u.Update(tt.args.ctx, tt.args.tx, tt.args.update)
             assert.ErrorIs(t, err, tt.wantErr)
             assert.Equal(t, tt.want, got)
         })
@@ -483,6 +496,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
     defer ctrl.Finish()
     mock{{ .RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
+    mockTx := dtx.NewMockTX(ctrl)
     ctx := context.Background()
     {{ .Variable }} := entities.NewMock{{ .EntityName }}(t)
     type fields struct {
@@ -491,6 +505,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
     }
     type args struct {
         ctx context.Context
+        tx dtx.TX
         id  uuid.UUID
     }
     tests := []struct {
@@ -504,7 +519,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
             name: "ok",
             setup: func() {
                 mock{{ .RepositoryTypeName }}.EXPECT().
-                    Delete(ctx, {{ .Variable }}.ID).
+                    Delete(ctx, mockTx, {{ .Variable }}.ID).
                     Return(nil)
             },
             fields: fields{
@@ -513,6 +528,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
+                tx: mockTx,
                 id:  {{ .Variable }}.ID,
             },
             wantErr: nil,
@@ -521,7 +537,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
             name: "{{ .EntityName }} not found",
             setup: func() {
                 mock{{ .RepositoryTypeName }}.EXPECT().
-                    Delete(ctx, {{ .Variable }}.ID).
+                    Delete(ctx, mockTx, {{ .Variable }}.ID).
                     Return(errs.NewEntityNotFoundError())
             },
             fields: fields{
@@ -530,6 +546,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
+                tx: mockTx,
                 id:  {{ .Variable }}.ID,
             },
             wantErr: errs.NewEntityNotFoundError(),
@@ -542,7 +559,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
                 {{ .RepositoryVariableName }}: tt.fields.{{ .RepositoryVariableName }},
                 logger:           tt.fields.logger,
             }
-            err := u.Delete(tt.args.ctx, tt.args.id)
+            err := u.Delete(tt.args.ctx, tt.args.tx, tt.args.id)
             assert.ErrorIs(t, err, tt.wantErr)
         })
     }

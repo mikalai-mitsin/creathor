@@ -75,6 +75,9 @@ func Test{{ .RepositoryTypeName }}_Create(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mockLogger := NewMocklogger(ctrl)
+    mockTxManager := dtx.NewManager(mockDB)
+    mock.ExpectBegin()
+    mockTX := mockTxManager.NewTx()
     query := "INSERT INTO public.{{ .TableName }} (id,created_at,updated_at,{{- range $i, $value := .Params }}{{if $i}},{{end}}{{ $value.Tag }}{{- end }}) VALUES ($1,$2,$3,{{ range $i, $value := .Params }}{{if $i}},{{end}}${{ add $i 4}}{{- end }})"
     {{ .Variable }} := entities.NewMock{{ .EntityName }}(t)
     ctx := context.Background()
@@ -85,6 +88,7 @@ func Test{{ .RepositoryTypeName }}_Create(t *testing.T) {
     }
     type args struct {
         ctx  context.Context
+        tx dtx.TX
         {{ .Variable }} entities.{{ .EntityName }}
     }
     tests := []struct {
@@ -119,6 +123,7 @@ func Test{{ .RepositoryTypeName }}_Create(t *testing.T) {
             },
             args: args{
                 ctx:  ctx,
+                tx:  mockTX,
                 {{ .Variable }}: {{ .Variable }},
             },
             wantErr: nil,
@@ -148,6 +153,7 @@ func Test{{ .RepositoryTypeName }}_Create(t *testing.T) {
             },
             args: args{
                 ctx:  ctx,
+                tx:  mockTX,
                 {{ .Variable }}: {{ .Variable }},
             },
             wantErr: errs.FromPostgresError(errors.New("test error")),
@@ -161,7 +167,7 @@ func Test{{ .RepositoryTypeName }}_Create(t *testing.T) {
                 readDB: tt.fields.readDB,
                 logger:   tt.fields.logger,
             }
-            err := r.Create(tt.args.ctx, tt.args.{{ .Variable }})
+            err := r.Create(tt.args.ctx, tt.args.tx, tt.args.{{ .Variable }})
             assert.ErrorIs(t, err, tt.wantErr)
         })
     }
@@ -388,6 +394,9 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mockLogger := NewMocklogger(ctrl)
+    mockTxManager := dtx.NewManager(mockDB)
+    mock.ExpectBegin()
+    mockTX := mockTxManager.NewTx()
     {{ .Variable }} := entities.NewMock{{ .EntityName }}(t)
     query := `UPDATE public.{{ .TableName }} SET created_at = $1, updated_at = $2, {{ range $i, $value := .Params }}{{if $i}}, {{end}}{{ $value.Tag }} = ${{ add $i 3}}{{- end }} WHERE id = ${{ add (len $.Params) 3 }}`
     ctx := context.Background()
@@ -398,6 +407,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
     }
     type args struct {
         ctx  context.Context
+        tx dtx.TX
         {{ .Variable }} entities.{{ .EntityName }}
     }
     tests := []struct {
@@ -432,6 +442,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
             },
             args: args{
                 ctx:  ctx,
+                tx:  mockTX,
                 {{ .Variable }}: {{ .Variable }},
             },
             wantErr: nil,
@@ -461,6 +472,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
             },
             args: args{
                 ctx:  ctx,
+                tx:  mockTX,
                 {{ .Variable }}: {{ .Variable }},
             },
             wantErr: errs.NewEntityNotFoundError().WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID.String()),
@@ -490,6 +502,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
             },
             args: args{
                 ctx:  ctx,
+                tx:  mockTX,
                 {{ .Variable }}: {{ .Variable }},
             },
             wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID.String()),
@@ -519,6 +532,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
             },
             args: args{
                 ctx:  ctx,
+                tx:  mockTX,
                 {{ .Variable }}: {{ .Variable }},
             },
             wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID.String()),
@@ -548,6 +562,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
             },
             args: args{
                 ctx:  ctx,
+                tx:  mockTX,
                 {{ .Variable }}: {{ .Variable }},
             },
             wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID.String()),
@@ -561,7 +576,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
                 readDB: tt.fields.readDB,
                 logger:   tt.fields.logger,
             }
-            err := r.Update(tt.args.ctx, tt.args.{{ .Variable }})
+            err := r.Update(tt.args.ctx, tt.args.tx, tt.args.{{ .Variable }})
             assert.ErrorIs(t, err, tt.wantErr)
         })
     }
@@ -577,6 +592,9 @@ func Test{{ .RepositoryTypeName }}_Delete(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     mockLogger := NewMocklogger(ctrl)
+    mockTxManager := dtx.NewManager(mockDB)
+    mock.ExpectBegin()
+    mockTX := mockTxManager.NewTx()
     {{ .Variable }} := entities.NewMock{{ .EntityName }}(t)
     type fields struct {
         writeDB database
@@ -585,6 +603,7 @@ func Test{{ .RepositoryTypeName }}_Delete(t *testing.T) {
     }
     type args struct {
         ctx context.Context
+        tx dtx.TX
         id  uuid.UUID
     }
     tests := []struct {
@@ -608,6 +627,7 @@ func Test{{ .RepositoryTypeName }}_Delete(t *testing.T) {
             },
             args: args{
                 ctx: context.Background(),
+                tx:  mockTX,
                 id:  {{ .Variable }}.ID,
             },
             wantErr: nil,
@@ -626,6 +646,7 @@ func Test{{ .RepositoryTypeName }}_Delete(t *testing.T) {
             },
             args: args{
                 ctx: context.Background(),
+                tx:  mockTX,
                 id:  {{ .Variable }}.ID,
             },
             wantErr: errs.NewEntityNotFoundError().WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID.String()),
@@ -644,6 +665,7 @@ func Test{{ .RepositoryTypeName }}_Delete(t *testing.T) {
             },
             args: args{
                 ctx: context.Background(),
+                tx:  mockTX,
                 id:  {{ .Variable }}.ID,
             },
             wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID.String()),
@@ -662,6 +684,7 @@ func Test{{ .RepositoryTypeName }}_Delete(t *testing.T) {
             },
             args: args{
                 ctx: context.Background(),
+                tx:  mockTX,
                 id:  {{ .Variable }}.ID,
             },
             wantErr: errs.FromPostgresError(errors.New("test error")).WithParam("{{ .KeyName }}_id", {{ .Variable }}.ID.String()),
@@ -675,7 +698,7 @@ func Test{{ .RepositoryTypeName }}_Delete(t *testing.T) {
                 readDB: tt.fields.readDB,
                 logger:   tt.fields.logger,
             }
-            err := r.Delete(tt.args.ctx, tt.args.id)
+            err := r.Delete(tt.args.ctx, tt.args.tx, tt.args.id)
             assert.ErrorIs(t, err, tt.wantErr)
         })
     }

@@ -127,6 +127,12 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 						},
 						{
 							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("dtx"),
+								Sel: ast.NewIdent("TX"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(i.domain.GetCreateModel().Name),
 							},
@@ -234,6 +240,12 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 						},
 						{
 							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("dtx"),
+								Sel: ast.NewIdent("TX"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(i.domain.GetUpdateModel().Name),
 							},
@@ -264,6 +276,12 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("context"),
 								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("dtx"),
+								Sel: ast.NewIdent("TX"),
 							},
 						},
 						{
@@ -331,6 +349,12 @@ func (i InterfacesGenerator) appEventProducerInterface() *ast.GenDecl {
 											},
 											{
 												Type: &ast.SelectorExpr{
+													X:   ast.NewIdent("dtx"),
+													Sel: ast.NewIdent("TX"),
+												},
+											},
+											{
+												Type: &ast.SelectorExpr{
 													X: &ast.Ident{
 														Name: "entities",
 													},
@@ -373,6 +397,12 @@ func (i InterfacesGenerator) appEventProducerInterface() *ast.GenDecl {
 											},
 											{
 												Type: &ast.SelectorExpr{
+													X:   ast.NewIdent("dtx"),
+													Sel: ast.NewIdent("TX"),
+												},
+											},
+											{
+												Type: &ast.SelectorExpr{
 													X: &ast.Ident{
 														Name: "entities",
 													},
@@ -411,6 +441,12 @@ func (i InterfacesGenerator) appEventProducerInterface() *ast.GenDecl {
 													Sel: &ast.Ident{
 														Name: "Context",
 													},
+												},
+											},
+											{
+												Type: &ast.SelectorExpr{
+													X:   ast.NewIdent("dtx"),
+													Sel: ast.NewIdent("TX"),
 												},
 											},
 											{

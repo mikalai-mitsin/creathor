@@ -128,6 +128,12 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 					Value: i.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 				},
 			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: i.domain.AppConfig.ProjectConfig.DTXImportPath(),
+				},
+			},
 		},
 	}
 }
@@ -143,6 +149,12 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("context"),
 								Sel: ast.NewIdent("Context"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("dtx"),
+								Sel: ast.NewIdent("TX"),
 							},
 						},
 						{
@@ -276,6 +288,12 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 						},
 						{
 							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("dtx"),
+								Sel: ast.NewIdent("TX"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
 								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
 							},
@@ -304,6 +322,12 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 						},
 						{
 							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("dtx"),
+								Sel: ast.NewIdent("TX"),
+							},
+						},
+						{
+							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("uuid"),
 								Sel: ast.NewIdent("UUID"),
 							},
@@ -319,39 +343,6 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 				},
 			},
 		},
-	}
-	if i.domain.SnakeName() == "user" {
-		methods = append(methods, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent("GetByEmail")},
-			Type: &ast.FuncType{
-				Params: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Type: &ast.SelectorExpr{
-								X:   ast.NewIdent("context"),
-								Sel: ast.NewIdent("Context"),
-							},
-						},
-						{
-							Type: ast.NewIdent("string"),
-						},
-					},
-				},
-				Results: &ast.FieldList{
-					List: []*ast.Field{
-						{
-							Type: &ast.SelectorExpr{
-								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
-							},
-						},
-						{
-							Type: ast.NewIdent("error"),
-						},
-					},
-				},
-			},
-		})
 	}
 	return &ast.GenDecl{
 		Tok: token.TYPE,

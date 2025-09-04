@@ -2,6 +2,25 @@
 ## [Unreleased]
 
 
+<a name="v0.7.8"></a>
+## [v0.7.8] - 2025-09-05
+### Build
+- update go version
+
+### Docs
+- update readme
+
+### Feat
+- add dtx to repositories and service
+- create dtx in usecase
+- add dtx manager to use case
+- add dtx manager
+- set kafka key
+
+### Style
+- fix
+
+
 <a name="v0.7.7"></a>
 ## [v0.7.7] - 2025-09-01
 ### Feat
@@ -520,7 +539,8 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.7...HEAD
+[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.8...HEAD
+[v0.7.8]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.7...v0.7.8
 [v0.7.7]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.6...v0.7.7
 [v0.7.6]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.5...v0.7.6
 [v0.7.5]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.4...v0.7.5

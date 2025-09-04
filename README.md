@@ -18,7 +18,7 @@ Creathor provides:
 
 # Example
 
-[Example](/example) of using `Creathor` with rich models and authentication by this command
+[Example](https://github.com/mikalai-mitsin/example) of using `Creathor` with rich models and authentication by this command
 
 ```shell
 creathor -d example -c creathor.yaml
@@ -37,7 +37,7 @@ Config example
 ```yaml
 name: "example"
 module: "github.com/mikalai-mitsin/example"
-goVersion: "1.24"
+goVersion: "1.25"
 ci: "github"
 gRPC: true
 http: true
@@ -70,12 +70,15 @@ apps:
         params:
           - name: "Title"
             type: "string"
+            search: true
           - name: "Subtitle"
             type: "string"
+            search: true
           - name: "Body"
             type: "string"
+            search: true
           - name: "is_published"
-            type: "bool"
+            type: bool
 ```
 
 To generate code in the current directory and with default config name, use the command `creathor`

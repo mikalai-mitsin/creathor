@@ -367,6 +367,17 @@ func (u ConsumerGenerator) file() *ast.File {
 											},
 										},
 									},
+									{
+										Names: []*ast.Ident{
+											{
+												Name: "cancel",
+											},
+										},
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("context"),
+											Sel: ast.NewIdent("CancelFunc"),
+										},
+									},
 								},
 							},
 						},
@@ -971,6 +982,45 @@ func (u ConsumerGenerator) file() *ast.File {
 								},
 							},
 						},
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
+								&ast.Ident{
+									Name: "consumeCtx",
+								},
+								&ast.Ident{
+									Name: "cancel",
+								},
+							},
+							Tok: token.DEFINE,
+							Rhs: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "context",
+										},
+										Sel: &ast.Ident{
+											Name: "WithCancel",
+										},
+									},
+									Args: []ast.Expr{
+										&ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X:   ast.NewIdent("context"),
+												Sel: ast.NewIdent("Background"),
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{&ast.SelectorExpr{
+								X:   ast.NewIdent("c"),
+								Sel: ast.NewIdent("cancel"),
+							}},
+							Tok: token.ASSIGN,
+							Rhs: []ast.Expr{ast.NewIdent("cancel")},
+						},
 						&ast.RangeStmt{
 							Key: &ast.Ident{
 								Name: "_",
@@ -1039,16 +1089,7 @@ func (u ConsumerGenerator) file() *ast.File {
 																				},
 																			},
 																			Args: []ast.Expr{
-																				&ast.CallExpr{
-																					Fun: &ast.SelectorExpr{
-																						X: &ast.Ident{
-																							Name: "context",
-																						},
-																						Sel: &ast.Ident{
-																							Name: "Background",
-																						},
-																					},
-																				},
+																				ast.NewIdent("consumeCtx"),
 																				&ast.CompositeLit{
 																					Type: &ast.ArrayType{
 																						Elt: &ast.Ident{
@@ -1258,6 +1299,18 @@ func (u ConsumerGenerator) file() *ast.File {
 				},
 				Body: &ast.BlockStmt{
 					List: []ast.Stmt{
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "c",
+									},
+									Sel: &ast.Ident{
+										Name: "cancel",
+									},
+								},
+							},
+						},
 						&ast.RangeStmt{
 							Key: &ast.Ident{
 								Name: "_",

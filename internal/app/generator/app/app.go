@@ -504,13 +504,20 @@ func (a App) constructor() *ast.FuncDecl {
 					},
 				},
 			})
-			exprs = append(exprs, &ast.KeyValueExpr{
-				Key:   ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
-				Value: ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
-			}, &ast.KeyValueExpr{
-				Key:   ast.NewIdent(entity.GetKafkaHandlerPrivateVariableName()),
-				Value: ast.NewIdent(entity.GetKafkaHandlerPrivateVariableName()),
-			})
+			exprs = append(exprs,
+				&ast.KeyValueExpr{
+					Key:   ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
+					Value: ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
+				},
+				&ast.KeyValueExpr{
+					Key:   ast.NewIdent(entity.EventServicePrivateVariableName()),
+					Value: ast.NewIdent(entity.EventServicePrivateVariableName()),
+				},
+				&ast.KeyValueExpr{
+					Key:   ast.NewIdent(entity.GetKafkaHandlerPrivateVariableName()),
+					Value: ast.NewIdent(entity.GetKafkaHandlerPrivateVariableName()),
+				},
+			)
 		}
 		if a.app.GRPCEnabled {
 			body.List = append(body.List, &ast.AssignStmt{
@@ -683,27 +690,41 @@ func (a App) structure() *ast.GenDecl {
 			})
 		}
 		if a.app.KafkaEnabled {
-			structType.Fields.List = append(structType.Fields.List, &ast.Field{
-				Names: []*ast.Ident{
-					ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
-				},
-				Type: &ast.StarExpr{
-					X: &ast.SelectorExpr{
-						X:   ast.NewIdent(fmt.Sprintf("%sKafkaRepositories", entity.LowerCamelName())),
-						Sel: ast.NewIdent(entity.EventProducerTypeName()),
+			structType.Fields.List = append(structType.Fields.List,
+				&ast.Field{
+					Names: []*ast.Ident{
+						ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
+					},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent(fmt.Sprintf("%sKafkaRepositories", entity.LowerCamelName())),
+							Sel: ast.NewIdent(entity.EventProducerTypeName()),
+						},
 					},
 				},
-			}, &ast.Field{
-				Names: []*ast.Ident{
-					ast.NewIdent(entity.GetKafkaHandlerPrivateVariableName()),
-				},
-				Type: &ast.StarExpr{
-					X: &ast.SelectorExpr{
-						X:   ast.NewIdent(fmt.Sprintf("%sKafkaHandlers", entity.LowerCamelName())),
-						Sel: ast.NewIdent(entity.KafkaHandlerTypeName()),
+				&ast.Field{
+					Names: []*ast.Ident{
+						ast.NewIdent(entity.EventServicePrivateVariableName()),
+					},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent(fmt.Sprintf("%sServices", entity.LowerCamelName())),
+							Sel: ast.NewIdent(entity.EventServiceName()),
+						},
 					},
 				},
-			})
+				&ast.Field{
+					Names: []*ast.Ident{
+						ast.NewIdent(entity.GetKafkaHandlerPrivateVariableName()),
+					},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent(fmt.Sprintf("%sKafkaHandlers", entity.LowerCamelName())),
+							Sel: ast.NewIdent(entity.KafkaHandlerTypeName()),
+						},
+					},
+				},
+			)
 		}
 		if a.app.GRPCEnabled {
 			structType.Fields.List = append(structType.Fields.List, &ast.Field{

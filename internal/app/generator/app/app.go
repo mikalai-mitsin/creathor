@@ -118,7 +118,7 @@ func (a App) imports() *ast.GenDecl {
 				},
 			},
 			&ast.ImportSpec{
-				Name: ast.NewIdent(fmt.Sprintf("%sRepositories", entity.LowerCamelName())),
+				Name: ast.NewIdent(fmt.Sprintf("%sPostgresRepositories", entity.LowerCamelName())),
 				Path: &ast.BasicLit{
 					Kind: token.STRING,
 					Value: fmt.Sprintf(
@@ -146,7 +146,7 @@ func (a App) imports() *ast.GenDecl {
 			specs = append(
 				specs,
 				&ast.ImportSpec{
-					Name: ast.NewIdent(fmt.Sprintf("%sEvents", entity.LowerCamelName())),
+					Name: ast.NewIdent(fmt.Sprintf("%sKafkaRepositories", entity.LowerCamelName())),
 					Path: &ast.BasicLit{
 						Kind: token.STRING,
 						Value: fmt.Sprintf(
@@ -360,7 +360,7 @@ func (a App) constructor() *ast.FuncDecl {
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
 							X: ast.NewIdent(
-								fmt.Sprintf("%sRepositories", entity.LowerCamelName()),
+								fmt.Sprintf("%sPostgresRepositories", entity.LowerCamelName()),
 							),
 							Sel: ast.NewIdent(entity.GetRepositoryConstructorName()),
 						},
@@ -401,7 +401,7 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent(fmt.Sprintf("%sEvents", entity.LowerCamelName())),
+							X:   ast.NewIdent(fmt.Sprintf("%sKafkaRepositories", entity.LowerCamelName())),
 							Sel: ast.NewIdent(entity.EventProducerConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -410,7 +410,26 @@ func (a App) constructor() *ast.FuncDecl {
 						},
 					},
 				},
-			})
+			},
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent(entity.EventServicePrivateVariableName()),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X:   ast.NewIdent(fmt.Sprintf("%sServices", entity.LowerCamelName())),
+								Sel: ast.NewIdent(entity.EventServiceConstructorName()),
+							},
+							Args: []ast.Expr{
+								ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
+								ast.NewIdent("logger"),
+							},
+						},
+					},
+				},
+			)
 		}
 		useCaseArgs := []ast.Expr{
 			ast.NewIdent(entity.GetServicePrivateVariableName()),
@@ -418,7 +437,7 @@ func (a App) constructor() *ast.FuncDecl {
 		if a.app.KafkaEnabled {
 			useCaseArgs = append(
 				useCaseArgs,
-				ast.NewIdent(entity.GetEventProducerPrivateVariableName()),
+				ast.NewIdent(entity.EventServicePrivateVariableName()),
 			)
 		}
 		useCaseArgs = append(useCaseArgs, ast.NewIdent("dtxManager"), ast.NewIdent("logger"))
@@ -623,7 +642,7 @@ func (a App) structure() *ast.GenDecl {
 			},
 			Type: &ast.StarExpr{
 				X: &ast.SelectorExpr{
-					X:   ast.NewIdent(fmt.Sprintf("%sRepositories", entity.LowerCamelName())),
+					X:   ast.NewIdent(fmt.Sprintf("%sPostgresRepositories", entity.LowerCamelName())),
 					Sel: ast.NewIdent(entity.GetRepositoryTypeName()),
 				},
 			},
@@ -670,7 +689,7 @@ func (a App) structure() *ast.GenDecl {
 				},
 				Type: &ast.StarExpr{
 					X: &ast.SelectorExpr{
-						X:   ast.NewIdent(fmt.Sprintf("%sEvents", entity.LowerCamelName())),
+						X:   ast.NewIdent(fmt.Sprintf("%sKafkaRepositories", entity.LowerCamelName())),
 						Sel: ast.NewIdent(entity.EventProducerTypeName()),
 					},
 				},

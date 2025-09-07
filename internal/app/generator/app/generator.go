@@ -43,6 +43,7 @@ func (g *Generator) Sync() error {
 				kafka.NewProducerGenerator(&entity),
 				kafka.NewInterfacesGenerator(&entity),
 				kafka.NewProducerTestGenerator(&entity),
+				services.NewEventService(entity),
 				handlersKafka.NewHandlerGenerator(&entity),
 				handlersKafka.NewInterfacesGenerator(&entity),
 			)

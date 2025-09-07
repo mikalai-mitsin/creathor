@@ -1,11 +1,10 @@
-package events
+package repositories
 
 import (
 	"context"
 	"encoding/json"
     "{{ .Module }}/internal/app/{{ .AppName }}/entities/{{ .DirName }}"
 	"{{ .Module }}/internal/pkg/clock"
-	"{{ .Module }}/internal/pkg/dtx"
 	"{{ .Module }}/internal/pkg/kafka"
 )
 
@@ -27,7 +26,7 @@ func {{ .EventProducerConstructorName }}(
 	return &{{ .EventProducerTypeName }}{producer: producer, logger: logger}
 }
 
-func (p *{{ .EventProducerTypeName }}) Created(ctx context.Context, _ dtx.TX, {{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}) error {
+func (p *{{ .EventProducerTypeName }}) Created(ctx context.Context, {{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}) error {
 	data, err := json.Marshal({{ .GetOneVariableName }})
 	if err != nil {
 		return err
@@ -43,7 +42,7 @@ func (p *{{ .EventProducerTypeName }}) Created(ctx context.Context, _ dtx.TX, {{
 	return nil
 }
 
-func (p *{{ .EventProducerTypeName }}) Updated(ctx context.Context, _ dtx.TX, {{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}) error {
+func (p *{{ .EventProducerTypeName }}) Updated(ctx context.Context, {{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}) error {
 	data, err := json.Marshal({{ .GetOneVariableName }})
 	if err != nil {
 		return err
@@ -59,7 +58,7 @@ func (p *{{ .EventProducerTypeName }}) Updated(ctx context.Context, _ dtx.TX, {{
 	return nil
 }
 
-func (p *{{ .EventProducerTypeName }}) Deleted(ctx context.Context, _ dtx.TX, id uuid.UUID) error {
+func (p *{{ .EventProducerTypeName }}) Deleted(ctx context.Context, id uuid.UUID) error {
 	message := &kafka.Message{
 		Topic: topicEventDeleted,
 		Value: []byte(id.String()),

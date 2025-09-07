@@ -2,7 +2,6 @@ package services
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -11,6 +10,7 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
@@ -30,7 +30,7 @@ func (i InterfacesGenerator) Sync() error {
 		i.domain.AppConfig.AppName(),
 		"services",
 		i.domain.DirName(),
-		fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()),
+		"interfaces.go",
 	)
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
@@ -64,6 +64,10 @@ func (i InterfacesGenerator) Sync() error {
 	})
 	if !repositoryExists {
 		file.Decls = append(file.Decls, i.repositoryInterface())
+	}
+	if !astfile.TypeExists(file, i.domain.EventProducerInterfaceName()) &&
+		i.domain.AppConfig.ProjectConfig.KafkaEnabled {
+		file.Decls = append(file.Decls, i.appEventProducerInterface())
 	}
 	if !clockExists {
 		file.Decls = append(file.Decls, i.clockInterface())
@@ -100,11 +104,7 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text: fmt.Sprintf(
-						"//go:generate mockgen -source=%s_interfaces.go -package=services -destination=%s_interfaces_mock.go",
-						i.domain.SnakeName(),
-						i.domain.SnakeName(),
-					),
+					Text:  "//go:generate mockgen -source=interfaces.go -package=services -destination=interfaces_mock.go",
 				},
 			},
 		},
@@ -143,6 +143,151 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: i.domain.AppConfig.ProjectConfig.DTXImportPath(),
+				},
+			},
+		},
+	}
+}
+
+func (i InterfacesGenerator) appEventProducerInterface() *ast.GenDecl {
+	return &ast.GenDecl{
+		Tok: token.TYPE,
+		Specs: []ast.Spec{
+			&ast.TypeSpec{
+				Name: &ast.Ident{
+					Name: i.domain.EventProducerInterfaceName(),
+				},
+				Type: &ast.InterfaceType{
+					Methods: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "Created",
+									},
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "context",
+													},
+													Sel: &ast.Ident{
+														Name: "Context",
+													},
+												},
+											},
+											{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "entities",
+													},
+													Sel: &ast.Ident{
+														Name: i.domain.GetMainModel().Name,
+													},
+												},
+											},
+										},
+									},
+									Results: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.Ident{
+													Name: "error",
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "Updated",
+									},
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "context",
+													},
+													Sel: &ast.Ident{
+														Name: "Context",
+													},
+												},
+											},
+											{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "entities",
+													},
+													Sel: &ast.Ident{
+														Name: i.domain.GetMainModel().Name,
+													},
+												},
+											},
+										},
+									},
+									Results: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.Ident{
+													Name: "error",
+												},
+											},
+										},
+									},
+								},
+							},
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "Deleted",
+									},
+								},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "context",
+													},
+													Sel: &ast.Ident{
+														Name: "Context",
+													},
+												},
+											},
+											{
+												Type: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "uuid",
+													},
+													Sel: &ast.Ident{
+														Name: "UUID",
+													},
+												},
+											},
+										},
+									},
+									Results: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.Ident{
+													Name: "error",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 		},

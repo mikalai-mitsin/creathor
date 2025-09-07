@@ -513,6 +513,22 @@ func (m *EntityConfig) GetHTTPFilterDTOConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetHTTPFilterDTOName())
 }
 
+func (m *EntityConfig) EventServicePrivateVariableName() string {
+	return fmt.Sprintf("%sEventService", m.LowerCamelName())
+}
+
+func (m *EntityConfig) EventServiceInterfaceName() string {
+	return fmt.Sprintf("%sEventService", m.LowerCamelName())
+}
+
+func (m *EntityConfig) EventServiceName() string {
+	return fmt.Sprintf("%sEventService", m.CamelCase())
+}
+
+func (m *EntityConfig) EventServiceConstructorName() string {
+	return fmt.Sprintf("New%s", m.EventServiceName())
+}
+
 func (m *EntityConfig) OrderingTypeName() string {
 	return fmt.Sprintf("%sOrdering", strcase.ToCamel(m.Name))
 }

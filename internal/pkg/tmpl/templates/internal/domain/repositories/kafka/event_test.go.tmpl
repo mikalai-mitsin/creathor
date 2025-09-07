@@ -1,4 +1,4 @@
-package events
+package repositories
 
 import (
 	"context"
@@ -9,7 +9,6 @@ import (
 
 	"github.com/IBM/sarama"
 	entities "{{ .Module }}/internal/app/{{ .AppName }}/entities/{{ .DirName }}"
-	"{{ .Module }}/internal/pkg/dtx"
 	"{{ .Module }}/internal/pkg/errs"
 	"{{ .Module }}/internal/pkg/uuid"
 	"github.com/stretchr/testify/assert"
@@ -64,7 +63,6 @@ func Test{{ .EventProducerTypeName }}_Created(t *testing.T) {
 	}
 	type args struct {
 		ctx     context.Context
-		dtx     dtx.TX
 		{{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}
 	}
 	tests := []struct {
@@ -122,7 +120,7 @@ func Test{{ .EventProducerTypeName }}_Created(t *testing.T) {
 				producer: tt.fields.producer,
 				logger:   tt.fields.logger,
 			}
-			err := p.Created(tt.args.ctx, tt.args.dtx, tt.args.{{ .GetOneVariableName }})
+			err := p.Created(tt.args.ctx, tt.args.{{ .GetOneVariableName }})
 			assert.ErrorIs(t, err, tt.wantErr)
 		})
 	}
@@ -141,7 +139,6 @@ func Test{{ .EventProducerTypeName }}_Updated(t *testing.T) {
 	}
 	type args struct {
 		ctx     context.Context
-		dtx     dtx.TX
 		{{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}
 	}
 	tests := []struct {
@@ -199,7 +196,7 @@ func Test{{ .EventProducerTypeName }}_Updated(t *testing.T) {
 				producer: tt.fields.producer,
 				logger:   tt.fields.logger,
 			}
-			err := p.Updated(tt.args.ctx, tt.args.dtx, tt.args.{{ .GetOneVariableName }})
+			err := p.Updated(tt.args.ctx, tt.args.{{ .GetOneVariableName }})
 			assert.ErrorIs(t, err, tt.wantErr)
 		})
 	}
@@ -218,7 +215,6 @@ func Test{{ .EventProducerTypeName }}_Deleted(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		dtx     dtx.TX
 		id  uuid.UUID
 	}
 	tests := []struct {
@@ -274,7 +270,7 @@ func Test{{ .EventProducerTypeName }}_Deleted(t *testing.T) {
 				producer: tt.fields.producer,
 				logger:   tt.fields.logger,
 			}
-			err := p.Deleted(tt.args.ctx, tt.args.dtx, tt.args.id)
+			err := p.Deleted(tt.args.ctx, tt.args.id)
 			assert.ErrorIs(t, err, tt.wantErr)
 		})
 	}

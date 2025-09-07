@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -32,7 +31,7 @@ func (r *InterfacesGenerator) filename() string {
 		"repositories",
 		"kafka",
 		r.domain.DirName(),
-		fmt.Sprintf("%s_interfaces.go", r.domain.SnakeName()),
+		"interfaces.go",
 	)
 }
 
@@ -65,7 +64,7 @@ func (r InterfacesGenerator) Sync() error {
 
 func (r InterfacesGenerator) file() *ast.File {
 	return &ast.File{
-		Name: ast.NewIdent("events"),
+		Name: ast.NewIdent("repositories"),
 		Decls: []ast.Decl{
 			r.imports(),
 		},
@@ -79,11 +78,7 @@ func (r InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text: fmt.Sprintf(
-						"//go:generate mockgen -source=%s_interfaces.go -package=events -destination=%s_interfaces_mock.go",
-						r.domain.SnakeName(),
-						r.domain.SnakeName(),
-					),
+					Text:  "//go:generate mockgen -source=interfaces.go -package=repositories -destination=interfaces_mock.go",
 				},
 			},
 		},

@@ -253,7 +253,7 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 	params := []ast.Expr{
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("ID"),
-			Value: ast.NewIdent(`u.uuid.NewUUID()`),
+			Value: ast.NewIdent(`s.uuid.NewUUID()`),
 		},
 		&ast.KeyValueExpr{
 			Key:   ast.NewIdent("UpdatedAt"),
@@ -278,7 +278,7 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent("u"),
+						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
 						X: ast.NewIdent(u.domain.GetServiceTypeName()),
@@ -375,7 +375,7 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 								X: &ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
-											X:   ast.NewIdent("u"),
+											X:   ast.NewIdent("s"),
 											Sel: ast.NewIdent("clock"),
 										},
 										Sel: ast.NewIdent("Now"),
@@ -411,7 +411,7 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
-										X: ast.NewIdent("u"),
+										X: ast.NewIdent("s"),
 										Sel: ast.NewIdent(
 											u.domain.GetRepositoryPrivateVariableName(),
 										),
@@ -492,7 +492,7 @@ func (u ServiceGenerator) list() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent("u"),
+						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
 						X: ast.NewIdent(u.domain.GetServiceTypeName()),
@@ -584,7 +584,7 @@ func (u ServiceGenerator) list() *ast.FuncDecl {
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("u"),
+									X:   ast.NewIdent("s"),
 									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
 								},
 								Sel: ast.NewIdent("List"),
@@ -626,7 +626,7 @@ func (u ServiceGenerator) list() *ast.FuncDecl {
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("u"),
+									X:   ast.NewIdent("s"),
 									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
 								},
 								Sel: ast.NewIdent("Count"),
@@ -700,7 +700,7 @@ func (u ServiceGenerator) get() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent("u"),
+						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
 						X: ast.NewIdent(u.domain.GetServiceTypeName()),
@@ -748,7 +748,7 @@ func (u ServiceGenerator) get() *ast.FuncDecl {
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("u"),
+									X:   ast.NewIdent("s"),
 									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
 								},
 								Sel: ast.NewIdent("Get"),
@@ -863,7 +863,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent("u"),
+						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
 						X: ast.NewIdent(u.domain.GetServiceTypeName()),
@@ -960,7 +960,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
-									X:   ast.NewIdent("u"),
+									X:   ast.NewIdent("s"),
 									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
 								},
 								Sel: ast.NewIdent("Get"),
@@ -1012,7 +1012,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 								X: &ast.CallExpr{
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
-											X:   ast.NewIdent("u"),
+											X:   ast.NewIdent("s"),
 											Sel: ast.NewIdent("clock"),
 										},
 										Sel: ast.NewIdent("Now"),
@@ -1034,7 +1034,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
-										X: ast.NewIdent("u"),
+										X: ast.NewIdent("s"),
 										Sel: ast.NewIdent(
 											u.domain.GetRepositoryPrivateVariableName(),
 										),
@@ -1172,7 +1172,7 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 			List: []*ast.Field{
 				{
 					Names: []*ast.Ident{
-						ast.NewIdent("u"),
+						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
 						X: ast.NewIdent(u.domain.GetServiceTypeName()),
@@ -1224,7 +1224,7 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
 									X: &ast.SelectorExpr{
-										X: ast.NewIdent("u"),
+										X: ast.NewIdent("s"),
 										Sel: ast.NewIdent(
 											u.domain.GetRepositoryPrivateVariableName(),
 										),

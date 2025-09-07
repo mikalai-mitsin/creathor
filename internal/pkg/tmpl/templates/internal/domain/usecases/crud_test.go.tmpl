@@ -19,14 +19,14 @@ func TestNew{{ .GetUseCaseTypeName }}(t *testing.T) {
     defer ctrl.Finish()
     mock{{ .ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
 {{- if .KafkaEnabled }}
-    mock{{ .GetEventProducerPrivateVariableName }} := NewMock{{ .EventProducerInterfaceName }}(ctrl)
+    mock{{ .EventServiceName }} := NewMock{{ .EventServiceInterfaceName }}(ctrl)
 {{- end}}
     mockDtxManager := NewMockdtxManager(ctrl)
     mockLogger := NewMocklogger(ctrl)
     type args struct {
         {{ .ServiceVariableName }} {{ .GetServiceInterfaceName }}
 {{- if .KafkaEnabled }}
-        {{ .GetEventProducerPrivateVariableName }} {{ .EventProducerInterfaceName }}
+        {{ .EventServicePrivateVariableName }} {{ .EventServiceInterfaceName }}
 {{- end}}
         dtxManager dtxManager
         logger          logger
@@ -43,7 +43,7 @@ func TestNew{{ .GetUseCaseTypeName }}(t *testing.T) {
             args: args{
                 {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }} : mock{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }} : mock{{ .EventServiceName }},
 {{- end}}
                 dtxManager: mockDtxManager,
                 logger: mockLogger,
@@ -51,7 +51,7 @@ func TestNew{{ .GetUseCaseTypeName }}(t *testing.T) {
             want: &{{ .GetUseCaseTypeName }}{
                 {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }} : mock{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }} : mock{{ .EventServiceName }},
 {{- end}}
                 dtxManager: mockDtxManager,
                 logger: mockLogger,
@@ -61,7 +61,7 @@ func TestNew{{ .GetUseCaseTypeName }}(t *testing.T) {
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tt.setup()
-            got := New{{ .GetUseCaseTypeName }}(tt.args.{{ .ServiceVariableName }}, {{- if .KafkaEnabled }}tt.args.{{ .GetEventProducerPrivateVariableName }},{{- end}} tt.args.dtxManager, tt.args.logger)
+            got := New{{ .GetUseCaseTypeName }}(tt.args.{{ .ServiceVariableName }}, {{- if .KafkaEnabled }}tt.args.{{ .EventServicePrivateVariableName }},{{- end}} tt.args.dtxManager, tt.args.logger)
             assert.Equal(t, tt.want, got)
         })
     }
@@ -72,7 +72,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
     defer ctrl.Finish()
     mock{{ .ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
 {{- if .KafkaEnabled }}
-    mock{{ .GetEventProducerPrivateVariableName }} := NewMock{{ .EventProducerInterfaceName }}(ctrl)
+    mock{{ .EventServiceName }} := NewMock{{ .EventServiceInterfaceName }}(ctrl)
 {{- end}}
     mockLogger := NewMocklogger(ctrl)
     mockDtxManager := NewMockdtxManager(ctrl)
@@ -81,7 +81,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
     type fields struct {
         {{ .ServiceVariableName }} {{ .GetServiceInterfaceName }}
 {{- if .KafkaEnabled }}
-        {{ .GetEventProducerPrivateVariableName }} {{ .EventProducerInterfaceName }}
+        {{ .EventServicePrivateVariableName }} {{ .EventServiceInterfaceName }}
 {{- end}}
         dtxManager dtxManager
         logger          logger
@@ -108,7 +108,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
             fields: fields{
                 {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
 {{- end}}
                 dtxManager: mockDtxManager,
                 logger: mockLogger,
@@ -130,7 +130,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
             fields: fields{
                 {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
 {{- end}}
                 dtxManager: mockDtxManager,
                 logger: mockLogger,
@@ -149,7 +149,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
             i := &{{ .GetUseCaseTypeName }}{
                 {{ .ServiceVariableName }}: tt.fields.{{ .ServiceVariableName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }}: tt.fields.{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }}: tt.fields.{{ .EventServicePrivateVariableName }},
 {{- end}}
                 dtxManager: tt.fields.dtxManager,
                 logger:          tt.fields.logger,
@@ -166,7 +166,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
     defer ctrl.Finish()
     mock{{ .ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
 {{- if .KafkaEnabled }}
-    mock{{ .GetEventProducerPrivateVariableName }} := NewMock{{ .EventProducerInterfaceName }}(ctrl)
+    mock{{ .EventServiceName }} := NewMock{{ .EventServiceInterfaceName }}(ctrl)
 {{- end}}
     mockLogger := NewMocklogger(ctrl)
     mockLogger.EXPECT().WithContext(gomock.Any()).Return(mockLogger).AnyTimes()
@@ -178,7 +178,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
     type fields struct {
         {{ .ServiceVariableName }} {{ .GetServiceInterfaceName }}
 {{- if .KafkaEnabled }}
-        {{ .GetEventProducerPrivateVariableName }} {{ .EventProducerInterfaceName }}
+        {{ .EventServicePrivateVariableName }} {{ .EventServiceInterfaceName }}
 {{- end}}
         dtxManager      dtxManager
         logger          logger
@@ -201,14 +201,14 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
                 mockDtxManager.EXPECT().NewTx().Return(mockTx)
                 mock{{ .ServiceTypeName }}.EXPECT().Create(ctx, mockTx, create).Return({{ .Variable }}, nil)
 {{- if .KafkaEnabled }}
-                mock{{ .GetEventProducerPrivateVariableName }}.EXPECT().Created(ctx, mockTx, {{ .Variable }}).Return(nil)
+                mock{{ .EventServiceName }}.EXPECT().Created(ctx, mockTx, {{ .Variable }}).Return(nil)
 {{- end}}
                 mockTx.EXPECT().Rollback().After(mockTx.EXPECT().Commit().Return(nil)).Return(nil)
             },
             fields: fields{
                 {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
 {{- end}}
                 dtxManager: mockDtxManager,
                 logger: mockLogger,
@@ -232,7 +232,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
             fields: fields{
                 {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
 {{- end}}
                 dtxManager: mockDtxManager,
                 logger: mockLogger,
@@ -251,7 +251,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
             i := &{{ .GetUseCaseTypeName }}{
                 {{ .ServiceVariableName }}: tt.fields.{{ .ServiceVariableName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }}: tt.fields.{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }}: tt.fields.{{ .EventServicePrivateVariableName }},
 {{- end}}
 				dtxManager: tt.fields.dtxManager,
                 logger: tt.fields.logger,
@@ -268,7 +268,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
     defer ctrl.Finish()
     mock{{ .ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
 {{- if .KafkaEnabled }}
-    mock{{ .GetEventProducerPrivateVariableName }} := NewMock{{ .EventProducerInterfaceName }}(ctrl)
+    mock{{ .EventServiceName }} := NewMock{{ .EventServiceInterfaceName }}(ctrl)
 {{- end}}
     mockLogger := NewMocklogger(ctrl)
     mockLogger.EXPECT().WithContext(gomock.Any()).Return(mockLogger).AnyTimes()
@@ -280,7 +280,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
     type fields struct {
         {{ .ServiceVariableName }} {{ .GetServiceInterfaceName }}
 {{- if .KafkaEnabled }}
-        {{ .GetEventProducerPrivateVariableName }} {{ .EventProducerInterfaceName }}
+        {{ .EventServicePrivateVariableName }} {{ .EventServiceInterfaceName }}
 {{- end}}
         dtxManager      dtxManager
         logger          logger
@@ -303,14 +303,14 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
                 mockDtxManager.EXPECT().NewTx().Return(mockTx)
                 mock{{ .ServiceTypeName }}.EXPECT().Update(ctx, mockTx, update).Return({{ .Variable }}, nil)
 {{- if .KafkaEnabled }}
-                mock{{ .GetEventProducerPrivateVariableName }}.EXPECT().Updated(ctx, mockTx, {{ .Variable }}).Return(nil)
+                mock{{ .EventServiceName }}.EXPECT().Updated(ctx, mockTx, {{ .Variable }}).Return(nil)
 {{- end}}
                 mockTx.EXPECT().Rollback().After(mockTx.EXPECT().Commit().Return(nil)).Return(nil)
             },
             fields: fields{
                 {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
 {{- end}}
                 dtxManager: mockDtxManager,
                 logger: mockLogger,
@@ -334,7 +334,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
             fields: fields{
                 {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
 {{- end}}
                 dtxManager: mockDtxManager,
                 logger: mockLogger,
@@ -353,7 +353,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
             i := &{{ .GetUseCaseTypeName }}{
                 {{ .ServiceVariableName }}: tt.fields.{{ .ServiceVariableName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }}: tt.fields.{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }}: tt.fields.{{ .EventServicePrivateVariableName }},
 {{- end}}
                 dtxManager: tt.fields.dtxManager,
                 logger:          tt.fields.logger,
@@ -370,7 +370,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
     defer ctrl.Finish()
     mock{{ .ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
 {{- if .KafkaEnabled }}
-    mock{{ .GetEventProducerPrivateVariableName }} := NewMock{{ .EventProducerInterfaceName }}(ctrl)
+    mock{{ .EventServiceName }} := NewMock{{ .EventServiceInterfaceName }}(ctrl)
 {{- end}}
     mockLogger := NewMocklogger(ctrl)
     mockLogger.EXPECT().WithContext(gomock.Any()).Return(mockLogger).AnyTimes()
@@ -381,7 +381,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
     type fields struct {
         {{ .ServiceVariableName }} {{ .GetServiceInterfaceName }}
 {{- if .KafkaEnabled }}
-        {{ .GetEventProducerPrivateVariableName }} {{ .EventProducerInterfaceName }}
+        {{ .EventServicePrivateVariableName }} {{ .EventServiceInterfaceName }}
 {{- end}}
         dtxManager      dtxManager
         logger          logger
@@ -405,14 +405,14 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
                     Delete(ctx, mockTx, {{ .Variable }}.ID).
                     Return(nil)
 {{- if .KafkaEnabled }}
-                mock{{ .GetEventProducerPrivateVariableName }}.EXPECT().Deleted(ctx, mockTx, {{ .Variable }}.ID).Return(nil)
+                mock{{ .EventServiceName }}.EXPECT().Deleted(ctx, mockTx, {{ .Variable }}.ID).Return(nil)
 {{- end}}
                 mockTx.EXPECT().Rollback().After(mockTx.EXPECT().Commit().Return(nil)).Return(nil)
             },
             fields: fields{
                 {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
 {{- end}}
                 dtxManager: mockDtxManager,
                 logger: mockLogger,
@@ -435,7 +435,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
             fields: fields{
                 {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
 {{- end}}
                 dtxManager: mockDtxManager,
                 logger: mockLogger,
@@ -453,7 +453,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
             i := &{{ .GetUseCaseTypeName }}{
                 {{ .ServiceVariableName }}: tt.fields.{{ .ServiceVariableName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }}: tt.fields.{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }}: tt.fields.{{ .EventServicePrivateVariableName }},
 {{- end}}
                 dtxManager: tt.fields.dtxManager,
                 logger:          tt.fields.logger,
@@ -469,7 +469,7 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
     defer ctrl.Finish()
     mock{{ .ServiceTypeName }} := NewMock{{ .GetServiceInterfaceName }}(ctrl)
 {{- if .KafkaEnabled }}
-    mock{{ .GetEventProducerPrivateVariableName }} := NewMock{{ .EventProducerInterfaceName }}(ctrl)
+    mock{{ .EventServiceName }} := NewMock{{ .EventServiceInterfaceName }}(ctrl)
 {{- end}}
     mockLogger := NewMocklogger(ctrl)
     mockDtxManager := NewMockdtxManager(ctrl)
@@ -483,7 +483,7 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
     type fields struct {
         {{ .ServiceVariableName }} {{ .GetServiceInterfaceName }}
 {{- if .KafkaEnabled }}
-        {{ .GetEventProducerPrivateVariableName }} {{ .EventProducerInterfaceName }}
+        {{ .EventServicePrivateVariableName }} {{ .EventServiceInterfaceName }}
 {{- end}}
         dtxManager      dtxManager
         logger          logger
@@ -511,7 +511,7 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
             fields: fields{
                 {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
 {{- end}}
                 dtxManager: mockDtxManager,
                 logger: mockLogger,
@@ -534,7 +534,7 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
             fields: fields{
                 {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }}: mock{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
 {{- end}}
                 dtxManager: mockDtxManager,
                 logger: mockLogger,
@@ -554,7 +554,7 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
             i := &{{ .GetUseCaseTypeName }}{
                 {{ .ServiceVariableName }}: tt.fields.{{ .ServiceVariableName }},
 {{- if .KafkaEnabled }}
-                {{ .GetEventProducerPrivateVariableName }}: tt.fields.{{ .GetEventProducerPrivateVariableName }},
+                {{ .EventServicePrivateVariableName }}: tt.fields.{{ .EventServicePrivateVariableName }},
 {{- end}}
                 dtxManager: tt.fields.dtxManager,
                 logger:          tt.fields.logger,

@@ -72,8 +72,8 @@ func (i UseCaseGenerator) structure() *ast.TypeSpec {
 	}
 	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		fields = append(fields, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent(i.domain.GetEventProducerPrivateVariableName())},
-			Type:  ast.NewIdent(i.domain.EventProducerInterfaceName()),
+			Names: []*ast.Ident{ast.NewIdent(i.domain.EventServicePrivateVariableName())},
+			Type:  ast.NewIdent(i.domain.EventServiceInterfaceName()),
 		})
 	}
 	fields = append(fields, &ast.Field{
@@ -130,8 +130,8 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 	}
 	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		fields = append(fields, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent(i.domain.GetEventProducerPrivateVariableName())},
-			Type:  ast.NewIdent(i.domain.EventProducerInterfaceName()),
+			Names: []*ast.Ident{ast.NewIdent(i.domain.EventServicePrivateVariableName())},
+			Type:  ast.NewIdent(i.domain.EventServiceInterfaceName()),
 		})
 	}
 	fields = append(fields, &ast.Field{
@@ -149,8 +149,8 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 	}
 	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		exprs = append(exprs, &ast.KeyValueExpr{
-			Key:   ast.NewIdent(i.domain.GetEventProducerPrivateVariableName()),
-			Value: ast.NewIdent(i.domain.GetEventProducerPrivateVariableName()),
+			Key:   ast.NewIdent(i.domain.EventServicePrivateVariableName()),
+			Value: ast.NewIdent(i.domain.EventServicePrivateVariableName()),
 		})
 	}
 	exprs = append(exprs, &ast.KeyValueExpr{
@@ -446,7 +446,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 									Name: "u",
 								},
 								Sel: &ast.Ident{
-									Name: i.domain.GetEventProducerPrivateVariableName(),
+									Name: i.domain.EventServicePrivateVariableName(),
 								},
 							},
 							Sel: &ast.Ident{
@@ -1145,7 +1145,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 									Name: "u",
 								},
 								Sel: &ast.Ident{
-									Name: i.domain.GetEventProducerPrivateVariableName(),
+									Name: i.domain.EventServicePrivateVariableName(),
 								},
 							},
 							Sel: &ast.Ident{
@@ -1556,7 +1556,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 									Name: "u",
 								},
 								Sel: &ast.Ident{
-									Name: i.domain.GetEventProducerPrivateVariableName(),
+									Name: i.domain.EventServicePrivateVariableName(),
 								},
 							},
 							Sel: &ast.Ident{

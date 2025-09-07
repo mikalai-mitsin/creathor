@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -30,7 +29,7 @@ func (i InterfacesGenerator) Sync() error {
 		i.domain.AppConfig.AppName(),
 		"usecases",
 		i.domain.DirName(),
-		fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()),
+		"interfaces.go",
 	)
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
@@ -45,7 +44,7 @@ func (i InterfacesGenerator) Sync() error {
 	}
 	if !astfile.TypeExists(file, i.domain.EventProducerInterfaceName()) &&
 		i.domain.AppConfig.ProjectConfig.KafkaEnabled {
-		file.Decls = append(file.Decls, i.appEventProducerInterface())
+		file.Decls = append(file.Decls, i.appEventServiceInterface())
 	}
 	if !astfile.TypeExists(file, "logger") {
 		file.Decls = append(file.Decls, i.loggerInterface())
@@ -80,11 +79,7 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text: fmt.Sprintf(
-						"//go:generate mockgen -source=%s_interfaces.go -package=usecases -destination=%s_interfaces_mock.go",
-						i.domain.SnakeName(),
-						i.domain.SnakeName(),
-					),
+					Text:  "//go:generate mockgen -source=interfaces.go -package=usecases -destination=interfaces_mock.go",
 				},
 			},
 		},
@@ -329,13 +324,13 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 	}
 }
 
-func (i InterfacesGenerator) appEventProducerInterface() *ast.GenDecl {
+func (i InterfacesGenerator) appEventServiceInterface() *ast.GenDecl {
 	return &ast.GenDecl{
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
 				Name: &ast.Ident{
-					Name: i.domain.EventProducerInterfaceName(),
+					Name: i.domain.EventServiceInterfaceName(),
 				},
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{

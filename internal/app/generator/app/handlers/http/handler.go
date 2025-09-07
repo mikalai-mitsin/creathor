@@ -90,6 +90,13 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 					},
 					&ast.ImportSpec{
+						Name: ast.NewIdent("httpServer"),
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: h.domain.AppConfig.ProjectConfig.HTTPImportPath(),
+						},
+					},
+					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
 							Value: `"net/http"`,
@@ -1583,7 +1590,7 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 					},
 				},
-				Name: ast.NewIdent("ChiRouter"),
+				Name: ast.NewIdent("router"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
@@ -1741,6 +1748,102 @@ func (h *HandlerGenerator) file() *ast.File {
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
 								ast.NewIdent("router"),
+							},
+						},
+					},
+				},
+			},
+			&ast.FuncDecl{
+				Recv: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Names: []*ast.Ident{
+								{
+									Name: "h",
+								},
+							},
+							Type: &ast.StarExpr{
+								X: &ast.Ident{
+									Name: h.domain.GetHTTPHandlerTypeName(),
+								},
+							},
+						},
+					},
+				},
+				Name: &ast.Ident{
+					Name: "RegisterHTTP",
+				},
+				Type: &ast.FuncType{
+					Params: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "httpServer",
+									},
+								},
+								Type: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "httpServer",
+										},
+										Sel: &ast.Ident{
+											Name: "Server",
+										},
+									},
+								},
+							},
+						},
+					},
+					Results: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Type: &ast.Ident{
+									Name: "error",
+								},
+							},
+						},
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "httpServer",
+									},
+									Sel: &ast.Ident{
+										Name: "Mount",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.BasicLit{
+										Kind: token.STRING,
+										Value: fmt.Sprintf(
+											`"/api/v1/%s/%s"`,
+											h.domain.AppConfig.AppName(),
+											h.domain.GetHTTPPath(),
+										),
+									},
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "h",
+											},
+											Sel: &ast.Ident{
+												Name: "router",
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								&ast.Ident{
+									Name: "nil",
+								},
 							},
 						},
 					},

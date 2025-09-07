@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -74,6 +75,12 @@ func (h *HandlerGenerator) file() *ast.File {
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
 							Value: h.domain.AppConfig.ProjectConfig.LogImportPath(),
+						},
+					},
+					&ast.ImportSpec{
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: h.domain.AppConfig.ProjectConfig.KafkaImportPath(),
 						},
 					},
 				},
@@ -969,6 +976,168 @@ func (h *HandlerGenerator) file() *ast.File {
 								&ast.Ident{
 									Name: "nil",
 								},
+							},
+						},
+					},
+				},
+			},
+			&ast.FuncDecl{
+				Recv: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Names: []*ast.Ident{
+								ast.NewIdent("h"),
+							},
+							Type: &ast.StarExpr{
+								X: ast.NewIdent(h.domain.KafkaHandlerTypeName()),
+							},
+						},
+					},
+				},
+				Name: ast.NewIdent("RegisterKafka"),
+				Type: &ast.FuncType{
+					Params: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									ast.NewIdent("consumer"),
+								},
+								Type: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X:   ast.NewIdent("kafka"),
+										Sel: ast.NewIdent("Consumer"),
+									},
+								},
+							},
+						},
+					},
+					Results: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Type: ast.NewIdent("error"),
+							},
+						},
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X:   ast.NewIdent("consumer"),
+									Sel: ast.NewIdent("AddHandler"),
+								},
+								Args: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "kafka",
+											},
+											Sel: &ast.Ident{
+												Name: "NewHandler",
+											},
+										},
+										Args: []ast.Expr{
+											&ast.BasicLit{
+												Kind:  token.STRING,
+												Value: fmt.Sprintf(`"%s"`, h.domain.CreatedTopicName()),
+											},
+											&ast.BasicLit{
+												Kind:  token.STRING,
+												Value: fmt.Sprintf(`"%s"`, h.domain.KafkaCreatedConsumerGroup()),
+											},
+											&ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "h",
+												},
+												Sel: &ast.Ident{
+													Name: "Created",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X:   ast.NewIdent("consumer"),
+									Sel: ast.NewIdent("AddHandler"),
+								},
+								Args: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "kafka",
+											},
+											Sel: &ast.Ident{
+												Name: "NewHandler",
+											},
+										},
+										Args: []ast.Expr{
+											&ast.BasicLit{
+												Kind:  token.STRING,
+												Value: fmt.Sprintf(`"%s"`, h.domain.UpdatedTopicName()),
+											},
+											&ast.BasicLit{
+												Kind:  token.STRING,
+												Value: fmt.Sprintf(`"%s"`, h.domain.KafkaUpdatedConsumerGroup()),
+											},
+											&ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "h",
+												},
+												Sel: &ast.Ident{
+													Name: "Updated",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X:   ast.NewIdent("consumer"),
+									Sel: ast.NewIdent("AddHandler"),
+								},
+								Args: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "kafka",
+											},
+											Sel: &ast.Ident{
+												Name: "NewHandler",
+											},
+										},
+										Args: []ast.Expr{
+											&ast.BasicLit{
+												Kind:  token.STRING,
+												Value: fmt.Sprintf(`"%s"`, h.domain.DeletedTopicName()),
+											},
+											&ast.BasicLit{
+												Kind:  token.STRING,
+												Value: fmt.Sprintf(`"%s"`, h.domain.KafkaDeletedConsumerGroup()),
+											},
+											&ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "h",
+												},
+												Sel: &ast.Ident{
+													Name: "Deleted",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								ast.NewIdent("nil"),
 							},
 						},
 					},

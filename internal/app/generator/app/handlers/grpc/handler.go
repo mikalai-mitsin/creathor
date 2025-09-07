@@ -2364,6 +2364,99 @@ func (h HandlerGenerator) syncDeleteMethod() error {
 	return nil
 }
 
+func (h HandlerGenerator) syncRegisterMethod() error {
+	fileset := token.NewFileSet()
+	file, err := parser.ParseFile(fileset, h.filename(), nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	method, methodExist := astfile.FindMethod(file, h.domain.GRPCHandlerTypeName(), "RegisterGRPC")
+	if method == nil {
+		method = h.registerGRPC()
+	}
+	if !methodExist {
+		file.Decls = append(file.Decls, method)
+	}
+
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(h.filename(), buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h HandlerGenerator) registerGRPC() *ast.FuncDecl {
+	return &ast.FuncDecl{
+		Recv: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent("s"),
+					},
+					Type: &ast.StarExpr{
+						X: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
+					},
+				},
+			},
+		},
+		Name: ast.NewIdent("RegisterGRPC"),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{
+							ast.NewIdent("grpcServer"),
+						},
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("grpc"),
+								Sel: ast.NewIdent("Server"),
+							},
+						},
+					},
+				},
+			},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: ast.NewIdent("error"),
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.ExprStmt{
+					X: &ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X:   ast.NewIdent("grpcServer"),
+							Sel: ast.NewIdent("AddHandler"),
+						},
+						Args: []ast.Expr{
+							&ast.UnaryExpr{
+								Op: token.AND,
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent(h.domain.ProtoPackage),
+									Sel: ast.NewIdent(h.domain.GetGRPCServiceDescriptionName()),
+								},
+							},
+							ast.NewIdent("s"),
+						},
+					},
+				},
+				&ast.ReturnStmt{
+					Results: []ast.Expr{
+						ast.NewIdent("nil"),
+					},
+				},
+			},
+		},
+	}
+}
+
 func (h HandlerGenerator) Sync() error {
 	err := os.MkdirAll(path.Dir(h.filename()), 0777)
 	if err != nil {
@@ -2388,6 +2481,9 @@ func (h HandlerGenerator) Sync() error {
 		return err
 	}
 	if err := h.syncDeleteMethod(); err != nil {
+		return err
+	}
+	if err := h.syncRegisterMethod(); err != nil {
 		return err
 	}
 	if err := h.syncEncodeCreate(); err != nil {

@@ -150,29 +150,7 @@ func (r RepositoryGenerator) dtoStruct() *ast.TypeSpec {
 		},
 	}
 	for _, param := range r.domain.GetMainModel().Params {
-		ast.Inspect(structure, func(node ast.Node) bool {
-			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
-				for _, field := range st.Fields.List {
-					for _, fieldName := range field.Names {
-						if fieldName.Name == param.GetName() {
-							return false
-						}
-					}
-				}
-				st.Fields.List = append(st.Fields.List, &ast.Field{
-					Doc:   nil,
-					Names: []*ast.Ident{ast.NewIdent(param.GetName())},
-					Type:  ast.NewIdent(param.PostgresDTOType()),
-					Tag: &ast.BasicLit{
-						Kind:  token.STRING,
-						Value: fmt.Sprintf("`db:\"%s\"`", param.Tag()),
-					},
-					Comment: nil,
-				})
-				return false
-			}
-			return true
-		})
+		astfile.SetTypeParam(structure, param.GetName(), param.PostgresDTOType(), fmt.Sprintf("`db:\"%s\"`", param.Tag()))
 	}
 	return structure
 }
@@ -212,137 +190,93 @@ func (r RepositoryGenerator) syncDTOStruct() error {
 }
 
 func (r RepositoryGenerator) dtoConstructor() *ast.FuncDecl {
-	dto := &ast.CompositeLit{
-		Type: ast.NewIdent(r.getDTOName()),
-		Elts: []ast.Expr{},
-	}
+	dtoElts := []ast.Expr{}
+	constructorBody := []ast.Stmt{}
+
+	// Collect dto.Elts
 	for _, param := range r.domain.GetMainModel().Params {
-		elt := &ast.KeyValueExpr{
-			Key:   ast.NewIdent(param.GetName()),
-			Value: nil,
-		}
+		key := ast.NewIdent(param.GetName())
+		var value ast.Expr
+
 		if param.IsSlice() {
-			elt.Value = &ast.CompositeLit{
-				Type: ast.NewIdent(param.PostgresDTOType()),
-			}
+			// initialize empty slice for DTO
+			value = &ast.CompositeLit{Type: ast.NewIdent(param.PostgresDTOType())}
+		} else if param.PostgresDTOType() == param.Type {
+			// direct assignment
+			value = &ast.SelectorExpr{X: ast.NewIdent("entity"), Sel: key}
 		} else {
-			if param.PostgresDTOType() == param.Type {
-				elt.Value = &ast.SelectorExpr{
-					X:   ast.NewIdent("entity"),
-					Sel: ast.NewIdent(param.GetName()),
-				}
-			} else {
-				elt.Value = &ast.CallExpr{
-					Fun: ast.NewIdent(param.PostgresDTOType()),
-					Args: []ast.Expr{
-						&ast.SelectorExpr{
-							X:   ast.NewIdent("entity"),
-							Sel: ast.NewIdent(param.GetName()),
-						},
-					},
-				}
+			// type cast to DTO type
+			value = &ast.CallExpr{
+				Fun:  ast.NewIdent(param.PostgresDTOType()),
+				Args: []ast.Expr{&ast.SelectorExpr{X: ast.NewIdent("entity"), Sel: key}},
 			}
 		}
-		dto.Elts = append(dto.Elts, elt)
+
+		dtoElts = append(dtoElts, &ast.KeyValueExpr{Key: key, Value: value})
 	}
-	constructor := &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("New%sFromEntity", r.getDTOName())),
-		Type: &ast.FuncType{
-			Params: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Names: []*ast.Ident{
-							ast.NewIdent("entity"),
-						},
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(r.domain.GetMainModel().Name),
-						},
-					},
-				},
-			},
-			Results: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Type: ast.NewIdent(r.getDTOName()),
-					},
-				},
-			},
-		},
-		Body: &ast.BlockStmt{
-			List: []ast.Stmt{
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						ast.NewIdent("dto"),
-					},
-					Tok: token.DEFINE,
-					Rhs: []ast.Expr{
-						dto,
-					},
-				},
-			},
-		},
-	}
+
+	// dto := DTO{...}
+	constructorBody = append(constructorBody, &ast.AssignStmt{
+		Lhs: []ast.Expr{ast.NewIdent("dto")},
+		Tok: token.DEFINE,
+		Rhs: []ast.Expr{&ast.CompositeLit{
+			Type: ast.NewIdent(r.getDTOName()),
+			Elts: dtoElts,
+		}},
+	})
+
+	// Generate range loops for slices
 	for _, param := range r.domain.GetMainModel().Params {
 		if !param.IsSlice() {
 			continue
 		}
-		var valueToAppend ast.Expr
-		if param.SliceType() == param.PostgresDTOSliceType() {
-			valueToAppend = ast.NewIdent("param")
-		} else {
-			valueToAppend = &ast.CallExpr{
-				Fun: ast.NewIdent(param.PostgresDTOSliceType()),
-				Args: []ast.Expr{
-					ast.NewIdent("param"),
-				},
+
+		// Determine append value
+		var appendValue ast.Expr = ast.NewIdent("param")
+		if param.SliceType() != param.PostgresDTOSliceType() {
+			appendValue = &ast.CallExpr{
+				Fun:  ast.NewIdent(param.PostgresDTOSliceType()),
+				Args: []ast.Expr{ast.NewIdent("param")},
 			}
 		}
-		rang := &ast.RangeStmt{
+
+		constructorBody = append(constructorBody, &ast.RangeStmt{
 			Key:   ast.NewIdent("_"),
 			Value: ast.NewIdent("param"),
 			Tok:   token.DEFINE,
-			X: &ast.SelectorExpr{
-				X:   ast.NewIdent("entity"),
-				Sel: ast.NewIdent(param.GetName()),
-			},
-			Body: &ast.BlockStmt{
-				List: []ast.Stmt{
-					&ast.AssignStmt{
-						Lhs: []ast.Expr{
-							&ast.SelectorExpr{
-								X:   ast.NewIdent("dto"),
-								Sel: ast.NewIdent(param.GetName()),
-							},
+			X:     &ast.SelectorExpr{X: ast.NewIdent("entity"), Sel: ast.NewIdent(param.GetName())},
+			Body: &ast.BlockStmt{List: []ast.Stmt{
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{&ast.SelectorExpr{X: ast.NewIdent("dto"), Sel: ast.NewIdent(param.GetName())}},
+					Tok: token.ASSIGN,
+					Rhs: []ast.Expr{&ast.CallExpr{
+						Fun: ast.NewIdent("append"),
+						Args: []ast.Expr{
+							&ast.SelectorExpr{X: ast.NewIdent("dto"), Sel: ast.NewIdent(param.GetName())},
+							appendValue,
 						},
-						Tok: token.ASSIGN,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: ast.NewIdent("append"),
-								Args: []ast.Expr{
-									&ast.SelectorExpr{
-										X:   ast.NewIdent("dto"),
-										Sel: ast.NewIdent(param.GetName()),
-									},
-									valueToAppend,
-								},
-							},
-						},
-					},
+					}},
 				},
-			},
-		}
-		constructor.Body.List = append(constructor.Body.List, rang)
+			}},
+		})
 	}
-	constructor.Body.List = append(
-		constructor.Body.List,
-		&ast.ReturnStmt{
-			Results: []ast.Expr{
-				ast.NewIdent("dto"),
-			},
+
+	// return dto
+	constructorBody = append(constructorBody, &ast.ReturnStmt{Results: []ast.Expr{ast.NewIdent("dto")}})
+
+	return &ast.FuncDecl{
+		Name: ast.NewIdent(fmt.Sprintf("New%sFromEntity", r.getDTOName())),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{List: []*ast.Field{{
+				Names: []*ast.Ident{ast.NewIdent("entity")},
+				Type:  &ast.SelectorExpr{X: ast.NewIdent("entities"), Sel: ast.NewIdent(r.domain.GetMainModel().Name)},
+			}}},
+			Results: &ast.FieldList{List: []*ast.Field{{
+				Type: ast.NewIdent(r.getDTOName()),
+			}}},
 		},
-	)
-	return constructor
+		Body: &ast.BlockStmt{List: constructorBody},
+	}
 }
 
 func (r RepositoryGenerator) syncDTOConstructor() error {

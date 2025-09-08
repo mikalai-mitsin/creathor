@@ -42,7 +42,7 @@ func (i InterfacesGenerator) Sync() error {
 	if !astfile.TypeExists(file, i.domain.GetServiceInterfaceName()) {
 		file.Decls = append(file.Decls, i.appServiceInterface())
 	}
-	if !astfile.TypeExists(file, i.domain.EventProducerInterfaceName()) &&
+	if !astfile.TypeExists(file, i.domain.EventServiceInterfaceName()) &&
 		i.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		file.Decls = append(file.Decls, i.appEventServiceInterface())
 	}

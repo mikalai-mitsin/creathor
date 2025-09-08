@@ -86,6 +86,85 @@ func (h *HandlerGenerator) file() *ast.File {
 				},
 			},
 			&ast.GenDecl{
+				Tok: token.CONST,
+				Specs: []ast.Spec{
+					&ast.ValueSpec{
+						Names: []*ast.Ident{
+							ast.NewIdent("topicEventCreated"),
+						},
+						Values: []ast.Expr{
+							&ast.BasicLit{
+								Kind:  token.STRING,
+								Value: fmt.Sprintf(`"%s"`, h.domain.CreatedTopicName()),
+							},
+						},
+					},
+					&ast.ValueSpec{
+						Names: []*ast.Ident{
+							{
+								Name: "topicEventUpdated",
+							},
+						},
+						Values: []ast.Expr{
+							&ast.BasicLit{
+								Kind:  token.STRING,
+								Value: fmt.Sprintf(`"%s"`, h.domain.UpdatedTopicName()),
+							},
+						},
+					},
+					&ast.ValueSpec{
+						Names: []*ast.Ident{
+							{
+								Name: "topicEventDeleted",
+							},
+						},
+						Values: []ast.Expr{
+							&ast.BasicLit{
+								Kind:  token.STRING,
+								Value: fmt.Sprintf(`"%s"`, h.domain.DeletedTopicName()),
+							},
+						},
+					},
+					&ast.ValueSpec{
+						Names: []*ast.Ident{
+							ast.NewIdent("groupEventCreated"),
+						},
+						Values: []ast.Expr{
+							&ast.BasicLit{
+								Kind:  token.STRING,
+								Value: fmt.Sprintf(`"%s"`, h.domain.KafkaCreatedConsumerGroup()),
+							},
+						},
+					},
+					&ast.ValueSpec{
+						Names: []*ast.Ident{
+							{
+								Name: "groupEventUpdated",
+							},
+						},
+						Values: []ast.Expr{
+							&ast.BasicLit{
+								Kind:  token.STRING,
+								Value: fmt.Sprintf(`"%s"`, h.domain.KafkaUpdatedConsumerGroup()),
+							},
+						},
+					},
+					&ast.ValueSpec{
+						Names: []*ast.Ident{
+							{
+								Name: "groupEventDeleted",
+							},
+						},
+						Values: []ast.Expr{
+							&ast.BasicLit{
+								Kind:  token.STRING,
+								Value: fmt.Sprintf(`"%s"`, h.domain.KafkaDeletedConsumerGroup()),
+							},
+						},
+					},
+				},
+			},
+			&ast.GenDecl{
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
@@ -1040,11 +1119,11 @@ func (h *HandlerGenerator) file() *ast.File {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf(`"%s"`, h.domain.CreatedTopicName()),
+												Value: "topicEventCreated",
 											},
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf(`"%s"`, h.domain.KafkaCreatedConsumerGroup()),
+												Value: "groupEventCreated",
 											},
 											&ast.SelectorExpr{
 												X: &ast.Ident{
@@ -1078,11 +1157,11 @@ func (h *HandlerGenerator) file() *ast.File {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf(`"%s"`, h.domain.UpdatedTopicName()),
+												Value: "topicEventUpdated",
 											},
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf(`"%s"`, h.domain.KafkaUpdatedConsumerGroup()),
+												Value: "groupEventUpdated",
 											},
 											&ast.SelectorExpr{
 												X: &ast.Ident{
@@ -1116,11 +1195,11 @@ func (h *HandlerGenerator) file() *ast.File {
 										Args: []ast.Expr{
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf(`"%s"`, h.domain.DeletedTopicName()),
+												Value: "topicEventDeleted",
 											},
 											&ast.BasicLit{
 												Kind:  token.STRING,
-												Value: fmt.Sprintf(`"%s"`, h.domain.KafkaDeletedConsumerGroup()),
+												Value: "groupEventDeleted",
 											},
 											&ast.SelectorExpr{
 												X: &ast.Ident{

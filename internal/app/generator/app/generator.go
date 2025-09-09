@@ -11,6 +11,7 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/services"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/usecases"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
+	"github.com/mikalai-mitsin/creathor/internal/pkg/encoders"
 )
 
 type Generator struct {
@@ -63,6 +64,8 @@ func (g *Generator) Sync() error {
 				grpc.NewInterfacesGenerator(&entity),
 				grpc.NewHandlerGenerator(&entity),
 				grpc.NewTestGenerator(&entity),
+				encoders.NewProtoEncoder(entity),
+				encoders.NewProtoDecoder(entity),
 			)
 		}
 		for _, baseEntity := range entity.Entities {

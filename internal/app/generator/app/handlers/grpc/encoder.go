@@ -1,4 +1,4 @@
-package encoders
+package grpc
 
 import (
 	"bytes"
@@ -881,7 +881,7 @@ func (h ProtoEncoder) syncEncodeFilter(filename string) error {
 	return nil
 }
 
-func (h ProtoEncoder) file(pkg string) *ast.File {
+func (h ProtoEncoder) file() *ast.File {
 	importSpec := []ast.Spec{
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
@@ -943,7 +943,7 @@ func (h ProtoEncoder) file(pkg string) *ast.File {
 		}
 	}
 	return &ast.File{
-		Name: ast.NewIdent(pkg),
+		Name: ast.NewIdent("handlers"),
 		Decls: []ast.Decl{
 			&ast.GenDecl{
 				Tok:   token.IMPORT,
@@ -954,42 +954,22 @@ func (h ProtoEncoder) file(pkg string) *ast.File {
 }
 
 func (h ProtoEncoder) Sync() error {
-	files := map[string]string{
-		path.Join(
-			"internal",
-			"app",
-			h.domain.AppConfig.AppName(),
-			"handlers",
-			"grpc",
-			h.domain.DirName(),
-			"dto.go",
-		): "handlers",
-		//path.Join(
-		//	"internal",
-		//	"app",
-		//	h.domain.AppConfig.AppName(),
-		//	"handlers",
-		//	"kafka",
-		//	h.domain.DirName(),
-		//	"dto.go",
-		//): "handlers",
-	}
-	for filename, pkg := range files {
-		if err := h.sync(pkg, filename); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (h ProtoEncoder) sync(pkg, filename string) error {
+	filename := path.Join(
+		"internal",
+		"app",
+		h.domain.AppConfig.AppName(),
+		"handlers",
+		"grpc",
+		h.domain.DirName(),
+		"dto.go",
+	)
 	fileset := token.NewFileSet()
 	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
 		return err
 	}
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {
-		file = h.file(pkg)
+		file = h.file()
 	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {

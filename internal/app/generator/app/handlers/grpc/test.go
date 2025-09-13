@@ -19,7 +19,6 @@ func (g *TestGenerator) Sync() error {
 	test := tmpl.Template{
 		SourcePath: "templates/internal/domain/handlers/grpc/crud_test.go.tmpl",
 		DestinationPath: path.Join(
-			destinationPath,
 			"internal",
 			"app",
 			g.domain.AppConfig.AppName(),

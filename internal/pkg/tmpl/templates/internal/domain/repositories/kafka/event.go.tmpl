@@ -25,10 +25,10 @@ func {{ .EventProducerConstructorName }}(
 }
 
 func (p *{{ .EventProducerTypeName }}) Send(ctx context.Context, {{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}) error {
-	data, err := json.Marshal({{ .GetOneVariableName }})
-	if err != nil {
-		return err
-	}
+    data, err := proto.Marshal(decode{{ .EntityName }}({{ .GetOneVariableName }}))
+    if err != nil {
+        return err
+    }
 	message := &kafka.Message{
 		Topic: topicName,
 		Value: data,

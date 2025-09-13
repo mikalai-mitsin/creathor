@@ -94,7 +94,7 @@ func initProject(_ *cli.Context) error {
 func postInit(project *configs.Project) error {
 	fmt.Println("post init...")
 	var errb bytes.Buffer
-	if project.GRPCEnabled {
+	if project.GRPCEnabled || project.KafkaEnabled {
 		bufUpdate := exec.Command("buf", "dep", "update")
 		bufUpdate.Dir = path.Join(destinationPath, "api", "proto")
 		bufUpdate.Stderr = &errb

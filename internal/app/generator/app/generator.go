@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/mikalai-mitsin/creathor/internal/app/generator"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/api/proto"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/entities"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/handlers/grpc"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/handlers/http"
@@ -11,7 +12,6 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/services"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/app/usecases"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
-	"github.com/mikalai-mitsin/creathor/internal/pkg/encoders"
 )
 
 type Generator struct {
@@ -41,9 +41,11 @@ func (g *Generator) Sync() error {
 		if g.domain.KafkaEnabled {
 			domainGenerators = append(
 				domainGenerators,
+				proto.NewProtoGenerator(&entity),
 				kafka.NewProducerGenerator(&entity),
 				kafka.NewInterfacesGenerator(&entity),
 				kafka.NewProducerTestGenerator(&entity),
+				kafka.NewProtoDecoder(entity),
 				services.NewEventService(entity),
 				handlersKafka.NewHandlerGenerator(&entity),
 				handlersKafka.NewInterfacesGenerator(&entity),
@@ -60,12 +62,12 @@ func (g *Generator) Sync() error {
 		if g.domain.GRPCEnabled {
 			domainGenerators = append(
 				domainGenerators,
-				grpc.NewProtoGenerator(&entity),
+				proto.NewProtoGenerator(&entity),
 				grpc.NewInterfacesGenerator(&entity),
 				grpc.NewHandlerGenerator(&entity),
 				grpc.NewTestGenerator(&entity),
-				encoders.NewProtoEncoder(entity),
-				encoders.NewProtoDecoder(entity),
+				grpc.NewProtoEncoder(entity),
+				grpc.NewProtoDecoder(entity),
 			)
 		}
 		for _, baseEntity := range entity.Entities {

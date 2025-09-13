@@ -2,6 +2,25 @@
 ## [Unreleased]
 
 
+<a name="v0.7.9"></a>
+## [v0.7.9] - 2025-09-14
+### Feat
+- send events as proto
+- use one method to send events
+- add soft delete to http
+- add soft delete
+- move encoders to pkg
+- update repository generator
+- use consts instead of strings
+- move registration to handler
+- add event service to app
+- add event service
+
+### Fix
+- wait error group
+- add cancel func to consumer
+
+
 <a name="v0.7.8"></a>
 ## [v0.7.8] - 2025-09-05
 ### Build
@@ -539,7 +558,8 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.8...HEAD
+[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.9...HEAD
+[v0.7.9]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.8...v0.7.9
 [v0.7.8]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.7...v0.7.8
 [v0.7.7]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.6...v0.7.7
 [v0.7.6]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.5...v0.7.6

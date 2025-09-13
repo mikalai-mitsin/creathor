@@ -812,6 +812,16 @@ func (g *DTOGenerator) filterDTOStruct() *ast.TypeSpec {
 					Value: "`json:\"order_by\"`",
 				},
 			},
+			{
+				Names: []*ast.Ident{
+					ast.NewIdent("IsDeleted"),
+				},
+				Type: ast.NewIdent("*bool"),
+				Tag: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: "`json:\"is_deleted\"`",
+				},
+			},
 		},
 	}
 	if g.domain.SearchEnabled() {
@@ -820,7 +830,7 @@ func (g *DTOGenerator) filterDTOStruct() *ast.TypeSpec {
 				Names: []*ast.Ident{
 					ast.NewIdent("Search"),
 				},
-				Type: ast.NewIdent("string"),
+				Type: ast.NewIdent("*string"),
 				Tag: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: "`json:\"search\"`",
@@ -890,11 +900,15 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 			Key:   ast.NewIdent("OrderBy"),
 			Value: ast.NewIdent("nil"),
 		},
+		&ast.KeyValueExpr{
+			Key:   ast.NewIdent("IsDeleted"),
+			Value: ast.NewIdent("nil"),
+		},
 	}
 	if g.domain.SearchEnabled() {
 		exprs = append(exprs, &ast.KeyValueExpr{
 			Key:   ast.NewIdent("Search"),
-			Value: ast.NewIdent(`""`),
+			Value: ast.NewIdent("nil"),
 		})
 	}
 	stmts := []ast.Stmt{
@@ -1201,6 +1215,138 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 				Args: []ast.Expr{
 					&ast.BasicLit{
 						Kind:  token.STRING,
+						Value: "\"is_deleted\"",
+					},
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.AssignStmt{
+						Lhs: []ast.Expr{
+							ast.NewIdent("isDeleted"),
+							ast.NewIdent("err"),
+						},
+						Tok: token.DEFINE,
+						Rhs: []ast.Expr{
+							&ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X:   ast.NewIdent("strconv"),
+									Sel: ast.NewIdent("ParseBool"),
+								},
+								Args: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X: &ast.SelectorExpr{
+														X:   ast.NewIdent("r"),
+														Sel: ast.NewIdent("URL"),
+													},
+													Sel: ast.NewIdent("Query"),
+												},
+											},
+											Sel: ast.NewIdent("Get"),
+										},
+										Args: []ast.Expr{
+											&ast.BasicLit{
+												Kind:  token.STRING,
+												Value: "\"is_deleted\"",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					&ast.IfStmt{
+						Cond: &ast.BinaryExpr{
+							X:  ast.NewIdent("err"),
+							Op: token.NEQ,
+							Y:  ast.NewIdent("nil"),
+						},
+						Body: &ast.BlockStmt{
+							List: []ast.Stmt{
+								&ast.ReturnStmt{
+									Results: []ast.Expr{
+										&ast.CompositeLit{
+											Type: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
+										},
+										&ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X: &ast.CallExpr{
+													Fun: &ast.SelectorExpr{
+														X: &ast.CallExpr{
+															Fun: &ast.SelectorExpr{
+																X: ast.NewIdent("errs"),
+																Sel: ast.NewIdent(
+																	"NewInvalidFormError",
+																),
+															},
+														},
+														Sel: ast.NewIdent("WithParam"),
+													},
+													Args: []ast.Expr{
+														&ast.BasicLit{
+															Kind:  token.STRING,
+															Value: "\"is_deleted\"",
+														},
+														&ast.BasicLit{
+															Kind:  token.STRING,
+															Value: "\"Invalid page_number.\"",
+														},
+													},
+												},
+												Sel: ast.NewIdent("WithCause"),
+											},
+											Args: []ast.Expr{
+												ast.NewIdent("err"),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					&ast.AssignStmt{
+						Lhs: []ast.Expr{
+							&ast.SelectorExpr{
+								X:   ast.NewIdent("filter"),
+								Sel: ast.NewIdent("IsDeleted"),
+							},
+						},
+						Tok: token.ASSIGN,
+						Rhs: []ast.Expr{
+							&ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X:   ast.NewIdent("pointer"),
+									Sel: ast.NewIdent("Of"),
+								},
+								Args: []ast.Expr{
+									ast.NewIdent("isDeleted"),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		&ast.IfStmt{
+			Cond: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("r"),
+								Sel: ast.NewIdent("URL"),
+							},
+							Sel: ast.NewIdent("Query"),
+						},
+					},
+					Sel: ast.NewIdent("Has"),
+				},
+				Args: []ast.Expr{
+					&ast.BasicLit{
+						Kind:  token.STRING,
 						Value: "\"order_by\"",
 					},
 				},
@@ -1289,21 +1435,29 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X: &ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X: &ast.SelectorExpr{
-												X:   ast.NewIdent("r"),
-												Sel: ast.NewIdent("URL"),
-											},
-											Sel: ast.NewIdent("Query"),
-										},
-									},
-									Sel: ast.NewIdent("Get"),
+									X:   ast.NewIdent("pointer"),
+									Sel: ast.NewIdent("Of"),
 								},
 								Args: []ast.Expr{
-									&ast.BasicLit{
-										Kind:  token.STRING,
-										Value: "\"search\"",
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X: &ast.SelectorExpr{
+														X:   ast.NewIdent("r"),
+														Sel: ast.NewIdent("URL"),
+													},
+													Sel: ast.NewIdent("Query"),
+												},
+											},
+											Sel: ast.NewIdent("Get"),
+										},
+										Args: []ast.Expr{
+											&ast.BasicLit{
+												Kind:  token.STRING,
+												Value: "\"search\"",
+											},
+										},
 									},
 								},
 							},
@@ -1404,6 +1558,13 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 			},
 		},
 		&ast.KeyValueExpr{
+			Key: ast.NewIdent("IsDeleted"),
+			Value: &ast.SelectorExpr{
+				X:   ast.NewIdent("dto"),
+				Sel: ast.NewIdent("IsDeleted"),
+			},
+		},
+		&ast.KeyValueExpr{
 			Key: ast.NewIdent("OrderBy"),
 			Value: &ast.CompositeLit{
 				Type: &ast.ArrayType{
@@ -1422,17 +1583,9 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 	if g.domain.SearchEnabled() {
 		exprs = append(exprs, &ast.KeyValueExpr{
 			Key: ast.NewIdent("Search"),
-			Value: &ast.CallExpr{
-				Fun: &ast.SelectorExpr{
-					X:   ast.NewIdent("pointer"),
-					Sel: ast.NewIdent("Of"),
-				},
-				Args: []ast.Expr{
-					&ast.SelectorExpr{
-						X:   ast.NewIdent("dto"),
-						Sel: ast.NewIdent("Search"),
-					},
-				},
+			Value: &ast.SelectorExpr{
+				X:   ast.NewIdent("dto"),
+				Sel: ast.NewIdent("Search"),
 			},
 		})
 	}

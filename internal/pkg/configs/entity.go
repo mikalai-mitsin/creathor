@@ -208,7 +208,7 @@ func (m *EntityConfig) KafkaHandlerTypeName() string {
 
 func (m *EntityConfig) KafkaCreatedConsumerGroup() string {
 	return fmt.Sprintf(
-		"%s.%s.%s.created",
+		"%s.%s.%s",
 		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
 		strcase.ToSnake(m.AppConfig.Name),
 		strcase.ToSnake(m.Name),
@@ -235,27 +235,9 @@ func (m *EntityConfig) GetKafkaHandlerPrivateVariableName() string {
 	return fmt.Sprintf("kafka%sHandler", strcase.ToCamel(m.Name))
 }
 
-func (m *EntityConfig) CreatedTopicName() string {
+func (m *EntityConfig) TopicName() string {
 	return fmt.Sprintf(
-		"%s.%s.%s.created",
-		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
-		strcase.ToSnake(m.AppConfig.Name),
-		strcase.ToSnake(m.Name),
-	)
-}
-
-func (m *EntityConfig) UpdatedTopicName() string {
-	return fmt.Sprintf(
-		"%s.%s.%s.updated",
-		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
-		strcase.ToSnake(m.AppConfig.Name),
-		strcase.ToSnake(m.Name),
-	)
-}
-
-func (m *EntityConfig) DeletedTopicName() string {
-	return fmt.Sprintf(
-		"%s.%s.%s.deleted",
+		"%s.%s.%s.v1",
 		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
 		strcase.ToSnake(m.AppConfig.Name),
 		strcase.ToSnake(m.Name),

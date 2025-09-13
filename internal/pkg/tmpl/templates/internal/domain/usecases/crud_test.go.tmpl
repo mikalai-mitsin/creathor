@@ -201,7 +201,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
                 mockDtxManager.EXPECT().NewTx().Return(mockTx)
                 mock{{ .ServiceTypeName }}.EXPECT().Create(ctx, mockTx, create).Return({{ .GetOneVariableName }}, nil)
 {{- if .KafkaEnabled }}
-                mock{{ .EventServiceName }}.EXPECT().Created(ctx, mockTx, {{ .GetOneVariableName }}).Return(nil)
+                mock{{ .EventServiceName }}.EXPECT().Send(ctx, mockTx, {{ .GetOneVariableName }}).Return(nil)
 {{- end}}
                 mockTx.EXPECT().Rollback().After(mockTx.EXPECT().Commit().Return(nil)).Return(nil)
             },
@@ -303,7 +303,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
                 mockDtxManager.EXPECT().NewTx().Return(mockTx)
                 mock{{ .ServiceTypeName }}.EXPECT().Update(ctx, mockTx, update).Return({{ .GetOneVariableName }}, nil)
 {{- if .KafkaEnabled }}
-                mock{{ .EventServiceName }}.EXPECT().Updated(ctx, mockTx, {{ .GetOneVariableName }}).Return(nil)
+                mock{{ .EventServiceName }}.EXPECT().Send(ctx, mockTx, {{ .GetOneVariableName }}).Return(nil)
 {{- end}}
                 mockTx.EXPECT().Rollback().After(mockTx.EXPECT().Commit().Return(nil)).Return(nil)
             },
@@ -406,7 +406,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
                     Delete(ctx, mockTx, {{ .GetOneVariableName }}.ID).
                     Return({{ .GetOneVariableName }}, nil)
 {{- if .KafkaEnabled }}
-                mock{{ .EventServiceName }}.EXPECT().Deleted(ctx, mockTx, {{ .GetOneVariableName }}.ID).Return(nil)
+                mock{{ .EventServiceName }}.EXPECT().Send(ctx, mockTx, {{ .GetOneVariableName }}).Return(nil)
 {{- end}}
                 mockTx.EXPECT().Rollback().After(mockTx.EXPECT().Commit().Return(nil)).Return(nil)
             },

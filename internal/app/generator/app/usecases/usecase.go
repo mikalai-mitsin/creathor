@@ -450,7 +450,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 								},
 							},
 							Sel: &ast.Ident{
-								Name: "Created",
+								Name: "Send",
 							},
 						},
 						Args: []ast.Expr{
@@ -1149,7 +1149,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 								},
 							},
 							Sel: &ast.Ident{
-								Name: "Updated",
+								Name: "Send",
 							},
 						},
 						Args: []ast.Expr{
@@ -1567,7 +1567,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 								},
 							},
 							Sel: &ast.Ident{
-								Name: "Deleted",
+								Name: "Send",
 							},
 						},
 						Args: []ast.Expr{
@@ -1576,7 +1576,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 							},
 							ast.NewIdent("tx"),
 							&ast.Ident{
-								Name: "id",
+								Name: i.domain.GetOneVariableName(),
 							},
 						},
 					},

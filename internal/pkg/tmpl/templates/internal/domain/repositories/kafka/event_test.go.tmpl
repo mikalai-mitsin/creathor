@@ -50,7 +50,7 @@ func Test{{ .EventProducerConstructorName }}(t *testing.T) {
 	}
 }
 
-func Test{{ .EventProducerTypeName }}_Created(t *testing.T) {
+func Test{{ .EventProducerTypeName }}_Send(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockLogger := NewMocklogger(ctrl)
@@ -85,7 +85,7 @@ func Test{{ .EventProducerTypeName }}_Created(t *testing.T) {
 			setup: func() {
 				data, _ := json.Marshal({{ .GetOneVariableName }})
 				mockProducer.EXPECT().Send(gomock.Any(), &kafka.Message{
-					Topic: topicEventCreated,
+					Topic: topicName,
 					Value: data,
 					Key:   {{ .GetOneVariableName }}.ID.String(),
 				}).Return(nil)
@@ -105,7 +105,7 @@ func Test{{ .EventProducerTypeName }}_Created(t *testing.T) {
 			setup: func() {
 				data, _ := json.Marshal({{ .GetOneVariableName }})
 				mockProducer.EXPECT().Send(gomock.Any(), &kafka.Message{
-					Topic: topicEventCreated,
+					Topic: topicName,
 					Value: data,
 					Key:   {{ .GetOneVariableName }}.ID.String(),
 				}).Return(errors.New("test error"))
@@ -120,157 +120,7 @@ func Test{{ .EventProducerTypeName }}_Created(t *testing.T) {
 				producer: tt.fields.producer,
 				logger:   tt.fields.logger,
 			}
-			err := p.Created(tt.args.ctx, tt.args.{{ .GetOneVariableName }})
-			assert.ErrorIs(t, err, tt.wantErr)
-		})
-	}
-}
-
-func Test{{ .EventProducerTypeName }}_Updated(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mockLogger := NewMocklogger(ctrl)
-	mockProducer := NewMockproducer(ctrl)
-	ctx := context.Background()
-	{{ .GetOneVariableName }} := entities.NewMock{{ .GetMainModel.Name }}(t)
-	type fields struct {
-		producer producer
-		logger   logger
-	}
-	type args struct {
-		ctx     context.Context
-		{{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		setup   func()
-		wantErr error
-	}{
-		{
-			name: "ok",
-			fields: fields{
-				producer: mockProducer,
-				logger:   mockLogger,
-			},
-			args: args{
-				ctx:     ctx,
-				{{ .GetOneVariableName }}: {{ .GetOneVariableName }},
-			},
-			setup: func() {
-				data, _ := json.Marshal({{ .GetOneVariableName }})
-				mockProducer.EXPECT().Send(gomock.Any(), &kafka.Message{
-					Topic: topicEventUpdated,
-					Value: data,
-					Key:   {{ .GetOneVariableName }}.ID.String(),
-				}).Return(nil)
-			},
-			wantErr: nil,
-		},
-		{
-			name: "send error",
-			fields: fields{
-				producer: mockProducer,
-				logger:   mockLogger,
-			},
-			args: args{
-				ctx:     ctx,
-				{{ .GetOneVariableName }}: {{ .GetOneVariableName }},
-			},
-			setup: func() {
-				data, _ := json.Marshal({{ .GetOneVariableName }})
-				mockProducer.EXPECT().Send(gomock.Any(), &kafka.Message{
-					Topic: topicEventUpdated,
-					Value: data,
-					Key:   {{ .GetOneVariableName }}.ID.String(),
-				}).Return(errors.New("test error"))
-			},
-			wantErr: errs.FromKafkaError(errors.New("test error")),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.setup()
-			p := &{{ .EventProducerTypeName }}{
-				producer: tt.fields.producer,
-				logger:   tt.fields.logger,
-			}
-			err := p.Updated(tt.args.ctx, tt.args.{{ .GetOneVariableName }})
-			assert.ErrorIs(t, err, tt.wantErr)
-		})
-	}
-}
-
-func Test{{ .EventProducerTypeName }}_Deleted(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mockLogger := NewMocklogger(ctrl)
-	mockProducer := NewMockproducer(ctrl)
-	ctx := context.Background()
-	{{ .GetOneVariableName }} := entities.NewMock{{ .GetMainModel.Name }}(t)
-	type fields struct {
-		producer producer
-		logger   logger
-	}
-	type args struct {
-		ctx context.Context
-		id  uuid.UUID
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		setup   func()
-		wantErr error
-	}{
-		{
-			name: "ok",
-			fields: fields{
-				producer: mockProducer,
-				logger:   mockLogger,
-			},
-			args: args{
-				ctx: ctx,
-				id:  {{ .GetOneVariableName }}.ID,
-			},
-			setup: func() {
-				mockProducer.EXPECT().Send(gomock.Any(), &kafka.Message{
-					Topic: topicEventDeleted,
-					Value: sarama.ByteEncoder({{ .GetOneVariableName }}.ID.String()),
-					Key:   {{ .GetOneVariableName }}.ID.String(),
-				}).Return(nil)
-			},
-			wantErr: nil,
-		},
-		{
-			name: "send error",
-			fields: fields{
-				producer: mockProducer,
-				logger:   mockLogger,
-			},
-			args: args{
-				ctx: ctx,
-				id:  {{ .GetOneVariableName }}.ID,
-			},
-			setup: func() {
-				mockProducer.EXPECT().Send(gomock.Any(), &kafka.Message{
-					Topic: topicEventDeleted,
-					Value: []byte({{ .GetOneVariableName }}.ID.String()),
-                    Key:   {{ .GetOneVariableName }}.ID.String(),
-				}).Return(errors.New("test error"))
-			},
-			wantErr: errs.FromKafkaError(errors.New("test error")),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.setup()
-			p := &{{ .EventProducerTypeName }}{
-				producer: tt.fields.producer,
-				logger:   tt.fields.logger,
-			}
-			err := p.Deleted(tt.args.ctx, tt.args.id)
+			err := p.Send(tt.args.ctx, tt.args.{{ .GetOneVariableName }})
 			assert.ErrorIs(t, err, tt.wantErr)
 		})
 	}

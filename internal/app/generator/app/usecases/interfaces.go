@@ -344,7 +344,7 @@ func (i InterfacesGenerator) appEventServiceInterface() *ast.GenDecl {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: "Created",
+										Name: "Send",
 									},
 								},
 								Type: &ast.FuncType{
@@ -373,102 +373,6 @@ func (i InterfacesGenerator) appEventServiceInterface() *ast.GenDecl {
 													},
 													Sel: &ast.Ident{
 														Name: i.domain.GetMainModel().Name,
-													},
-												},
-											},
-										},
-									},
-									Results: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Type: &ast.Ident{
-													Name: "error",
-												},
-											},
-										},
-									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "Updated",
-									},
-								},
-								Type: &ast.FuncType{
-									Params: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "context",
-													},
-													Sel: &ast.Ident{
-														Name: "Context",
-													},
-												},
-											},
-											{
-												Type: &ast.SelectorExpr{
-													X:   ast.NewIdent("dtx"),
-													Sel: ast.NewIdent("TX"),
-												},
-											},
-											{
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "entities",
-													},
-													Sel: &ast.Ident{
-														Name: i.domain.GetMainModel().Name,
-													},
-												},
-											},
-										},
-									},
-									Results: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Type: &ast.Ident{
-													Name: "error",
-												},
-											},
-										},
-									},
-								},
-							},
-							{
-								Names: []*ast.Ident{
-									{
-										Name: "Deleted",
-									},
-								},
-								Type: &ast.FuncType{
-									Params: &ast.FieldList{
-										List: []*ast.Field{
-											{
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "context",
-													},
-													Sel: &ast.Ident{
-														Name: "Context",
-													},
-												},
-											},
-											{
-												Type: &ast.SelectorExpr{
-													X:   ast.NewIdent("dtx"),
-													Sel: ast.NewIdent("TX"),
-												},
-											},
-											{
-												Type: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "uuid",
-													},
-													Sel: &ast.Ident{
-														Name: "UUID",
 													},
 												},
 											},

@@ -2066,37 +2066,6 @@ func (u ConsumerGenerator) file() *ast.File {
 														},
 													},
 												},
-												&ast.CallExpr{
-													Fun: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "log",
-														},
-														Sel: &ast.Ident{
-															Name: "String",
-														},
-													},
-													Args: []ast.Expr{
-														&ast.BasicLit{
-															Kind:  token.STRING,
-															Value: "\"value\"",
-														},
-														&ast.CallExpr{
-															Fun: &ast.Ident{
-																Name: "string",
-															},
-															Args: []ast.Expr{
-																&ast.SelectorExpr{
-																	X: &ast.Ident{
-																		Name: "msg",
-																	},
-																	Sel: &ast.Ident{
-																		Name: "Value",
-																	},
-																},
-															},
-														},
-													},
-												},
 											},
 										},
 									},

@@ -31,8 +31,9 @@ message {{ .EntityName }} {
   string id = 1;
   google.protobuf.Timestamp updated_at = 2;
   google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp deleted_at = 4;
 {{- range $i, $value := .Params }}
-  {{ $value.ProtoType }} {{ $value.Tag }} = {{ add $i 4 }};
+  {{ $value.ProtoType }} {{ $value.Tag }} = {{ add $i 5 }};
 {{- end }}
 }
 
@@ -49,8 +50,9 @@ message {{ .FilterTypeName }} {
   google.protobuf.UInt64Value page_number = 1;
   google.protobuf.UInt64Value page_size = 2;
   repeated string order_by = 3;
+  google.protobuf.BoolValue is_deleted = 4;
 {{- if .SearchEnabled }}
-  google.protobuf.StringValue search = 4;
+  google.protobuf.StringValue search = 5;
 {{- end }}
 }
 
@@ -70,7 +72,7 @@ service {{ .EntityName }}Service {
       body: "*"
     };
   }
-  rpc Delete({{ .ProtoPackage }}.v1.{{ .EntityName }}Delete) returns (google.protobuf.Empty) {
+  rpc Delete({{ .ProtoPackage }}.v1.{{ .EntityName }}Delete) returns ({{ .ProtoPackage }}.v1.{{ .EntityName }}) {
     option (google.api.http) = {delete: "/api/v1/{{ .RESTHandlerPath }}/{id}"};
   }
   rpc List({{ .ProtoPackage }}.v1.{{ .FilterTypeName }}) returns ({{ .ProtoPackage }}.v1.List{{ .EntityName }}) {

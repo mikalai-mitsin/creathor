@@ -143,3 +143,41 @@ func VarExists(file ast.Node, name string) bool {
 	})
 	return found
 }
+
+func SetParamValue(cl *ast.CompositeLit, parameter *ast.KeyValueExpr) {
+	prKey := parameter.Key.(*ast.Ident)
+	for _, elt := range cl.Elts {
+		if kv, ok := elt.(*ast.KeyValueExpr); ok {
+			if ident, ok := kv.Key.(*ast.Ident); ok && ident.String() == prKey.String() {
+				return
+			}
+		}
+	}
+	cl.Elts = append(cl.Elts, parameter)
+}
+
+func FindStructInstance(file ast.Node, typeName string) (*ast.CompositeLit, bool) {
+	var compositeLit *ast.CompositeLit
+	ast.Inspect(file, func(node ast.Node) bool {
+		if cl, ok := node.(*ast.CompositeLit); ok {
+			if clType, ok := cl.Type.(*ast.SelectorExpr); ok {
+				if clType.Sel.String() == typeName {
+					compositeLit = cl
+					return false
+				}
+			}
+		}
+		return true
+	})
+	return compositeLit, compositeLit != nil
+}
+
+func AppendToFuncBody(method *ast.FuncDecl, val ast.Stmt) {
+	if len(method.Body.List) < 1 {
+		method.Body.List = append(method.Body.List, val)
+	}
+	idx := len(method.Body.List) - 1
+	method.Body.List = append(method.Body.List, val)
+	copy(method.Body.List[idx+1:], method.Body.List[idx:])
+	method.Body.List[idx] = val
+}

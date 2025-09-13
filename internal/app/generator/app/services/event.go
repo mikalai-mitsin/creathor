@@ -239,7 +239,7 @@ func (u EventService) file() *ast.File {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: u.domain.Variable(),
+										Name: u.domain.GetOneVariableName(),
 									},
 								},
 								Type: &ast.SelectorExpr{
@@ -293,7 +293,7 @@ func (u EventService) file() *ast.File {
 												Name: "ctx",
 											},
 											&ast.Ident{
-												Name: u.domain.Variable(),
+												Name: u.domain.GetOneVariableName(),
 											},
 										},
 									},
@@ -386,7 +386,7 @@ func (u EventService) file() *ast.File {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: u.domain.Variable(),
+										Name: u.domain.GetOneVariableName(),
 									},
 								},
 								Type: &ast.SelectorExpr{
@@ -440,7 +440,7 @@ func (u EventService) file() *ast.File {
 												Name: "ctx",
 											},
 											&ast.Ident{
-												Name: u.domain.Variable(),
+												Name: u.domain.GetOneVariableName(),
 											},
 										},
 									},

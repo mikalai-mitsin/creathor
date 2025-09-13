@@ -288,6 +288,12 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 				Results: &ast.FieldList{
 					List: []*ast.Field{
 						{
+							Type: &ast.SelectorExpr{
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+							},
+						},
+						{
 							Type: ast.NewIdent("error"),
 						},
 					},

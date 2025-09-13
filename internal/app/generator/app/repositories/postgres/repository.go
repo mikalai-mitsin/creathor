@@ -1376,6 +1376,132 @@ func (r RepositoryGenerator) listMethod() *ast.FuncDecl {
 						},
 					},
 				},
+				&ast.IfStmt{
+					Cond: &ast.BinaryExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "filter",
+							},
+							Sel: &ast.Ident{
+								Name: "IsDeleted",
+							},
+						},
+						Op: token.NEQ,
+						Y: &ast.Ident{
+							Name: "nil",
+						},
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.IfStmt{
+								Cond: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "filter",
+										},
+										Sel: &ast.Ident{
+											Name: "IsDeleted",
+										},
+									},
+								},
+								Body: &ast.BlockStmt{
+									List: []ast.Stmt{
+										&ast.AssignStmt{
+											Lhs: []ast.Expr{
+												&ast.Ident{
+													Name: "q",
+												},
+											},
+											Tok: token.ASSIGN,
+											Rhs: []ast.Expr{
+												&ast.CallExpr{
+													Fun: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "q",
+														},
+														Sel: &ast.Ident{
+															Name: "Where",
+														},
+													},
+													Args: []ast.Expr{
+														&ast.CompositeLit{
+															Type: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "sq",
+																},
+																Sel: &ast.Ident{
+																	Name: "NotEq",
+																},
+															},
+															Elts: []ast.Expr{
+																&ast.KeyValueExpr{
+																	Key: &ast.BasicLit{
+																		Kind:  token.STRING,
+																		Value: fmt.Sprintf(`"%s.deleted_at"`, tableName),
+																	},
+																	Value: &ast.Ident{
+																		Name: "nil",
+																	},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+								Else: &ast.BlockStmt{
+									List: []ast.Stmt{
+										&ast.AssignStmt{
+											Lhs: []ast.Expr{
+												&ast.Ident{
+													Name: "q",
+												},
+											},
+											Tok: token.ASSIGN,
+											Rhs: []ast.Expr{
+												&ast.CallExpr{
+													Fun: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "q",
+														},
+														Sel: &ast.Ident{
+															Name: "Where",
+														},
+													},
+													Args: []ast.Expr{
+														&ast.CompositeLit{
+															Type: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "sq",
+																},
+																Sel: &ast.Ident{
+																	Name: "Eq",
+																},
+															},
+															Elts: []ast.Expr{
+																&ast.KeyValueExpr{
+																	Key: &ast.BasicLit{
+																		Kind:  token.STRING,
+																		Value: fmt.Sprintf(`"%s.deleted_at"`, tableName),
+																	},
+																	Value: &ast.Ident{
+																		Name: "nil",
+																	},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 				r.search(),
 				&ast.IfStmt{
 					Cond: &ast.BinaryExpr{
@@ -1799,6 +1925,132 @@ func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 								&ast.BasicLit{
 									Kind:  token.STRING,
 									Value: fmt.Sprintf(`"public.%s"`, r.domain.TableName()),
+								},
+							},
+						},
+					},
+				},
+				&ast.IfStmt{
+					Cond: &ast.BinaryExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "filter",
+							},
+							Sel: &ast.Ident{
+								Name: "IsDeleted",
+							},
+						},
+						Op: token.NEQ,
+						Y: &ast.Ident{
+							Name: "nil",
+						},
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.IfStmt{
+								Cond: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "filter",
+										},
+										Sel: &ast.Ident{
+											Name: "IsDeleted",
+										},
+									},
+								},
+								Body: &ast.BlockStmt{
+									List: []ast.Stmt{
+										&ast.AssignStmt{
+											Lhs: []ast.Expr{
+												&ast.Ident{
+													Name: "q",
+												},
+											},
+											Tok: token.ASSIGN,
+											Rhs: []ast.Expr{
+												&ast.CallExpr{
+													Fun: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "q",
+														},
+														Sel: &ast.Ident{
+															Name: "Where",
+														},
+													},
+													Args: []ast.Expr{
+														&ast.CompositeLit{
+															Type: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "sq",
+																},
+																Sel: &ast.Ident{
+																	Name: "NotEq",
+																},
+															},
+															Elts: []ast.Expr{
+																&ast.KeyValueExpr{
+																	Key: &ast.BasicLit{
+																		Kind:  token.STRING,
+																		Value: fmt.Sprintf(`"%s.deleted_at"`, tableName),
+																	},
+																	Value: &ast.Ident{
+																		Name: "nil",
+																	},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+								Else: &ast.BlockStmt{
+									List: []ast.Stmt{
+										&ast.AssignStmt{
+											Lhs: []ast.Expr{
+												&ast.Ident{
+													Name: "q",
+												},
+											},
+											Tok: token.ASSIGN,
+											Rhs: []ast.Expr{
+												&ast.CallExpr{
+													Fun: &ast.SelectorExpr{
+														X: &ast.Ident{
+															Name: "q",
+														},
+														Sel: &ast.Ident{
+															Name: "Where",
+														},
+													},
+													Args: []ast.Expr{
+														&ast.CompositeLit{
+															Type: &ast.SelectorExpr{
+																X: &ast.Ident{
+																	Name: "sq",
+																},
+																Sel: &ast.Ident{
+																	Name: "Eq",
+																},
+															},
+															Elts: []ast.Expr{
+																&ast.KeyValueExpr{
+																	Key: &ast.BasicLit{
+																		Kind:  token.STRING,
+																		Value: fmt.Sprintf(`"%s.deleted_at"`, tableName),
+																	},
+																	Value: &ast.Ident{
+																		Name: "nil",
+																	},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
 								},
 							},
 						},

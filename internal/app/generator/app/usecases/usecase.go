@@ -1500,29 +1500,30 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 			},
 		},
 		// Try to delete model at use case
-		&ast.IfStmt{
-			Init: &ast.AssignStmt{
-				Lhs: []ast.Expr{
-					ast.NewIdent("err"),
-				},
-				Tok: token.DEFINE,
-				Rhs: []ast.Expr{
-					&ast.CallExpr{
-						Fun: &ast.SelectorExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("u"),
-								Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
-							},
-							Sel: ast.NewIdent("Delete"),
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				ast.NewIdent(i.domain.GetOneVariableName()),
+				ast.NewIdent("err"),
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent("u"),
+							Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 						},
-						Args: []ast.Expr{
-							ast.NewIdent("ctx"),
-							ast.NewIdent("tx"),
-							ast.NewIdent("id"),
-						},
+						Sel: ast.NewIdent("Delete"),
+					},
+					Args: []ast.Expr{
+						ast.NewIdent("ctx"),
+						ast.NewIdent("tx"),
+						ast.NewIdent("id"),
 					},
 				},
 			},
+		},
+		&ast.IfStmt{
 			Cond: &ast.BinaryExpr{
 				X:  ast.NewIdent("err"),
 				Op: token.NEQ,
@@ -1532,6 +1533,12 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 				List: []ast.Stmt{
 					&ast.ReturnStmt{
 						Results: []ast.Expr{
+							&ast.CompositeLit{
+								Type: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
 							ast.NewIdent("err"),
 						},
 					},
@@ -1588,6 +1595,12 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 				List: []ast.Stmt{
 					&ast.ReturnStmt{
 						Results: []ast.Expr{
+							&ast.CompositeLit{
+								Type: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
 							&ast.Ident{
 								Name: "err",
 							},
@@ -1633,6 +1646,12 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 				List: []ast.Stmt{
 					&ast.ReturnStmt{
 						Results: []ast.Expr{
+							&ast.CompositeLit{
+								Type: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
 							&ast.Ident{
 								Name: "err",
 							},
@@ -1644,6 +1663,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
+				ast.NewIdent(i.domain.GetOneVariableName()),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -1683,6 +1703,12 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
+					{
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+						},
+					},
 					{
 						Type: ast.NewIdent("error"),
 					},

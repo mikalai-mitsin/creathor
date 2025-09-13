@@ -51,14 +51,6 @@ func (m *EntityConfig) SearchVector() string {
 	return vector
 }
 
-func (m *EntityConfig) Variable() string {
-	return strcase.ToLowerCamel(m.Name)
-}
-
-func (m *EntityConfig) ListVariable() string {
-	return strcase.ToLowerCamel(fmt.Sprintf("list%s", strcase.ToCamel(inflection.Plural(m.Name))))
-}
-
 func (m *EntityConfig) EntityName() string {
 	return strcase.ToCamel(m.Name)
 }
@@ -641,7 +633,7 @@ func NewMainEntity(modelConfig EntityConfig) *Entity {
 	model := &Entity{
 		Type:     EntityTypeMain,
 		Name:     modelConfig.EntityName(),
-		Variable: modelConfig.Variable(),
+		Variable: modelConfig.GetOneVariableName(),
 		Params: []*Param{
 			{
 				Name:   "ID",
@@ -656,6 +648,11 @@ func NewMainEntity(modelConfig EntityConfig) *Entity {
 			{
 				Name:   "UpdatedAt",
 				Type:   "time.Time",
+				Search: false,
+			},
+			{
+				Name:   "DeletedAt",
+				Type:   "*time.Time",
 				Search: false,
 			},
 		},
@@ -690,6 +687,11 @@ func NewFilterEntity(modelConfig EntityConfig) *Entity {
 			{
 				Name:   "OrderBy",
 				Type:   fmt.Sprintf("[]%s", modelConfig.OrderingTypeName()),
+				Search: false,
+			},
+			{
+				Name:   "IsDeleted",
+				Type:   "*bool",
 				Search: false,
 			},
 		},

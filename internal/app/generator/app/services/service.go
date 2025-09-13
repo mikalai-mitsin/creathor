@@ -1207,6 +1207,12 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+						},
+					},
+					{
 						Type: ast.NewIdent("error"),
 					},
 				},
@@ -1214,6 +1220,101 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 		},
 		Body: &ast.BlockStmt{
 			List: []ast.Stmt{
+				// Get model to update
+				// Get model to update
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent(u.domain.GetMainModel().Variable),
+						ast.NewIdent("err"),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("s"),
+									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
+								},
+								Sel: ast.NewIdent("Get"),
+							},
+							Args: []ast.Expr{
+								ast.NewIdent("ctx"),
+								ast.NewIdent("id"),
+							},
+						},
+					},
+				},
+				&ast.IfStmt{
+					Cond: &ast.BinaryExpr{
+						X:  ast.NewIdent("err"),
+						Op: token.NEQ,
+						Y:  ast.NewIdent("nil"),
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.ReturnStmt{
+								Results: []ast.Expr{
+									&ast.CompositeLit{
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("entities"),
+											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+										},
+									},
+									ast.NewIdent("err"),
+								},
+							},
+						},
+					},
+				},
+				// Set deleted at
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						&ast.SelectorExpr{
+							X: ast.NewIdent(u.domain.GetOneVariableName()),
+							Sel: &ast.Ident{
+								Name: "DeletedAt",
+							},
+						},
+					},
+					Tok: token.ASSIGN,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "pointer",
+								},
+								Sel: &ast.Ident{
+									Name: "Of",
+								},
+							},
+							Args: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X: &ast.SelectorExpr{
+													X: &ast.Ident{
+														Name: "s",
+													},
+													Sel: &ast.Ident{
+														Name: "clock",
+													},
+												},
+												Sel: &ast.Ident{
+													Name: "Now",
+												},
+											},
+										},
+										Sel: &ast.Ident{
+											Name: "UTC",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				// Try to update model at repository
 				&ast.IfStmt{
 					Init: &ast.AssignStmt{
 						Lhs: []ast.Expr{
@@ -1229,12 +1330,12 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 											u.domain.GetRepositoryPrivateVariableName(),
 										),
 									},
-									Sel: ast.NewIdent("Delete"),
+									Sel: ast.NewIdent("Update"),
 								},
 								Args: []ast.Expr{
 									ast.NewIdent("ctx"),
 									ast.NewIdent("tx"),
-									ast.NewIdent("id"),
+									ast.NewIdent(u.domain.GetMainModel().Variable),
 								},
 							},
 						},
@@ -1248,6 +1349,12 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 						List: []ast.Stmt{
 							&ast.ReturnStmt{
 								Results: []ast.Expr{
+									&ast.CompositeLit{
+										Type: &ast.SelectorExpr{
+											X:   ast.NewIdent("entities"),
+											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+										},
+									},
 									ast.NewIdent("err"),
 								},
 							},
@@ -1257,6 +1364,7 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
+						ast.NewIdent(u.domain.GetOneVariableName()),
 						ast.NewIdent("nil"),
 					},
 				},

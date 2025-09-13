@@ -64,12 +64,6 @@ func (h HandlerGenerator) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: `"google.golang.org/protobuf/types/known/emptypb"`,
-			},
-		},
-		&ast.ImportSpec{
-			Path: &ast.BasicLit{
-				Kind:  token.STRING,
 				Value: `"google.golang.org/protobuf/types/known/timestamppb"`,
 			},
 		},
@@ -922,8 +916,8 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("emptypb"),
-								Sel: ast.NewIdent("Empty"),
+								X:   ast.NewIdent(h.domain.ProtoPackage),
+								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 							},
 						},
 					},
@@ -935,25 +929,26 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 		},
 		Body: &ast.BlockStmt{
 			List: []ast.Stmt{
-				&ast.IfStmt{
-					Init: &ast.AssignStmt{
-						Lhs: []ast.Expr{
-							ast.NewIdent("err"),
-						},
-						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("s"),
-										Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
-									},
-									Sel: ast.NewIdent("Delete"),
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent(h.domain.GetOneVariableName()),
+						ast.NewIdent("err"),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("s"),
+									Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
 								},
-								Args: args,
+								Sel: ast.NewIdent("Delete"),
 							},
+							Args: args,
 						},
 					},
+				},
+				&ast.IfStmt{
 					Cond: &ast.BinaryExpr{
 						X:  ast.NewIdent("err"),
 						Op: token.NEQ,
@@ -972,13 +967,12 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						&ast.UnaryExpr{
-							Op: token.AND,
-							X: &ast.CompositeLit{
-								Type: &ast.SelectorExpr{
-									X:   ast.NewIdent("emptypb"),
-									Sel: ast.NewIdent("Empty"),
-								},
+						&ast.CallExpr{
+							Fun: ast.NewIdent(
+								fmt.Sprintf("decode%s", h.domain.GetMainModel().Name),
+							),
+							Args: []ast.Expr{
+								ast.NewIdent(h.domain.GetOneVariableName()),
 							},
 						},
 						ast.NewIdent("nil"),

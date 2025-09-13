@@ -537,6 +537,10 @@ func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
 							Value: ast.NewIdent("nil"),
 						},
 						&ast.KeyValueExpr{
+							Key:   ast.NewIdent("IsDeleted"),
+							Value: ast.NewIdent("nil"),
+						},
+						&ast.KeyValueExpr{
 							Key: ast.NewIdent("OrderBy"),
 							Value: &ast.CompositeLit{
 								Type: &ast.ArrayType{
@@ -639,6 +643,52 @@ func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
 												Fun: &ast.SelectorExpr{
 													X:   ast.NewIdent("input"),
 													Sel: ast.NewIdent("GetPageNumber"),
+												},
+											},
+											Sel: ast.NewIdent("GetValue"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		&ast.IfStmt{
+			Cond: &ast.BinaryExpr{
+				X: &ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X:   ast.NewIdent("input"),
+						Sel: ast.NewIdent("GetIsDeleted"),
+					},
+				},
+				Op: token.NEQ,
+				Y:  ast.NewIdent("nil"),
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.AssignStmt{
+						Lhs: []ast.Expr{
+							&ast.SelectorExpr{
+								X:   ast.NewIdent("filter"),
+								Sel: ast.NewIdent("IsDeleted"),
+							},
+						},
+						Tok: token.ASSIGN,
+						Rhs: []ast.Expr{
+							&ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X:   ast.NewIdent("pointer"),
+									Sel: ast.NewIdent("Of"),
+								},
+								Args: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.CallExpr{
+												Fun: &ast.SelectorExpr{
+													X:   ast.NewIdent("input"),
+													Sel: ast.NewIdent("GetIsDeleted"),
 												},
 											},
 											Sel: ast.NewIdent("GetValue"),

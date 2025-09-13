@@ -66,7 +66,7 @@ func Test{{ .ServiceTypeName }}_Get(t *testing.T) {
     mock{{ .RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Variable }} := entities.NewMock{{ .EntityName }}(t)
+    {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
     type fields struct {
         {{ .RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
         logger           logger
@@ -86,7 +86,7 @@ func Test{{ .ServiceTypeName }}_Get(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                mock{{ .RepositoryTypeName }}.EXPECT().Get(ctx, {{ .Variable }}.ID).Return({{ .Variable }}, nil)
+                mock{{ .RepositoryTypeName }}.EXPECT().Get(ctx, {{ .GetOneVariableName }}.ID).Return({{ .GetOneVariableName }}, nil)
             },
             fields: fields{
                 {{ .RepositoryVariableName }}: mock{{ .RepositoryTypeName }},
@@ -94,15 +94,15 @@ func Test{{ .ServiceTypeName }}_Get(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
-                id:  {{ .Variable }}.ID,
+                id:  {{ .GetOneVariableName }}.ID,
             },
-            want:    {{ .Variable }},
+            want:    {{ .GetOneVariableName }},
             wantErr: nil,
         },
         {
             name: "{{ .EntityName }} not found",
             setup: func() {
-                mock{{ .RepositoryTypeName }}.EXPECT().Get(ctx, {{ .Variable }}.ID).Return(entities.{{ .EntityName }}{}, errs.NewEntityNotFoundError())
+                mock{{ .RepositoryTypeName }}.EXPECT().Get(ctx, {{ .GetOneVariableName }}.ID).Return(entities.{{ .EntityName }}{}, errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .RepositoryVariableName }}: mock{{ .RepositoryTypeName }},
@@ -110,7 +110,7 @@ func Test{{ .ServiceTypeName }}_Get(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
-                id:  {{ .Variable }}.ID,
+                id:  {{ .GetOneVariableName }}.ID,
             },
             want:    entities.{{ .EntityName }}{},
             wantErr: errs.NewEntityNotFoundError(),
@@ -136,10 +136,10 @@ func Test{{ .ServiceTypeName }}_List(t *testing.T) {
     mock{{ .RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    var {{ .ListVariable }} []entities.{{ .EntityName }}
+    var {{ .GetManyVariableName }} []entities.{{ .EntityName }}
     count := faker.New().UInt64Between(2, 20)
     for i := uint64(0); i < count; i++ {
-        {{ .ListVariable }} = append({{ .ListVariable }}, entities.NewMock{{ .EntityName }}(t))
+        {{ .GetManyVariableName }} = append({{ .GetManyVariableName }}, entities.NewMock{{ .EntityName }}(t))
     }
     filter := entities.NewMock{{ .FilterTypeName }}(t)
     type fields struct {
@@ -162,7 +162,7 @@ func Test{{ .ServiceTypeName }}_List(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                mock{{ .RepositoryTypeName }}.EXPECT().List(ctx, filter).Return({{ .ListVariable }}, nil)
+                mock{{ .RepositoryTypeName }}.EXPECT().List(ctx, filter).Return({{ .GetManyVariableName }}, nil)
                 mock{{ .RepositoryTypeName }}.EXPECT().Count(ctx, filter).Return(count, nil)
             },
             fields: fields{
@@ -173,7 +173,7 @@ func Test{{ .ServiceTypeName }}_List(t *testing.T) {
                 ctx:    ctx,
                 filter: filter,
             },
-            want:    {{ .ListVariable }},
+            want:    {{ .GetManyVariableName }},
             want1:   count,
             wantErr: nil,
         },
@@ -197,7 +197,7 @@ func Test{{ .ServiceTypeName }}_List(t *testing.T) {
         {
             name: "count error",
             setup: func() {
-                mock{{ .RepositoryTypeName }}.EXPECT().List(ctx, filter).Return({{ .ListVariable }}, nil)
+                mock{{ .RepositoryTypeName }}.EXPECT().List(ctx, filter).Return({{ .GetManyVariableName }}, nil)
                 mock{{ .RepositoryTypeName }}.EXPECT().Count(ctx, filter).Return(uint64(0), errs.NewUnexpectedBehaviorError("test error"))
             },
             fields: fields{
@@ -380,14 +380,15 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
     mock{{ .RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .Variable }} := entities.NewMock{{ .EntityName }}(t)
+    {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
     mockClock := NewMockclock(ctrl)
     mockTx := dtx.NewMockTX(ctrl)
     update := entities.NewMock{{ .UpdateTypeName }}(t)
     now := time.Now().UTC()
     updated{{ .EntityName }} := entities.{{ .EntityName }} {
-        ID:         {{ .Variable }}.ID,
-        CreatedAt:  {{ .Variable }}.CreatedAt,
+        ID:         {{ .GetOneVariableName }}.ID,
+        CreatedAt:  {{ .GetOneVariableName }}.CreatedAt,
+        DeletedAt:  {{ .GetOneVariableName }}.DeletedAt,
         UpdatedAt:  now,
 {{ range $i, $value := .Params }}
         {{ $value.GetName }}: *update.{{ $value.GetName }},
@@ -416,7 +417,7 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
             setup: func() {
                 mockClock.EXPECT().Now().Return(now)
                 mock{{ .RepositoryTypeName }}.EXPECT().
-                    Get(ctx, update.ID).Return({{ .Variable }}, nil)
+                    Get(ctx, update.ID).Return({{ .GetOneVariableName }}, nil)
                 mock{{ .RepositoryTypeName }}.EXPECT().
                     Update(ctx, mockTx, updated{{ .EntityName }}).Return(nil)
             },
@@ -439,7 +440,7 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
                 mockClock.EXPECT().Now().Return(now)
                 mock{{ .RepositoryTypeName }}.EXPECT().
                     Get(ctx, update.ID).
-                    Return({{ .Variable }}, nil)
+                    Return({{ .GetOneVariableName }}, nil)
                 mock{{ .RepositoryTypeName }}.EXPECT().
                     Update(ctx, mockTx, updated{{ .EntityName }}).
                     Return(errs.NewUnexpectedBehaviorError("test error"))
@@ -496,11 +497,23 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
     defer ctrl.Finish()
     mock{{ .RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
+    mockClock := NewMockclock(ctrl)
     mockTx := dtx.NewMockTX(ctrl)
     ctx := context.Background()
-    {{ .Variable }} := entities.NewMock{{ .EntityName }}(t)
+    now := time.Now().UTC()
+    {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
+    deleted{{ .EntityName }} := entities.{{ .EntityName }} {
+            ID:         {{ .GetOneVariableName }}.ID,
+            CreatedAt:  {{ .GetOneVariableName }}.CreatedAt,
+            UpdatedAt:  {{ .GetOneVariableName }}.CreatedAt,
+            DeletedAt:  pointer.Of(now),
+    {{ range $i, $value := .Params }}
+            {{ $value.GetName }}: {{ $.GetOneVariableName }}.{{ $value.GetName }},
+    {{- end }}
+        }
     type fields struct {
         {{ .RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
+        clock            clock
         logger           logger
     }
     type args struct {
@@ -513,42 +526,75 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
         setup   func()
         fields  fields
         args    args
+        want    entities.{{ .EntityName }}
         wantErr error
     }{
         {
             name: "ok",
             setup: func() {
+                mockClock.EXPECT().Now().Return(now)
                 mock{{ .RepositoryTypeName }}.EXPECT().
-                    Delete(ctx, mockTx, {{ .Variable }}.ID).
+                    Get(ctx, {{ .GetOneVariableName }}.ID).
+                    Return({{ .GetOneVariableName }}, nil)
+                mock{{ .RepositoryTypeName }}.EXPECT().
+                    Update(ctx, mockTx, deleted{{ .EntityName }}).
                     Return(nil)
             },
             fields: fields{
                 {{ .RepositoryVariableName }}: mock{{ .RepositoryTypeName }},
                 logger: mockLogger,
+                clock: mockClock,
             },
             args: args{
                 ctx: ctx,
                 tx: mockTx,
-                id:  {{ .Variable }}.ID,
+                id:  {{ .GetOneVariableName }}.ID,
             },
+            want:    deleted{{ .EntityName }},
             wantErr: nil,
+        },
+        {
+            name: "update error",
+            setup: func() {
+                mockClock.EXPECT().Now().Return(now)
+                mock{{ .RepositoryTypeName }}.EXPECT().
+                    Get(ctx, {{ .GetOneVariableName }}.ID).
+                    Return({{ .GetOneVariableName }}, nil)
+                mock{{ .RepositoryTypeName }}.EXPECT().
+                    Update(ctx, mockTx, deleted{{ .EntityName }}).
+                    Return(errs.NewUnexpectedBehaviorError("test error 12"))
+            },
+            fields: fields{
+                {{ .RepositoryVariableName }}: mock{{ .RepositoryTypeName }},
+                logger: mockLogger,
+                clock: mockClock,
+            },
+            args: args{
+                ctx: ctx,
+                tx: mockTx,
+                id:  {{ .GetOneVariableName }}.ID,
+            },
+            want:    entities.{{ .EntityName }}{},
+            wantErr: errs.NewUnexpectedBehaviorError("test error 12"),
         },
         {
             name: "{{ .EntityName }} not found",
             setup: func() {
                 mock{{ .RepositoryTypeName }}.EXPECT().
-                    Delete(ctx, mockTx, {{ .Variable }}.ID).
-                    Return(errs.NewEntityNotFoundError())
+                    Get(ctx, {{ .GetOneVariableName }}.ID).
+                    Return(entities.{{ .EntityName }}{}, errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .RepositoryVariableName }}: mock{{ .RepositoryTypeName }},
                 logger: mockLogger,
+                clock: mockClock,
             },
             args: args{
                 ctx: ctx,
                 tx: mockTx,
-                id:  {{ .Variable }}.ID,
+                id:  {{ .GetOneVariableName }}.ID,
             },
+            want:    entities.{{ .EntityName }}{},
             wantErr: errs.NewEntityNotFoundError(),
         },
     }
@@ -557,9 +603,11 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
             tt.setup()
             u := &{{ .ServiceTypeName }}{
                 {{ .RepositoryVariableName }}: tt.fields.{{ .RepositoryVariableName }},
-                logger:           tt.fields.logger,
+                logger:          tt.fields.logger,
+                clock:           tt.fields.clock,
             }
-            err := u.Delete(tt.args.ctx, tt.args.tx, tt.args.id)
+            got, err := u.Delete(tt.args.ctx, tt.args.tx, tt.args.id)
+            assert.Equal(t, tt.want, got)
             assert.ErrorIs(t, err, tt.wantErr)
         })
     }

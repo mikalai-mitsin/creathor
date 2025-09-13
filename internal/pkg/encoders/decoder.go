@@ -33,7 +33,7 @@ func (h ProtoDecoder) decode() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							ast.NewIdent("item"),
+							ast.NewIdent(h.domain.GetOneVariableName()),
 						},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
@@ -70,7 +70,6 @@ func (h ProtoDecoder) decode() *ast.FuncDecl {
 									X:   ast.NewIdent(h.domain.ProtoPackage),
 									Sel: ast.NewIdent(h.domain.GetMainModel().Name),
 								},
-								Elts: h.modelParams(),
 							},
 						},
 					},
@@ -85,12 +84,12 @@ func (h ProtoDecoder) decode() *ast.FuncDecl {
 	}
 }
 
-func (h ProtoDecoder) modelParams() []ast.Expr {
-	var exprs []ast.Expr
+func (h ProtoDecoder) modelParams() []*ast.KeyValueExpr {
+	var exprs []*ast.KeyValueExpr
 	for _, param := range h.domain.GetMainModel().Params {
 		var value ast.Expr
 		value = &ast.SelectorExpr{
-			X:   ast.NewIdent("item"),
+			X:   ast.NewIdent(h.domain.GetOneVariableName()),
 			Sel: ast.NewIdent(param.GetName()),
 		}
 		if param.Type != param.GRPCType() {
@@ -115,7 +114,7 @@ func (h ProtoDecoder) modelParams() []ast.Expr {
 				},
 				Args: []ast.Expr{
 					&ast.SelectorExpr{
-						X:   ast.NewIdent("item"),
+						X:   ast.NewIdent(h.domain.GetOneVariableName()),
 						Sel: ast.NewIdent(param.GetName()),
 					},
 				},
@@ -125,12 +124,15 @@ func (h ProtoDecoder) modelParams() []ast.Expr {
 			value = &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
 					X: &ast.SelectorExpr{
-						X:   ast.NewIdent("item"),
+						X:   ast.NewIdent(h.domain.GetOneVariableName()),
 						Sel: ast.NewIdent(param.GetName()),
 					},
 					Sel: ast.NewIdent("String"),
 				},
 			}
+		}
+		if param.IsOptional() {
+			value = ast.NewIdent("nil")
 		}
 		exprs = append(exprs, &ast.KeyValueExpr{
 			Key:   ast.NewIdent(param.GRPCParam()),
@@ -150,41 +152,79 @@ func (h ProtoDecoder) syncDecodeModel(filename string) error {
 	if method == nil {
 		method = h.decode()
 	}
+	mainModelLit, _ := astfile.FindStructInstance(method, h.domain.GetMainModel().Name)
 	for _, param := range h.modelParams() {
-		pr := param.(*ast.KeyValueExpr)
-		prKey := pr.Key.(*ast.Ident)
-		ast.Inspect(method, func(node ast.Node) bool {
-			if cl, ok := node.(*ast.CompositeLit); ok {
-				if clType, ok := cl.Type.(*ast.SelectorExpr); ok {
-					if clType.Sel.String() != h.domain.GetMainModel().Name {
-						return true
-					}
-				}
-				for _, elt := range cl.Elts {
-					if kv, ok := elt.(*ast.KeyValueExpr); ok {
-						if ident, ok := kv.Key.(*ast.Ident); ok {
-							if ident.String() == prKey.String() {
-								return false
-							}
-						}
-					}
-				}
-				cl.Elts = append(cl.Elts, pr)
+		astfile.SetParamValue(mainModelLit, param)
+	}
+	for _, param := range h.domain.GetMainModel().Params {
+		param := *param
+		if param.IsOptional() {
+			var value ast.Expr
+			param.Type = strings.TrimPrefix(param.Type, "*")
+			value = &ast.StarExpr{
+				X: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: h.domain.GetOneVariableName(),
+					},
+					Sel: &ast.Ident{
+						Name: param.GetName(),
+					},
+				},
 			}
-			return true
-		})
+			if param.Type != param.GRPCType() {
+				value = &ast.CallExpr{
+					Fun: ast.NewIdent(param.GRPCType()),
+					Args: []ast.Expr{
+						value,
+					},
+				}
+			}
+			astfile.AppendToFuncBody(method, &ast.IfStmt{
+				Cond: &ast.BinaryExpr{
+					X: &ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: h.domain.GetOneVariableName(),
+						},
+						Sel: &ast.Ident{
+							Name: param.GetName(),
+						},
+					},
+					Op: token.NEQ,
+					Y: &ast.Ident{
+						Name: "nil",
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
+								&ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "response",
+									},
+									Sel: &ast.Ident{
+										Name: param.GRPCParam(),
+									},
+								},
+							},
+							Tok: token.ASSIGN,
+							Rhs: []ast.Expr{
+								value,
+							},
+						},
+					},
+				},
+			})
+		}
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
 	}
-	buff := &bytes.Buffer{}
-	if err := printer.Fprint(buff, fileset, file); err != nil {
+	var buff bytes.Buffer
+	if err := printer.Fprint(&buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(filename, buff.Bytes(), 0777); err != nil {
-		return err
-	}
-	return nil
+	return os.WriteFile(filename, buff.Bytes(), 0777)
 }
 
 func (h ProtoDecoder) decodeList() *ast.FuncDecl {
@@ -286,7 +326,7 @@ func (h ProtoDecoder) decodeList() *ast.FuncDecl {
 				},
 				&ast.RangeStmt{
 					Key:   ast.NewIdent("_"),
-					Value: ast.NewIdent("item"),
+					Value: ast.NewIdent(h.domain.GetOneVariableName()),
 					Tok:   token.DEFINE,
 					X:     ast.NewIdent("items"),
 					Body: &ast.BlockStmt{
@@ -315,7 +355,7 @@ func (h ProtoDecoder) decodeList() *ast.FuncDecl {
 													),
 												},
 												Args: []ast.Expr{
-													ast.NewIdent("item"),
+													ast.NewIdent(h.domain.GetOneVariableName()),
 												},
 											},
 										},

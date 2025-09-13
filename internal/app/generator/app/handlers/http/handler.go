@@ -90,6 +90,13 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 					},
 					&ast.ImportSpec{
+						Name: ast.NewIdent("httpServer"),
+						Path: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: h.domain.AppConfig.ProjectConfig.HTTPImportPath(),
+						},
+					},
+					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
 							Value: `"net/http"`,
@@ -1406,7 +1413,11 @@ func (h *HandlerGenerator) file() *ast.File {
 							Text: "// @Param id path string true \"UUID\"",
 						},
 						{
-							Text: "// @Success 204 \"No content\"",
+							Text: fmt.Sprintf(
+								"// @Success 200 {object} %s \"Updated %s\"",
+								h.domain.GetHTTPItemDTOName(),
+								h.domain.GetOneVariableName(),
+							),
 						},
 						{
 							Text: "// @Failure 400 {object} errs.Error \"Invalid request body or validation error\"",
@@ -1487,52 +1498,131 @@ func (h *HandlerGenerator) file() *ast.File {
 								},
 							},
 						},
-						&ast.IfStmt{
-							Init: &ast.AssignStmt{
-								Lhs: []ast.Expr{
-									ast.NewIdent("err"),
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
+								&ast.Ident{
+									Name: h.domain.GetOneVariableName(),
 								},
-								Tok: token.DEFINE,
-								Rhs: []ast.Expr{
-									&ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X: &ast.SelectorExpr{
-												X: ast.NewIdent("h"),
-												Sel: ast.NewIdent(
-													h.domain.GetUseCasePrivateVariableName(),
-												),
-											},
-											Sel: ast.NewIdent("Delete"),
+								ast.NewIdent("err"),
+							},
+							Tok: token.DEFINE,
+							Rhs: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.SelectorExpr{
+											X:   ast.NewIdent("h"),
+											Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
 										},
-										Args: []ast.Expr{
-											&ast.CallExpr{
-												Fun: &ast.SelectorExpr{
-													X:   ast.NewIdent("r"),
-													Sel: ast.NewIdent("Context"),
+										Sel: ast.NewIdent("Delete"),
+									},
+									Args: []ast.Expr{
+										&ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "r",
+												},
+												Sel: &ast.Ident{
+													Name: "Context",
 												},
 											},
-											ast.NewIdent("id"),
+										},
+										&ast.Ident{
+											Name: "id",
 										},
 									},
 								},
 							},
+						},
+						&ast.IfStmt{
 							Cond: &ast.BinaryExpr{
-								X:  ast.NewIdent("err"),
+								X: &ast.Ident{
+									Name: "err",
+								},
 								Op: token.NEQ,
-								Y:  ast.NewIdent("nil"),
+								Y: &ast.Ident{
+									Name: "nil",
+								},
 							},
 							Body: &ast.BlockStmt{
 								List: []ast.Stmt{
 									&ast.ExprStmt{
 										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X:   ast.NewIdent("errs"),
-												Sel: ast.NewIdent("RenderToHTTPResponse"),
+												X: &ast.Ident{
+													Name: "errs",
+												},
+												Sel: &ast.Ident{
+													Name: "RenderToHTTPResponse",
+												},
 											},
 											Args: []ast.Expr{
-												ast.NewIdent("err"),
-												ast.NewIdent("w"),
-												ast.NewIdent("r"),
+												&ast.Ident{
+													Name: "err",
+												},
+												&ast.Ident{
+													Name: "w",
+												},
+												&ast.Ident{
+													Name: "r",
+												},
+											},
+										},
+									},
+									&ast.ReturnStmt{},
+								},
+							},
+						},
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
+								&ast.Ident{
+									Name: "response",
+								},
+								&ast.Ident{
+									Name: "err",
+								},
+							},
+							Tok: token.DEFINE,
+							Rhs: []ast.Expr{
+								&ast.CallExpr{
+									Fun: ast.NewIdent(h.domain.GetHTTPItemDTOConstructorName()),
+									Args: []ast.Expr{
+										ast.NewIdent(h.domain.GetOneVariableName()),
+									},
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.BinaryExpr{
+								X: &ast.Ident{
+									Name: "err",
+								},
+								Op: token.NEQ,
+								Y: &ast.Ident{
+									Name: "nil",
+								},
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.ExprStmt{
+										X: &ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "errs",
+												},
+												Sel: &ast.Ident{
+													Name: "RenderToHTTPResponse",
+												},
+											},
+											Args: []ast.Expr{
+												&ast.Ident{
+													Name: "err",
+												},
+												&ast.Ident{
+													Name: "w",
+												},
+												&ast.Ident{
+													Name: "r",
+												},
 											},
 										},
 									},
@@ -1543,14 +1633,24 @@ func (h *HandlerGenerator) file() *ast.File {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X:   ast.NewIdent("render"),
-									Sel: ast.NewIdent("Status"),
+									X: &ast.Ident{
+										Name: "render",
+									},
+									Sel: &ast.Ident{
+										Name: "Status",
+									},
 								},
 								Args: []ast.Expr{
-									ast.NewIdent("r"),
+									&ast.Ident{
+										Name: "r",
+									},
 									&ast.SelectorExpr{
-										X:   ast.NewIdent("http"),
-										Sel: ast.NewIdent("StatusNoContent"),
+										X: &ast.Ident{
+											Name: "http",
+										},
+										Sel: &ast.Ident{
+											Name: "StatusOK",
+										},
 									},
 								},
 							},
@@ -1558,12 +1658,23 @@ func (h *HandlerGenerator) file() *ast.File {
 						&ast.ExprStmt{
 							X: &ast.CallExpr{
 								Fun: &ast.SelectorExpr{
-									X:   ast.NewIdent("render"),
-									Sel: ast.NewIdent("NoContent"),
+									X: &ast.Ident{
+										Name: "render",
+									},
+									Sel: &ast.Ident{
+										Name: "JSON",
+									},
 								},
 								Args: []ast.Expr{
-									ast.NewIdent("w"),
-									ast.NewIdent("r"),
+									&ast.Ident{
+										Name: "w",
+									},
+									&ast.Ident{
+										Name: "r",
+									},
+									&ast.Ident{
+										Name: "response",
+									},
 								},
 							},
 						},
@@ -1583,7 +1694,7 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 					},
 				},
-				Name: ast.NewIdent("ChiRouter"),
+				Name: ast.NewIdent("router"),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{},
 					Results: &ast.FieldList{
@@ -1741,6 +1852,102 @@ func (h *HandlerGenerator) file() *ast.File {
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
 								ast.NewIdent("router"),
+							},
+						},
+					},
+				},
+			},
+			&ast.FuncDecl{
+				Recv: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Names: []*ast.Ident{
+								{
+									Name: "h",
+								},
+							},
+							Type: &ast.StarExpr{
+								X: &ast.Ident{
+									Name: h.domain.GetHTTPHandlerTypeName(),
+								},
+							},
+						},
+					},
+				},
+				Name: &ast.Ident{
+					Name: "RegisterHTTP",
+				},
+				Type: &ast.FuncType{
+					Params: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{
+									{
+										Name: "httpServer",
+									},
+								},
+								Type: &ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "httpServer",
+										},
+										Sel: &ast.Ident{
+											Name: "Server",
+										},
+									},
+								},
+							},
+						},
+					},
+					Results: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Type: &ast.Ident{
+									Name: "error",
+								},
+							},
+						},
+					},
+				},
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "httpServer",
+									},
+									Sel: &ast.Ident{
+										Name: "Mount",
+									},
+								},
+								Args: []ast.Expr{
+									&ast.BasicLit{
+										Kind: token.STRING,
+										Value: fmt.Sprintf(
+											`"/api/v1/%s/%s"`,
+											h.domain.AppConfig.AppName(),
+											h.domain.GetHTTPPath(),
+										),
+									},
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "h",
+											},
+											Sel: &ast.Ident{
+												Name: "router",
+											},
+										},
+									},
+								},
+							},
+						},
+						&ast.ReturnStmt{
+							Results: []ast.Expr{
+								&ast.Ident{
+									Name: "nil",
+								},
 							},
 						},
 					},

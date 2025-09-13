@@ -72,8 +72,8 @@ func (i UseCaseGenerator) structure() *ast.TypeSpec {
 	}
 	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		fields = append(fields, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent(i.domain.GetEventProducerPrivateVariableName())},
-			Type:  ast.NewIdent(i.domain.EventProducerInterfaceName()),
+			Names: []*ast.Ident{ast.NewIdent(i.domain.EventServicePrivateVariableName())},
+			Type:  ast.NewIdent(i.domain.EventServiceInterfaceName()),
 		})
 	}
 	fields = append(fields, &ast.Field{
@@ -130,8 +130,8 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 	}
 	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		fields = append(fields, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent(i.domain.GetEventProducerPrivateVariableName())},
-			Type:  ast.NewIdent(i.domain.EventProducerInterfaceName()),
+			Names: []*ast.Ident{ast.NewIdent(i.domain.EventServicePrivateVariableName())},
+			Type:  ast.NewIdent(i.domain.EventServiceInterfaceName()),
 		})
 	}
 	fields = append(fields, &ast.Field{
@@ -149,8 +149,8 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 	}
 	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		exprs = append(exprs, &ast.KeyValueExpr{
-			Key:   ast.NewIdent(i.domain.GetEventProducerPrivateVariableName()),
-			Value: ast.NewIdent(i.domain.GetEventProducerPrivateVariableName()),
+			Key:   ast.NewIdent(i.domain.EventServicePrivateVariableName()),
+			Value: ast.NewIdent(i.domain.EventServicePrivateVariableName()),
 		})
 	}
 	exprs = append(exprs, &ast.KeyValueExpr{
@@ -446,11 +446,11 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 									Name: "u",
 								},
 								Sel: &ast.Ident{
-									Name: i.domain.GetEventProducerPrivateVariableName(),
+									Name: i.domain.EventServicePrivateVariableName(),
 								},
 							},
 							Sel: &ast.Ident{
-								Name: "Created",
+								Name: "Send",
 							},
 						},
 						Args: []ast.Expr{
@@ -1145,11 +1145,11 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 									Name: "u",
 								},
 								Sel: &ast.Ident{
-									Name: i.domain.GetEventProducerPrivateVariableName(),
+									Name: i.domain.EventServicePrivateVariableName(),
 								},
 							},
 							Sel: &ast.Ident{
-								Name: "Updated",
+								Name: "Send",
 							},
 						},
 						Args: []ast.Expr{
@@ -1500,29 +1500,30 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 			},
 		},
 		// Try to delete model at use case
-		&ast.IfStmt{
-			Init: &ast.AssignStmt{
-				Lhs: []ast.Expr{
-					ast.NewIdent("err"),
-				},
-				Tok: token.DEFINE,
-				Rhs: []ast.Expr{
-					&ast.CallExpr{
-						Fun: &ast.SelectorExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("u"),
-								Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
-							},
-							Sel: ast.NewIdent("Delete"),
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				ast.NewIdent(i.domain.GetOneVariableName()),
+				ast.NewIdent("err"),
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent("u"),
+							Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
 						},
-						Args: []ast.Expr{
-							ast.NewIdent("ctx"),
-							ast.NewIdent("tx"),
-							ast.NewIdent("id"),
-						},
+						Sel: ast.NewIdent("Delete"),
+					},
+					Args: []ast.Expr{
+						ast.NewIdent("ctx"),
+						ast.NewIdent("tx"),
+						ast.NewIdent("id"),
 					},
 				},
 			},
+		},
+		&ast.IfStmt{
 			Cond: &ast.BinaryExpr{
 				X:  ast.NewIdent("err"),
 				Op: token.NEQ,
@@ -1532,6 +1533,12 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 				List: []ast.Stmt{
 					&ast.ReturnStmt{
 						Results: []ast.Expr{
+							&ast.CompositeLit{
+								Type: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
 							ast.NewIdent("err"),
 						},
 					},
@@ -1556,11 +1563,11 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 									Name: "u",
 								},
 								Sel: &ast.Ident{
-									Name: i.domain.GetEventProducerPrivateVariableName(),
+									Name: i.domain.EventServicePrivateVariableName(),
 								},
 							},
 							Sel: &ast.Ident{
-								Name: "Deleted",
+								Name: "Send",
 							},
 						},
 						Args: []ast.Expr{
@@ -1569,7 +1576,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 							},
 							ast.NewIdent("tx"),
 							&ast.Ident{
-								Name: "id",
+								Name: i.domain.GetOneVariableName(),
 							},
 						},
 					},
@@ -1588,6 +1595,12 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 				List: []ast.Stmt{
 					&ast.ReturnStmt{
 						Results: []ast.Expr{
+							&ast.CompositeLit{
+								Type: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
 							&ast.Ident{
 								Name: "err",
 							},
@@ -1633,6 +1646,12 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 				List: []ast.Stmt{
 					&ast.ReturnStmt{
 						Results: []ast.Expr{
+							&ast.CompositeLit{
+								Type: &ast.SelectorExpr{
+									X:   ast.NewIdent("entities"),
+									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								},
+							},
 							&ast.Ident{
 								Name: "err",
 							},
@@ -1644,6 +1663,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
+				ast.NewIdent(i.domain.GetOneVariableName()),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -1683,6 +1703,12 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 			},
 			Results: &ast.FieldList{
 				List: []*ast.Field{
+					{
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+						},
+					},
 					{
 						Type: ast.NewIdent("error"),
 					},

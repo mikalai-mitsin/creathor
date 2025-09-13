@@ -51,14 +51,6 @@ func (m *EntityConfig) SearchVector() string {
 	return vector
 }
 
-func (m *EntityConfig) Variable() string {
-	return strcase.ToLowerCamel(m.Name)
-}
-
-func (m *EntityConfig) ListVariable() string {
-	return strcase.ToLowerCamel(fmt.Sprintf("list%s", strcase.ToCamel(inflection.Plural(m.Name))))
-}
-
 func (m *EntityConfig) EntityName() string {
 	return strcase.ToCamel(m.Name)
 }
@@ -216,7 +208,7 @@ func (m *EntityConfig) KafkaHandlerTypeName() string {
 
 func (m *EntityConfig) KafkaCreatedConsumerGroup() string {
 	return fmt.Sprintf(
-		"%s.%s.%s.created",
+		"%s.%s.%s",
 		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
 		strcase.ToSnake(m.AppConfig.Name),
 		strcase.ToSnake(m.Name),
@@ -243,27 +235,9 @@ func (m *EntityConfig) GetKafkaHandlerPrivateVariableName() string {
 	return fmt.Sprintf("kafka%sHandler", strcase.ToCamel(m.Name))
 }
 
-func (m *EntityConfig) CreatedTopicName() string {
+func (m *EntityConfig) TopicName() string {
 	return fmt.Sprintf(
-		"%s.%s.%s.created",
-		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
-		strcase.ToSnake(m.AppConfig.Name),
-		strcase.ToSnake(m.Name),
-	)
-}
-
-func (m *EntityConfig) UpdatedTopicName() string {
-	return fmt.Sprintf(
-		"%s.%s.%s.updated",
-		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
-		strcase.ToSnake(m.AppConfig.Name),
-		strcase.ToSnake(m.Name),
-	)
-}
-
-func (m *EntityConfig) DeletedTopicName() string {
-	return fmt.Sprintf(
-		"%s.%s.%s.deleted",
+		"%s.%s.%s.v1",
 		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
 		strcase.ToSnake(m.AppConfig.Name),
 		strcase.ToSnake(m.Name),
@@ -513,6 +487,22 @@ func (m *EntityConfig) GetHTTPFilterDTOConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetHTTPFilterDTOName())
 }
 
+func (m *EntityConfig) EventServicePrivateVariableName() string {
+	return fmt.Sprintf("%sEventService", m.LowerCamelName())
+}
+
+func (m *EntityConfig) EventServiceInterfaceName() string {
+	return fmt.Sprintf("%sEventService", m.LowerCamelName())
+}
+
+func (m *EntityConfig) EventServiceName() string {
+	return fmt.Sprintf("%sEventService", m.CamelCase())
+}
+
+func (m *EntityConfig) EventServiceConstructorName() string {
+	return fmt.Sprintf("New%s", m.EventServiceName())
+}
+
 func (m *EntityConfig) OrderingTypeName() string {
 	return fmt.Sprintf("%sOrdering", strcase.ToCamel(m.Name))
 }
@@ -625,7 +615,7 @@ func NewMainEntity(modelConfig EntityConfig) *Entity {
 	model := &Entity{
 		Type:     EntityTypeMain,
 		Name:     modelConfig.EntityName(),
-		Variable: modelConfig.Variable(),
+		Variable: modelConfig.GetOneVariableName(),
 		Params: []*Param{
 			{
 				Name:   "ID",
@@ -640,6 +630,11 @@ func NewMainEntity(modelConfig EntityConfig) *Entity {
 			{
 				Name:   "UpdatedAt",
 				Type:   "time.Time",
+				Search: false,
+			},
+			{
+				Name:   "DeletedAt",
+				Type:   "*time.Time",
 				Search: false,
 			},
 		},
@@ -674,6 +669,11 @@ func NewFilterEntity(modelConfig EntityConfig) *Entity {
 			{
 				Name:   "OrderBy",
 				Type:   fmt.Sprintf("[]%s", modelConfig.OrderingTypeName()),
+				Search: false,
+			},
+			{
+				Name:   "IsDeleted",
+				Type:   "*bool",
 				Search: false,
 			},
 		},

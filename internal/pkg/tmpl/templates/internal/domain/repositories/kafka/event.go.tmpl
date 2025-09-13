@@ -1,18 +1,15 @@
-package events
+package repositories
 
 import (
 	"context"
 	"encoding/json"
     "{{ .Module }}/internal/app/{{ .AppName }}/entities/{{ .DirName }}"
 	"{{ .Module }}/internal/pkg/clock"
-	"{{ .Module }}/internal/pkg/dtx"
 	"{{ .Module }}/internal/pkg/kafka"
 )
 
 const (
-	topicEventCreated = "{{ .CreatedTopicName }}"
-	topicEventUpdated = "{{ .UpdatedTopicName }}"
-	topicEventDeleted = "{{ .DeletedTopicName }}"
+	topicName = "{{ .TopicName }}"
 )
 
 type {{ .EventProducerTypeName }} struct {
@@ -27,43 +24,15 @@ func {{ .EventProducerConstructorName }}(
 	return &{{ .EventProducerTypeName }}{producer: producer, logger: logger}
 }
 
-func (p *{{ .EventProducerTypeName }}) Created(ctx context.Context, _ dtx.TX, {{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}) error {
-	data, err := json.Marshal({{ .GetOneVariableName }})
-	if err != nil {
-		return err
-	}
+func (p *{{ .EventProducerTypeName }}) Send(ctx context.Context, {{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}) error {
+    data, err := proto.Marshal(decode{{ .EntityName }}({{ .GetOneVariableName }}))
+    if err != nil {
+        return err
+    }
 	message := &kafka.Message{
-		Topic: topicEventCreated,
+		Topic: topicName,
 		Value: data,
         Key:   {{ .GetOneVariableName }}.ID.String(),
-	}
-	if err := p.producer.Send(ctx, message); err != nil {
-		return errs.FromKafkaError(err)
-	}
-	return nil
-}
-
-func (p *{{ .EventProducerTypeName }}) Updated(ctx context.Context, _ dtx.TX, {{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}) error {
-	data, err := json.Marshal({{ .GetOneVariableName }})
-	if err != nil {
-		return err
-	}
-	message := &kafka.Message{
-		Topic: topicEventUpdated,
-		Value: data,
-        Key:   {{ .GetOneVariableName }}.ID.String(),
-	}
-	if err := p.producer.Send(ctx, message); err != nil {
-		return errs.FromKafkaError(err)
-	}
-	return nil
-}
-
-func (p *{{ .EventProducerTypeName }}) Deleted(ctx context.Context, _ dtx.TX, id uuid.UUID) error {
-	message := &kafka.Message{
-		Topic: topicEventDeleted,
-		Value: []byte(id.String()),
-        Key:   id.String(),
 	}
 	if err := p.producer.Send(ctx, message); err != nil {
 		return errs.FromKafkaError(err)

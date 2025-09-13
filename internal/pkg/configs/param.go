@@ -196,7 +196,7 @@ func (p *Param) GetGRPCWrapperArgumentType() string {
 		return "float64"
 	case "time.Time":
 		return "time.Time"
-	case "UUID", "uuid.UUID", "GroupID", "entities.GroupID":
+	case "UUID", "uuid.UUID":
 		return "string"
 	default:
 		return "/* FIXME */"
@@ -233,7 +233,7 @@ func (p *Param) GRPCType() string {
 		return "timestamppb.New"
 	case "bool":
 		return "bool"
-	case "UUID", "uuid.UUID", "GroupID", "entities.GroupID":
+	case "UUID", "uuid.UUID":
 		return "string"
 	default:
 		return "/* FIXME */"
@@ -315,6 +315,8 @@ func (p *Param) PostgresDTOType() string {
 		return "*uuid.UUID"
 	case "time.Time":
 		return "time.Time"
+	case "*time.Time":
+		return "*time.Time"
 	case "time.Duration":
 		return "time.Duration"
 	case "bool":
@@ -436,4 +438,8 @@ func (p *Param) GetPrivateName() string {
 
 func (p *Param) Tag() string {
 	return strcase.ToSnake(p.Name)
+}
+
+func (p *Param) IsOptional() bool {
+	return strings.HasPrefix(p.Type, "*")
 }

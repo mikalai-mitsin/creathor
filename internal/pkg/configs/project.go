@@ -22,6 +22,7 @@ type Project struct {
 	UptraceEnabled bool        `yaml:"uptrace"`
 	KafkaEnabled   bool        `yaml:"kafka"`
 	HTTPEnabled    bool        `yaml:"http"`
+	I18nEnabled    bool        `yaml:"i18n"`
 }
 
 func NewProject(configPath string) (*Project, error) {
@@ -36,6 +37,8 @@ func NewProject(configPath string) (*Project, error) {
 		TaskEnabled:    true,
 		UptraceEnabled: false,
 		KafkaEnabled:   false,
+		HTTPEnabled:    false,
+		I18nEnabled:    false,
 	}
 	file, err := os.ReadFile(configPath)
 	if err != nil {

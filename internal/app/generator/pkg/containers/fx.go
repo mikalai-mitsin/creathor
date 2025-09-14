@@ -235,6 +235,15 @@ func (f Generator) toProvide() []ast.Expr {
 			Sel: ast.NewIdent("NewManager"),
 		},
 	}
+	if f.project.I18nEnabled {
+		toProvide = append(
+			toProvide,
+			&ast.SelectorExpr{
+				X:   ast.NewIdent("i18n"),
+				Sel: ast.NewIdent("NewTranslator"),
+			},
+		)
+	}
 	if f.project.KafkaEnabled {
 		toProvide = append(
 			toProvide,

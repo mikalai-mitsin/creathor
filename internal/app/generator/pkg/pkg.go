@@ -9,6 +9,7 @@ import (
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/errs"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/grpc"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/http"
+	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/i18n"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/kafka"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/log"
 	"github.com/mikalai-mitsin/creathor/internal/app/generator/pkg/pointer"
@@ -37,6 +38,9 @@ func (g *Generator) Sync() error {
 		postgres.NewGenerator(g.project),
 		uuid.NewGenerator(g.project),
 		dtx.NewGenerator(g.project),
+	}
+	if g.project.I18nEnabled {
+		generators = append(generators, i18n.NewGenerator(g.project))
 	}
 	if g.project.KafkaEnabled {
 		generators = append(

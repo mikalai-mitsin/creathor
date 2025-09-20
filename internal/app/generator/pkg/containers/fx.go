@@ -201,6 +201,49 @@ func (f Generator) toProvide() []ast.Expr {
 						{
 							Type: &ast.StarExpr{
 								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("uptrace"),
+									Sel: ast.NewIdent("Config"),
+								},
+							},
+						},
+					},
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							&ast.SelectorExpr{
+								X:   ast.NewIdent("config"),
+								Sel: ast.NewIdent("Otel"),
+							},
+						},
+					},
+				},
+			},
+		},
+		&ast.FuncLit{
+			Type: &ast.FuncType{
+				Params: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Names: []*ast.Ident{
+								ast.NewIdent("config"),
+							},
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
+									X:   ast.NewIdent("configs"),
+									Sel: ast.NewIdent("Config"),
+								},
+							},
+						},
+					},
+				},
+				Results: &ast.FieldList{
+					List: []*ast.Field{
+						{
+							Type: &ast.StarExpr{
+								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("postgres"),
 									Sel: ast.NewIdent("Config"),
 								},

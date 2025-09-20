@@ -13,21 +13,16 @@ import (
     {{- if .KafkaEnabled }}
     "{{ .Module }}/internal/pkg/kafka"
     {{- end }}
+    {{- if .UptraceEnabled }}
+    "{{ .Module }}/internal/pkg/uptrace"
+    {{- end }}
 )
-
-{{- if .UptraceEnabled }}
-type otel struct {
-    URL         string `env:"OTEL_URL" toml:"url"`
-    Enabled     bool   `env:"OTEL_ENABLED" toml:"enabled"`
-    Environment string `env:"OTEL_ENVIRONMENT" toml:"environment"`
-}
-{{- end }}
 
 type Config struct {
     LogLevel string   `env:"LOG_LEVEL" toml:"log_level" env-default:"debug"`
     Database *postgres.Config `toml:"database"`
 {{- if .UptraceEnabled }}
-    Otel     otel     `toml:"otel"`
+    Otel     *uptrace.Config     `toml:"otel"`
 {{- end }}
 {{- if .KafkaEnabled }}
     Kafka    *kafka.Config    `toml:"kafka"`

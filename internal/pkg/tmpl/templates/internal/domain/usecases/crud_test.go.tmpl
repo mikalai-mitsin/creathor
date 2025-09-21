@@ -77,7 +77,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
     mockLogger := NewMocklogger(ctrl)
     mockDtxManager := NewMockdtxManager(ctrl)
     ctx := context.Background()
-    {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
+    {{ .GetOneVariableName }} := entities.NewMock{{ .CamelName }}(t)
     type fields struct {
         {{ .ServiceVariableName }} {{ .GetServiceInterfaceName }}
 {{- if .KafkaEnabled }}
@@ -95,7 +95,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .EntityName }}
+        want    entities.{{ .CamelName }}
         wantErr error
     }{
         {
@@ -121,11 +121,11 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
             wantErr: nil,
         },
         {
-            name: "{{ .EntityName }} not found",
+            name: "{{ .CamelName }} not found",
             setup: func() {
                 mock{{ .ServiceTypeName }}.EXPECT().
                     Get(ctx, {{ .GetOneVariableName }}.ID).
-                    Return(entities.{{ .EntityName }}{}, errs.NewEntityNotFoundError())
+                    Return(entities.{{ .CamelName }}{}, errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
@@ -139,7 +139,7 @@ func Test{{ .GetUseCaseTypeName }}_Get(t *testing.T) {
                 ctx:         ctx,
                 id:          {{ .GetOneVariableName }}.ID,
             },
-            want:    entities.{{ .EntityName }}{},
+            want:    entities.{{ .CamelName }}{},
             wantErr: errs.NewEntityNotFoundError(),
         },
     }
@@ -173,7 +173,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
 	mockDtxManager := NewMockdtxManager(ctrl)
 	mockTx := dtx.NewMockTX(ctrl)
     ctx := context.Background()
-    {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
+    {{ .GetOneVariableName }} := entities.NewMock{{ .CamelName }}(t)
     create := entities.NewMock{{ .CreateTypeName }}(t)
     type fields struct {
         {{ .ServiceVariableName }} {{ .GetServiceInterfaceName }}
@@ -192,7 +192,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .EntityName }}
+        want    entities.{{ .CamelName }}
         wantErr error
     }{
         {
@@ -226,7 +226,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
                 mockDtxManager.EXPECT().NewTx().Return(mockTx)
                 mock{{ .ServiceTypeName }}.EXPECT().
                     Create(ctx, mockTx, create).
-                    Return(entities.{{ .EntityName }}{}, errs.NewUnexpectedBehaviorError("c u"))
+                    Return(entities.{{ .CamelName }}{}, errs.NewUnexpectedBehaviorError("c u"))
                 mockTx.EXPECT().Rollback().Return(nil)
             },
             fields: fields{
@@ -241,7 +241,7 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
                 ctx:    ctx,
                 create: create,
             },
-            want:    entities.{{ .EntityName }}{},
+            want:    entities.{{ .CamelName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("c u"),
         },
     }
@@ -275,7 +275,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
     mockDtxManager := NewMockdtxManager(ctrl)
     mockTx := dtx.NewMockTX(ctrl)
     ctx := context.Background()
-    {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
+    {{ .GetOneVariableName }} := entities.NewMock{{ .CamelName }}(t)
     update := entities.NewMock{{ .UpdateTypeName }}(t)
     type fields struct {
         {{ .ServiceVariableName }} {{ .GetServiceInterfaceName }}
@@ -294,7 +294,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .EntityName }}
+        want    entities.{{ .CamelName }}
         wantErr error
     }{
         {
@@ -328,7 +328,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
                 mockDtxManager.EXPECT().NewTx().Return(mockTx)
                 mock{{ .ServiceTypeName }}.EXPECT().
                     Update(ctx, mockTx, update).
-                    Return(entities.{{ .EntityName }}{}, errs.NewUnexpectedBehaviorError("d 2"))
+                    Return(entities.{{ .CamelName }}{}, errs.NewUnexpectedBehaviorError("d 2"))
                 mockTx.EXPECT().Rollback().Return(nil)
             },
             fields: fields{
@@ -343,7 +343,7 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
                 ctx:    ctx,
                 update: update,
             },
-            want:    entities.{{ .EntityName }}{},
+            want:    entities.{{ .CamelName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("d 2"),
         },
     }
@@ -377,7 +377,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
     mockDtxManager := NewMockdtxManager(ctrl)
     mockTx := dtx.NewMockTX(ctrl)
     ctx := context.Background()
-    {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
+    {{ .GetOneVariableName }} := entities.NewMock{{ .CamelName }}(t)
     del := entities.NewMock{{ .DeleteTypeName }}(t)
     del.ID = {{ .GetOneVariableName }}.ID
     type fields struct {
@@ -397,7 +397,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .EntityName }}
+        want    entities.{{ .CamelName }}
         wantErr error
     }{
         {
@@ -433,7 +433,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
                 mockDtxManager.EXPECT().NewTx().Return(mockTx)
                 mock{{ .ServiceTypeName }}.EXPECT().
                     Delete(ctx, mockTx, del).
-                    Return(entities.{{ .EntityName }}{}, errs.NewUnexpectedBehaviorError("d 2"))
+                    Return(entities.{{ .CamelName }}{}, errs.NewUnexpectedBehaviorError("d 2"))
                 mockTx.EXPECT().Rollback().Return(nil)
             },
             fields: fields{
@@ -448,7 +448,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
                 ctx: ctx,
                 del: del,
             },
-            want: entities.{{ .EntityName }}{},
+            want: entities.{{ .CamelName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("d 2"),
         },
     }
@@ -482,9 +482,9 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
     ctx := context.Background()
     filter := entities.NewMock{{ .FilterTypeName }}(t)
     count := faker.New().UInt64Between(2, 20)
-    {{ .GetManyVariableName }} := make([]entities.{{ .EntityName }}, 0, count)
+    {{ .GetManyVariableName }} := make([]entities.{{ .CamelName }}, 0, count)
     for i := uint64(0); i < count; i++ {
-        {{ .GetManyVariableName }} = append({{ .GetManyVariableName }}, entities.NewMock{{ .EntityName }}(t))
+        {{ .GetManyVariableName }} = append({{ .GetManyVariableName }}, entities.NewMock{{ .CamelName }}(t))
     }
     type fields struct {
         {{ .ServiceVariableName }} {{ .GetServiceInterfaceName }}
@@ -503,7 +503,7 @@ func Test{{ .GetUseCaseTypeName }}_List(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    []entities.{{ .EntityName }}
+        want    []entities.{{ .CamelName }}
         want1   uint64
         wantErr error
     }{

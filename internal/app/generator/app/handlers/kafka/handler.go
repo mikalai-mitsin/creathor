@@ -106,7 +106,7 @@ func (h *HandlerGenerator) file() *ast.File {
 						Values: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
-								Value: fmt.Sprintf(`"%s"`, h.domain.KafkaCreatedConsumerGroup()),
+								Value: fmt.Sprintf(`"%s"`, h.domain.KafkaConsumerGroup()),
 							},
 						},
 					},

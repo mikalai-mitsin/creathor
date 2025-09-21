@@ -143,7 +143,7 @@ func (g *DTOGenerator) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: g.domain.EntitiesImportPath(),
+							Value: g.domain.ImportPathEntities(),
 						},
 					},
 					&ast.ImportSpec{

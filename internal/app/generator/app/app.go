@@ -106,39 +106,24 @@ func (a App) imports() *ast.GenDecl {
 		specs = append(
 			specs,
 			&ast.ImportSpec{
-				Name: ast.NewIdent(fmt.Sprintf("%sUseCases", entity.LowerCamelName())),
+				Name: ast.NewIdent(entity.ImportAliasUseCases()),
 				Path: &ast.BasicLit{
-					Kind: token.STRING,
-					Value: fmt.Sprintf(
-						`"%s/internal/app/%s/usecases/%s"`,
-						a.app.Module,
-						a.app.AppName(),
-						entity.DirName(),
-					),
+					Kind:  token.STRING,
+					Value: entity.ImportPathUseCases(),
 				},
 			},
 			&ast.ImportSpec{
-				Name: ast.NewIdent(fmt.Sprintf("%sPostgresRepositories", entity.LowerCamelName())),
+				Name: ast.NewIdent(entity.ImportAliasPostgresRepositories()),
 				Path: &ast.BasicLit{
-					Kind: token.STRING,
-					Value: fmt.Sprintf(
-						`"%s/internal/app/%s/repositories/postgres/%s"`,
-						a.app.Module,
-						a.app.AppName(),
-						entity.DirName(),
-					),
+					Kind:  token.STRING,
+					Value: entity.ImportPathPostgresRepositories(),
 				},
 			},
 			&ast.ImportSpec{
-				Name: ast.NewIdent(fmt.Sprintf("%sServices", entity.LowerCamelName())),
+				Name: ast.NewIdent(entity.ImportAliasServices()),
 				Path: &ast.BasicLit{
-					Kind: token.STRING,
-					Value: fmt.Sprintf(
-						`"%s/internal/app/%s/services/%s"`,
-						a.app.Module,
-						a.app.AppName(),
-						entity.DirName(),
-					),
+					Kind:  token.STRING,
+					Value: entity.ImportPathServices(),
 				},
 			},
 		)
@@ -146,27 +131,17 @@ func (a App) imports() *ast.GenDecl {
 			specs = append(
 				specs,
 				&ast.ImportSpec{
-					Name: ast.NewIdent(fmt.Sprintf("%sKafkaRepositories", entity.LowerCamelName())),
+					Name: ast.NewIdent(entity.ImportAliasKafkaRepositories()),
 					Path: &ast.BasicLit{
-						Kind: token.STRING,
-						Value: fmt.Sprintf(
-							`"%s/internal/app/%s/repositories/kafka/%s"`,
-							a.app.Module,
-							a.app.AppName(),
-							entity.DirName(),
-						),
+						Kind:  token.STRING,
+						Value: entity.ImportPathKafkaRepositories(),
 					},
 				},
 				&ast.ImportSpec{
-					Name: ast.NewIdent(fmt.Sprintf("%sKafkaHandlers", entity.LowerCamelName())),
+					Name: ast.NewIdent(entity.ImportAliasKafkaHandlers()),
 					Path: &ast.BasicLit{
-						Kind: token.STRING,
-						Value: fmt.Sprintf(
-							`"%s/internal/app/%s/handlers/kafka/%s"`,
-							a.app.Module,
-							a.app.AppName(),
-							entity.DirName(),
-						),
+						Kind:  token.STRING,
+						Value: entity.ImportPathKafkaHandlers(),
 					},
 				},
 			)
@@ -175,15 +150,10 @@ func (a App) imports() *ast.GenDecl {
 			specs = append(
 				specs,
 				&ast.ImportSpec{
-					Name: ast.NewIdent(fmt.Sprintf("%sHttpHandlers", entity.LowerCamelName())),
+					Name: ast.NewIdent(entity.ImportAliasHttpHandlers()),
 					Path: &ast.BasicLit{
-						Kind: token.STRING,
-						Value: fmt.Sprintf(
-							`"%s/internal/app/%s/handlers/http/%s"`,
-							a.app.Module,
-							a.app.AppName(),
-							entity.DirName(),
-						),
+						Kind:  token.STRING,
+						Value: entity.ImportPathHttpHandlers(),
 					},
 				},
 				&ast.ImportSpec{
@@ -198,15 +168,10 @@ func (a App) imports() *ast.GenDecl {
 			specs = append(
 				specs,
 				&ast.ImportSpec{
-					Name: ast.NewIdent(fmt.Sprintf("%sGrpcHandlers", entity.LowerCamelName())),
+					Name: ast.NewIdent(entity.ImportAliasGrpcHandlers()),
 					Path: &ast.BasicLit{
-						Kind: token.STRING,
-						Value: fmt.Sprintf(
-							`"%s/internal/app/%s/handlers/grpc/%s"`,
-							a.app.Module,
-							a.app.AppName(),
-							entity.DirName(),
-						),
+						Kind:  token.STRING,
+						Value: entity.ImportPathGrpcHandlers(),
 					},
 				},
 				&ast.ImportSpec{
@@ -359,9 +324,7 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X: ast.NewIdent(
-								fmt.Sprintf("%sPostgresRepositories", entity.LowerCamelName()),
-							),
+							X:   ast.NewIdent(entity.ImportAliasPostgresRepositories()),
 							Sel: ast.NewIdent(entity.GetRepositoryConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -380,7 +343,7 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent(fmt.Sprintf("%sServices", entity.LowerCamelName())),
+							X:   ast.NewIdent(entity.ImportAliasServices()),
 							Sel: ast.NewIdent(entity.GetServiceConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -401,7 +364,7 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X:   ast.NewIdent(fmt.Sprintf("%sKafkaRepositories", entity.LowerCamelName())),
+							X:   ast.NewIdent(entity.ImportAliasKafkaRepositories()),
 							Sel: ast.NewIdent(entity.EventProducerConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -419,7 +382,7 @@ func (a App) constructor() *ast.FuncDecl {
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: &ast.SelectorExpr{
-								X:   ast.NewIdent(fmt.Sprintf("%sServices", entity.LowerCamelName())),
+								X:   ast.NewIdent(entity.ImportAliasServices()),
 								Sel: ast.NewIdent(entity.EventServiceConstructorName()),
 							},
 							Args: []ast.Expr{
@@ -449,7 +412,7 @@ func (a App) constructor() *ast.FuncDecl {
 			Rhs: []ast.Expr{
 				&ast.CallExpr{
 					Fun: &ast.SelectorExpr{
-						X:   ast.NewIdent(fmt.Sprintf("%sUseCases", entity.LowerCamelName())),
+						X:   ast.NewIdent(entity.ImportAliasUseCases()),
 						Sel: ast.NewIdent(entity.GetUseCaseConstructorName()),
 					},
 					Args: useCaseArgs,
@@ -466,9 +429,7 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X: ast.NewIdent(
-								fmt.Sprintf("%sHttpHandlers", entity.LowerCamelName()),
-							),
+							X:   ast.NewIdent(entity.ImportAliasHttpHandlers()),
 							Sel: ast.NewIdent(entity.GetHTTPHandlerConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -492,9 +453,7 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X: ast.NewIdent(
-								fmt.Sprintf("%sKafkaHandlers", entity.LowerCamelName()),
-							),
+							X:   ast.NewIdent(entity.ImportAliasKafkaHandlers()),
 							Sel: ast.NewIdent(entity.KafkaHandlerConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -528,9 +487,7 @@ func (a App) constructor() *ast.FuncDecl {
 				Rhs: []ast.Expr{
 					&ast.CallExpr{
 						Fun: &ast.SelectorExpr{
-							X: ast.NewIdent(
-								fmt.Sprintf("%sGrpcHandlers", entity.LowerCamelName()),
-							),
+							X:   ast.NewIdent(entity.ImportAliasGrpcHandlers()),
 							Sel: ast.NewIdent(entity.GetGRPCHandlerConstructorName()),
 						},
 						Args: []ast.Expr{
@@ -649,7 +606,7 @@ func (a App) structure() *ast.GenDecl {
 			},
 			Type: &ast.StarExpr{
 				X: &ast.SelectorExpr{
-					X:   ast.NewIdent(fmt.Sprintf("%sPostgresRepositories", entity.LowerCamelName())),
+					X:   ast.NewIdent(entity.ImportAliasPostgresRepositories()),
 					Sel: ast.NewIdent(entity.GetRepositoryTypeName()),
 				},
 			},
@@ -660,7 +617,7 @@ func (a App) structure() *ast.GenDecl {
 				},
 				Type: &ast.StarExpr{
 					X: &ast.SelectorExpr{
-						X:   ast.NewIdent(fmt.Sprintf("%sServices", entity.LowerCamelName())),
+						X:   ast.NewIdent(entity.ImportAliasServices()),
 						Sel: ast.NewIdent(entity.GetServiceTypeName()),
 					},
 				},
@@ -671,7 +628,7 @@ func (a App) structure() *ast.GenDecl {
 				},
 				Type: &ast.StarExpr{
 					X: &ast.SelectorExpr{
-						X:   ast.NewIdent(fmt.Sprintf("%sUseCases", entity.LowerCamelName())),
+						X:   ast.NewIdent(entity.ImportAliasUseCases()),
 						Sel: ast.NewIdent(entity.GetUseCaseTypeName()),
 					},
 				},
@@ -683,7 +640,7 @@ func (a App) structure() *ast.GenDecl {
 				},
 				Type: &ast.StarExpr{
 					X: &ast.SelectorExpr{
-						X:   ast.NewIdent(fmt.Sprintf("%sHttpHandlers", entity.LowerCamelName())),
+						X:   ast.NewIdent(entity.ImportAliasHttpHandlers()),
 						Sel: ast.NewIdent(entity.GetHTTPHandlerTypeName()),
 					},
 				},
@@ -697,7 +654,7 @@ func (a App) structure() *ast.GenDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
-							X:   ast.NewIdent(fmt.Sprintf("%sKafkaRepositories", entity.LowerCamelName())),
+							X:   ast.NewIdent(entity.ImportAliasKafkaRepositories()),
 							Sel: ast.NewIdent(entity.EventProducerTypeName()),
 						},
 					},
@@ -708,7 +665,7 @@ func (a App) structure() *ast.GenDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
-							X:   ast.NewIdent(fmt.Sprintf("%sServices", entity.LowerCamelName())),
+							X:   ast.NewIdent(entity.ImportAliasServices()),
 							Sel: ast.NewIdent(entity.EventServiceName()),
 						},
 					},
@@ -719,7 +676,7 @@ func (a App) structure() *ast.GenDecl {
 					},
 					Type: &ast.StarExpr{
 						X: &ast.SelectorExpr{
-							X:   ast.NewIdent(fmt.Sprintf("%sKafkaHandlers", entity.LowerCamelName())),
+							X:   ast.NewIdent(entity.ImportAliasKafkaHandlers()),
 							Sel: ast.NewIdent(entity.KafkaHandlerTypeName()),
 						},
 					},
@@ -733,7 +690,7 @@ func (a App) structure() *ast.GenDecl {
 				},
 				Type: &ast.StarExpr{
 					X: &ast.SelectorExpr{
-						X:   ast.NewIdent(fmt.Sprintf("%sGrpcHandlers", entity.LowerCamelName())),
+						X:   ast.NewIdent(entity.ImportAliasGrpcHandlers()),
 						Sel: ast.NewIdent(entity.GetGRPCHandlerTypeName()),
 					},
 				},

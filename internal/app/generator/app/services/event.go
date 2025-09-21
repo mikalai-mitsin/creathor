@@ -54,7 +54,7 @@ func (u EventService) file() *ast.File {
 						},
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: u.domain.EntitiesImportPath(),
+							Value: u.domain.ImportPathEntities(),
 						},
 					},
 					&ast.ImportSpec{

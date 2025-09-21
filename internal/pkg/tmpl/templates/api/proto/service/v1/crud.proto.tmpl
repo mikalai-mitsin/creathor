@@ -16,7 +16,7 @@ message {{ .CreateTypeName }} {
 {{- end }}
 }
 
-message {{ .EntityName }}Get {
+message {{ .CamelName }}Get {
   string id = 1;
 }
 
@@ -27,7 +27,7 @@ message {{ .UpdateTypeName }} {
 {{- end }}
 }
 
-message {{ .EntityName }} {
+message {{ .CamelName }} {
   string id = 1;
   google.protobuf.Timestamp updated_at = 2;
   google.protobuf.Timestamp created_at = 3;
@@ -37,12 +37,12 @@ message {{ .EntityName }} {
 {{- end }}
 }
 
-message List{{ .EntityName }} {
-  repeated {{ .EntityName }} items = 1;
+message List{{ .CamelName }} {
+  repeated {{ .CamelName }} items = 1;
   uint64 count = 2;
 }
 
-message {{ .EntityName }}Delete {
+message {{ .CamelName }}Delete {
   string id = 1;
 }
 
@@ -56,26 +56,26 @@ message {{ .FilterTypeName }} {
 {{- end }}
 }
 
-service {{ .EntityName }}Service {
-  rpc Create({{ .ProtoPackage }}.v1.{{ .CreateTypeName }}) returns ({{ .ProtoPackage }}.v1.{{ .EntityName }}) {
+service {{ .CamelName }}Service {
+  rpc Create({{ .ProtoPackage }}.v1.{{ .CreateTypeName }}) returns ({{ .ProtoPackage }}.v1.{{ .CamelName }}) {
     option (google.api.http) = {
       post: "/api/v1/{{ .RESTHandlerPath }}"
       body: "*"
     };
   }
-  rpc Get({{ .ProtoPackage }}.v1.{{ .EntityName}}Get) returns ({{ .ProtoPackage }}.v1.{{ .EntityName }}) {
+  rpc Get({{ .ProtoPackage }}.v1.{{ .CamelName}}Get) returns ({{ .ProtoPackage }}.v1.{{ .CamelName }}) {
     option (google.api.http) = {get: "/api/v1/{{ .RESTHandlerPath }}/{id}"};
   }
-  rpc Update({{ .ProtoPackage }}.v1.{{ .UpdateTypeName }}) returns ({{ .ProtoPackage }}.v1.{{ .EntityName }}) {
+  rpc Update({{ .ProtoPackage }}.v1.{{ .UpdateTypeName }}) returns ({{ .ProtoPackage }}.v1.{{ .CamelName }}) {
     option (google.api.http) = {
       patch: "/api/v1/{{ .RESTHandlerPath }}/{id}"
       body: "*"
     };
   }
-  rpc Delete({{ .ProtoPackage }}.v1.{{ .EntityName }}Delete) returns ({{ .ProtoPackage }}.v1.{{ .EntityName }}) {
+  rpc Delete({{ .ProtoPackage }}.v1.{{ .CamelName }}Delete) returns ({{ .ProtoPackage }}.v1.{{ .CamelName }}) {
     option (google.api.http) = {delete: "/api/v1/{{ .RESTHandlerPath }}/{id}"};
   }
-  rpc List({{ .ProtoPackage }}.v1.{{ .FilterTypeName }}) returns ({{ .ProtoPackage }}.v1.List{{ .EntityName }}) {
+  rpc List({{ .ProtoPackage }}.v1.{{ .FilterTypeName }}) returns ({{ .ProtoPackage }}.v1.List{{ .CamelName }}) {
     option (google.api.http) = {get: "/api/v1/{{ .RESTHandlerPath }}"};
   }
 }

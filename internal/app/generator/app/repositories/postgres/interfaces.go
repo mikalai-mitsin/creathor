@@ -74,11 +74,7 @@ func (r InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text: fmt.Sprintf(
-						"//go:generate mockgen -source=%s_interfaces.go -package=repositories -destination=%s_interfaces_mock.go",
-						r.domain.SnakeName(),
-						r.domain.SnakeName(),
-					),
+					Text:  "//go:generate mockgen -package=$GOPACKAGE -source=$GOFILE -destination=mock.go",
 				},
 			},
 		},

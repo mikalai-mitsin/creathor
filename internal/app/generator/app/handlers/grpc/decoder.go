@@ -609,7 +609,7 @@ func (h ProtoDecoder) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: h.domain.EntitiesImportPath(),
+				Value: h.domain.ImportPathEntities(),
 			},
 		},
 		&ast.ImportSpec{

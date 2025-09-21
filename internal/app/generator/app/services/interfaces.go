@@ -104,7 +104,7 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text:  "//go:generate mockgen -source=interfaces.go -package=services -destination=interfaces_mock.go",
+					Text:  "//go:generate mockgen -package=$GOPACKAGE -source=$GOFILE -destination=mock.go",
 				},
 			},
 		},
@@ -124,7 +124,7 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: i.domain.EntitiesImportPath(),
+					Value: i.domain.ImportPathEntities(),
 				},
 			},
 			&ast.ImportSpec{

@@ -79,7 +79,7 @@ func (u ServiceGenerator) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: u.domain.EntitiesImportPath(),
+							Value: u.domain.ImportPathEntities(),
 						},
 					},
 					&ast.ImportSpec{

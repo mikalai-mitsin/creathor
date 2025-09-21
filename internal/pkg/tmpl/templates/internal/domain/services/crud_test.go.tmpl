@@ -66,7 +66,7 @@ func Test{{ .ServiceTypeName }}_Get(t *testing.T) {
     mock{{ .RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
+    {{ .GetOneVariableName }} := entities.NewMock{{ .CamelName }}(t)
     type fields struct {
         {{ .RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
         logger           logger
@@ -80,7 +80,7 @@ func Test{{ .ServiceTypeName }}_Get(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .EntityName }}
+        want    entities.{{ .CamelName }}
         wantErr error
     }{
         {
@@ -100,9 +100,9 @@ func Test{{ .ServiceTypeName }}_Get(t *testing.T) {
             wantErr: nil,
         },
         {
-            name: "{{ .EntityName }} not found",
+            name: "{{ .CamelName }} not found",
             setup: func() {
-                mock{{ .RepositoryTypeName }}.EXPECT().Get(ctx, {{ .GetOneVariableName }}.ID).Return(entities.{{ .EntityName }}{}, errs.NewEntityNotFoundError())
+                mock{{ .RepositoryTypeName }}.EXPECT().Get(ctx, {{ .GetOneVariableName }}.ID).Return(entities.{{ .CamelName }}{}, errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .RepositoryVariableName }}: mock{{ .RepositoryTypeName }},
@@ -112,7 +112,7 @@ func Test{{ .ServiceTypeName }}_Get(t *testing.T) {
                 ctx: ctx,
                 id:  {{ .GetOneVariableName }}.ID,
             },
-            want:    entities.{{ .EntityName }}{},
+            want:    entities.{{ .CamelName }}{},
             wantErr: errs.NewEntityNotFoundError(),
         },
     }
@@ -136,10 +136,10 @@ func Test{{ .ServiceTypeName }}_List(t *testing.T) {
     mock{{ .RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    var {{ .GetManyVariableName }} []entities.{{ .EntityName }}
+    var {{ .GetManyVariableName }} []entities.{{ .CamelName }}
     count := faker.New().UInt64Between(2, 20)
     for i := uint64(0); i < count; i++ {
-        {{ .GetManyVariableName }} = append({{ .GetManyVariableName }}, entities.NewMock{{ .EntityName }}(t))
+        {{ .GetManyVariableName }} = append({{ .GetManyVariableName }}, entities.NewMock{{ .CamelName }}(t))
     }
     filter := entities.NewMock{{ .FilterTypeName }}(t)
     type fields struct {
@@ -155,7 +155,7 @@ func Test{{ .ServiceTypeName }}_List(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    []entities.{{ .EntityName }}
+        want    []entities.{{ .CamelName }}
         want1   uint64
         wantErr error
     }{
@@ -180,7 +180,7 @@ func Test{{ .ServiceTypeName }}_List(t *testing.T) {
         {
             name: "list error",
             setup: func() {
-                mock{{ .RepositoryTypeName }}.EXPECT().List(ctx, filter).Return([]entities.{{ .EntityName }}{}, errs.NewUnexpectedBehaviorError("test error"))
+                mock{{ .RepositoryTypeName }}.EXPECT().List(ctx, filter).Return([]entities.{{ .CamelName }}{}, errs.NewUnexpectedBehaviorError("test error"))
             },
             fields: fields{
                 {{ .RepositoryVariableName }}: mock{{ .RepositoryTypeName }},
@@ -255,7 +255,7 @@ func Test{{ .ServiceTypeName }}_Create(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .EntityName }}
+        want    entities.{{ .CamelName }}
         wantErr error
     }{
         {
@@ -267,7 +267,7 @@ func Test{{ .ServiceTypeName }}_Create(t *testing.T) {
                     Create(
                         ctx,
                         mockTx,
-                        entities.{{ .EntityName }}{
+                        entities.{{ .CamelName }}{
                             ID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 {{- range $key, $value := .Params }}
                             {{ $value.GetName }}: create.{{ $value.GetName }},
@@ -289,7 +289,7 @@ func Test{{ .ServiceTypeName }}_Create(t *testing.T) {
                 tx: mockTx,
                 create: create,
             },
-            want: entities.{{ .EntityName }}{
+            want: entities.{{ .CamelName }}{
                 ID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 {{- range $key, $value := .Params }}
                 {{ $value.GetName }}: create.{{ $value.GetName }},
@@ -308,7 +308,7 @@ func Test{{ .ServiceTypeName }}_Create(t *testing.T) {
                     Create(
                         ctx,
                         mockTx,
-                        entities.{{ .EntityName }}{
+                        entities.{{ .CamelName }}{
                             ID: uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 {{- range $key, $value := .Params }}
                             {{ $value.GetName }}: create.{{ $value.GetName }},
@@ -330,7 +330,7 @@ func Test{{ .ServiceTypeName }}_Create(t *testing.T) {
                 tx: mockTx,
                 create: create,
             },
-            want:    entities.{{ .EntityName }}{},
+            want:    entities.{{ .CamelName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("test error"),
         },
         {
@@ -348,7 +348,7 @@ func Test{{ .ServiceTypeName }}_Create(t *testing.T) {
                 tx: mockTx,
                 create: entities.{{ .CreateTypeName }}{},
             },
-            want: entities.{{ .EntityName }}{},
+            want: entities.{{ .CamelName }}{},
             wantErr: errs.NewInvalidFormError().WithParams(
 {{- range $key, $value := .Params }}
 {{- if ne $value.Type "bool"}}
@@ -380,12 +380,12 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
     mock{{ .RepositoryTypeName }} := NewMock{{ .GetRepositoryInterfaceName }}(ctrl)
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
+    {{ .GetOneVariableName }} := entities.NewMock{{ .CamelName }}(t)
     mockClock := NewMockclock(ctrl)
     mockTx := dtx.NewMockTX(ctrl)
     update := entities.NewMock{{ .UpdateTypeName }}(t)
     now := time.Now().UTC()
-    updated{{ .EntityName }} := entities.{{ .EntityName }} {
+    updated{{ .CamelName }} := entities.{{ .CamelName }} {
         ID:         {{ .GetOneVariableName }}.ID,
         CreatedAt:  {{ .GetOneVariableName }}.CreatedAt,
         DeletedAt:  {{ .GetOneVariableName }}.DeletedAt,
@@ -409,7 +409,7 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .EntityName }}
+        want    entities.{{ .CamelName }}
         wantErr error
     }{
         {
@@ -419,7 +419,7 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
                 mock{{ .RepositoryTypeName }}.EXPECT().
                     Get(ctx, update.ID).Return({{ .GetOneVariableName }}, nil)
                 mock{{ .RepositoryTypeName }}.EXPECT().
-                    Update(ctx, mockTx, updated{{ .EntityName }}).Return(nil)
+                    Update(ctx, mockTx, updated{{ .CamelName }}).Return(nil)
             },
             fields: fields{
                 {{ .RepositoryVariableName }}: mock{{ .RepositoryTypeName }},
@@ -431,7 +431,7 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
                 tx: mockTx,
                 update: update,
             },
-            want:    updated{{ .EntityName }},
+            want:    updated{{ .CamelName }},
             wantErr: nil,
         },
         {
@@ -442,7 +442,7 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
                     Get(ctx, update.ID).
                     Return({{ .GetOneVariableName }}, nil)
                 mock{{ .RepositoryTypeName }}.EXPECT().
-                    Update(ctx, mockTx, updated{{ .EntityName }}).
+                    Update(ctx, mockTx, updated{{ .CamelName }}).
                     Return(errs.NewUnexpectedBehaviorError("test error"))
             },
             fields: fields{
@@ -455,13 +455,13 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
                 tx: mockTx,
                 update: update,
             },
-            want:    entities.{{ .EntityName }}{},
+            want:    entities.{{ .CamelName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("test error"),
         },
         {
-            name: "{{ .EntityName }} not found",
+            name: "{{ .CamelName }} not found",
             setup: func() {
-                mock{{ .RepositoryTypeName }}.EXPECT().Get(ctx, update.ID).Return(entities.{{ .EntityName }}{}, errs.NewEntityNotFoundError())
+                mock{{ .RepositoryTypeName }}.EXPECT().Get(ctx, update.ID).Return(entities.{{ .CamelName }}{}, errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .RepositoryVariableName }}: mock{{ .RepositoryTypeName }},
@@ -473,7 +473,7 @@ func Test{{ .ServiceTypeName }}_Update(t *testing.T) {
                 tx: mockTx,
                 update: update,
             },
-            want:    entities.{{ .EntityName }}{},
+            want:    entities.{{ .CamelName }}{},
             wantErr: errs.NewEntityNotFoundError(),
         },
     }
@@ -501,8 +501,8 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
     mockTx := dtx.NewMockTX(ctrl)
     ctx := context.Background()
     now := time.Now().UTC()
-    {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
-    deleted{{ .EntityName }} := entities.{{ .EntityName }} {
+    {{ .GetOneVariableName }} := entities.NewMock{{ .CamelName }}(t)
+    deleted{{ .CamelName }} := entities.{{ .CamelName }} {
             ID:         {{ .GetOneVariableName }}.ID,
             CreatedAt:  {{ .GetOneVariableName }}.CreatedAt,
             UpdatedAt:  {{ .GetOneVariableName }}.CreatedAt,
@@ -528,7 +528,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .EntityName }}
+        want    entities.{{ .CamelName }}
         wantErr error
     }{
         {
@@ -539,7 +539,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
                     Get(ctx, del.ID).
                     Return({{ .GetOneVariableName }}, nil)
                 mock{{ .RepositoryTypeName }}.EXPECT().
-                    Update(ctx, mockTx, deleted{{ .EntityName }}).
+                    Update(ctx, mockTx, deleted{{ .CamelName }}).
                     Return(nil)
             },
             fields: fields{
@@ -552,7 +552,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
                 tx:  mockTx,
                 del: del,
             },
-            want:    deleted{{ .EntityName }},
+            want:    deleted{{ .CamelName }},
             wantErr: nil,
         },
         {
@@ -563,7 +563,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
                     Get(ctx, del.ID).
                     Return({{ .GetOneVariableName }}, nil)
                 mock{{ .RepositoryTypeName }}.EXPECT().
-                    Update(ctx, mockTx, deleted{{ .EntityName }}).
+                    Update(ctx, mockTx, deleted{{ .CamelName }}).
                     Return(errs.NewUnexpectedBehaviorError("test error 12"))
             },
             fields: fields{
@@ -576,15 +576,15 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
                 tx:  mockTx,
                 del: del,
             },
-            want:    entities.{{ .EntityName }}{},
+            want:    entities.{{ .CamelName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("test error 12"),
         },
         {
-            name: "{{ .EntityName }} not found",
+            name: "{{ .CamelName }} not found",
             setup: func() {
                 mock{{ .RepositoryTypeName }}.EXPECT().
                     Get(ctx, del.ID).
-                    Return(entities.{{ .EntityName }}{}, errs.NewEntityNotFoundError())
+                    Return(entities.{{ .CamelName }}{}, errs.NewEntityNotFoundError())
             },
             fields: fields{
                 {{ .RepositoryVariableName }}: mock{{ .RepositoryTypeName }},
@@ -596,7 +596,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
                 tx:  mockTx,
                 del: del,
             },
-            want:    entities.{{ .EntityName }}{},
+            want:    entities.{{ .CamelName }}{},
             wantErr: errs.NewEntityNotFoundError(),
         },
     }

@@ -607,7 +607,7 @@ func (r RepositoryGenerator) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: r.domain.EntitiesImportPath(),
+				Value: r.domain.ImportPathEntities(),
 			},
 		},
 

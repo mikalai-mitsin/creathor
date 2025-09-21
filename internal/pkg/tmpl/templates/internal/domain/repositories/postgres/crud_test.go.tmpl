@@ -79,7 +79,7 @@ func Test{{ .RepositoryTypeName }}_Create(t *testing.T) {
     mock.ExpectBegin()
     mockTX := mockTxManager.NewTx()
     query := "INSERT INTO public.{{ .TableName }} (id,created_at,updated_at,deleted_at,{{- range $i, $value := .Params }}{{if $i}},{{end}}{{ $value.Tag }}{{- end }}) VALUES ($1,$2,$3,$4,{{ range $i, $value := .Params }}{{if $i}},{{end}}${{ add $i 5}}{{- end }})"
-    {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
+    {{ .GetOneVariableName }} := entities.NewMock{{ .CamelName }}(t)
     ctx := context.Background()
     type fields struct {
         writeDB database
@@ -89,7 +89,7 @@ func Test{{ .RepositoryTypeName }}_Create(t *testing.T) {
     type args struct {
         ctx  context.Context
         tx dtx.TX
-        {{ .GetOneVariableName }} entities.{{ .EntityName }}
+        {{ .GetOneVariableName }} entities.{{ .CamelName }}
     }
     tests := []struct {
         name    string
@@ -186,7 +186,7 @@ func Test{{ .RepositoryTypeName }}_Get(t *testing.T) {
     defer ctrl.Finish()
     mockLogger := NewMocklogger(ctrl)
     query := "SELECT {{ .TableName }}.id, {{ .TableName }}.created_at, {{ .TableName }}.updated_at, {{ .TableName }}.deleted_at{{ range $key, $value := .Params }}, {{ $.TableName }}.{{ $value.Tag }}{{ end }} FROM public.{{ .TableName }} WHERE id = $1 LIMIT 1"
-    {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
+    {{ .GetOneVariableName }} := entities.NewMock{{ .CamelName }}(t)
     ctx := context.Background()
     type fields struct {
         writeDB database
@@ -202,13 +202,13 @@ func Test{{ .RepositoryTypeName }}_Get(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    entities.{{ .EntityName }}
+        want    entities.{{ .CamelName }}
         wantErr error
     }{
         {
             name: "ok",
             setup: func() {
-                rows := new{{ .EntityName }}Rows(t, []entities.{{ .EntityName }}{ {{- .GetOneVariableName -}} })
+                rows := new{{ .CamelName }}Rows(t, []entities.{{ .CamelName }}{ {{- .GetOneVariableName -}} })
                 mock.ExpectQuery(query).WithArgs({{ .GetOneVariableName }}.ID).WillReturnRows(rows)
             },
             fields: fields{
@@ -237,7 +237,7 @@ func Test{{ .RepositoryTypeName }}_Get(t *testing.T) {
                 ctx: context.Background(),
                 id:  {{ .GetOneVariableName }}.ID,
             },
-            want:  entities.{{ .EntityName }}{},
+            want:  entities.{{ .CamelName }}{},
             wantErr: errs.FromPostgresError(errors.New("test error")).
                 WithParam("{{ .KeyName }}_id", {{ .GetOneVariableName }}.ID.String()),
         },
@@ -255,7 +255,7 @@ func Test{{ .RepositoryTypeName }}_Get(t *testing.T) {
                 ctx: context.Background(),
                 id:  {{ .GetOneVariableName }}.ID,
             },
-            want:  entities.{{ .EntityName }}{},
+            want:  entities.{{ .CamelName }}{},
             wantErr: errs.NewEntityNotFoundError().WithParam("{{ .KeyName }}_id", {{ .GetOneVariableName }}.ID.String()),
         },
     }
@@ -285,9 +285,9 @@ func Test{{ .RepositoryTypeName }}_List(t *testing.T) {
     defer ctrl.Finish()
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
-    var {{ .GetManyVariableName }} []entities.{{ .EntityName }}
+    var {{ .GetManyVariableName }} []entities.{{ .CamelName }}
     for i := 0; i < faker.New().IntBetween(2, 20); i++ {
-        {{ .GetManyVariableName }} = append({{ .GetManyVariableName }}, entities.NewMock{{ .EntityName }}(t))
+        {{ .GetManyVariableName }} = append({{ .GetManyVariableName }}, entities.NewMock{{ .CamelName }}(t))
     }
     filter := entities.{{ .FilterTypeName }}{
 		PageSize:   pointer.Of(uint64(10)),
@@ -310,14 +310,14 @@ func Test{{ .RepositoryTypeName }}_List(t *testing.T) {
         setup   func()
         fields  fields
         args    args
-        want    []entities.{{ .EntityName }}
+        want    []entities.{{ .CamelName }}
         wantErr error
     }{
         {
             name: "ok",
             setup: func() {
                 mock.ExpectQuery(query).
-                    WillReturnRows(new{{ .EntityName }}Rows(t, {{ .GetManyVariableName }}))
+                    WillReturnRows(new{{ .CamelName }}Rows(t, {{ .GetManyVariableName }}))
             },
             fields: fields{
                 writeDB: mockDB,
@@ -399,7 +399,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
     mockTxManager := dtx.NewManager(mockDB)
     mock.ExpectBegin()
     mockTX := mockTxManager.NewTx()
-    {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
+    {{ .GetOneVariableName }} := entities.NewMock{{ .CamelName }}(t)
     query := `UPDATE public.{{ .TableName }} SET created_at = $1, updated_at = $2, deleted_at = $3, {{ range $i, $value := .Params }}{{if $i}}, {{end}}{{ $value.Tag }} = ${{ add $i 4}}{{- end }} WHERE id = ${{ add (len $.Params) 4 }}`
     ctx := context.Background()
     type fields struct {
@@ -410,7 +410,7 @@ func Test{{ .RepositoryTypeName }}_Update(t *testing.T) {
     type args struct {
         ctx  context.Context
         tx dtx.TX
-        {{ .GetOneVariableName }} entities.{{ .EntityName }}
+        {{ .GetOneVariableName }} entities.{{ .CamelName }}
     }
     tests := []struct {
         name    string
@@ -602,7 +602,7 @@ func Test{{ .RepositoryTypeName }}_Delete(t *testing.T) {
     mockTxManager := dtx.NewManager(mockDB)
     mock.ExpectBegin()
     mockTX := mockTxManager.NewTx()
-    {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
+    {{ .GetOneVariableName }} := entities.NewMock{{ .CamelName }}(t)
     type fields struct {
         writeDB database
         readDB database
@@ -811,7 +811,7 @@ func Test{{ .RepositoryTypeName }}_Count(t *testing.T) {
     }
 }
 
-func new{{ .EntityName }}Rows(t *testing.T, {{ .GetManyVariableName }} []entities.{{ .EntityName }}) *sqlmock.Rows {
+func new{{ .CamelName }}Rows(t *testing.T, {{ .GetManyVariableName }} []entities.{{ .CamelName }}) *sqlmock.Rows {
     t.Helper()
     rows := sqlmock.NewRows([]string{
         "id",

@@ -20,10 +20,10 @@ import (
 
 type Mock struct {
 	typeSpec *ast.TypeSpec
-	domain   *configs.EntityConfig
+	domain   configs.EntityConfig
 }
 
-func NewMock(typeSpec *ast.TypeSpec, domain *configs.EntityConfig) *Mock {
+func NewMock(typeSpec *ast.TypeSpec, domain configs.EntityConfig) *Mock {
 	return &Mock{typeSpec: typeSpec, domain: domain}
 }
 

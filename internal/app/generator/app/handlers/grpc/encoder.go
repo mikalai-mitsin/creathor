@@ -81,7 +81,7 @@ func (h ProtoEncoder) createParams() []ast.Expr {
 
 func (h ProtoEncoder) encodeCreate() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("encode%s", h.domain.GetCreateModel().Name)),
+		Name: ast.NewIdent(h.domain.GetGRPCCreateDTOEncodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -457,7 +457,7 @@ func (h ProtoEncoder) encodeUpdate() *ast.FuncDecl {
 		},
 	})
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("encode%s", h.domain.GetUpdateModel().Name)),
+		Name: ast.NewIdent(h.domain.GetGRPCUpdateDTOEncodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -490,6 +490,81 @@ func (h ProtoEncoder) encodeUpdate() *ast.FuncDecl {
 		},
 	}
 }
+func (h ProtoEncoder) encodeDelete() *ast.FuncDecl {
+	body := []ast.Stmt{
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				ast.NewIdent(h.domain.GetDeleteModel().Variable),
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CompositeLit{
+					Type: &ast.SelectorExpr{
+						X:   ast.NewIdent("entities"),
+						Sel: ast.NewIdent(h.domain.GetDeleteModel().Name),
+					},
+					Elts: []ast.Expr{
+						&ast.KeyValueExpr{
+							Key: ast.NewIdent("ID"),
+							Value: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X:   ast.NewIdent("uuid"),
+									Sel: ast.NewIdent("MustParse"),
+								},
+								Args: []ast.Expr{
+									&ast.CallExpr{
+										Fun: &ast.SelectorExpr{
+											X:   ast.NewIdent("input"),
+											Sel: ast.NewIdent("GetId"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	body = append(body, &ast.ReturnStmt{
+		Results: []ast.Expr{
+			ast.NewIdent(h.domain.GetDeleteModel().Variable),
+		},
+	})
+	return &ast.FuncDecl{
+		Name: ast.NewIdent(h.domain.GetGRPCDeleteDTOEncodeName()),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{
+							ast.NewIdent("input"),
+						},
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent(h.domain.ProtoPackage),
+								Sel: ast.NewIdent(h.domain.GetDeleteModel().Name),
+							},
+						},
+					},
+				},
+			},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(h.domain.GetDeleteModel().Name),
+						},
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: body,
+		},
+	}
+}
 
 func (h ProtoEncoder) syncEncodeUpdate(filename string) error {
 	fileset := token.NewFileSet()
@@ -500,6 +575,29 @@ func (h ProtoEncoder) syncEncodeUpdate(filename string) error {
 	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCUpdateDTOEncodeName())
 	if method == nil {
 		method = h.encodeUpdate()
+	}
+	if !methodExist {
+		file.Decls = append(file.Decls, method)
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filename, buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h ProtoEncoder) syncEncodeDelete(filename string) error {
+	fileset := token.NewFileSet()
+	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCDeleteDTOEncodeName())
+	if method == nil {
+		method = h.encodeDelete()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -824,7 +922,7 @@ func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
 		},
 	})
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("encode%s", h.domain.GetFilterModel().Name)),
+		Name: ast.NewIdent(h.domain.GetGRPCFilterDTOEncodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -985,6 +1083,9 @@ func (h ProtoEncoder) Sync() error {
 		return err
 	}
 	if err := h.syncEncodeUpdate(filename); err != nil {
+		return err
+	}
+	if err := h.syncEncodeDelete(filename); err != nil {
 		return err
 	}
 	return nil

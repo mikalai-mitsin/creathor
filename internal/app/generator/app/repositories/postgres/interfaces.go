@@ -16,10 +16,10 @@ import (
 )
 
 type InterfacesGenerator struct {
-	domain *configs.EntityConfig
+	domain configs.EntityConfig
 }
 
-func NewInterfacesGenerator(domain *configs.EntityConfig) *InterfacesGenerator {
+func NewInterfacesGenerator(domain configs.EntityConfig) *InterfacesGenerator {
 	return &InterfacesGenerator{domain: domain}
 }
 

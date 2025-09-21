@@ -16,10 +16,10 @@ import (
 const destinationPath = "."
 
 type HandlerGenerator struct {
-	domain *configs.EntityConfig
+	domain configs.EntityConfig
 }
 
-func NewHandlerGenerator(domain *configs.EntityConfig) *HandlerGenerator {
+func NewHandlerGenerator(domain configs.EntityConfig) *HandlerGenerator {
 	return &HandlerGenerator{
 		domain: domain,
 	}
@@ -1471,30 +1471,81 @@ func (h *HandlerGenerator) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								ast.NewIdent("id"),
+								ast.NewIdent("delDTO"),
+								ast.NewIdent("err"),
+							},
+							Tok: token.DEFINE,
+							Rhs: []ast.Expr{
+								&ast.CallExpr{
+									Fun: ast.NewIdent(h.domain.GetHTTPDeleteDTOConstructorName()),
+									Args: []ast.Expr{
+										ast.NewIdent("r"),
+									},
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.BinaryExpr{
+								X:  ast.NewIdent("err"),
+								Op: token.NEQ,
+								Y:  ast.NewIdent("nil"),
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.ExprStmt{
+										X: &ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X:   ast.NewIdent("errs"),
+												Sel: ast.NewIdent("RenderToHTTPResponse"),
+											},
+											Args: []ast.Expr{
+												ast.NewIdent("err"),
+												ast.NewIdent("w"),
+												ast.NewIdent("r"),
+											},
+										},
+									},
+									&ast.ReturnStmt{},
+								},
+							},
+						},
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
+								ast.NewIdent("del"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X:   ast.NewIdent("uuid"),
-										Sel: ast.NewIdent("MustParse"),
+										X:   ast.NewIdent("delDTO"),
+										Sel: ast.NewIdent("toEntity"),
 									},
-									Args: []ast.Expr{
-										&ast.CallExpr{
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.BinaryExpr{
+								X:  ast.NewIdent("err"),
+								Op: token.NEQ,
+								Y:  ast.NewIdent("nil"),
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.ExprStmt{
+										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X:   ast.NewIdent("chi"),
-												Sel: ast.NewIdent("URLParam"),
+												X:   ast.NewIdent("errs"),
+												Sel: ast.NewIdent("RenderToHTTPResponse"),
 											},
 											Args: []ast.Expr{
+												ast.NewIdent("err"),
+												ast.NewIdent("w"),
 												ast.NewIdent("r"),
-												&ast.BasicLit{
-													Kind:  token.STRING,
-													Value: `"id"`,
-												},
 											},
 										},
 									},
+									&ast.ReturnStmt{},
 								},
 							},
 						},
@@ -1527,7 +1578,7 @@ func (h *HandlerGenerator) file() *ast.File {
 											},
 										},
 										&ast.Ident{
-											Name: "id",
+											Name: "del",
 										},
 									},
 								},

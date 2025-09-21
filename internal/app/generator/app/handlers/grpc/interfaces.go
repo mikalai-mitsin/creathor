@@ -14,10 +14,10 @@ import (
 )
 
 type InterfacesGenerator struct {
-	domain *configs.EntityConfig
+	domain configs.EntityConfig
 }
 
-func NewInterfacesGenerator(domain *configs.EntityConfig) *InterfacesGenerator {
+func NewInterfacesGenerator(domain configs.EntityConfig) *InterfacesGenerator {
 	return &InterfacesGenerator{domain: domain}
 }
 
@@ -279,8 +279,8 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 						},
 						{
 							Type: &ast.SelectorExpr{
-								X:   ast.NewIdent("uuid"),
-								Sel: ast.NewIdent("UUID"),
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.domain.GetDeleteModel().Name),
 							},
 						},
 					},

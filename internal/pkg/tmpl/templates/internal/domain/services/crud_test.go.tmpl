@@ -511,6 +511,8 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
             {{ $value.GetName }}: {{ $.GetOneVariableName }}.{{ $value.GetName }},
     {{- end }}
         }
+    del := entities.NewMock{{ .DeleteTypeName }}(t)
+    del.ID = {{ .GetOneVariableName }}.ID
     type fields struct {
         {{ .RepositoryVariableName }} {{ .GetRepositoryInterfaceName }}
         clock            clock
@@ -519,7 +521,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
     type args struct {
         ctx context.Context
         tx dtx.TX
-        id  uuid.UUID
+        del entities.{{ .DeleteTypeName }}
     }
     tests := []struct {
         name    string
@@ -534,7 +536,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
             setup: func() {
                 mockClock.EXPECT().Now().Return(now)
                 mock{{ .RepositoryTypeName }}.EXPECT().
-                    Get(ctx, {{ .GetOneVariableName }}.ID).
+                    Get(ctx, del.ID).
                     Return({{ .GetOneVariableName }}, nil)
                 mock{{ .RepositoryTypeName }}.EXPECT().
                     Update(ctx, mockTx, deleted{{ .EntityName }}).
@@ -547,8 +549,8 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
-                tx: mockTx,
-                id:  {{ .GetOneVariableName }}.ID,
+                tx:  mockTx,
+                del: del,
             },
             want:    deleted{{ .EntityName }},
             wantErr: nil,
@@ -558,7 +560,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
             setup: func() {
                 mockClock.EXPECT().Now().Return(now)
                 mock{{ .RepositoryTypeName }}.EXPECT().
-                    Get(ctx, {{ .GetOneVariableName }}.ID).
+                    Get(ctx, del.ID).
                     Return({{ .GetOneVariableName }}, nil)
                 mock{{ .RepositoryTypeName }}.EXPECT().
                     Update(ctx, mockTx, deleted{{ .EntityName }}).
@@ -571,8 +573,8 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
-                tx: mockTx,
-                id:  {{ .GetOneVariableName }}.ID,
+                tx:  mockTx,
+                del: del,
             },
             want:    entities.{{ .EntityName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("test error 12"),
@@ -581,7 +583,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
             name: "{{ .EntityName }} not found",
             setup: func() {
                 mock{{ .RepositoryTypeName }}.EXPECT().
-                    Get(ctx, {{ .GetOneVariableName }}.ID).
+                    Get(ctx, del.ID).
                     Return(entities.{{ .EntityName }}{}, errs.NewEntityNotFoundError())
             },
             fields: fields{
@@ -591,8 +593,8 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
-                tx: mockTx,
-                id:  {{ .GetOneVariableName }}.ID,
+                tx:  mockTx,
+                del: del,
             },
             want:    entities.{{ .EntityName }}{},
             wantErr: errs.NewEntityNotFoundError(),
@@ -606,7 +608,7 @@ func Test{{ .ServiceTypeName }}_Delete(t *testing.T) {
                 logger:          tt.fields.logger,
                 clock:           tt.fields.clock,
             }
-            got, err := u.Delete(tt.args.ctx, tt.args.tx, tt.args.id)
+            got, err := u.Delete(tt.args.ctx, tt.args.tx, tt.args.del)
             assert.Equal(t, tt.want, got)
             assert.ErrorIs(t, err, tt.wantErr)
         })

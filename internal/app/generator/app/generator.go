@@ -26,52 +26,52 @@ func (g *Generator) Sync() error {
 	domainGenerators := []generator.Generator{NewApp(g.domain)}
 	for _, entity := range g.domain.Entities {
 		domainGenerators = append(domainGenerators,
-			usecases.NewInterfacesGenerator(&entity),
-			usecases.NewUseCaseGenerator(&entity),
+			usecases.NewInterfacesGenerator(entity),
+			usecases.NewUseCaseGenerator(entity),
 			usecases.NewTestGenerator(&entity),
 
-			services.NewInterfacesGenerator(&entity),
-			services.NewServiceGenerator(&entity),
+			services.NewInterfacesGenerator(entity),
+			services.NewServiceGenerator(entity),
 			services.NewTestGenerator(&entity),
 
-			postgres.NewInterfacesGenerator(&entity),
-			postgres.NewRepositoryGenerator(&entity),
+			postgres.NewInterfacesGenerator(entity),
+			postgres.NewRepositoryGenerator(entity),
 			postgres.NewTestGenerator(&entity),
 		)
 		if g.domain.KafkaEnabled {
 			domainGenerators = append(
 				domainGenerators,
-				proto.NewProtoGenerator(&entity),
+				proto.NewProtoGenerator(entity),
 				kafka.NewProducerGenerator(&entity),
-				kafka.NewInterfacesGenerator(&entity),
+				kafka.NewInterfacesGenerator(entity),
 				kafka.NewProducerTestGenerator(&entity),
 				kafka.NewProtoDecoder(entity),
 				services.NewEventService(entity),
-				handlersKafka.NewHandlerGenerator(&entity),
-				handlersKafka.NewInterfacesGenerator(&entity),
+				handlersKafka.NewHandlerGenerator(entity),
+				handlersKafka.NewInterfacesGenerator(entity),
 			)
 		}
 		if g.domain.HTTPEnabled {
 			domainGenerators = append(
 				domainGenerators,
-				http.NewDTOGenerator(&entity),
-				http.NewHandlerGenerator(&entity),
-				http.NewInterfacesGenerator(&entity),
+				http.NewDTOGenerator(entity),
+				http.NewHandlerGenerator(entity),
+				http.NewInterfacesGenerator(entity),
 			)
 		}
 		if g.domain.GRPCEnabled {
 			domainGenerators = append(
 				domainGenerators,
-				proto.NewProtoGenerator(&entity),
-				grpc.NewInterfacesGenerator(&entity),
-				grpc.NewHandlerGenerator(&entity),
+				proto.NewProtoGenerator(entity),
+				grpc.NewInterfacesGenerator(entity),
+				grpc.NewHandlerGenerator(entity),
 				grpc.NewTestGenerator(&entity),
 				grpc.NewProtoEncoder(entity),
 				grpc.NewProtoDecoder(entity),
 			)
 		}
 		for _, baseEntity := range entity.Entities {
-			domainGenerators = append(domainGenerators, entities.NewModel(baseEntity, &entity))
+			domainGenerators = append(domainGenerators, entities.NewModel(baseEntity, entity))
 		}
 	}
 	for _, domainGenerator := range domainGenerators {

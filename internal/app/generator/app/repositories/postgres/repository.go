@@ -20,10 +20,10 @@ import (
 )
 
 type RepositoryGenerator struct {
-	domain *configs.EntityConfig
+	domain configs.EntityConfig
 }
 
-func NewRepositoryGenerator(domain *configs.EntityConfig) *RepositoryGenerator {
+func NewRepositoryGenerator(domain configs.EntityConfig) *RepositoryGenerator {
 	return &RepositoryGenerator{domain: domain}
 }
 

@@ -119,6 +119,10 @@ func (m *EntityConfig) UpdateTypeName() string {
 	return fmt.Sprintf("%sUpdate", strcase.ToCamel(m.Name))
 }
 
+func (m *EntityConfig) DeleteTypeName() string {
+	return fmt.Sprintf("%sDelete", strcase.ToCamel(m.Name))
+}
+
 func (m *EntityConfig) CreateTypeName() string {
 	return fmt.Sprintf("%sCreate", strcase.ToCamel(m.Name))
 }
@@ -302,6 +306,16 @@ func (m *EntityConfig) GetFilterModel() *Entity {
 	}
 	return nil
 }
+func (m *EntityConfig) GetDeleteModel() *Entity {
+	index := slices.IndexFunc(
+		m.Entities,
+		func(model *Entity) bool { return model.Type == EntityTypeDelete },
+	)
+	if index > 0 {
+		return m.Entities[index]
+	}
+	return nil
+}
 
 func (m *EntityConfig) PermissionIDCreate() string {
 	return fmt.Sprintf("PermissionID%sCreate", strcase.ToCamel(m.CamelName()))
@@ -363,6 +377,10 @@ func (m *EntityConfig) GetGRPCUpdateDTOEncodeName() string {
 	return fmt.Sprintf("encode%s", m.GetUpdateModel().Name)
 }
 
+func (m *EntityConfig) GetGRPCDeleteDTOEncodeName() string {
+	return fmt.Sprintf("encode%s", m.GetDeleteModel().Name)
+}
+
 func (m *EntityConfig) GetGRPCFilterDTOEncodeName() string {
 	return fmt.Sprintf("encode%s", m.GetFilterModel().Name)
 }
@@ -399,9 +417,16 @@ func (m *EntityConfig) GetHTTPItemDTOConstructorName() string {
 func (m *EntityConfig) GetHTTPUpdateDTOName() string {
 	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.GetUpdateModel().Name))
 }
+func (m *EntityConfig) GetHTTPDeleteDTOName() string {
+	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.GetDeleteModel().Name))
+}
 
 func (m *EntityConfig) GetHTTPUpdateDTOConstructorName() string {
 	return fmt.Sprintf("New%s", m.GetHTTPUpdateDTOName())
+}
+
+func (m *EntityConfig) GetHTTPDeleteDTOConstructorName() string {
+	return fmt.Sprintf("New%s", m.GetHTTPDeleteDTOName())
 }
 
 func (m *EntityConfig) GetHTTPCreateDTOName() string {
@@ -566,6 +591,7 @@ const (
 	EntityTypeCreate
 	EntityTypeUpdate
 	EntityTypeFilter
+	EntityTypeDelete
 )
 
 type Entity struct {
@@ -675,6 +701,23 @@ func NewFilterEntity(modelConfig EntityConfig) *Entity {
 				Name:   "IsDeleted",
 				Type:   "*bool",
 				Search: false,
+			},
+		},
+		Validation: true,
+		Mock:       true,
+	}
+	return model
+}
+
+func NewDeleteEntity(entityConfig EntityConfig) *Entity {
+	model := &Entity{
+		Type:     EntityTypeDelete,
+		Name:     entityConfig.DeleteTypeName(),
+		Variable: "del",
+		Params: []*Param{
+			{
+				Name: "ID",
+				Type: "uuid.UUID",
 			},
 		},
 		Validation: true,

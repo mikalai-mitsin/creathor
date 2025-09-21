@@ -16,7 +16,7 @@ import (
 type Structure struct {
 	fileName string
 	name     string
-	domain   *configs.EntityConfig
+	domain   configs.EntityConfig
 	params   []*ast.Field
 }
 
@@ -24,7 +24,7 @@ func NewStructure(
 	fileName string,
 	name string,
 	params []*ast.Field,
-	domain *configs.EntityConfig,
+	domain configs.EntityConfig,
 ) *Structure {
 	return &Structure{
 		fileName: fileName,

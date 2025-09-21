@@ -16,10 +16,10 @@ import (
 )
 
 type ServiceGenerator struct {
-	domain *configs.EntityConfig
+	domain configs.EntityConfig
 }
 
-func NewServiceGenerator(domain *configs.EntityConfig) *ServiceGenerator {
+func NewServiceGenerator(domain configs.EntityConfig) *ServiceGenerator {
 	return &ServiceGenerator{domain: domain}
 }
 
@@ -1199,8 +1199,11 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 						},
 					},
 					{
-						Names: []*ast.Ident{ast.NewIdent("id")},
-						Type:  ast.NewIdent("uuid.UUID"),
+						Names: []*ast.Ident{ast.NewIdent(u.domain.GetDeleteModel().Variable)},
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(u.domain.GetDeleteModel().Name),
+						},
 					},
 				},
 			},
@@ -1239,7 +1242,10 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 							},
 							Args: []ast.Expr{
 								ast.NewIdent("ctx"),
-								ast.NewIdent("id"),
+								&ast.SelectorExpr{
+									X:   ast.NewIdent(u.domain.GetDeleteModel().Variable),
+									Sel: ast.NewIdent("ID"),
+								},
 							},
 						},
 					},

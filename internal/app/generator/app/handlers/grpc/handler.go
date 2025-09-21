@@ -15,10 +15,10 @@ import (
 )
 
 type HandlerGenerator struct {
-	domain *configs.EntityConfig
+	domain configs.EntityConfig
 }
 
-func NewHandlerGenerator(domain *configs.EntityConfig) *HandlerGenerator {
+func NewHandlerGenerator(domain configs.EntityConfig) *HandlerGenerator {
 	return &HandlerGenerator{
 		domain: domain,
 	}
@@ -265,7 +265,7 @@ func (h HandlerGenerator) create() *ast.FuncDecl {
 	args := []ast.Expr{
 		ast.NewIdent("ctx"),
 		&ast.CallExpr{
-			Fun: ast.NewIdent(fmt.Sprintf("encode%s", h.domain.GetCreateModel().Name)),
+			Fun: ast.NewIdent(h.domain.GetGRPCCreateDTOEncodeName()),
 			Args: []ast.Expr{
 				ast.NewIdent("input"),
 			},
@@ -368,7 +368,7 @@ func (h HandlerGenerator) create() *ast.FuncDecl {
 					Results: []ast.Expr{
 						&ast.CallExpr{
 							Fun: ast.NewIdent(
-								fmt.Sprintf("decode%s", h.domain.GetMainModel().Name),
+								h.domain.GetGRPCMainDecodeName(),
 							),
 							Args: []ast.Expr{
 								ast.NewIdent("item"),
@@ -522,7 +522,7 @@ func (h HandlerGenerator) get() *ast.FuncDecl {
 					Results: []ast.Expr{
 						&ast.CallExpr{
 							Fun: ast.NewIdent(
-								fmt.Sprintf("decode%s", h.domain.GetMainModel().Name),
+								h.domain.GetGRPCMainDecodeName(),
 							),
 							Args: []ast.Expr{
 								ast.NewIdent("item"),
@@ -564,7 +564,7 @@ func (h HandlerGenerator) list() *ast.FuncDecl {
 	args := []ast.Expr{
 		ast.NewIdent("ctx"),
 		&ast.CallExpr{
-			Fun: ast.NewIdent(fmt.Sprintf("encode%s", h.domain.GetFilterModel().Name)),
+			Fun: ast.NewIdent(h.domain.GetGRPCFilterDTOEncodeName()),
 			Args: []ast.Expr{
 				ast.NewIdent("filter"),
 			},
@@ -711,7 +711,7 @@ func (h HandlerGenerator) update() *ast.FuncDecl {
 	args := []ast.Expr{
 		ast.NewIdent("ctx"),
 		&ast.CallExpr{
-			Fun: ast.NewIdent(fmt.Sprintf("encode%s", h.domain.GetUpdateModel().Name)),
+			Fun: ast.NewIdent(h.domain.GetGRPCUpdateDTOEncodeName()),
 			Args: []ast.Expr{
 				ast.NewIdent("input"),
 			},
@@ -814,7 +814,7 @@ func (h HandlerGenerator) update() *ast.FuncDecl {
 					Results: []ast.Expr{
 						&ast.CallExpr{
 							Fun: ast.NewIdent(
-								fmt.Sprintf("decode%s", h.domain.GetMainModel().Name),
+								h.domain.GetGRPCMainDecodeName(),
 							),
 							Args: []ast.Expr{
 								ast.NewIdent("item"),
@@ -856,17 +856,9 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 	args := []ast.Expr{
 		ast.NewIdent("ctx"),
 		&ast.CallExpr{
-			Fun: &ast.SelectorExpr{
-				X:   ast.NewIdent("uuid"),
-				Sel: ast.NewIdent("MustParse"),
-			},
+			Fun: ast.NewIdent(h.domain.GetGRPCDeleteDTOEncodeName()),
 			Args: []ast.Expr{
-				&ast.CallExpr{
-					Fun: &ast.SelectorExpr{
-						X:   ast.NewIdent("input"),
-						Sel: ast.NewIdent("GetId"),
-					},
-				},
+				ast.NewIdent("input"),
 			},
 		},
 	}
@@ -969,7 +961,7 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 					Results: []ast.Expr{
 						&ast.CallExpr{
 							Fun: ast.NewIdent(
-								fmt.Sprintf("decode%s", h.domain.GetMainModel().Name),
+								h.domain.GetGRPCMainDecodeName(),
 							),
 							Args: []ast.Expr{
 								ast.NewIdent(h.domain.GetOneVariableName()),

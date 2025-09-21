@@ -14,10 +14,10 @@ import (
 )
 
 type HandlerGenerator struct {
-	domain *configs.EntityConfig
+	domain configs.EntityConfig
 }
 
-func NewHandlerGenerator(domain *configs.EntityConfig) *HandlerGenerator {
+func NewHandlerGenerator(domain configs.EntityConfig) *HandlerGenerator {
 	return &HandlerGenerator{
 		domain: domain,
 	}

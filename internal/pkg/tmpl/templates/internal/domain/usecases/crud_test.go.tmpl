@@ -378,6 +378,8 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
     mockTx := dtx.NewMockTX(ctrl)
     ctx := context.Background()
     {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
+    del := entities.NewMock{{ .DeleteTypeName }}(t)
+    del.ID = {{ .GetOneVariableName }}.ID
     type fields struct {
         {{ .ServiceVariableName }} {{ .GetServiceInterfaceName }}
 {{- if .KafkaEnabled }}
@@ -388,7 +390,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
     }
     type args struct {
         ctx context.Context
-        id  uuid.UUID
+        del entities.{{ .DeleteTypeName }}
     }
     tests := []struct {
         name    string
@@ -403,7 +405,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
             setup: func() {
                 mockDtxManager.EXPECT().NewTx().Return(mockTx)
                 mock{{ .ServiceTypeName }}.EXPECT().
-                    Delete(ctx, mockTx, {{ .GetOneVariableName }}.ID).
+                    Delete(ctx, mockTx, del).
                     Return({{ .GetOneVariableName }}, nil)
 {{- if .KafkaEnabled }}
                 mock{{ .EventServiceName }}.EXPECT().Send(ctx, mockTx, {{ .GetOneVariableName }}).Return(nil)
@@ -420,7 +422,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
-                id:  {{ .GetOneVariableName }}.ID,
+                del: del,
             },
             want: {{ .GetOneVariableName }},
             wantErr: nil,
@@ -430,7 +432,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
             setup: func() {
                 mockDtxManager.EXPECT().NewTx().Return(mockTx)
                 mock{{ .ServiceTypeName }}.EXPECT().
-                    Delete(ctx, mockTx, {{ .GetOneVariableName }}.ID).
+                    Delete(ctx, mockTx, del).
                     Return(entities.{{ .EntityName }}{}, errs.NewUnexpectedBehaviorError("d 2"))
                 mockTx.EXPECT().Rollback().Return(nil)
             },
@@ -444,7 +446,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
             },
             args: args{
                 ctx: ctx,
-                id:  {{ .GetOneVariableName }}.ID,
+                del: del,
             },
             want: entities.{{ .EntityName }}{},
             wantErr: errs.NewUnexpectedBehaviorError("d 2"),
@@ -461,7 +463,7 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
                 dtxManager: tt.fields.dtxManager,
                 logger: tt.fields.logger,
             }
-            got, err := i.Delete(tt.args.ctx, tt.args.id)
+            got, err := i.Delete(tt.args.ctx, tt.args.del)
             assert.ErrorIs(t, err, tt.wantErr)
             assert.Equal(t, tt.want, got)
         })

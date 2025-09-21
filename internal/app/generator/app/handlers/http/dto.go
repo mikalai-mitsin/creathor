@@ -15,10 +15,10 @@ import (
 )
 
 type DTOGenerator struct {
-	domain *configs.EntityConfig
+	domain configs.EntityConfig
 }
 
-func NewDTOGenerator(domain *configs.EntityConfig) *DTOGenerator {
+func NewDTOGenerator(domain configs.EntityConfig) *DTOGenerator {
 	return &DTOGenerator{domain: domain}
 }
 
@@ -81,7 +81,6 @@ func (g *DTOGenerator) Sync() error {
 	if err := g.syncUpdateDTOToEntity(); err != nil {
 		return err
 	}
-
 	if err := g.syncCreateDTOStruct(); err != nil {
 		return err
 	}
@@ -89,6 +88,16 @@ func (g *DTOGenerator) Sync() error {
 		return err
 	}
 	if err := g.syncCreateDTOToEntity(); err != nil {
+		return err
+	}
+
+	if err := g.syncDeleteDTOStruct(); err != nil {
+		return err
+	}
+	if err := g.syncDeleteDTOConstructor(); err != nil {
+		return err
+	}
+	if err := g.syncDeleteDTOToEntity(); err != nil {
 		return err
 	}
 	return nil
@@ -2115,6 +2124,363 @@ func (g *DTOGenerator) syncUpdateDTOToEntity() error {
 	})
 	if method == nil {
 		method = g.updateDTOToEntity()
+	}
+	// TODO: add range sync
+	if !methodExists {
+		file.Decls = append(file.Decls, method)
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(g.filename(), buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Update DTO
+func (g *DTOGenerator) deleteDTOStruct() *ast.TypeSpec {
+	structure := &ast.TypeSpec{
+		Name: ast.NewIdent(g.domain.GetHTTPDeleteDTOName()),
+		Type: &ast.StructType{
+			Fields: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{
+							ast.NewIdent("ID"),
+						},
+						Type: ast.NewIdent("uuid.UUID"),
+						Tag: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: "`json:\"id\"`",
+						},
+					},
+				},
+			},
+		},
+	}
+	return structure
+}
+
+func (g *DTOGenerator) syncDeleteDTOStruct() error {
+	fileset := token.NewFileSet()
+	filename := g.filename()
+	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
+		return err
+	}
+	file, err := parser.ParseFile(fileset, g.filename(), nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	var structureExists bool
+	var structure *ast.TypeSpec
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == g.domain.GetHTTPDeleteDTOName() {
+			structure = t
+			structureExists = true
+			return false
+		}
+		return true
+	})
+	if structure == nil {
+		structure = g.deleteDTOStruct()
+	}
+	for _, param := range g.domain.GetDeleteModel().Params {
+		ast.Inspect(structure, func(node ast.Node) bool {
+			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
+				for _, field := range st.Fields.List {
+					for _, fieldName := range field.Names {
+						if fieldName.Name == param.GetName() {
+							return false
+						}
+					}
+				}
+				st.Fields.List = append(st.Fields.List, &ast.Field{
+					Doc:   nil,
+					Names: []*ast.Ident{ast.NewIdent(param.GetName())},
+					Type:  ast.NewIdent(param.JsonType()),
+					Tag: &ast.BasicLit{
+						Kind:  token.STRING,
+						Value: fmt.Sprintf("`json:\"%s\"`", param.Tag()),
+					},
+					Comment: nil,
+				})
+				return false
+			}
+			return true
+		})
+	}
+	if !structureExists {
+		gd := &ast.GenDecl{
+			Tok:   token.TYPE,
+			Specs: []ast.Spec{structure},
+		}
+		file.Decls = append(file.Decls, gd)
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(g.filename(), buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *DTOGenerator) deleteDTOConstructor() *ast.FuncDecl {
+	stmts := []ast.Stmt{
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				ast.NewIdent(g.domain.GetDeleteModel().Variable),
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CompositeLit{
+					Type: ast.NewIdent(g.domain.GetHTTPDeleteDTOName()),
+				},
+			},
+		},
+		&ast.IfStmt{
+			Init: &ast.AssignStmt{
+				Lhs: []ast.Expr{
+					ast.NewIdent("err"),
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X:   ast.NewIdent("render"),
+							Sel: ast.NewIdent("DecodeJSON"),
+						},
+						Args: []ast.Expr{
+							&ast.SelectorExpr{
+								X:   ast.NewIdent("r"),
+								Sel: ast.NewIdent("Body"),
+							},
+							&ast.UnaryExpr{
+								Op: token.AND,
+								X:  ast.NewIdent(g.domain.GetDeleteModel().Variable),
+							},
+						},
+					},
+				},
+			},
+			Cond: &ast.BinaryExpr{
+				X:  ast.NewIdent("err"),
+				Op: token.NEQ,
+				Y:  ast.NewIdent("nil"),
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							&ast.CompositeLit{
+								Type: ast.NewIdent(g.domain.GetHTTPDeleteDTOName()),
+							},
+							ast.NewIdent("err"),
+						},
+					},
+				},
+			},
+		},
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				&ast.SelectorExpr{
+					X:   ast.NewIdent(g.domain.GetDeleteModel().Variable),
+					Sel: ast.NewIdent("ID"),
+				},
+			},
+			Tok: token.ASSIGN,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X:   ast.NewIdent("uuid"),
+						Sel: ast.NewIdent("MustParse"),
+					},
+					Args: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X:   ast.NewIdent("chi"),
+								Sel: ast.NewIdent("URLParam"),
+							},
+							Args: []ast.Expr{
+								ast.NewIdent("r"),
+								&ast.BasicLit{
+									Kind:  token.STRING,
+									Value: "\"id\"",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	stmts = append(stmts, &ast.ReturnStmt{
+		Results: []ast.Expr{
+			ast.NewIdent(g.domain.GetDeleteModel().Variable),
+			ast.NewIdent("nil"),
+		},
+	})
+	return &ast.FuncDecl{
+		Name: ast.NewIdent(g.domain.GetHTTPDeleteDTOConstructorName()),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{
+							ast.NewIdent("r"),
+						},
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("http"),
+								Sel: ast.NewIdent("Request"),
+							},
+						},
+					},
+				},
+			},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: ast.NewIdent(g.domain.GetHTTPDeleteDTOName()),
+					},
+					{
+						Type: ast.NewIdent("error"),
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: stmts,
+		},
+	}
+}
+
+func (g *DTOGenerator) syncDeleteDTOConstructor() error {
+	fileset := token.NewFileSet()
+	file, err := parser.ParseFile(fileset, g.filename(), nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	var methodExist bool
+	var method *ast.FuncDecl
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.FuncDecl); ok &&
+			t.Name.String() == g.domain.GetHTTPDeleteDTOConstructorName() {
+			methodExist = true
+			method = t
+			return false
+		}
+		return true
+	})
+	if method == nil {
+		method = g.deleteDTOConstructor()
+	}
+	if !methodExist {
+		file.Decls = append(file.Decls, method)
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(g.filename(), buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *DTOGenerator) deleteDTOToEntity() *ast.FuncDecl {
+	var exprs []ast.Expr
+	for _, param := range g.domain.GetDeleteModel().Params {
+		exprs = append(exprs, &ast.KeyValueExpr{
+			Key: ast.NewIdent(param.GetName()),
+			Value: &ast.SelectorExpr{
+				X:   ast.NewIdent("dto"),
+				Sel: ast.NewIdent(param.GetName()),
+			},
+		})
+	}
+	model := &ast.CompositeLit{
+		Type: &ast.SelectorExpr{
+			X:   ast.NewIdent("entities"),
+			Sel: ast.NewIdent(g.domain.GetDeleteModel().Name),
+		},
+		Elts: exprs,
+	}
+	method := &ast.FuncDecl{
+		Recv: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent("dto"),
+					},
+					Type: ast.NewIdent(g.domain.GetHTTPDeleteDTOName()),
+				},
+			},
+		},
+		Name: ast.NewIdent("toEntity"),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(g.domain.GetDeleteModel().Name),
+						},
+					},
+					{
+						Type: ast.NewIdent("error"),
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent(g.domain.GetDeleteModel().Variable),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						model,
+					},
+				},
+				&ast.ReturnStmt{
+					Results: []ast.Expr{
+						ast.NewIdent(g.domain.GetDeleteModel().Variable),
+						ast.NewIdent("nil"),
+					},
+				},
+			},
+		},
+	}
+	return method
+}
+
+func (g *DTOGenerator) syncDeleteDTOToEntity() error {
+	fileset := token.NewFileSet()
+	file, err := parser.ParseFile(fileset, g.filename(), nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	var methodExists bool
+	var method *ast.FuncDecl
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "toEntity" {
+			if t.Recv.List[0].Type.(*ast.Ident).String() == g.domain.GetHTTPDeleteDTOName() {
+				methodExists = true
+				method = t
+				return false
+			}
+			return true
+		}
+		return true
+	})
+	if method == nil {
+		method = g.deleteDTOToEntity()
 	}
 	// TODO: add range sync
 	if !methodExists {

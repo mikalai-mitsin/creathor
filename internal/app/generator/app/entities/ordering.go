@@ -16,10 +16,10 @@ import (
 )
 
 type Ordering struct {
-	entityConfig *configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewOrdering(entityConfig *configs.EntityConfig) *Ordering {
+func NewOrdering(entityConfig configs.EntityConfig) *Ordering {
 	return &Ordering{entityConfig: entityConfig}
 }
 

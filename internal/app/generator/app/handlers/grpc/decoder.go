@@ -349,10 +349,7 @@ func (h ProtoDecoder) decodeList() *ast.FuncDecl {
 											},
 											&ast.CallExpr{
 												Fun: &ast.Ident{
-													Name: fmt.Sprintf(
-														"decode%s",
-														h.domain.GetMainModel().Name,
-													),
+													Name: h.domain.GetGRPCMainDecodeName(),
 												},
 												Args: []ast.Expr{
 													ast.NewIdent(h.domain.GetOneVariableName()),

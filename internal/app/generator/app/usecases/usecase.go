@@ -16,64 +16,64 @@ import (
 )
 
 type UseCaseGenerator struct {
-	domain *configs.EntityConfig
+	domain configs.EntityConfig
 }
 
-func NewUseCaseGenerator(domain *configs.EntityConfig) *UseCaseGenerator {
+func NewUseCaseGenerator(domain configs.EntityConfig) *UseCaseGenerator {
 	return &UseCaseGenerator{domain: domain}
 }
 
-func (i UseCaseGenerator) Sync() error {
-	err := os.MkdirAll(path.Dir(i.filename()), 0777)
+func (u UseCaseGenerator) Sync() error {
+	err := os.MkdirAll(path.Dir(u.filename()), 0777)
 	if err != nil {
 		return err
 	}
-	if err := i.syncStruct(); err != nil {
+	if err := u.syncStruct(); err != nil {
 		return err
 	}
-	if err := i.syncConstructor(); err != nil {
+	if err := u.syncConstructor(); err != nil {
 		return err
 	}
-	if err := i.syncCreateMethod(); err != nil {
+	if err := u.syncCreateMethod(); err != nil {
 		return err
 	}
-	if err := i.syncGetMethod(); err != nil {
+	if err := u.syncGetMethod(); err != nil {
 		return err
 	}
-	if err := i.syncListMethod(); err != nil {
+	if err := u.syncListMethod(); err != nil {
 		return err
 	}
-	if err := i.syncUpdateMethod(); err != nil {
+	if err := u.syncUpdateMethod(); err != nil {
 		return err
 	}
-	if err := i.syncDeleteMethod(); err != nil {
+	if err := u.syncDeleteMethod(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i UseCaseGenerator) filename() string {
+func (u UseCaseGenerator) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
-		i.domain.AppConfig.AppName(),
+		u.domain.AppConfig.AppName(),
 		"usecases",
-		i.domain.DirName(),
-		i.domain.FileName(),
+		u.domain.DirName(),
+		u.domain.FileName(),
 	)
 }
 
-func (i UseCaseGenerator) structure() *ast.TypeSpec {
+func (u UseCaseGenerator) structure() *ast.TypeSpec {
 	fields := []*ast.Field{
 		{
-			Names: []*ast.Ident{ast.NewIdent(i.domain.GetServicePrivateVariableName())},
-			Type:  ast.NewIdent(i.domain.GetServiceInterfaceName()),
+			Names: []*ast.Ident{ast.NewIdent(u.domain.GetServicePrivateVariableName())},
+			Type:  ast.NewIdent(u.domain.GetServiceInterfaceName()),
 		},
 	}
-	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
+	if u.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		fields = append(fields, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent(i.domain.EventServicePrivateVariableName())},
-			Type:  ast.NewIdent(i.domain.EventServiceInterfaceName()),
+			Names: []*ast.Ident{ast.NewIdent(u.domain.EventServicePrivateVariableName())},
+			Type:  ast.NewIdent(u.domain.EventServiceInterfaceName()),
 		})
 	}
 	fields = append(fields, &ast.Field{
@@ -84,7 +84,7 @@ func (i UseCaseGenerator) structure() *ast.TypeSpec {
 		Type:  ast.NewIdent("logger"),
 	})
 	structure := &ast.TypeSpec{
-		Name: ast.NewIdent(i.domain.GetUseCaseTypeName()),
+		Name: ast.NewIdent(u.domain.GetUseCaseTypeName()),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: fields,
@@ -94,15 +94,15 @@ func (i UseCaseGenerator) structure() *ast.TypeSpec {
 	return structure
 }
 
-func (i UseCaseGenerator) syncStruct() error {
+func (u UseCaseGenerator) syncStruct() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
-		file = i.file()
+		file = u.file()
 	}
-	structure, structureExists := astfile.FindType(file, i.domain.GetUseCaseTypeName())
+	structure, structureExists := astfile.FindType(file, u.domain.GetUseCaseTypeName())
 	if structure == nil {
-		structure = i.structure()
+		structure = u.structure()
 	}
 	if !structureExists {
 		gd := &ast.GenDecl{
@@ -115,23 +115,23 @@ func (i UseCaseGenerator) syncStruct() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(i.filename(), buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i UseCaseGenerator) constructor() *ast.FuncDecl {
+func (u UseCaseGenerator) constructor() *ast.FuncDecl {
 	fields := []*ast.Field{
 		{
-			Names: []*ast.Ident{ast.NewIdent(i.domain.GetServicePrivateVariableName())},
-			Type:  ast.NewIdent(i.domain.GetServiceInterfaceName()),
+			Names: []*ast.Ident{ast.NewIdent(u.domain.GetServicePrivateVariableName())},
+			Type:  ast.NewIdent(u.domain.GetServiceInterfaceName()),
 		},
 	}
-	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
+	if u.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		fields = append(fields, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent(i.domain.EventServicePrivateVariableName())},
-			Type:  ast.NewIdent(i.domain.EventServiceInterfaceName()),
+			Names: []*ast.Ident{ast.NewIdent(u.domain.EventServicePrivateVariableName())},
+			Type:  ast.NewIdent(u.domain.EventServiceInterfaceName()),
 		})
 	}
 	fields = append(fields, &ast.Field{
@@ -143,14 +143,14 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 	})
 	exprs := []ast.Expr{
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(i.domain.GetServicePrivateVariableName()),
-			Value: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
+			Key:   ast.NewIdent(u.domain.GetServicePrivateVariableName()),
+			Value: ast.NewIdent(u.domain.GetServicePrivateVariableName()),
 		},
 	}
-	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
+	if u.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		exprs = append(exprs, &ast.KeyValueExpr{
-			Key:   ast.NewIdent(i.domain.EventServicePrivateVariableName()),
-			Value: ast.NewIdent(i.domain.EventServicePrivateVariableName()),
+			Key:   ast.NewIdent(u.domain.EventServicePrivateVariableName()),
+			Value: ast.NewIdent(u.domain.EventServicePrivateVariableName()),
 		})
 	}
 	exprs = append(exprs, &ast.KeyValueExpr{
@@ -161,7 +161,7 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 		Value: ast.NewIdent("logger"),
 	})
 	constructor := &ast.FuncDecl{
-		Name: ast.NewIdent(i.domain.GetUseCaseConstructorName()),
+		Name: ast.NewIdent(u.domain.GetUseCaseConstructorName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: fields,
@@ -170,7 +170,7 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Type: ast.NewIdent(
-							fmt.Sprintf("*%s", i.domain.GetUseCaseTypeName()),
+							fmt.Sprintf("*%s", u.domain.GetUseCaseTypeName()),
 						),
 					},
 				},
@@ -183,7 +183,7 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 						&ast.UnaryExpr{
 							Op: token.AND,
 							X: &ast.CompositeLit{
-								Type: ast.NewIdent(i.domain.GetUseCaseTypeName()),
+								Type: ast.NewIdent(u.domain.GetUseCaseTypeName()),
 								Elts: exprs,
 							},
 						},
@@ -195,15 +195,15 @@ func (i UseCaseGenerator) constructor() *ast.FuncDecl {
 	return constructor
 }
 
-func (i UseCaseGenerator) syncConstructor() error {
+func (u UseCaseGenerator) syncConstructor() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
-	constructor, constructorExists := astfile.FindFunc(file, i.domain.GetUseCaseConstructorName())
+	constructor, constructorExists := astfile.FindFunc(file, u.domain.GetUseCaseConstructorName())
 	if constructor == nil {
-		constructor = i.constructor()
+		constructor = u.constructor()
 	}
 	if !constructorExists {
 		file.Decls = append(file.Decls, constructor)
@@ -212,13 +212,13 @@ func (i UseCaseGenerator) syncConstructor() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(i.filename(), buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
+func (u UseCaseGenerator) createMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		&ast.AssignStmt{
@@ -382,7 +382,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 		},
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(i.domain.GetOneVariableName()),
+				ast.NewIdent(u.domain.GetOneVariableName()),
 				ast.NewIdent("err"),
 			},
 			Tok: token.DEFINE,
@@ -391,7 +391,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("u"),
-							Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
+							Sel: ast.NewIdent(u.domain.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("Create"),
 					},
@@ -418,7 +418,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 							&ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 								},
 							},
 							ast.NewIdent("err"),
@@ -429,7 +429,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 			Else: nil,
 		},
 	)
-	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
+	if u.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		body = append(body, &ast.IfStmt{
 			Init: &ast.AssignStmt{
 				Lhs: []ast.Expr{
@@ -446,7 +446,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 									Name: "u",
 								},
 								Sel: &ast.Ident{
-									Name: i.domain.EventServicePrivateVariableName(),
+									Name: u.domain.EventServicePrivateVariableName(),
 								},
 							},
 							Sel: &ast.Ident{
@@ -459,7 +459,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 							},
 							ast.NewIdent("tx"),
 							&ast.Ident{
-								Name: i.domain.GetOneVariableName(),
+								Name: u.domain.GetOneVariableName(),
 							},
 						},
 					},
@@ -484,7 +484,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 										Name: "entities",
 									},
 									Sel: &ast.Ident{
-										Name: i.domain.GetMainModel().Name,
+										Name: u.domain.GetMainModel().Name,
 									},
 								},
 							},
@@ -539,7 +539,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 										Name: "entities",
 									},
 									Sel: &ast.Ident{
-										Name: i.domain.GetMainModel().Name,
+										Name: u.domain.GetMainModel().Name,
 									},
 								},
 							},
@@ -554,7 +554,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(i.domain.GetOneVariableName()),
+				ast.NewIdent(u.domain.GetOneVariableName()),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -567,7 +567,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.domain.GetUseCaseTypeName()),
+						X: ast.NewIdent(u.domain.GetUseCaseTypeName()),
 					},
 				},
 			},
@@ -587,7 +587,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 						Names: []*ast.Ident{ast.NewIdent("create")},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(i.domain.GetCreateModel().Name),
+							Sel: ast.NewIdent(u.domain.GetCreateModel().Name),
 						},
 					},
 				},
@@ -597,7 +597,7 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 						},
 					},
 					{
@@ -612,15 +612,15 @@ func (i UseCaseGenerator) createMethod() *ast.FuncDecl {
 	}
 }
 
-func (i UseCaseGenerator) syncCreateMethod() error {
+func (u UseCaseGenerator) syncCreateMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 	method, methodExist := astfile.FindFunc(file, "Create")
 	if method == nil {
-		method = i.createMethod()
+		method = u.createMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -630,19 +630,19 @@ func (i UseCaseGenerator) syncCreateMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(i.filename(), buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i UseCaseGenerator) astListMethod() *ast.FuncDecl {
+func (u UseCaseGenerator) astListMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		// Try to update model at use case
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(i.domain.GetManyVariableName()),
+				ast.NewIdent(u.domain.GetManyVariableName()),
 				ast.NewIdent("count"),
 				ast.NewIdent("err"),
 			},
@@ -652,7 +652,7 @@ func (i UseCaseGenerator) astListMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("u"),
-							Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
+							Sel: ast.NewIdent(u.domain.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("List"),
 					},
@@ -687,7 +687,7 @@ func (i UseCaseGenerator) astListMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(i.domain.GetManyVariableName()),
+				ast.NewIdent(u.domain.GetManyVariableName()),
 				ast.NewIdent("count"),
 				ast.NewIdent("nil"),
 			},
@@ -701,7 +701,7 @@ func (i UseCaseGenerator) astListMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.domain.GetUseCaseTypeName()),
+						X: ast.NewIdent(u.domain.GetUseCaseTypeName()),
 					},
 				},
 			},
@@ -721,7 +721,7 @@ func (i UseCaseGenerator) astListMethod() *ast.FuncDecl {
 						Names: []*ast.Ident{ast.NewIdent("filter")},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(i.domain.GetFilterModel().Name),
+							Sel: ast.NewIdent(u.domain.GetFilterModel().Name),
 						},
 					},
 				},
@@ -732,7 +732,7 @@ func (i UseCaseGenerator) astListMethod() *ast.FuncDecl {
 						Type: &ast.ArrayType{
 							Elt: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 							},
 						},
 					},
@@ -751,15 +751,15 @@ func (i UseCaseGenerator) astListMethod() *ast.FuncDecl {
 	}
 }
 
-func (i UseCaseGenerator) syncListMethod() error {
+func (u UseCaseGenerator) syncListMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 	method, methodExist := astfile.FindFunc(file, "List")
 	if method == nil {
-		method = i.astListMethod()
+		method = u.astListMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -768,20 +768,20 @@ func (i UseCaseGenerator) syncListMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(i.filename(), buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i UseCaseGenerator) astGetMethod() *ast.FuncDecl {
+func (u UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(
 		body,
 		// Try to get model from use case
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(i.domain.GetOneVariableName()),
+				ast.NewIdent(u.domain.GetOneVariableName()),
 				ast.NewIdent("err"),
 			},
 			Tok: token.DEFINE,
@@ -790,7 +790,7 @@ func (i UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("u"),
-							Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
+							Sel: ast.NewIdent(u.domain.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("Get"),
 					},
@@ -816,7 +816,7 @@ func (i UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 							&ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 								},
 							},
 							ast.NewIdent("err"),
@@ -832,7 +832,7 @@ func (i UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(i.domain.GetOneVariableName()),
+				ast.NewIdent(u.domain.GetOneVariableName()),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -845,7 +845,7 @@ func (i UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.domain.GetUseCaseTypeName()),
+						X: ast.NewIdent(u.domain.GetUseCaseTypeName()),
 					},
 				},
 			},
@@ -875,7 +875,7 @@ func (i UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 						},
 					},
 					{
@@ -890,15 +890,15 @@ func (i UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 	}
 }
 
-func (i UseCaseGenerator) syncGetMethod() error {
+func (u UseCaseGenerator) syncGetMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 	method, methodExist := astfile.FindFunc(file, "Get")
 	if method == nil {
-		method = i.astGetMethod()
+		method = u.astGetMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -907,13 +907,13 @@ func (i UseCaseGenerator) syncGetMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(i.filename(), buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
+func (u UseCaseGenerator) updateMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		// Setup logger
@@ -1081,7 +1081,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 		// Try to update model at use case
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(i.domain.GetOneVariableName()),
+				ast.NewIdent(u.domain.GetOneVariableName()),
 				ast.NewIdent("err"),
 			},
 			Tok: token.DEFINE,
@@ -1090,7 +1090,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("u"),
-							Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
+							Sel: ast.NewIdent(u.domain.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("Update"),
 					},
@@ -1117,7 +1117,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 							&ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 								},
 							},
 							ast.NewIdent("err"),
@@ -1128,7 +1128,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 			Else: nil,
 		},
 	)
-	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
+	if u.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		body = append(body, &ast.IfStmt{
 			Init: &ast.AssignStmt{
 				Lhs: []ast.Expr{
@@ -1145,7 +1145,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 									Name: "u",
 								},
 								Sel: &ast.Ident{
-									Name: i.domain.EventServicePrivateVariableName(),
+									Name: u.domain.EventServicePrivateVariableName(),
 								},
 							},
 							Sel: &ast.Ident{
@@ -1158,7 +1158,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 							},
 							ast.NewIdent("tx"),
 							&ast.Ident{
-								Name: i.domain.GetOneVariableName(),
+								Name: u.domain.GetOneVariableName(),
 							},
 						},
 					},
@@ -1183,7 +1183,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 										Name: "entities",
 									},
 									Sel: &ast.Ident{
-										Name: i.domain.GetMainModel().Name,
+										Name: u.domain.GetMainModel().Name,
 									},
 								},
 							},
@@ -1238,7 +1238,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 										Name: "entities",
 									},
 									Sel: &ast.Ident{
-										Name: i.domain.GetMainModel().Name,
+										Name: u.domain.GetMainModel().Name,
 									},
 								},
 							},
@@ -1253,7 +1253,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(i.domain.GetOneVariableName()),
+				ast.NewIdent(u.domain.GetOneVariableName()),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -1266,7 +1266,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.domain.GetUseCaseTypeName()),
+						X: ast.NewIdent(u.domain.GetUseCaseTypeName()),
 					},
 				},
 			},
@@ -1286,7 +1286,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 						Names: []*ast.Ident{ast.NewIdent("update")},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(i.domain.GetUpdateModel().Name),
+							Sel: ast.NewIdent(u.domain.GetUpdateModel().Name),
 						},
 					},
 				},
@@ -1296,7 +1296,7 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 						},
 					},
 					{
@@ -1311,15 +1311,15 @@ func (i UseCaseGenerator) updateMethod() *ast.FuncDecl {
 	}
 }
 
-func (i UseCaseGenerator) syncUpdateMethod() error {
+func (u UseCaseGenerator) syncUpdateMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 	method, methodExist := astfile.FindFunc(file, "Update")
 	if method == nil {
-		method = i.updateMethod()
+		method = u.updateMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -1328,13 +1328,13 @@ func (i UseCaseGenerator) syncUpdateMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(i.filename(), buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
+func (u UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 	var body []ast.Stmt
 	body = append(body,
 		// Setup logger
@@ -1502,7 +1502,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 		// Try to delete model at use case
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(i.domain.GetOneVariableName()),
+				ast.NewIdent(u.domain.GetOneVariableName()),
 				ast.NewIdent("err"),
 			},
 			Tok: token.DEFINE,
@@ -1511,14 +1511,14 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("u"),
-							Sel: ast.NewIdent(i.domain.GetServicePrivateVariableName()),
+							Sel: ast.NewIdent(u.domain.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("Delete"),
 					},
 					Args: []ast.Expr{
 						ast.NewIdent("ctx"),
 						ast.NewIdent("tx"),
-						ast.NewIdent("id"),
+						ast.NewIdent(u.domain.GetDeleteModel().Variable),
 					},
 				},
 			},
@@ -1536,7 +1536,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 							&ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 								},
 							},
 							ast.NewIdent("err"),
@@ -1546,7 +1546,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 			},
 		},
 	)
-	if i.domain.AppConfig.ProjectConfig.KafkaEnabled {
+	if u.domain.AppConfig.ProjectConfig.KafkaEnabled {
 		body = append(body, &ast.IfStmt{
 			Init: &ast.AssignStmt{
 				Lhs: []ast.Expr{
@@ -1563,7 +1563,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 									Name: "u",
 								},
 								Sel: &ast.Ident{
-									Name: i.domain.EventServicePrivateVariableName(),
+									Name: u.domain.EventServicePrivateVariableName(),
 								},
 							},
 							Sel: &ast.Ident{
@@ -1576,7 +1576,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 							},
 							ast.NewIdent("tx"),
 							&ast.Ident{
-								Name: i.domain.GetOneVariableName(),
+								Name: u.domain.GetOneVariableName(),
 							},
 						},
 					},
@@ -1598,7 +1598,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 							&ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 								},
 							},
 							&ast.Ident{
@@ -1649,7 +1649,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 							&ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 								},
 							},
 							&ast.Ident{
@@ -1663,7 +1663,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(i.domain.GetOneVariableName()),
+				ast.NewIdent(u.domain.GetOneVariableName()),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -1676,7 +1676,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(i.domain.GetUseCaseTypeName()),
+						X: ast.NewIdent(u.domain.GetUseCaseTypeName()),
 					},
 				},
 			},
@@ -1693,10 +1693,10 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 						},
 					},
 					{
-						Names: []*ast.Ident{ast.NewIdent("id")},
+						Names: []*ast.Ident{ast.NewIdent(u.domain.GetDeleteModel().Variable)},
 						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("uuid"),
-							Sel: ast.NewIdent("UUID"),
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(u.domain.GetDeleteModel().Name),
 						},
 					},
 				},
@@ -1706,7 +1706,7 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
 						},
 					},
 					{
@@ -1721,15 +1721,15 @@ func (i UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 	}
 }
 
-func (i UseCaseGenerator) syncDeleteMethod() error {
+func (u UseCaseGenerator) syncDeleteMethod() error {
 	fileset := token.NewFileSet()
-	file, err := parser.ParseFile(fileset, i.filename(), nil, parser.ParseComments)
+	file, err := parser.ParseFile(fileset, u.filename(), nil, parser.ParseComments)
 	if err != nil {
 		return err
 	}
 	method, methodExist := astfile.FindFunc(file, "Delete")
 	if method == nil {
-		method = i.deleteMethod()
+		method = u.deleteMethod()
 	}
 	if !methodExist {
 		file.Decls = append(file.Decls, method)
@@ -1738,13 +1738,13 @@ func (i UseCaseGenerator) syncDeleteMethod() error {
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
 	}
-	if err := os.WriteFile(i.filename(), buff.Bytes(), 0777); err != nil {
+	if err := os.WriteFile(u.filename(), buff.Bytes(), 0777); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (i UseCaseGenerator) file() *ast.File {
+func (u UseCaseGenerator) file() *ast.File {
 	specs := []ast.Spec{
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
@@ -1756,13 +1756,13 @@ func (i UseCaseGenerator) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: i.domain.EntitiesImportPath(),
+				Value: u.domain.EntitiesImportPath(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: i.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+				Value: u.domain.AppConfig.ProjectConfig.UUIDImportPath(),
 			},
 		},
 	}

@@ -15,10 +15,10 @@ import (
 
 type Validate struct {
 	typeSpec *ast.TypeSpec
-	domain   *configs.EntityConfig
+	domain   configs.EntityConfig
 }
 
-func NewValidate(typeSpec *ast.TypeSpec, domain *configs.EntityConfig) *Validate {
+func NewValidate(typeSpec *ast.TypeSpec, domain configs.EntityConfig) *Validate {
 	return &Validate{typeSpec: typeSpec, domain: domain}
 }
 func (m *Validate) Sync() error {

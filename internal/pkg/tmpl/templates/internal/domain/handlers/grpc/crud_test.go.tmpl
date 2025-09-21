@@ -140,6 +140,8 @@ func Test{{ .GRPCHandlerTypeName }}_Delete(t *testing.T) {
     mockLogger := NewMocklogger(ctrl)
     ctx := context.Background()
     {{ .GetOneVariableName }} := entities.NewMock{{ .EntityName }}(t)
+    del := entities.NewMock{{ .DeleteTypeName }}(t)
+    del.ID = {{ .GetOneVariableName }}.ID
     type fields struct {
         Unimplemented{{ .GRPCHandlerTypeName }} {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}
         {{ .UseCaseVariableName }}                {{ .GetUseCaseInterfaceName }}
@@ -160,7 +162,7 @@ func Test{{ .GRPCHandlerTypeName }}_Delete(t *testing.T) {
         {
             name: "ok",
             setup: func() {
-                mock{{ .UseCaseTypeName }}.EXPECT().Delete(ctx, {{ .GetOneVariableName }}.ID).Return({{ .GetOneVariableName }}, nil)
+                mock{{ .UseCaseTypeName }}.EXPECT().Delete(ctx, del).Return({{ .GetOneVariableName }}, nil)
             },
             fields: fields{
                 Unimplemented{{ .GRPCHandlerTypeName }}: {{ .ProtoPackage }}.Unimplemented{{ .GRPCHandlerTypeName }}{},
@@ -179,7 +181,7 @@ func Test{{ .GRPCHandlerTypeName }}_Delete(t *testing.T) {
         {
             name: "usecase error",
             setup: func() {
-                mock{{ .UseCaseTypeName }}.EXPECT().Delete(ctx, {{ .GetOneVariableName }}.ID).
+                mock{{ .UseCaseTypeName }}.EXPECT().Delete(ctx, del).
                     Return(entities.{{ .EntityName }}{}, errs.NewUnexpectedBehaviorError("i error")).
                     Times(1)
             },

@@ -3909,7 +3909,7 @@ func (r RepositoryGenerator) syncMigrations() error {
 		},
 	}
 	for _, file := range files {
-		if err := file.RenderToFile(r.domain); err != nil {
+		if err := file.RenderToFile(&r.domain); err != nil {
 			return err
 		}
 	}

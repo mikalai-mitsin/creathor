@@ -32,7 +32,7 @@ func (c *ProtoGenerator) Sync() error {
 		),
 		Name: "proto def",
 	}
-	if err := proto.RenderToFile(c.domain); err != nil {
+	if err := proto.RenderToFile(&c.domain); err != nil {
 		return err
 	}
 	return nil

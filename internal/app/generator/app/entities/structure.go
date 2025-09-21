@@ -14,23 +14,23 @@ import (
 )
 
 type Structure struct {
-	fileName string
-	name     string
-	domain   configs.EntityConfig
-	params   []*ast.Field
+	fileName     string
+	name         string
+	entityConfig configs.EntityConfig
+	params       []*ast.Field
 }
 
 func NewStructure(
 	fileName string,
 	name string,
 	params []*ast.Field,
-	domain configs.EntityConfig,
+	entityConfig configs.EntityConfig,
 ) *Structure {
 	return &Structure{
-		fileName: fileName,
-		name:     name,
-		domain:   domain,
-		params:   params,
+		fileName:     fileName,
+		name:         name,
+		entityConfig: entityConfig,
+		params:       params,
 	}
 }
 
@@ -60,13 +60,13 @@ func (m *Structure) file() *ast.File {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: m.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+					Value: m.entityConfig.AppConfig.ProjectConfig.UUIDImportPath(),
 				},
 			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: m.domain.AppConfig.ProjectConfig.ErrsImportPath(),
+					Value: m.entityConfig.AppConfig.ProjectConfig.ErrsImportPath(),
 				},
 			},
 		},
@@ -83,10 +83,10 @@ func (m *Structure) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
-		m.domain.AppConfig.AppName(),
+		m.entityConfig.AppConfig.AppName(),
 		"entities",
-		m.domain.DirName(),
-		m.domain.FileName(),
+		m.entityConfig.DirName(),
+		m.entityConfig.FileName(),
 	)
 }
 

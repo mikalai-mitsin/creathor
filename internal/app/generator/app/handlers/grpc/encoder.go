@@ -16,16 +16,16 @@ import (
 )
 
 type ProtoEncoder struct {
-	domain configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewProtoEncoder(domain configs.EntityConfig) *ProtoEncoder {
-	return &ProtoEncoder{domain: domain}
+func NewProtoEncoder(entityConfig configs.EntityConfig) *ProtoEncoder {
+	return &ProtoEncoder{entityConfig: entityConfig}
 }
 
 func (h ProtoEncoder) createParams() []ast.Expr {
 	var exprs []ast.Expr
-	for _, param := range h.domain.GetCreateModel().Params {
+	for _, param := range h.entityConfig.GetCreateModel().Params {
 		var value ast.Expr
 		if param.IsSlice() {
 			switch param.Type {
@@ -81,7 +81,7 @@ func (h ProtoEncoder) createParams() []ast.Expr {
 
 func (h ProtoEncoder) encodeCreate() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(h.domain.GetGRPCCreateDTOEncodeName()),
+		Name: ast.NewIdent(h.entityConfig.GetGRPCCreateDTOEncodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -91,8 +91,8 @@ func (h ProtoEncoder) encodeCreate() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetCreateModel().Name),
 							},
 						},
 					},
@@ -103,7 +103,7 @@ func (h ProtoEncoder) encodeCreate() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
+							Sel: ast.NewIdent(h.entityConfig.GetCreateModel().Name),
 						},
 					},
 				},
@@ -120,7 +120,7 @@ func (h ProtoEncoder) encodeCreate() *ast.FuncDecl {
 						&ast.CompositeLit{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
+								Sel: ast.NewIdent(h.entityConfig.GetCreateModel().Name),
 							},
 							Elts: h.createParams(),
 						},
@@ -142,7 +142,7 @@ func (h ProtoEncoder) syncEncodeCreate(filename string) error {
 	if err != nil {
 		return err
 	}
-	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCCreateDTOEncodeName())
+	method, methodExist := astfile.FindFunc(file, h.entityConfig.GetGRPCCreateDTOEncodeName())
 	if method == nil {
 		method = h.encodeCreate()
 	}
@@ -223,7 +223,7 @@ func (h ProtoEncoder) syncEncodeCreate(filename string) error {
 
 func (h ProtoEncoder) updateStmts() []*ast.IfStmt {
 	var stmts []*ast.IfStmt
-	for _, param := range h.domain.GetUpdateModel().Params {
+	for _, param := range h.entityConfig.GetUpdateModel().Params {
 		if param.GetName() == "ID" {
 			continue
 		}
@@ -423,7 +423,7 @@ func (h ProtoEncoder) encodeUpdate() *ast.FuncDecl {
 				&ast.CompositeLit{
 					Type: &ast.SelectorExpr{
 						X:   ast.NewIdent("entities"),
-						Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
+						Sel: ast.NewIdent(h.entityConfig.GetUpdateModel().Name),
 					},
 					Elts: []ast.Expr{
 						&ast.KeyValueExpr{
@@ -457,7 +457,7 @@ func (h ProtoEncoder) encodeUpdate() *ast.FuncDecl {
 		},
 	})
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(h.domain.GetGRPCUpdateDTOEncodeName()),
+		Name: ast.NewIdent(h.entityConfig.GetGRPCUpdateDTOEncodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -467,8 +467,8 @@ func (h ProtoEncoder) encodeUpdate() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetUpdateModel().Name),
 							},
 						},
 					},
@@ -479,7 +479,7 @@ func (h ProtoEncoder) encodeUpdate() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
+							Sel: ast.NewIdent(h.entityConfig.GetUpdateModel().Name),
 						},
 					},
 				},
@@ -494,14 +494,14 @@ func (h ProtoEncoder) encodeDelete() *ast.FuncDecl {
 	body := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(h.domain.GetDeleteModel().Variable),
+				ast.NewIdent(h.entityConfig.GetDeleteModel().Variable),
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
 				&ast.CompositeLit{
 					Type: &ast.SelectorExpr{
 						X:   ast.NewIdent("entities"),
-						Sel: ast.NewIdent(h.domain.GetDeleteModel().Name),
+						Sel: ast.NewIdent(h.entityConfig.GetDeleteModel().Name),
 					},
 					Elts: []ast.Expr{
 						&ast.KeyValueExpr{
@@ -528,11 +528,11 @@ func (h ProtoEncoder) encodeDelete() *ast.FuncDecl {
 	}
 	body = append(body, &ast.ReturnStmt{
 		Results: []ast.Expr{
-			ast.NewIdent(h.domain.GetDeleteModel().Variable),
+			ast.NewIdent(h.entityConfig.GetDeleteModel().Variable),
 		},
 	})
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(h.domain.GetGRPCDeleteDTOEncodeName()),
+		Name: ast.NewIdent(h.entityConfig.GetGRPCDeleteDTOEncodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -542,8 +542,8 @@ func (h ProtoEncoder) encodeDelete() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetDeleteModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetDeleteModel().Name),
 							},
 						},
 					},
@@ -554,7 +554,7 @@ func (h ProtoEncoder) encodeDelete() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(h.domain.GetDeleteModel().Name),
+							Sel: ast.NewIdent(h.entityConfig.GetDeleteModel().Name),
 						},
 					},
 				},
@@ -572,7 +572,7 @@ func (h ProtoEncoder) syncEncodeUpdate(filename string) error {
 	if err != nil {
 		return err
 	}
-	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCUpdateDTOEncodeName())
+	method, methodExist := astfile.FindFunc(file, h.entityConfig.GetGRPCUpdateDTOEncodeName())
 	if method == nil {
 		method = h.encodeUpdate()
 	}
@@ -595,7 +595,7 @@ func (h ProtoEncoder) syncEncodeDelete(filename string) error {
 	if err != nil {
 		return err
 	}
-	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCDeleteDTOEncodeName())
+	method, methodExist := astfile.FindFunc(file, h.entityConfig.GetGRPCDeleteDTOEncodeName())
 	if method == nil {
 		method = h.encodeDelete()
 	}
@@ -623,7 +623,7 @@ func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
 				&ast.CompositeLit{
 					Type: &ast.SelectorExpr{
 						X:   ast.NewIdent("entities"),
-						Sel: ast.NewIdent(h.domain.GetFilterModel().Name),
+						Sel: ast.NewIdent(h.entityConfig.GetFilterModel().Name),
 					},
 					Elts: []ast.Expr{
 						&ast.KeyValueExpr{
@@ -647,7 +647,7 @@ func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
 											Name: "entities",
 										},
 										Sel: &ast.Ident{
-											Name: h.domain.OrderingTypeName(),
+											Name: h.entityConfig.OrderingTypeName(),
 										},
 									},
 								},
@@ -800,7 +800,7 @@ func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
 			},
 		},
 	}
-	if h.domain.SearchEnabled() {
+	if h.entityConfig.SearchEnabled() {
 		stmts = append(stmts, &ast.IfStmt{
 			Cond: &ast.BinaryExpr{
 				X: &ast.CallExpr{
@@ -900,7 +900,7 @@ func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
 											Name: "entities",
 										},
 										Sel: &ast.Ident{
-											Name: h.domain.OrderingTypeName(),
+											Name: h.entityConfig.OrderingTypeName(),
 										},
 									},
 									Args: []ast.Expr{
@@ -922,7 +922,7 @@ func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
 		},
 	})
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(h.domain.GetGRPCFilterDTOEncodeName()),
+		Name: ast.NewIdent(h.entityConfig.GetGRPCFilterDTOEncodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -932,8 +932,8 @@ func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetFilterModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetFilterModel().Name),
 							},
 						},
 					},
@@ -944,7 +944,7 @@ func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(h.domain.GetFilterModel().Name),
+							Sel: ast.NewIdent(h.entityConfig.GetFilterModel().Name),
 						},
 					},
 				},
@@ -962,7 +962,7 @@ func (h ProtoEncoder) syncEncodeFilter(filename string) error {
 	if err != nil {
 		return err
 	}
-	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCFilterDTOEncodeName())
+	method, methodExist := astfile.FindFunc(file, h.entityConfig.GetGRPCFilterDTOEncodeName())
 	if method == nil {
 		method = h.encodeFilter()
 	}
@@ -984,30 +984,30 @@ func (h ProtoEncoder) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: h.domain.ImportPathEntities(),
+				Value: h.entityConfig.ImportPathEntities(),
 			},
 		},
 		&ast.ImportSpec{
-			Name: ast.NewIdent(h.domain.ProtoPackage),
+			Name: ast.NewIdent(h.entityConfig.ProtoPackage),
 			Path: &ast.BasicLit{
 				Kind: token.STRING,
 				Value: fmt.Sprintf(
 					`"%s/pkg/%s/v1"`,
-					h.domain.Module,
-					h.domain.ProtoPackage,
+					h.entityConfig.Module,
+					h.entityConfig.ProtoPackage,
 				),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: h.domain.AppConfig.ProjectConfig.PointerImportPath(),
+				Value: h.entityConfig.AppConfig.ProjectConfig.PointerImportPath(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: h.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+				Value: h.entityConfig.AppConfig.ProjectConfig.UUIDImportPath(),
 			},
 		},
 		&ast.ImportSpec{
@@ -1029,7 +1029,7 @@ func (h ProtoEncoder) file() *ast.File {
 			},
 		},
 	}
-	for _, param := range h.domain.GetUpdateModel().Params {
+	for _, param := range h.entityConfig.GetUpdateModel().Params {
 		if param.IsSlice() {
 			importSpec = append(importSpec, &ast.ImportSpec{
 				Path: &ast.BasicLit{
@@ -1055,10 +1055,10 @@ func (h ProtoEncoder) Sync() error {
 	filename := path.Join(
 		"internal",
 		"app",
-		h.domain.AppConfig.AppName(),
+		h.entityConfig.AppConfig.AppName(),
 		"handlers",
 		"grpc",
-		h.domain.DirName(),
+		h.entityConfig.DirName(),
 		"dto.go",
 	)
 	fileset := token.NewFileSet()

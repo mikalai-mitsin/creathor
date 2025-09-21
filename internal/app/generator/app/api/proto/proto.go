@@ -10,11 +10,11 @@ import (
 )
 
 type ProtoGenerator struct {
-	domain configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewProtoGenerator(domain configs.EntityConfig) *ProtoGenerator {
-	return &ProtoGenerator{domain: domain}
+func NewProtoGenerator(entityConfig configs.EntityConfig) *ProtoGenerator {
+	return &ProtoGenerator{entityConfig: entityConfig}
 }
 
 const destinationPath = "."
@@ -26,13 +26,13 @@ func (c *ProtoGenerator) Sync() error {
 			destinationPath,
 			"api",
 			"proto",
-			c.domain.ProtoPackage,
+			c.entityConfig.ProtoPackage,
 			"v1",
-			fmt.Sprintf("%s.proto", c.domain.SnakeName()),
+			fmt.Sprintf("%s.proto", c.entityConfig.SnakeName()),
 		),
 		Name: "proto def",
 	}
-	if err := proto.RenderToFile(&c.domain); err != nil {
+	if err := proto.RenderToFile(&c.entityConfig); err != nil {
 		return err
 	}
 	return nil

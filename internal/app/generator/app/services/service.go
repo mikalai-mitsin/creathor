@@ -16,11 +16,11 @@ import (
 )
 
 type ServiceGenerator struct {
-	domain configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewServiceGenerator(domain configs.EntityConfig) *ServiceGenerator {
-	return &ServiceGenerator{domain: domain}
+func NewServiceGenerator(entityConfig configs.EntityConfig) *ServiceGenerator {
+	return &ServiceGenerator{entityConfig: entityConfig}
 }
 
 func (u ServiceGenerator) Sync() error {
@@ -56,10 +56,10 @@ func (u ServiceGenerator) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
-		u.domain.AppConfig.AppName(),
+		u.entityConfig.AppConfig.AppName(),
 		"services",
-		u.domain.DirName(),
-		u.domain.FileName(),
+		u.entityConfig.DirName(),
+		u.entityConfig.FileName(),
 	)
 }
 
@@ -79,13 +79,13 @@ func (u ServiceGenerator) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: u.domain.ImportPathEntities(),
+							Value: u.entityConfig.ImportPathEntities(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: u.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+							Value: u.entityConfig.AppConfig.ProjectConfig.UUIDImportPath(),
 						},
 					},
 				},
@@ -96,15 +96,15 @@ func (u ServiceGenerator) file() *ast.File {
 
 func (u ServiceGenerator) structure() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
-		Name: ast.NewIdent(u.domain.GetServiceTypeName()),
+		Name: ast.NewIdent(u.entityConfig.GetServiceTypeName()),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
+							ast.NewIdent(u.entityConfig.GetRepositoryPrivateVariableName()),
 						},
-						Type: ast.NewIdent(u.domain.GetRepositoryInterfaceName()),
+						Type: ast.NewIdent(u.entityConfig.GetRepositoryInterfaceName()),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("clock")},
@@ -131,7 +131,7 @@ func (u ServiceGenerator) syncStruct() error {
 	if err != nil {
 		file = u.file()
 	}
-	structure, structureExists := astfile.FindType(file, u.domain.GetServiceTypeName())
+	structure, structureExists := astfile.FindType(file, u.entityConfig.GetServiceTypeName())
 	if structure == nil {
 		structure = u.structure()
 	}
@@ -154,15 +154,15 @@ func (u ServiceGenerator) syncStruct() error {
 
 func (u ServiceGenerator) constructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
-		Name: ast.NewIdent(u.domain.GetServiceConstructorName()),
+		Name: ast.NewIdent(u.entityConfig.GetServiceConstructorName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
+							ast.NewIdent(u.entityConfig.GetRepositoryPrivateVariableName()),
 						},
-						Type: ast.NewIdent(u.domain.GetRepositoryInterfaceName()),
+						Type: ast.NewIdent(u.entityConfig.GetRepositoryInterfaceName()),
 					},
 					{
 						Names: []*ast.Ident{ast.NewIdent("clock")},
@@ -181,7 +181,7 @@ func (u ServiceGenerator) constructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: ast.NewIdent(fmt.Sprintf("*%s", u.domain.GetServiceTypeName())),
+						Type: ast.NewIdent(fmt.Sprintf("*%s", u.entityConfig.GetServiceTypeName())),
 					},
 				},
 			},
@@ -193,14 +193,14 @@ func (u ServiceGenerator) constructor() *ast.FuncDecl {
 						&ast.UnaryExpr{
 							Op: token.AND,
 							X: &ast.CompositeLit{
-								Type: ast.NewIdent(u.domain.GetServiceTypeName()),
+								Type: ast.NewIdent(u.entityConfig.GetServiceTypeName()),
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
 										Key: ast.NewIdent(
-											u.domain.GetRepositoryPrivateVariableName(),
+											u.entityConfig.GetRepositoryPrivateVariableName(),
 										),
 										Value: ast.NewIdent(
-											u.domain.GetRepositoryPrivateVariableName(),
+											u.entityConfig.GetRepositoryPrivateVariableName(),
 										),
 									},
 									&ast.KeyValueExpr{
@@ -232,7 +232,7 @@ func (u ServiceGenerator) syncConstructor() error {
 	if err != nil {
 		return err
 	}
-	method, methodExist := astfile.FindFunc(file, u.domain.GetServiceConstructorName())
+	method, methodExist := astfile.FindFunc(file, u.entityConfig.GetServiceConstructorName())
 	if method == nil {
 		method = u.constructor()
 	}
@@ -264,7 +264,7 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 			Value: ast.NewIdent("now"),
 		},
 	}
-	for _, param := range u.domain.GetCreateModel().Params {
+	for _, param := range u.entityConfig.GetCreateModel().Params {
 		params = append(params, &ast.KeyValueExpr{
 			Key: ast.NewIdent(param.GetName()),
 			Value: &ast.SelectorExpr{
@@ -281,7 +281,7 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.GetServiceTypeName()),
+						X: ast.NewIdent(u.entityConfig.GetServiceTypeName()),
 					},
 				},
 			},
@@ -305,7 +305,7 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 						Names: []*ast.Ident{ast.NewIdent("create")},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetCreateModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetCreateModel().Name),
 						},
 					},
 				},
@@ -315,7 +315,7 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 						},
 					},
 					{
@@ -354,7 +354,7 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 									&ast.CompositeLit{
 										Type: &ast.SelectorExpr{
 											X:   ast.NewIdent("entities"),
-											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+											Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 										},
 									},
 									ast.NewIdent("err"),
@@ -388,13 +388,13 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 				},
 				// Fill model struct from create form
 				&ast.AssignStmt{
-					Lhs: []ast.Expr{ast.NewIdent(u.domain.GetMainModel().Variable)},
+					Lhs: []ast.Expr{ast.NewIdent(u.entityConfig.GetMainModel().Variable)},
 					Tok: token.DEFINE,
 					Rhs: []ast.Expr{
 						&ast.CompositeLit{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 							},
 							Elts: params,
 						},
@@ -413,7 +413,7 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 									X: &ast.SelectorExpr{
 										X: ast.NewIdent("s"),
 										Sel: ast.NewIdent(
-											u.domain.GetRepositoryPrivateVariableName(),
+											u.entityConfig.GetRepositoryPrivateVariableName(),
 										),
 									},
 									Sel: ast.NewIdent("Create"),
@@ -421,7 +421,7 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 								Args: []ast.Expr{
 									ast.NewIdent("ctx"),
 									ast.NewIdent("tx"),
-									ast.NewIdent(u.domain.GetMainModel().Variable),
+									ast.NewIdent(u.entityConfig.GetMainModel().Variable),
 								},
 							},
 						},
@@ -438,7 +438,7 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 									&ast.CompositeLit{
 										Type: &ast.SelectorExpr{
 											X:   ast.NewIdent("entities"),
-											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+											Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 										},
 									},
 									ast.NewIdent("err"),
@@ -451,7 +451,7 @@ func (u ServiceGenerator) create() *ast.FuncDecl {
 				// Return created model and nil error
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(u.domain.GetMainModel().Variable),
+						ast.NewIdent(u.entityConfig.GetMainModel().Variable),
 						ast.NewIdent("nil"),
 					},
 				},
@@ -495,7 +495,7 @@ func (u ServiceGenerator) list() *ast.FuncDecl {
 						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.GetServiceTypeName()),
+						X: ast.NewIdent(u.entityConfig.GetServiceTypeName()),
 					},
 				},
 			},
@@ -512,10 +512,10 @@ func (u ServiceGenerator) list() *ast.FuncDecl {
 						Type:  ast.NewIdent("context.Context"),
 					},
 					{
-						Names: []*ast.Ident{ast.NewIdent(u.domain.GetFilterModel().Variable)},
+						Names: []*ast.Ident{ast.NewIdent(u.entityConfig.GetFilterModel().Variable)},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetFilterModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetFilterModel().Name),
 						},
 					},
 				},
@@ -526,7 +526,7 @@ func (u ServiceGenerator) list() *ast.FuncDecl {
 						Type: &ast.ArrayType{
 							Elt: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 							},
 						},
 					},
@@ -576,7 +576,7 @@ func (u ServiceGenerator) list() *ast.FuncDecl {
 				},
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(u.domain.GetMainModel().Variable),
+						ast.NewIdent(u.entityConfig.GetMainModel().Variable),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -585,13 +585,13 @@ func (u ServiceGenerator) list() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("s"),
-									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
+									Sel: ast.NewIdent(u.entityConfig.GetRepositoryPrivateVariableName()),
 								},
 								Sel: ast.NewIdent("List"),
 							},
 							Args: []ast.Expr{
 								ast.NewIdent("ctx"),
-								ast.NewIdent(u.domain.GetFilterModel().Variable),
+								ast.NewIdent(u.entityConfig.GetFilterModel().Variable),
 							},
 						},
 					},
@@ -627,13 +627,13 @@ func (u ServiceGenerator) list() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("s"),
-									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
+									Sel: ast.NewIdent(u.entityConfig.GetRepositoryPrivateVariableName()),
 								},
 								Sel: ast.NewIdent("Count"),
 							},
 							Args: []ast.Expr{
 								ast.NewIdent("ctx"),
-								ast.NewIdent(u.domain.GetFilterModel().Variable),
+								ast.NewIdent(u.entityConfig.GetFilterModel().Variable),
 							},
 						},
 					},
@@ -660,7 +660,7 @@ func (u ServiceGenerator) list() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(u.domain.GetMainModel().Variable),
+						ast.NewIdent(u.entityConfig.GetMainModel().Variable),
 						ast.NewIdent("count"),
 						ast.NewIdent("nil"),
 					},
@@ -703,7 +703,7 @@ func (u ServiceGenerator) get() *ast.FuncDecl {
 						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.GetServiceTypeName()),
+						X: ast.NewIdent(u.entityConfig.GetServiceTypeName()),
 					},
 				},
 			},
@@ -727,7 +727,7 @@ func (u ServiceGenerator) get() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 						},
 					},
 					{
@@ -740,7 +740,7 @@ func (u ServiceGenerator) get() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(u.domain.GetMainModel().Variable),
+						ast.NewIdent(u.entityConfig.GetMainModel().Variable),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -749,7 +749,7 @@ func (u ServiceGenerator) get() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("s"),
-									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
+									Sel: ast.NewIdent(u.entityConfig.GetRepositoryPrivateVariableName()),
 								},
 								Sel: ast.NewIdent("Get"),
 							},
@@ -774,7 +774,7 @@ func (u ServiceGenerator) get() *ast.FuncDecl {
 									&ast.CompositeLit{
 										Type: &ast.SelectorExpr{
 											X:   ast.NewIdent("entities"),
-											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+											Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 										},
 									},
 									ast.NewIdent("err"),
@@ -786,7 +786,7 @@ func (u ServiceGenerator) get() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(u.domain.GetMainModel().Variable),
+						ast.NewIdent(u.entityConfig.GetMainModel().Variable),
 						ast.NewIdent("nil"),
 					},
 				},
@@ -822,7 +822,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 	block := &ast.BlockStmt{
 		List: []ast.Stmt{},
 	}
-	for _, param := range u.domain.GetUpdateModel().Params {
+	for _, param := range u.entityConfig.GetUpdateModel().Params {
 		if param.Name == "ID" {
 			continue
 		}
@@ -840,7 +840,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 					&ast.AssignStmt{
 						Lhs: []ast.Expr{
 							&ast.SelectorExpr{
-								X:   ast.NewIdent(u.domain.GetMainModel().Variable),
+								X:   ast.NewIdent(u.entityConfig.GetMainModel().Variable),
 								Sel: ast.NewIdent(param.GetName()),
 							},
 						},
@@ -866,7 +866,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.GetServiceTypeName()),
+						X: ast.NewIdent(u.entityConfig.GetServiceTypeName()),
 					},
 				},
 			},
@@ -890,7 +890,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 						Names: []*ast.Ident{ast.NewIdent("update")},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetUpdateModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetUpdateModel().Name),
 						},
 					},
 				},
@@ -900,7 +900,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 						},
 					},
 					{
@@ -939,7 +939,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 									&ast.CompositeLit{
 										Type: &ast.SelectorExpr{
 											X:   ast.NewIdent("entities"),
-											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+											Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 										},
 									},
 									ast.NewIdent("err"),
@@ -952,7 +952,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 				// Get model to update
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(u.domain.GetMainModel().Variable),
+						ast.NewIdent(u.entityConfig.GetMainModel().Variable),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -961,7 +961,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("s"),
-									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
+									Sel: ast.NewIdent(u.entityConfig.GetRepositoryPrivateVariableName()),
 								},
 								Sel: ast.NewIdent("Get"),
 							},
@@ -985,7 +985,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 									&ast.CompositeLit{
 										Type: &ast.SelectorExpr{
 											X:   ast.NewIdent("entities"),
-											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+											Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 										},
 									},
 									ast.NewIdent("err"),
@@ -1000,7 +1000,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.SelectorExpr{
-							X:   ast.NewIdent(u.domain.GetMainModel().Variable),
+							X:   ast.NewIdent(u.entityConfig.GetMainModel().Variable),
 							Sel: ast.NewIdent("UpdatedAt"),
 						},
 					},
@@ -1036,7 +1036,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 									X: &ast.SelectorExpr{
 										X: ast.NewIdent("s"),
 										Sel: ast.NewIdent(
-											u.domain.GetRepositoryPrivateVariableName(),
+											u.entityConfig.GetRepositoryPrivateVariableName(),
 										),
 									},
 									Sel: ast.NewIdent("Update"),
@@ -1044,7 +1044,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 								Args: []ast.Expr{
 									ast.NewIdent("ctx"),
 									ast.NewIdent("tx"),
-									ast.NewIdent(u.domain.GetMainModel().Variable),
+									ast.NewIdent(u.entityConfig.GetMainModel().Variable),
 								},
 							},
 						},
@@ -1061,7 +1061,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 									&ast.CompositeLit{
 										Type: &ast.SelectorExpr{
 											X:   ast.NewIdent("entities"),
-											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+											Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 										},
 									},
 									ast.NewIdent("err"),
@@ -1074,7 +1074,7 @@ func (u ServiceGenerator) update() *ast.FuncDecl {
 				// Return updated model and nil error
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(u.domain.GetMainModel().Variable),
+						ast.NewIdent(u.entityConfig.GetMainModel().Variable),
 						ast.NewIdent("nil"),
 					},
 				},
@@ -1094,7 +1094,7 @@ func (u ServiceGenerator) syncUpdateMethod() error {
 	if method == nil {
 		method = u.update()
 	}
-	for _, param := range u.domain.GetUpdateModel().Params {
+	for _, param := range u.entityConfig.GetUpdateModel().Params {
 		param := param
 		if param.Name == "ID" {
 			continue
@@ -1132,7 +1132,7 @@ func (u ServiceGenerator) syncUpdateMethod() error {
 								&ast.AssignStmt{
 									Lhs: []ast.Expr{
 										&ast.SelectorExpr{
-											X:   ast.NewIdent(u.domain.GetMainModel().Variable),
+											X:   ast.NewIdent(u.entityConfig.GetMainModel().Variable),
 											Sel: ast.NewIdent(param.GetName()),
 										},
 									},
@@ -1175,7 +1175,7 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.GetServiceTypeName()),
+						X: ast.NewIdent(u.entityConfig.GetServiceTypeName()),
 					},
 				},
 			},
@@ -1199,10 +1199,10 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 						},
 					},
 					{
-						Names: []*ast.Ident{ast.NewIdent(u.domain.GetDeleteModel().Variable)},
+						Names: []*ast.Ident{ast.NewIdent(u.entityConfig.GetDeleteModel().Variable)},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetDeleteModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetDeleteModel().Name),
 						},
 					},
 				},
@@ -1212,7 +1212,7 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 						},
 					},
 					{
@@ -1227,7 +1227,7 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 				// Get model to update
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(u.domain.GetMainModel().Variable),
+						ast.NewIdent(u.entityConfig.GetMainModel().Variable),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -1236,14 +1236,14 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("s"),
-									Sel: ast.NewIdent(u.domain.GetRepositoryPrivateVariableName()),
+									Sel: ast.NewIdent(u.entityConfig.GetRepositoryPrivateVariableName()),
 								},
 								Sel: ast.NewIdent("Get"),
 							},
 							Args: []ast.Expr{
 								ast.NewIdent("ctx"),
 								&ast.SelectorExpr{
-									X:   ast.NewIdent(u.domain.GetDeleteModel().Variable),
+									X:   ast.NewIdent(u.entityConfig.GetDeleteModel().Variable),
 									Sel: ast.NewIdent("ID"),
 								},
 							},
@@ -1263,7 +1263,7 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 									&ast.CompositeLit{
 										Type: &ast.SelectorExpr{
 											X:   ast.NewIdent("entities"),
-											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+											Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 										},
 									},
 									ast.NewIdent("err"),
@@ -1276,7 +1276,7 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
 						&ast.SelectorExpr{
-							X: ast.NewIdent(u.domain.GetOneVariableName()),
+							X: ast.NewIdent(u.entityConfig.GetOneVariableName()),
 							Sel: &ast.Ident{
 								Name: "DeletedAt",
 							},
@@ -1333,7 +1333,7 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 									X: &ast.SelectorExpr{
 										X: ast.NewIdent("s"),
 										Sel: ast.NewIdent(
-											u.domain.GetRepositoryPrivateVariableName(),
+											u.entityConfig.GetRepositoryPrivateVariableName(),
 										),
 									},
 									Sel: ast.NewIdent("Update"),
@@ -1341,7 +1341,7 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 								Args: []ast.Expr{
 									ast.NewIdent("ctx"),
 									ast.NewIdent("tx"),
-									ast.NewIdent(u.domain.GetMainModel().Variable),
+									ast.NewIdent(u.entityConfig.GetMainModel().Variable),
 								},
 							},
 						},
@@ -1358,7 +1358,7 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 									&ast.CompositeLit{
 										Type: &ast.SelectorExpr{
 											X:   ast.NewIdent("entities"),
-											Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+											Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 										},
 									},
 									ast.NewIdent("err"),
@@ -1370,7 +1370,7 @@ func (u ServiceGenerator) delete() *ast.FuncDecl {
 				},
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
-						ast.NewIdent(u.domain.GetOneVariableName()),
+						ast.NewIdent(u.entityConfig.GetOneVariableName()),
 						ast.NewIdent("nil"),
 					},
 				},

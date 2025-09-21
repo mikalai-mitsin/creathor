@@ -19,12 +19,12 @@ import (
 )
 
 type Mock struct {
-	typeSpec *ast.TypeSpec
-	domain   configs.EntityConfig
+	typeSpec     *ast.TypeSpec
+	entityConfig configs.EntityConfig
 }
 
-func NewMock(typeSpec *ast.TypeSpec, domain configs.EntityConfig) *Mock {
-	return &Mock{typeSpec: typeSpec, domain: domain}
+func NewMock(typeSpec *ast.TypeSpec, entityConfig configs.EntityConfig) *Mock {
+	return &Mock{typeSpec: typeSpec, entityConfig: entityConfig}
 }
 
 func (m *Mock) constructorName() string {
@@ -99,7 +99,7 @@ func (m *Mock) values() []*ast.KeyValueExpr {
 						kvs,
 						&ast.KeyValueExpr{
 							Key:   name,
-							Value: fake.Ordering(field.Type, maps.Keys(m.domain.OrderingConsts())),
+							Value: fake.Ordering(field.Type, maps.Keys(m.entityConfig.OrderingConsts())),
 						},
 					)
 				default:
@@ -138,13 +138,13 @@ func (m *Mock) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: m.domain.AppConfig.ProjectConfig.PointerImportPath(),
+							Value: m.entityConfig.AppConfig.ProjectConfig.PointerImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: m.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+							Value: m.entityConfig.AppConfig.ProjectConfig.UUIDImportPath(),
 						},
 					},
 					&ast.ImportSpec{
@@ -176,10 +176,10 @@ func (m *Mock) Sync() error {
 	filename := path.Join(
 		"internal",
 		"app",
-		m.domain.AppConfig.AppName(),
+		m.entityConfig.AppConfig.AppName(),
 		"entities",
-		m.domain.DirName(),
-		fmt.Sprintf("%s_mock.go", strcase.ToSnake(m.domain.Name)),
+		m.entityConfig.DirName(),
+		fmt.Sprintf("%s_mock.go", strcase.ToSnake(m.entityConfig.Name)),
 	)
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {

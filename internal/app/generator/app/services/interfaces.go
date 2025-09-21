@@ -15,11 +15,11 @@ import (
 )
 
 type InterfacesGenerator struct {
-	domain configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewInterfacesGenerator(domain configs.EntityConfig) *InterfacesGenerator {
-	return &InterfacesGenerator{domain: domain}
+func NewInterfacesGenerator(entityConfig configs.EntityConfig) *InterfacesGenerator {
+	return &InterfacesGenerator{entityConfig: entityConfig}
 }
 
 func (i InterfacesGenerator) Sync() error {
@@ -27,9 +27,9 @@ func (i InterfacesGenerator) Sync() error {
 	filename := filepath.Join(
 		"internal",
 		"app",
-		i.domain.AppConfig.AppName(),
+		i.entityConfig.AppConfig.AppName(),
 		"services",
-		i.domain.DirName(),
+		i.entityConfig.DirName(),
 		"interfaces.go",
 	)
 	err := os.MkdirAll(path.Dir(filename), 0777)
@@ -46,7 +46,7 @@ func (i InterfacesGenerator) Sync() error {
 	uuidGeneratorExists := false
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.TypeSpec); ok {
-			if t.Name.String() == i.domain.GetRepositoryInterfaceName() {
+			if t.Name.String() == i.entityConfig.GetRepositoryInterfaceName() {
 				repositoryExists = true
 			}
 			if t.Name.String() == "logger" {
@@ -65,8 +65,8 @@ func (i InterfacesGenerator) Sync() error {
 	if !repositoryExists {
 		file.Decls = append(file.Decls, i.repositoryInterface())
 	}
-	if !astfile.TypeExists(file, i.domain.EventProducerInterfaceName()) &&
-		i.domain.AppConfig.ProjectConfig.KafkaEnabled {
+	if !astfile.TypeExists(file, i.entityConfig.EventProducerInterfaceName()) &&
+		i.entityConfig.AppConfig.ProjectConfig.KafkaEnabled {
 		file.Decls = append(file.Decls, i.appEventProducerInterface())
 	}
 	if !clockExists {
@@ -124,25 +124,25 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: i.domain.ImportPathEntities(),
+					Value: i.entityConfig.ImportPathEntities(),
 				},
 			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: i.domain.AppConfig.ProjectConfig.LogImportPath(),
+					Value: i.entityConfig.AppConfig.ProjectConfig.LogImportPath(),
 				},
 			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: i.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+					Value: i.entityConfig.AppConfig.ProjectConfig.UUIDImportPath(),
 				},
 			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: i.domain.AppConfig.ProjectConfig.DTXImportPath(),
+					Value: i.entityConfig.AppConfig.ProjectConfig.DTXImportPath(),
 				},
 			},
 		},
@@ -155,7 +155,7 @@ func (i InterfacesGenerator) appEventProducerInterface() *ast.GenDecl {
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
 				Name: &ast.Ident{
-					Name: i.domain.EventProducerInterfaceName(),
+					Name: i.entityConfig.EventProducerInterfaceName(),
 				},
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
@@ -185,7 +185,7 @@ func (i InterfacesGenerator) appEventProducerInterface() *ast.GenDecl {
 														Name: "entities",
 													},
 													Sel: &ast.Ident{
-														Name: i.domain.GetMainModel().Name,
+														Name: i.entityConfig.GetMainModel().Name,
 													},
 												},
 											},
@@ -232,7 +232,7 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetMainModel().Name),
 							},
 						},
 					},
@@ -270,7 +270,7 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetMainModel().Name),
 							},
 						},
 						{
@@ -294,7 +294,7 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetFilterModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetFilterModel().Name),
 							},
 						},
 					},
@@ -305,7 +305,7 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 							Type: &ast.ArrayType{
 								Elt: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+									Sel: ast.NewIdent(i.entityConfig.GetMainModel().Name),
 								},
 							},
 						},
@@ -330,7 +330,7 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetFilterModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetFilterModel().Name),
 							},
 						},
 					},
@@ -367,7 +367,7 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetMainModel().Name),
 							},
 						},
 					},
@@ -420,7 +420,7 @@ func (i InterfacesGenerator) repositoryInterface() *ast.GenDecl {
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: ast.NewIdent(i.domain.GetRepositoryInterfaceName()),
+				Name: ast.NewIdent(i.entityConfig.GetRepositoryInterfaceName()),
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: methods,

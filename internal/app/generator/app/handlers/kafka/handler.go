@@ -14,12 +14,12 @@ import (
 )
 
 type HandlerGenerator struct {
-	domain configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewHandlerGenerator(domain configs.EntityConfig) *HandlerGenerator {
+func NewHandlerGenerator(entityConfig configs.EntityConfig) *HandlerGenerator {
 	return &HandlerGenerator{
-		domain: domain,
+		entityConfig: entityConfig,
 	}
 }
 
@@ -47,11 +47,11 @@ func (h *HandlerGenerator) filename() string {
 	return path.Join(
 		"internal",
 		"app",
-		h.domain.AppConfig.AppName(),
+		h.entityConfig.AppConfig.AppName(),
 		"handlers",
 		"kafka",
-		h.domain.DirName(),
-		h.domain.FileName(),
+		h.entityConfig.DirName(),
+		h.entityConfig.FileName(),
 	)
 }
 
@@ -74,13 +74,13 @@ func (h *HandlerGenerator) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: h.domain.AppConfig.ProjectConfig.LogImportPath(),
+							Value: h.entityConfig.AppConfig.ProjectConfig.LogImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: h.domain.AppConfig.ProjectConfig.KafkaImportPath(),
+							Value: h.entityConfig.AppConfig.ProjectConfig.KafkaImportPath(),
 						},
 					},
 				},
@@ -95,7 +95,7 @@ func (h *HandlerGenerator) file() *ast.File {
 						Values: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
-								Value: fmt.Sprintf(`"%s"`, h.domain.TopicName()),
+								Value: fmt.Sprintf(`"%s"`, h.entityConfig.TopicName()),
 							},
 						},
 					},
@@ -106,7 +106,7 @@ func (h *HandlerGenerator) file() *ast.File {
 						Values: []ast.Expr{
 							&ast.BasicLit{
 								Kind:  token.STRING,
-								Value: fmt.Sprintf(`"%s"`, h.domain.KafkaConsumerGroup()),
+								Value: fmt.Sprintf(`"%s"`, h.entityConfig.KafkaConsumerGroup()),
 							},
 						},
 					},
@@ -117,7 +117,7 @@ func (h *HandlerGenerator) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: h.domain.KafkaHandlerTypeName(),
+							Name: h.entityConfig.KafkaHandlerTypeName(),
 						},
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
@@ -126,11 +126,11 @@ func (h *HandlerGenerator) file() *ast.File {
 									{
 										Names: []*ast.Ident{
 											{
-												Name: h.domain.GetUseCasePrivateVariableName(),
+												Name: h.entityConfig.GetUseCasePrivateVariableName(),
 											},
 										},
 										Type: &ast.Ident{
-											Name: h.domain.GetUseCaseInterfaceName(),
+											Name: h.entityConfig.GetUseCaseInterfaceName(),
 										},
 									},
 									{
@@ -151,7 +151,7 @@ func (h *HandlerGenerator) file() *ast.File {
 			},
 			&ast.FuncDecl{
 				Name: &ast.Ident{
-					Name: h.domain.KafkaHandlerConstructorName(),
+					Name: h.entityConfig.KafkaHandlerConstructorName(),
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -159,11 +159,11 @@ func (h *HandlerGenerator) file() *ast.File {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: h.domain.GetUseCasePrivateVariableName(),
+										Name: h.entityConfig.GetUseCasePrivateVariableName(),
 									},
 								},
 								Type: &ast.Ident{
-									Name: h.domain.GetUseCaseInterfaceName(),
+									Name: h.entityConfig.GetUseCaseInterfaceName(),
 								},
 							},
 							{
@@ -183,7 +183,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							{
 								Type: &ast.StarExpr{
 									X: &ast.Ident{
-										Name: h.domain.KafkaHandlerTypeName(),
+										Name: h.entityConfig.KafkaHandlerTypeName(),
 									},
 								},
 							},
@@ -198,15 +198,15 @@ func (h *HandlerGenerator) file() *ast.File {
 									Op: token.AND,
 									X: &ast.CompositeLit{
 										Type: &ast.Ident{
-											Name: h.domain.KafkaHandlerTypeName(),
+											Name: h.entityConfig.KafkaHandlerTypeName(),
 										},
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
 												Key: &ast.Ident{
-													Name: h.domain.GetUseCasePrivateVariableName(),
+													Name: h.entityConfig.GetUseCasePrivateVariableName(),
 												},
 												Value: &ast.Ident{
-													Name: h.domain.GetUseCasePrivateVariableName(),
+													Name: h.entityConfig.GetUseCasePrivateVariableName(),
 												},
 											},
 											&ast.KeyValueExpr{
@@ -236,7 +236,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							},
 							Type: &ast.StarExpr{
 								X: &ast.Ident{
-									Name: h.domain.KafkaHandlerTypeName(),
+									Name: h.entityConfig.KafkaHandlerTypeName(),
 								},
 							},
 						},
@@ -494,7 +494,7 @@ func (h *HandlerGenerator) file() *ast.File {
 								ast.NewIdent("h"),
 							},
 							Type: &ast.StarExpr{
-								X: ast.NewIdent(h.domain.KafkaHandlerTypeName()),
+								X: ast.NewIdent(h.entityConfig.KafkaHandlerTypeName()),
 							},
 						},
 					},

@@ -16,28 +16,28 @@ import (
 )
 
 type ProtoDecoder struct {
-	domain configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewProtoDecoder(domain configs.EntityConfig) *ProtoDecoder {
+func NewProtoDecoder(entityConfig configs.EntityConfig) *ProtoDecoder {
 	return &ProtoDecoder{
-		domain: domain,
+		entityConfig: entityConfig,
 	}
 }
 
 func (h ProtoDecoder) decode() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(h.domain.GetGRPCMainDecodeName()),
+		Name: ast.NewIdent(h.entityConfig.GetGRPCMainDecodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							ast.NewIdent(h.domain.GetOneVariableName()),
+							ast.NewIdent(h.entityConfig.GetOneVariableName()),
 						},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(h.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(h.entityConfig.GetMainModel().Name),
 						},
 					},
 				},
@@ -47,8 +47,8 @@ func (h ProtoDecoder) decode() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetMainModel().Name),
 							},
 						},
 					},
@@ -67,8 +67,8 @@ func (h ProtoDecoder) decode() *ast.FuncDecl {
 							Op: token.AND,
 							X: &ast.CompositeLit{
 								Type: &ast.SelectorExpr{
-									X:   ast.NewIdent(h.domain.ProtoPackage),
-									Sel: ast.NewIdent(h.domain.GetMainModel().Name),
+									X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+									Sel: ast.NewIdent(h.entityConfig.GetMainModel().Name),
 								},
 							},
 						},
@@ -86,10 +86,10 @@ func (h ProtoDecoder) decode() *ast.FuncDecl {
 
 func (h ProtoDecoder) modelParams() []*ast.KeyValueExpr {
 	var exprs []*ast.KeyValueExpr
-	for _, param := range h.domain.GetMainModel().Params {
+	for _, param := range h.entityConfig.GetMainModel().Params {
 		var value ast.Expr
 		value = &ast.SelectorExpr{
-			X:   ast.NewIdent(h.domain.GetOneVariableName()),
+			X:   ast.NewIdent(h.entityConfig.GetOneVariableName()),
 			Sel: ast.NewIdent(param.GetName()),
 		}
 		if param.Type != param.GRPCType() {
@@ -114,7 +114,7 @@ func (h ProtoDecoder) modelParams() []*ast.KeyValueExpr {
 				},
 				Args: []ast.Expr{
 					&ast.SelectorExpr{
-						X:   ast.NewIdent(h.domain.GetOneVariableName()),
+						X:   ast.NewIdent(h.entityConfig.GetOneVariableName()),
 						Sel: ast.NewIdent(param.GetName()),
 					},
 				},
@@ -124,7 +124,7 @@ func (h ProtoDecoder) modelParams() []*ast.KeyValueExpr {
 			value = &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
 					X: &ast.SelectorExpr{
-						X:   ast.NewIdent(h.domain.GetOneVariableName()),
+						X:   ast.NewIdent(h.entityConfig.GetOneVariableName()),
 						Sel: ast.NewIdent(param.GetName()),
 					},
 					Sel: ast.NewIdent("String"),
@@ -148,15 +148,15 @@ func (h ProtoDecoder) syncDecodeModel(filename string) error {
 	if err != nil {
 		return err
 	}
-	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCMainDecodeName())
+	method, methodExist := astfile.FindFunc(file, h.entityConfig.GetGRPCMainDecodeName())
 	if method == nil {
 		method = h.decode()
 	}
-	mainModelLit, _ := astfile.FindStructInstance(method, h.domain.GetMainModel().Name)
+	mainModelLit, _ := astfile.FindStructInstance(method, h.entityConfig.GetMainModel().Name)
 	for _, param := range h.modelParams() {
 		astfile.SetParamValue(mainModelLit, param)
 	}
-	for _, param := range h.domain.GetMainModel().Params {
+	for _, param := range h.entityConfig.GetMainModel().Params {
 		param := *param
 		if param.IsOptional() {
 			var value ast.Expr
@@ -164,7 +164,7 @@ func (h ProtoDecoder) syncDecodeModel(filename string) error {
 			value = &ast.StarExpr{
 				X: &ast.SelectorExpr{
 					X: &ast.Ident{
-						Name: h.domain.GetOneVariableName(),
+						Name: h.entityConfig.GetOneVariableName(),
 					},
 					Sel: &ast.Ident{
 						Name: param.GetName(),
@@ -183,7 +183,7 @@ func (h ProtoDecoder) syncDecodeModel(filename string) error {
 				Cond: &ast.BinaryExpr{
 					X: &ast.SelectorExpr{
 						X: &ast.Ident{
-							Name: h.domain.GetOneVariableName(),
+							Name: h.entityConfig.GetOneVariableName(),
 						},
 						Sel: &ast.Ident{
 							Name: param.GetName(),
@@ -229,7 +229,7 @@ func (h ProtoDecoder) syncDecodeModel(filename string) error {
 
 func (h ProtoDecoder) decodeList() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(h.domain.GetGRPCMainListDecodeName()),
+		Name: ast.NewIdent(h.entityConfig.GetGRPCMainListDecodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -240,7 +240,7 @@ func (h ProtoDecoder) decodeList() *ast.FuncDecl {
 						Type: &ast.ArrayType{
 							Elt: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(h.entityConfig.GetMainModel().Name),
 							},
 						},
 					},
@@ -257,9 +257,9 @@ func (h ProtoDecoder) decodeList() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: ast.NewIdent(h.domain.ProtoPackage),
+								X: ast.NewIdent(h.entityConfig.ProtoPackage),
 								Sel: ast.NewIdent(
-									fmt.Sprintf("List%s", h.domain.GetMainModel().Name),
+									fmt.Sprintf("List%s", h.entityConfig.GetMainModel().Name),
 								),
 							},
 						},
@@ -279,9 +279,9 @@ func (h ProtoDecoder) decodeList() *ast.FuncDecl {
 							Op: token.AND,
 							X: &ast.CompositeLit{
 								Type: &ast.SelectorExpr{
-									X: ast.NewIdent(h.domain.ProtoPackage),
+									X: ast.NewIdent(h.entityConfig.ProtoPackage),
 									Sel: ast.NewIdent(
-										fmt.Sprintf("List%s", h.domain.GetMainModel().Name),
+										fmt.Sprintf("List%s", h.entityConfig.GetMainModel().Name),
 									),
 								},
 								Elts: []ast.Expr{
@@ -294,10 +294,10 @@ func (h ProtoDecoder) decodeList() *ast.FuncDecl {
 													Elt: &ast.StarExpr{
 														X: &ast.SelectorExpr{
 															X: ast.NewIdent(
-																h.domain.ProtoPackage,
+																h.entityConfig.ProtoPackage,
 															),
 															Sel: ast.NewIdent(
-																h.domain.GetMainModel().Name,
+																h.entityConfig.GetMainModel().Name,
 															),
 														},
 													},
@@ -326,7 +326,7 @@ func (h ProtoDecoder) decodeList() *ast.FuncDecl {
 				},
 				&ast.RangeStmt{
 					Key:   ast.NewIdent("_"),
-					Value: ast.NewIdent(h.domain.GetOneVariableName()),
+					Value: ast.NewIdent(h.entityConfig.GetOneVariableName()),
 					Tok:   token.DEFINE,
 					X:     ast.NewIdent("items"),
 					Body: &ast.BlockStmt{
@@ -349,10 +349,10 @@ func (h ProtoDecoder) decodeList() *ast.FuncDecl {
 											},
 											&ast.CallExpr{
 												Fun: &ast.Ident{
-													Name: h.domain.GetGRPCMainDecodeName(),
+													Name: h.entityConfig.GetGRPCMainDecodeName(),
 												},
 												Args: []ast.Expr{
-													ast.NewIdent(h.domain.GetOneVariableName()),
+													ast.NewIdent(h.entityConfig.GetOneVariableName()),
 												},
 											},
 										},
@@ -378,7 +378,7 @@ func (h ProtoDecoder) syncDecodeList(filename string) error {
 	if err != nil {
 		return err
 	}
-	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCMainListDecodeName())
+	method, methodExist := astfile.FindFunc(file, h.entityConfig.GetGRPCMainListDecodeName())
 	if method == nil {
 		method = h.decodeList()
 	}
@@ -407,8 +407,8 @@ func (h ProtoDecoder) decodeUpdate() *ast.FuncDecl {
 					Op: token.AND,
 					X: &ast.CompositeLit{
 						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent(h.domain.ProtoPackage),
-							Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
+							X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+							Sel: ast.NewIdent(h.entityConfig.GetUpdateModel().Name),
 						},
 						Elts: h.decodeUpdateParams(),
 					},
@@ -416,7 +416,7 @@ func (h ProtoDecoder) decodeUpdate() *ast.FuncDecl {
 			},
 		},
 	}
-	for _, param := range h.domain.GetUpdateModel().Params {
+	for _, param := range h.entityConfig.GetUpdateModel().Params {
 		if !param.IsSlice() {
 			continue
 		}
@@ -500,7 +500,7 @@ func (h ProtoDecoder) decodeUpdate() *ast.FuncDecl {
 		},
 	})
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(h.domain.GetGRPCUpdateDecodeName()),
+		Name: ast.NewIdent(h.entityConfig.GetGRPCUpdateDecodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -510,7 +510,7 @@ func (h ProtoDecoder) decodeUpdate() *ast.FuncDecl {
 						},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
+							Sel: ast.NewIdent(h.entityConfig.GetUpdateModel().Name),
 						},
 					},
 				},
@@ -520,8 +520,8 @@ func (h ProtoDecoder) decodeUpdate() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetUpdateModel().Name),
 							},
 						},
 					},
@@ -536,7 +536,7 @@ func (h ProtoDecoder) decodeUpdate() *ast.FuncDecl {
 
 func (h ProtoDecoder) decodeUpdateParams() []ast.Expr {
 	var exprs []ast.Expr
-	for _, param := range h.domain.GetUpdateModel().Params {
+	for _, param := range h.entityConfig.GetUpdateModel().Params {
 		var value ast.Expr
 		if param.IsSlice() {
 			value = ast.NewIdent("nil")
@@ -587,7 +587,7 @@ func (h ProtoDecoder) syncDecodeUpdate(filename string) error {
 	if err != nil {
 		return err
 	}
-	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCUpdateDecodeName())
+	method, methodExist := astfile.FindFunc(file, h.entityConfig.GetGRPCUpdateDecodeName())
 	if method == nil {
 		method = h.decodeUpdate()
 	}
@@ -609,30 +609,30 @@ func (h ProtoDecoder) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: h.domain.ImportPathEntities(),
+				Value: h.entityConfig.ImportPathEntities(),
 			},
 		},
 		&ast.ImportSpec{
-			Name: ast.NewIdent(h.domain.ProtoPackage),
+			Name: ast.NewIdent(h.entityConfig.ProtoPackage),
 			Path: &ast.BasicLit{
 				Kind: token.STRING,
 				Value: fmt.Sprintf(
 					`"%s/pkg/%s/v1"`,
-					h.domain.Module,
-					h.domain.ProtoPackage,
+					h.entityConfig.Module,
+					h.entityConfig.ProtoPackage,
 				),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: h.domain.AppConfig.ProjectConfig.PointerImportPath(),
+				Value: h.entityConfig.AppConfig.ProjectConfig.PointerImportPath(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: h.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+				Value: h.entityConfig.AppConfig.ProjectConfig.UUIDImportPath(),
 			},
 		},
 		&ast.ImportSpec{
@@ -654,7 +654,7 @@ func (h ProtoDecoder) file() *ast.File {
 			},
 		},
 	}
-	for _, param := range h.domain.GetUpdateModel().Params {
+	for _, param := range h.entityConfig.GetUpdateModel().Params {
 		if param.IsSlice() {
 			importSpec = append(importSpec, &ast.ImportSpec{
 				Path: &ast.BasicLit{
@@ -680,10 +680,10 @@ func (h ProtoDecoder) Sync() error {
 	filename := path.Join(
 		"internal",
 		"app",
-		h.domain.AppConfig.AppName(),
+		h.entityConfig.AppConfig.AppName(),
 		"handlers",
 		"grpc",
-		h.domain.DirName(),
+		h.entityConfig.DirName(),
 		"dto.go",
 	)
 	fileset := token.NewFileSet()

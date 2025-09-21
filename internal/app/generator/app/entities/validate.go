@@ -14,22 +14,22 @@ import (
 )
 
 type Validate struct {
-	typeSpec *ast.TypeSpec
-	domain   configs.EntityConfig
+	typeSpec     *ast.TypeSpec
+	entityConfig configs.EntityConfig
 }
 
-func NewValidate(typeSpec *ast.TypeSpec, domain configs.EntityConfig) *Validate {
-	return &Validate{typeSpec: typeSpec, domain: domain}
+func NewValidate(typeSpec *ast.TypeSpec, entityConfig configs.EntityConfig) *Validate {
+	return &Validate{typeSpec: typeSpec, entityConfig: entityConfig}
 }
 func (m *Validate) Sync() error {
 	fileset := token.NewFileSet()
 	filename := path.Join(
 		"internal",
 		"app",
-		m.domain.AppConfig.AppName(),
+		m.entityConfig.AppConfig.AppName(),
 		"entities",
-		m.domain.DirName(),
-		m.domain.FileName(),
+		m.entityConfig.DirName(),
+		m.entityConfig.FileName(),
 	)
 	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
 	if err != nil {

@@ -20,30 +20,30 @@ import (
 )
 
 type RepositoryGenerator struct {
-	domain configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewRepositoryGenerator(domain configs.EntityConfig) *RepositoryGenerator {
-	return &RepositoryGenerator{domain: domain}
+func NewRepositoryGenerator(entityConfig configs.EntityConfig) *RepositoryGenerator {
+	return &RepositoryGenerator{entityConfig: entityConfig}
 }
 
 func (r RepositoryGenerator) getDTOName() string {
-	return fmt.Sprintf("%sDTO", strcase.ToCamel(r.domain.GetMainModel().Name))
+	return fmt.Sprintf("%sDTO", strcase.ToCamel(r.entityConfig.GetMainModel().Name))
 }
 
 func (r RepositoryGenerator) getDTOListName() string {
-	return fmt.Sprintf("%sListDTO", strcase.ToCamel(r.domain.GetMainModel().Name))
+	return fmt.Sprintf("%sListDTO", strcase.ToCamel(r.entityConfig.GetMainModel().Name))
 }
 
 func (r RepositoryGenerator) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
-		r.domain.AppConfig.AppName(),
+		r.entityConfig.AppConfig.AppName(),
 		"repositories",
 		"postgres",
-		r.domain.DirName(),
-		r.domain.FileName(),
+		r.entityConfig.DirName(),
+		r.entityConfig.FileName(),
 	)
 }
 
@@ -149,7 +149,7 @@ func (r RepositoryGenerator) dtoStruct() *ast.TypeSpec {
 			},
 		},
 	}
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		astfile.SetTypeParam(structure, param.GetName(), param.PostgresDTOType(), fmt.Sprintf("`db:\"%s\"`", param.Tag()))
 	}
 	return structure
@@ -165,7 +165,7 @@ func (r RepositoryGenerator) syncDTOStruct() error {
 	if structure == nil {
 		structure = r.dtoStruct()
 	}
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		astfile.SetTypeParam(
 			structure,
 			param.GetName(),
@@ -194,7 +194,7 @@ func (r RepositoryGenerator) dtoConstructor() *ast.FuncDecl {
 	constructorBody := []ast.Stmt{}
 
 	// Collect dto.Elts
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		key := ast.NewIdent(param.GetName())
 		var value ast.Expr
 
@@ -226,7 +226,7 @@ func (r RepositoryGenerator) dtoConstructor() *ast.FuncDecl {
 	})
 
 	// Generate range loops for slices
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		if !param.IsSlice() {
 			continue
 		}
@@ -269,7 +269,7 @@ func (r RepositoryGenerator) dtoConstructor() *ast.FuncDecl {
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{List: []*ast.Field{{
 				Names: []*ast.Ident{ast.NewIdent("entity")},
-				Type:  &ast.SelectorExpr{X: ast.NewIdent("entities"), Sel: ast.NewIdent(r.domain.GetMainModel().Name)},
+				Type:  &ast.SelectorExpr{X: ast.NewIdent("entities"), Sel: ast.NewIdent(r.entityConfig.GetMainModel().Name)},
 			}}},
 			Results: &ast.FieldList{List: []*ast.Field{{
 				Type: ast.NewIdent(r.getDTOName()),
@@ -299,7 +299,7 @@ func (r RepositoryGenerator) syncDTOConstructor() error {
 	if structureConstructor == nil {
 		structureConstructor = r.dtoConstructor()
 	}
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		param := param
 		ast.Inspect(structureConstructor, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
@@ -366,11 +366,11 @@ func (r RepositoryGenerator) dtoToModel() *ast.FuncDecl {
 	model := &ast.CompositeLit{
 		Type: &ast.SelectorExpr{
 			X:   ast.NewIdent("entities"),
-			Sel: ast.NewIdent(r.domain.GetMainModel().Name),
+			Sel: ast.NewIdent(r.entityConfig.GetMainModel().Name),
 		},
 		Elts: []ast.Expr{},
 	}
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		par := &ast.KeyValueExpr{
 			Key: ast.NewIdent(param.GetName()),
 		}
@@ -423,7 +423,7 @@ func (r RepositoryGenerator) dtoToModel() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(r.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(r.entityConfig.GetMainModel().Name),
 						},
 					},
 				},
@@ -443,7 +443,7 @@ func (r RepositoryGenerator) dtoToModel() *ast.FuncDecl {
 			},
 		},
 	}
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		if !param.IsSlice() {
 			continue
 		}
@@ -541,7 +541,7 @@ func (r RepositoryGenerator) syncDTOToModel() error {
 func (r RepositoryGenerator) astStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
 		Doc:        nil,
-		Name:       ast.NewIdent(r.domain.GetRepositoryTypeName()),
+		Name:       ast.NewIdent(r.entityConfig.GetRepositoryTypeName()),
 		TypeParams: nil,
 		Assign:     0,
 		Type: &ast.StructType{
@@ -601,26 +601,26 @@ func (r RepositoryGenerator) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: r.domain.AppConfig.ProjectConfig.ErrsImportPath(),
+				Value: r.entityConfig.AppConfig.ProjectConfig.ErrsImportPath(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: r.domain.ImportPathEntities(),
+				Value: r.entityConfig.ImportPathEntities(),
 			},
 		},
 
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: r.domain.AppConfig.ProjectConfig.PointerImportPath(),
+				Value: r.entityConfig.AppConfig.ProjectConfig.PointerImportPath(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: r.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+				Value: r.entityConfig.AppConfig.ProjectConfig.UUIDImportPath(),
 			},
 		},
 		&ast.ImportSpec{
@@ -637,11 +637,11 @@ func (r RepositoryGenerator) file() *ast.File {
 			},
 		},
 	}
-	if r.domain.SearchEnabled() {
+	if r.entityConfig.SearchEnabled() {
 		specs = append(specs, &ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: r.domain.AppConfig.ProjectConfig.PostgresImportPath(),
+				Value: r.entityConfig.AppConfig.ProjectConfig.PostgresImportPath(),
 			},
 		})
 	}
@@ -662,7 +662,7 @@ func (r RepositoryGenerator) syncStruct() error {
 	if err != nil {
 		file = r.file()
 	}
-	structure, structureExists := astfile.FindType(file, r.domain.GetRepositoryTypeName())
+	structure, structureExists := astfile.FindType(file, r.entityConfig.GetRepositoryTypeName())
 	if structure == nil {
 		structure = r.astStruct()
 	}
@@ -691,7 +691,7 @@ func (r RepositoryGenerator) astConstructor() *ast.FuncDecl {
 	constructor := &ast.FuncDecl{
 		Doc:  nil,
 		Recv: nil,
-		Name: ast.NewIdent(fmt.Sprintf("New%s", r.domain.GetRepositoryTypeName())),
+		Name: ast.NewIdent(fmt.Sprintf("New%s", r.entityConfig.GetRepositoryTypeName())),
 		Type: &ast.FuncType{
 			Func:       0,
 			TypeParams: nil,
@@ -726,7 +726,7 @@ func (r RepositoryGenerator) astConstructor() *ast.FuncDecl {
 					{
 						Doc:     nil,
 						Names:   nil,
-						Type:    ast.NewIdent(fmt.Sprintf("*%s", r.domain.GetRepositoryTypeName())),
+						Type:    ast.NewIdent(fmt.Sprintf("*%s", r.entityConfig.GetRepositoryTypeName())),
 						Tag:     nil,
 						Comment: nil,
 					},
@@ -744,7 +744,7 @@ func (r RepositoryGenerator) astConstructor() *ast.FuncDecl {
 							OpPos: 0,
 							Op:    token.AND,
 							X: &ast.CompositeLit{
-								Type: ast.NewIdent(r.domain.GetRepositoryTypeName()),
+								Type: ast.NewIdent(r.entityConfig.GetRepositoryTypeName()),
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
 										Key:   ast.NewIdent("readDB"),
@@ -776,7 +776,7 @@ func (r RepositoryGenerator) syncConstructor() error {
 	if err != nil {
 		return err
 	}
-	method, methodExist := astfile.FindFunc(file, r.domain.GetRepositoryConstructorName())
+	method, methodExist := astfile.FindFunc(file, r.entityConfig.GetRepositoryConstructorName())
 	if method == nil {
 		method = r.astConstructor()
 	}
@@ -796,7 +796,7 @@ func (r RepositoryGenerator) syncConstructor() error {
 func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 	var columns []ast.Expr
 	var values []ast.Expr
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		columns = append(columns, &ast.BasicLit{
 			Kind:  token.STRING,
 			Value: fmt.Sprintf(`"%s"`, param.Tag()),
@@ -814,7 +814,7 @@ func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 						ast.NewIdent("r"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(r.domain.GetRepositoryTypeName()),
+						X: ast.NewIdent(r.entityConfig.GetRepositoryTypeName()),
 					},
 				},
 			},
@@ -837,7 +837,7 @@ func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 						Names: []*ast.Ident{ast.NewIdent("entity")},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(r.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(r.entityConfig.GetMainModel().Name),
 						},
 					},
 				},
@@ -890,7 +890,7 @@ func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
 							Fun: ast.NewIdent(
-								fmt.Sprintf("New%sDTOFromEntity", r.domain.GetMainModel().Name),
+								fmt.Sprintf("New%sDTOFromEntity", r.entityConfig.GetMainModel().Name),
 							),
 							Args: []ast.Expr{
 								ast.NewIdent("entity"),
@@ -919,7 +919,7 @@ func (r RepositoryGenerator) astCreateMethod() *ast.FuncDecl {
 													Kind: token.STRING,
 													Value: fmt.Sprintf(
 														`"public.%s"`,
-														r.domain.TableName(),
+														r.entityConfig.TableName(),
 													),
 												},
 											},
@@ -1042,7 +1042,7 @@ func (r RepositoryGenerator) syncCreateMethod() error {
 	if method == nil {
 		method = r.astCreateMethod()
 	}
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		param := param
 		if param.GetName() == "ID" {
 			continue
@@ -1100,11 +1100,11 @@ func (r RepositoryGenerator) syncCreateMethod() error {
 }
 
 func (r RepositoryGenerator) search() ast.Stmt {
-	if !r.domain.SearchEnabled() {
+	if !r.entityConfig.SearchEnabled() {
 		return &ast.EmptyStmt{}
 	}
 	var columns []ast.Expr
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		if param.Search {
 			columns = append(columns, &ast.BasicLit{
 				Kind:  token.STRING,
@@ -1179,9 +1179,9 @@ func (r RepositoryGenerator) search() ast.Stmt {
 }
 
 func (r RepositoryGenerator) listMethod() *ast.FuncDecl {
-	tableName := r.domain.TableName()
+	tableName := r.entityConfig.TableName()
 	var columns []ast.Expr
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		columns = append(
 			columns,
 			&ast.BasicLit{
@@ -1198,7 +1198,7 @@ func (r RepositoryGenerator) listMethod() *ast.FuncDecl {
 						ast.NewIdent("r"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(r.domain.GetRepositoryTypeName()),
+						X: ast.NewIdent(r.entityConfig.GetRepositoryTypeName()),
 					},
 				},
 			},
@@ -1222,7 +1222,7 @@ func (r RepositoryGenerator) listMethod() *ast.FuncDecl {
 						},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(r.domain.GetFilterModel().Name),
+							Sel: ast.NewIdent(r.entityConfig.GetFilterModel().Name),
 						},
 					},
 				},
@@ -1233,7 +1233,7 @@ func (r RepositoryGenerator) listMethod() *ast.FuncDecl {
 						Type: &ast.ArrayType{
 							Elt: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(r.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(r.entityConfig.GetMainModel().Name),
 							},
 						},
 					},
@@ -1762,9 +1762,9 @@ func (r RepositoryGenerator) syncListMethod() error {
 	if method == nil {
 		method = r.listMethod()
 	}
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		param := param
-		column := fmt.Sprintf(`"%s.%s"`, r.domain.TableName(), param.Tag())
+		column := fmt.Sprintf(`"%s.%s"`, r.entityConfig.TableName(), param.Tag())
 		ast.Inspect(method, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Select" {
@@ -1798,7 +1798,7 @@ func (r RepositoryGenerator) syncListMethod() error {
 }
 
 func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
-	tableName := r.domain.TableName()
+	tableName := r.entityConfig.TableName()
 	columns := []ast.Expr{
 		&ast.BasicLit{
 			Kind:  token.STRING,
@@ -1813,7 +1813,7 @@ func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 			Value: fmt.Sprintf(`"%s.created_at"`, tableName),
 		},
 	}
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		columns = append(
 			columns,
 			&ast.BasicLit{
@@ -1830,7 +1830,7 @@ func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 						ast.NewIdent("r"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(r.domain.GetRepositoryTypeName()),
+						X: ast.NewIdent(r.entityConfig.GetRepositoryTypeName()),
 					},
 				},
 			},
@@ -1854,7 +1854,7 @@ func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 						},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(r.domain.GetFilterModel().Name),
+							Sel: ast.NewIdent(r.entityConfig.GetFilterModel().Name),
 						},
 					},
 				},
@@ -1924,7 +1924,7 @@ func (r RepositoryGenerator) astCountMethod() *ast.FuncDecl {
 							Args: []ast.Expr{
 								&ast.BasicLit{
 									Kind:  token.STRING,
-									Value: fmt.Sprintf(`"public.%s"`, r.domain.TableName()),
+									Value: fmt.Sprintf(`"public.%s"`, r.entityConfig.TableName()),
 								},
 							},
 						},
@@ -2227,9 +2227,9 @@ func (r RepositoryGenerator) syncCountMethod() error {
 }
 
 func (r RepositoryGenerator) getMethod() *ast.FuncDecl {
-	tableName := r.domain.TableName()
+	tableName := r.entityConfig.TableName()
 	var columns []ast.Expr
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		columns = append(
 			columns,
 			&ast.BasicLit{
@@ -2246,7 +2246,7 @@ func (r RepositoryGenerator) getMethod() *ast.FuncDecl {
 						ast.NewIdent("r"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(r.domain.GetRepositoryTypeName()),
+						X: ast.NewIdent(r.entityConfig.GetRepositoryTypeName()),
 					},
 				},
 			},
@@ -2280,7 +2280,7 @@ func (r RepositoryGenerator) getMethod() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(r.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(r.entityConfig.GetMainModel().Name),
 						},
 					},
 					{
@@ -2473,7 +2473,7 @@ func (r RepositoryGenerator) getMethod() *ast.FuncDecl {
 												Kind: token.STRING,
 												Value: fmt.Sprintf(
 													`"%s_id"`,
-													strcase.ToSnake(r.domain.GetMainModel().Name),
+													strcase.ToSnake(r.entityConfig.GetMainModel().Name),
 												),
 											},
 											&ast.CallExpr{
@@ -2488,7 +2488,7 @@ func (r RepositoryGenerator) getMethod() *ast.FuncDecl {
 									&ast.CompositeLit{
 										Type: &ast.SelectorExpr{
 											X:   ast.NewIdent("entities"),
-											Sel: ast.NewIdent(r.domain.GetMainModel().Name),
+											Sel: ast.NewIdent(r.entityConfig.GetMainModel().Name),
 										},
 									},
 									ast.NewIdent("e"),
@@ -2523,9 +2523,9 @@ func (r RepositoryGenerator) syncGetMethod() error {
 	if method == nil {
 		method = r.getMethod()
 	}
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		param := param
-		column := fmt.Sprintf(`"%s.%s"`, r.domain.TableName(), param.Tag())
+		column := fmt.Sprintf(`"%s.%s"`, r.entityConfig.TableName(), param.Tag())
 		ast.Inspect(method, func(node ast.Node) bool {
 			if call, ok := node.(*ast.CallExpr); ok {
 				if fun, ok := call.Fun.(*ast.SelectorExpr); ok && fun.Sel.String() == "Select" {
@@ -2559,11 +2559,11 @@ func (r RepositoryGenerator) syncGetMethod() error {
 }
 
 func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
-	tableName := r.domain.TableName()
+	tableName := r.entityConfig.TableName()
 	updateBlock := &ast.BlockStmt{
 		List: []ast.Stmt{},
 	}
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		if param.GetName() == "ID" {
 			continue
 		}
@@ -2600,7 +2600,7 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 						ast.NewIdent("r"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(r.domain.GetRepositoryTypeName()),
+						X: ast.NewIdent(r.entityConfig.GetRepositoryTypeName()),
 					},
 				},
 			},
@@ -2631,7 +2631,7 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 						},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(r.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(r.entityConfig.GetMainModel().Name),
 						},
 					},
 				},
@@ -2817,7 +2817,7 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 												Kind: token.STRING,
 												Value: fmt.Sprintf(
 													`"%s_id"`,
-													strcase.ToSnake(r.domain.GetMainModel().Name),
+													strcase.ToSnake(r.entityConfig.GetMainModel().Name),
 												),
 											},
 											&ast.CallExpr{
@@ -2887,7 +2887,7 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 												Kind: token.STRING,
 												Value: fmt.Sprintf(
 													`"%s_id"`,
-													strcase.ToSnake(r.domain.GetMainModel().Name),
+													strcase.ToSnake(r.entityConfig.GetMainModel().Name),
 												),
 											},
 											&ast.CallExpr{
@@ -2941,7 +2941,7 @@ func (r RepositoryGenerator) updateMethod() *ast.FuncDecl {
 												Kind: token.STRING,
 												Value: fmt.Sprintf(
 													`"%s_id"`,
-													strcase.ToSnake(r.domain.GetMainModel().Name),
+													strcase.ToSnake(r.entityConfig.GetMainModel().Name),
 												),
 											},
 											&ast.CallExpr{
@@ -2989,7 +2989,7 @@ func (r RepositoryGenerator) syncUpdateMethod() error {
 	if method == nil {
 		method = r.updateMethod()
 	}
-	for _, param := range r.domain.GetMainModel().Params {
+	for _, param := range r.entityConfig.GetMainModel().Params {
 		param := param
 		if param.GetName() == "ID" {
 			continue
@@ -3071,7 +3071,7 @@ func (r RepositoryGenerator) astDeleteMethod() *ast.FuncDecl {
 						ast.NewIdent("r"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(r.domain.GetRepositoryTypeName()),
+						X: ast.NewIdent(r.entityConfig.GetRepositoryTypeName()),
 					},
 				},
 			},
@@ -3162,7 +3162,7 @@ func (r RepositoryGenerator) astDeleteMethod() *ast.FuncDecl {
 											Kind: token.STRING,
 											Value: fmt.Sprintf(
 												`"public.%s"`,
-												r.domain.TableName(),
+												r.entityConfig.TableName(),
 											),
 										},
 									},
@@ -3273,7 +3273,7 @@ func (r RepositoryGenerator) astDeleteMethod() *ast.FuncDecl {
 												Kind: token.STRING,
 												Value: fmt.Sprintf(
 													`"%s_id"`,
-													strcase.ToSnake(r.domain.GetMainModel().Name),
+													strcase.ToSnake(r.entityConfig.GetMainModel().Name),
 												),
 											},
 											&ast.CallExpr{
@@ -3344,7 +3344,7 @@ func (r RepositoryGenerator) astDeleteMethod() *ast.FuncDecl {
 												Kind: token.STRING,
 												Value: fmt.Sprintf(
 													`"%s_id"`,
-													strcase.ToSnake(r.domain.GetMainModel().Name),
+													strcase.ToSnake(r.entityConfig.GetMainModel().Name),
 												),
 											},
 											&ast.CallExpr{
@@ -3400,7 +3400,7 @@ func (r RepositoryGenerator) astDeleteMethod() *ast.FuncDecl {
 												Kind: token.STRING,
 												Value: fmt.Sprintf(
 													`"%s_id"`,
-													strcase.ToSnake(r.domain.GetMainModel().Name),
+													strcase.ToSnake(r.entityConfig.GetMainModel().Name),
 												),
 											},
 											&ast.CallExpr{
@@ -3514,7 +3514,7 @@ func (r RepositoryGenerator) astDTOToEntities() *ast.FuncDecl {
 						Type: &ast.ArrayType{
 							Elt: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(r.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(r.entityConfig.GetMainModel().Name),
 							},
 						},
 					},
@@ -3535,7 +3535,7 @@ func (r RepositoryGenerator) astDTOToEntities() *ast.FuncDecl {
 								&ast.ArrayType{
 									Elt: &ast.SelectorExpr{
 										X:   ast.NewIdent("entities"),
-										Sel: ast.NewIdent(r.domain.GetMainModel().Name),
+										Sel: ast.NewIdent(r.entityConfig.GetMainModel().Name),
 									},
 								},
 								&ast.CallExpr{
@@ -3589,7 +3589,7 @@ func (r RepositoryGenerator) astDTOToEntities() *ast.FuncDecl {
 
 func (r RepositoryGenerator) astOrderByMap() *ast.GenDecl {
 	var values []ast.Expr
-	for cnt, column := range r.domain.OrderingMap() {
+	for cnt, column := range r.entityConfig.OrderingMap() {
 		values = append(values, &ast.KeyValueExpr{
 			Key: &ast.SelectorExpr{
 				X: &ast.Ident{
@@ -3622,7 +3622,7 @@ func (r RepositoryGenerator) astOrderByMap() *ast.GenDecl {
 									Name: "entities",
 								},
 								Sel: &ast.Ident{
-									Name: r.domain.OrderingTypeName(),
+									Name: r.entityConfig.OrderingTypeName(),
 								},
 							},
 							Value: &ast.Ident{
@@ -3700,7 +3700,7 @@ func (r RepositoryGenerator) astEncodeOrderBy() *ast.FuncDecl {
 									Name: "entities",
 								},
 								Sel: &ast.Ident{
-									Name: r.domain.OrderingTypeName(),
+									Name: r.entityConfig.OrderingTypeName(),
 								},
 							},
 						},
@@ -3861,7 +3861,7 @@ func (r RepositoryGenerator) syncEncodeOrderBy() error {
 var destinationPath = "."
 
 func (r RepositoryGenerator) syncMigrations() error {
-	pattern := fmt.Sprintf("*_%s.up.sql", r.domain.TableName())
+	pattern := fmt.Sprintf("*_%s.up.sql", r.entityConfig.TableName())
 	dir, err := os.ReadDir(path.Join(
 		destinationPath,
 		"internal",
@@ -3891,7 +3891,7 @@ func (r RepositoryGenerator) syncMigrations() error {
 				"pkg",
 				"postgres",
 				"migrations",
-				r.domain.MigrationUpFileName(),
+				r.entityConfig.MigrationUpFileName(),
 			),
 			Name: "migration up",
 		},
@@ -3903,13 +3903,13 @@ func (r RepositoryGenerator) syncMigrations() error {
 				"pkg",
 				"postgres",
 				"migrations",
-				r.domain.MigrationDownFileName(),
+				r.entityConfig.MigrationDownFileName(),
 			),
 			Name: "migration down",
 		},
 	}
 	for _, file := range files {
-		if err := file.RenderToFile(&r.domain); err != nil {
+		if err := file.RenderToFile(&r.entityConfig); err != nil {
 			return err
 		}
 	}

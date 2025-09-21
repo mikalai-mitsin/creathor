@@ -17,8 +17,8 @@ type App struct {
 	app *configs.AppConfig
 }
 
-func NewApp(domain *configs.AppConfig) *App {
-	return &App{app: domain}
+func NewApp(appConfig *configs.AppConfig) *App {
+	return &App{app: appConfig}
 }
 
 func (a App) Sync() error {

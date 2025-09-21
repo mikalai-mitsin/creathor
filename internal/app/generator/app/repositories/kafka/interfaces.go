@@ -15,11 +15,11 @@ import (
 )
 
 type InterfacesGenerator struct {
-	domain configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewInterfacesGenerator(domain configs.EntityConfig) *InterfacesGenerator {
-	return &InterfacesGenerator{domain: domain}
+func NewInterfacesGenerator(entityConfig configs.EntityConfig) *InterfacesGenerator {
+	return &InterfacesGenerator{entityConfig: entityConfig}
 }
 
 func (r *InterfacesGenerator) filename() string {
@@ -27,10 +27,10 @@ func (r *InterfacesGenerator) filename() string {
 		".",
 		"internal",
 		"app",
-		r.domain.AppConfig.AppName(),
+		r.entityConfig.AppConfig.AppName(),
 		"repositories",
 		"kafka",
-		r.domain.DirName(),
+		r.entityConfig.DirName(),
 		"interfaces.go",
 	)
 }
@@ -86,13 +86,13 @@ func (r InterfacesGenerator) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: r.domain.AppConfig.ProjectConfig.LogImportPath(),
+					Value: r.entityConfig.AppConfig.ProjectConfig.LogImportPath(),
 				},
 			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: r.domain.AppConfig.ProjectConfig.KafkaImportPath(),
+					Value: r.entityConfig.AppConfig.ProjectConfig.KafkaImportPath(),
 				},
 			},
 		},

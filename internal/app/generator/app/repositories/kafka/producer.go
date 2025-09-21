@@ -11,11 +11,11 @@ import (
 )
 
 type ProducerGenerator struct {
-	domain *configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewProducerGenerator(domain *configs.EntityConfig) *ProducerGenerator {
-	return &ProducerGenerator{domain: domain}
+func NewProducerGenerator(entityConfig configs.EntityConfig) *ProducerGenerator {
+	return &ProducerGenerator{entityConfig: entityConfig}
 }
 
 func (r *ProducerGenerator) Sync() error {
@@ -28,7 +28,7 @@ func (r *ProducerGenerator) Sync() error {
 		DestinationPath: r.filename(),
 		Name:            "producer",
 	}
-	if err := test.RenderToFile(r.domain); err != nil {
+	if err := test.RenderToFile(&r.entityConfig); err != nil {
 		return err
 	}
 	return nil
@@ -39,10 +39,10 @@ func (r *ProducerGenerator) filename() string {
 		".",
 		"internal",
 		"app",
-		r.domain.AppConfig.AppName(),
+		r.entityConfig.AppConfig.AppName(),
 		"repositories",
 		"kafka",
-		r.domain.DirName(),
-		r.domain.FileName(),
+		r.entityConfig.DirName(),
+		r.entityConfig.FileName(),
 	)
 }

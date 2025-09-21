@@ -16,11 +16,11 @@ import (
 )
 
 type UseCaseGenerator struct {
-	domain configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewUseCaseGenerator(domain configs.EntityConfig) *UseCaseGenerator {
-	return &UseCaseGenerator{domain: domain}
+func NewUseCaseGenerator(entityConfig configs.EntityConfig) *UseCaseGenerator {
+	return &UseCaseGenerator{entityConfig: entityConfig}
 }
 
 func (u UseCaseGenerator) Sync() error {
@@ -56,24 +56,24 @@ func (u UseCaseGenerator) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
-		u.domain.AppConfig.AppName(),
+		u.entityConfig.AppConfig.AppName(),
 		"usecases",
-		u.domain.DirName(),
-		u.domain.FileName(),
+		u.entityConfig.DirName(),
+		u.entityConfig.FileName(),
 	)
 }
 
 func (u UseCaseGenerator) structure() *ast.TypeSpec {
 	fields := []*ast.Field{
 		{
-			Names: []*ast.Ident{ast.NewIdent(u.domain.GetServicePrivateVariableName())},
-			Type:  ast.NewIdent(u.domain.GetServiceInterfaceName()),
+			Names: []*ast.Ident{ast.NewIdent(u.entityConfig.GetServicePrivateVariableName())},
+			Type:  ast.NewIdent(u.entityConfig.GetServiceInterfaceName()),
 		},
 	}
-	if u.domain.AppConfig.ProjectConfig.KafkaEnabled {
+	if u.entityConfig.AppConfig.ProjectConfig.KafkaEnabled {
 		fields = append(fields, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent(u.domain.EventServicePrivateVariableName())},
-			Type:  ast.NewIdent(u.domain.EventServiceInterfaceName()),
+			Names: []*ast.Ident{ast.NewIdent(u.entityConfig.EventServicePrivateVariableName())},
+			Type:  ast.NewIdent(u.entityConfig.EventServiceInterfaceName()),
 		})
 	}
 	fields = append(fields, &ast.Field{
@@ -84,7 +84,7 @@ func (u UseCaseGenerator) structure() *ast.TypeSpec {
 		Type:  ast.NewIdent("logger"),
 	})
 	structure := &ast.TypeSpec{
-		Name: ast.NewIdent(u.domain.GetUseCaseTypeName()),
+		Name: ast.NewIdent(u.entityConfig.GetUseCaseTypeName()),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: fields,
@@ -100,7 +100,7 @@ func (u UseCaseGenerator) syncStruct() error {
 	if err != nil {
 		file = u.file()
 	}
-	structure, structureExists := astfile.FindType(file, u.domain.GetUseCaseTypeName())
+	structure, structureExists := astfile.FindType(file, u.entityConfig.GetUseCaseTypeName())
 	if structure == nil {
 		structure = u.structure()
 	}
@@ -124,14 +124,14 @@ func (u UseCaseGenerator) syncStruct() error {
 func (u UseCaseGenerator) constructor() *ast.FuncDecl {
 	fields := []*ast.Field{
 		{
-			Names: []*ast.Ident{ast.NewIdent(u.domain.GetServicePrivateVariableName())},
-			Type:  ast.NewIdent(u.domain.GetServiceInterfaceName()),
+			Names: []*ast.Ident{ast.NewIdent(u.entityConfig.GetServicePrivateVariableName())},
+			Type:  ast.NewIdent(u.entityConfig.GetServiceInterfaceName()),
 		},
 	}
-	if u.domain.AppConfig.ProjectConfig.KafkaEnabled {
+	if u.entityConfig.AppConfig.ProjectConfig.KafkaEnabled {
 		fields = append(fields, &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent(u.domain.EventServicePrivateVariableName())},
-			Type:  ast.NewIdent(u.domain.EventServiceInterfaceName()),
+			Names: []*ast.Ident{ast.NewIdent(u.entityConfig.EventServicePrivateVariableName())},
+			Type:  ast.NewIdent(u.entityConfig.EventServiceInterfaceName()),
 		})
 	}
 	fields = append(fields, &ast.Field{
@@ -143,14 +143,14 @@ func (u UseCaseGenerator) constructor() *ast.FuncDecl {
 	})
 	exprs := []ast.Expr{
 		&ast.KeyValueExpr{
-			Key:   ast.NewIdent(u.domain.GetServicePrivateVariableName()),
-			Value: ast.NewIdent(u.domain.GetServicePrivateVariableName()),
+			Key:   ast.NewIdent(u.entityConfig.GetServicePrivateVariableName()),
+			Value: ast.NewIdent(u.entityConfig.GetServicePrivateVariableName()),
 		},
 	}
-	if u.domain.AppConfig.ProjectConfig.KafkaEnabled {
+	if u.entityConfig.AppConfig.ProjectConfig.KafkaEnabled {
 		exprs = append(exprs, &ast.KeyValueExpr{
-			Key:   ast.NewIdent(u.domain.EventServicePrivateVariableName()),
-			Value: ast.NewIdent(u.domain.EventServicePrivateVariableName()),
+			Key:   ast.NewIdent(u.entityConfig.EventServicePrivateVariableName()),
+			Value: ast.NewIdent(u.entityConfig.EventServicePrivateVariableName()),
 		})
 	}
 	exprs = append(exprs, &ast.KeyValueExpr{
@@ -161,7 +161,7 @@ func (u UseCaseGenerator) constructor() *ast.FuncDecl {
 		Value: ast.NewIdent("logger"),
 	})
 	constructor := &ast.FuncDecl{
-		Name: ast.NewIdent(u.domain.GetUseCaseConstructorName()),
+		Name: ast.NewIdent(u.entityConfig.GetUseCaseConstructorName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: fields,
@@ -170,7 +170,7 @@ func (u UseCaseGenerator) constructor() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Type: ast.NewIdent(
-							fmt.Sprintf("*%s", u.domain.GetUseCaseTypeName()),
+							fmt.Sprintf("*%s", u.entityConfig.GetUseCaseTypeName()),
 						),
 					},
 				},
@@ -183,7 +183,7 @@ func (u UseCaseGenerator) constructor() *ast.FuncDecl {
 						&ast.UnaryExpr{
 							Op: token.AND,
 							X: &ast.CompositeLit{
-								Type: ast.NewIdent(u.domain.GetUseCaseTypeName()),
+								Type: ast.NewIdent(u.entityConfig.GetUseCaseTypeName()),
 								Elts: exprs,
 							},
 						},
@@ -201,7 +201,7 @@ func (u UseCaseGenerator) syncConstructor() error {
 	if err != nil {
 		return err
 	}
-	constructor, constructorExists := astfile.FindFunc(file, u.domain.GetUseCaseConstructorName())
+	constructor, constructorExists := astfile.FindFunc(file, u.entityConfig.GetUseCaseConstructorName())
 	if constructor == nil {
 		constructor = u.constructor()
 	}
@@ -382,7 +382,7 @@ func (u UseCaseGenerator) createMethod() *ast.FuncDecl {
 		},
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(u.domain.GetOneVariableName()),
+				ast.NewIdent(u.entityConfig.GetOneVariableName()),
 				ast.NewIdent("err"),
 			},
 			Tok: token.DEFINE,
@@ -391,7 +391,7 @@ func (u UseCaseGenerator) createMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("u"),
-							Sel: ast.NewIdent(u.domain.GetServicePrivateVariableName()),
+							Sel: ast.NewIdent(u.entityConfig.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("Create"),
 					},
@@ -418,7 +418,7 @@ func (u UseCaseGenerator) createMethod() *ast.FuncDecl {
 							&ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+									Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 								},
 							},
 							ast.NewIdent("err"),
@@ -429,7 +429,7 @@ func (u UseCaseGenerator) createMethod() *ast.FuncDecl {
 			Else: nil,
 		},
 	)
-	if u.domain.AppConfig.ProjectConfig.KafkaEnabled {
+	if u.entityConfig.AppConfig.ProjectConfig.KafkaEnabled {
 		body = append(body, &ast.IfStmt{
 			Init: &ast.AssignStmt{
 				Lhs: []ast.Expr{
@@ -446,7 +446,7 @@ func (u UseCaseGenerator) createMethod() *ast.FuncDecl {
 									Name: "u",
 								},
 								Sel: &ast.Ident{
-									Name: u.domain.EventServicePrivateVariableName(),
+									Name: u.entityConfig.EventServicePrivateVariableName(),
 								},
 							},
 							Sel: &ast.Ident{
@@ -459,7 +459,7 @@ func (u UseCaseGenerator) createMethod() *ast.FuncDecl {
 							},
 							ast.NewIdent("tx"),
 							&ast.Ident{
-								Name: u.domain.GetOneVariableName(),
+								Name: u.entityConfig.GetOneVariableName(),
 							},
 						},
 					},
@@ -484,7 +484,7 @@ func (u UseCaseGenerator) createMethod() *ast.FuncDecl {
 										Name: "entities",
 									},
 									Sel: &ast.Ident{
-										Name: u.domain.GetMainModel().Name,
+										Name: u.entityConfig.GetMainModel().Name,
 									},
 								},
 							},
@@ -539,7 +539,7 @@ func (u UseCaseGenerator) createMethod() *ast.FuncDecl {
 										Name: "entities",
 									},
 									Sel: &ast.Ident{
-										Name: u.domain.GetMainModel().Name,
+										Name: u.entityConfig.GetMainModel().Name,
 									},
 								},
 							},
@@ -554,7 +554,7 @@ func (u UseCaseGenerator) createMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(u.domain.GetOneVariableName()),
+				ast.NewIdent(u.entityConfig.GetOneVariableName()),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -567,7 +567,7 @@ func (u UseCaseGenerator) createMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.GetUseCaseTypeName()),
+						X: ast.NewIdent(u.entityConfig.GetUseCaseTypeName()),
 					},
 				},
 			},
@@ -587,7 +587,7 @@ func (u UseCaseGenerator) createMethod() *ast.FuncDecl {
 						Names: []*ast.Ident{ast.NewIdent("create")},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetCreateModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetCreateModel().Name),
 						},
 					},
 				},
@@ -597,7 +597,7 @@ func (u UseCaseGenerator) createMethod() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 						},
 					},
 					{
@@ -642,7 +642,7 @@ func (u UseCaseGenerator) astListMethod() *ast.FuncDecl {
 		// Try to update model at use case
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(u.domain.GetManyVariableName()),
+				ast.NewIdent(u.entityConfig.GetManyVariableName()),
 				ast.NewIdent("count"),
 				ast.NewIdent("err"),
 			},
@@ -652,7 +652,7 @@ func (u UseCaseGenerator) astListMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("u"),
-							Sel: ast.NewIdent(u.domain.GetServicePrivateVariableName()),
+							Sel: ast.NewIdent(u.entityConfig.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("List"),
 					},
@@ -687,7 +687,7 @@ func (u UseCaseGenerator) astListMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(u.domain.GetManyVariableName()),
+				ast.NewIdent(u.entityConfig.GetManyVariableName()),
 				ast.NewIdent("count"),
 				ast.NewIdent("nil"),
 			},
@@ -701,7 +701,7 @@ func (u UseCaseGenerator) astListMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.GetUseCaseTypeName()),
+						X: ast.NewIdent(u.entityConfig.GetUseCaseTypeName()),
 					},
 				},
 			},
@@ -721,7 +721,7 @@ func (u UseCaseGenerator) astListMethod() *ast.FuncDecl {
 						Names: []*ast.Ident{ast.NewIdent("filter")},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetFilterModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetFilterModel().Name),
 						},
 					},
 				},
@@ -732,7 +732,7 @@ func (u UseCaseGenerator) astListMethod() *ast.FuncDecl {
 						Type: &ast.ArrayType{
 							Elt: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 							},
 						},
 					},
@@ -781,7 +781,7 @@ func (u UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 		// Try to get model from use case
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(u.domain.GetOneVariableName()),
+				ast.NewIdent(u.entityConfig.GetOneVariableName()),
 				ast.NewIdent("err"),
 			},
 			Tok: token.DEFINE,
@@ -790,7 +790,7 @@ func (u UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("u"),
-							Sel: ast.NewIdent(u.domain.GetServicePrivateVariableName()),
+							Sel: ast.NewIdent(u.entityConfig.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("Get"),
 					},
@@ -816,7 +816,7 @@ func (u UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 							&ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+									Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 								},
 							},
 							ast.NewIdent("err"),
@@ -832,7 +832,7 @@ func (u UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(u.domain.GetOneVariableName()),
+				ast.NewIdent(u.entityConfig.GetOneVariableName()),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -845,7 +845,7 @@ func (u UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.GetUseCaseTypeName()),
+						X: ast.NewIdent(u.entityConfig.GetUseCaseTypeName()),
 					},
 				},
 			},
@@ -875,7 +875,7 @@ func (u UseCaseGenerator) astGetMethod() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 						},
 					},
 					{
@@ -1081,7 +1081,7 @@ func (u UseCaseGenerator) updateMethod() *ast.FuncDecl {
 		// Try to update model at use case
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(u.domain.GetOneVariableName()),
+				ast.NewIdent(u.entityConfig.GetOneVariableName()),
 				ast.NewIdent("err"),
 			},
 			Tok: token.DEFINE,
@@ -1090,7 +1090,7 @@ func (u UseCaseGenerator) updateMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("u"),
-							Sel: ast.NewIdent(u.domain.GetServicePrivateVariableName()),
+							Sel: ast.NewIdent(u.entityConfig.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("Update"),
 					},
@@ -1117,7 +1117,7 @@ func (u UseCaseGenerator) updateMethod() *ast.FuncDecl {
 							&ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+									Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 								},
 							},
 							ast.NewIdent("err"),
@@ -1128,7 +1128,7 @@ func (u UseCaseGenerator) updateMethod() *ast.FuncDecl {
 			Else: nil,
 		},
 	)
-	if u.domain.AppConfig.ProjectConfig.KafkaEnabled {
+	if u.entityConfig.AppConfig.ProjectConfig.KafkaEnabled {
 		body = append(body, &ast.IfStmt{
 			Init: &ast.AssignStmt{
 				Lhs: []ast.Expr{
@@ -1145,7 +1145,7 @@ func (u UseCaseGenerator) updateMethod() *ast.FuncDecl {
 									Name: "u",
 								},
 								Sel: &ast.Ident{
-									Name: u.domain.EventServicePrivateVariableName(),
+									Name: u.entityConfig.EventServicePrivateVariableName(),
 								},
 							},
 							Sel: &ast.Ident{
@@ -1158,7 +1158,7 @@ func (u UseCaseGenerator) updateMethod() *ast.FuncDecl {
 							},
 							ast.NewIdent("tx"),
 							&ast.Ident{
-								Name: u.domain.GetOneVariableName(),
+								Name: u.entityConfig.GetOneVariableName(),
 							},
 						},
 					},
@@ -1183,7 +1183,7 @@ func (u UseCaseGenerator) updateMethod() *ast.FuncDecl {
 										Name: "entities",
 									},
 									Sel: &ast.Ident{
-										Name: u.domain.GetMainModel().Name,
+										Name: u.entityConfig.GetMainModel().Name,
 									},
 								},
 							},
@@ -1238,7 +1238,7 @@ func (u UseCaseGenerator) updateMethod() *ast.FuncDecl {
 										Name: "entities",
 									},
 									Sel: &ast.Ident{
-										Name: u.domain.GetMainModel().Name,
+										Name: u.entityConfig.GetMainModel().Name,
 									},
 								},
 							},
@@ -1253,7 +1253,7 @@ func (u UseCaseGenerator) updateMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(u.domain.GetOneVariableName()),
+				ast.NewIdent(u.entityConfig.GetOneVariableName()),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -1266,7 +1266,7 @@ func (u UseCaseGenerator) updateMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.GetUseCaseTypeName()),
+						X: ast.NewIdent(u.entityConfig.GetUseCaseTypeName()),
 					},
 				},
 			},
@@ -1286,7 +1286,7 @@ func (u UseCaseGenerator) updateMethod() *ast.FuncDecl {
 						Names: []*ast.Ident{ast.NewIdent("update")},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetUpdateModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetUpdateModel().Name),
 						},
 					},
 				},
@@ -1296,7 +1296,7 @@ func (u UseCaseGenerator) updateMethod() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 						},
 					},
 					{
@@ -1502,7 +1502,7 @@ func (u UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 		// Try to delete model at use case
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent(u.domain.GetOneVariableName()),
+				ast.NewIdent(u.entityConfig.GetOneVariableName()),
 				ast.NewIdent("err"),
 			},
 			Tok: token.DEFINE,
@@ -1511,14 +1511,14 @@ func (u UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("u"),
-							Sel: ast.NewIdent(u.domain.GetServicePrivateVariableName()),
+							Sel: ast.NewIdent(u.entityConfig.GetServicePrivateVariableName()),
 						},
 						Sel: ast.NewIdent("Delete"),
 					},
 					Args: []ast.Expr{
 						ast.NewIdent("ctx"),
 						ast.NewIdent("tx"),
-						ast.NewIdent(u.domain.GetDeleteModel().Variable),
+						ast.NewIdent(u.entityConfig.GetDeleteModel().Variable),
 					},
 				},
 			},
@@ -1536,7 +1536,7 @@ func (u UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 							&ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+									Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 								},
 							},
 							ast.NewIdent("err"),
@@ -1546,7 +1546,7 @@ func (u UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 			},
 		},
 	)
-	if u.domain.AppConfig.ProjectConfig.KafkaEnabled {
+	if u.entityConfig.AppConfig.ProjectConfig.KafkaEnabled {
 		body = append(body, &ast.IfStmt{
 			Init: &ast.AssignStmt{
 				Lhs: []ast.Expr{
@@ -1563,7 +1563,7 @@ func (u UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 									Name: "u",
 								},
 								Sel: &ast.Ident{
-									Name: u.domain.EventServicePrivateVariableName(),
+									Name: u.entityConfig.EventServicePrivateVariableName(),
 								},
 							},
 							Sel: &ast.Ident{
@@ -1576,7 +1576,7 @@ func (u UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 							},
 							ast.NewIdent("tx"),
 							&ast.Ident{
-								Name: u.domain.GetOneVariableName(),
+								Name: u.entityConfig.GetOneVariableName(),
 							},
 						},
 					},
@@ -1598,7 +1598,7 @@ func (u UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 							&ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+									Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 								},
 							},
 							&ast.Ident{
@@ -1649,7 +1649,7 @@ func (u UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 							&ast.CompositeLit{
 								Type: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+									Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 								},
 							},
 							&ast.Ident{
@@ -1663,7 +1663,7 @@ func (u UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 		// Return created model and nil error
 		&ast.ReturnStmt{
 			Results: []ast.Expr{
-				ast.NewIdent(u.domain.GetOneVariableName()),
+				ast.NewIdent(u.entityConfig.GetOneVariableName()),
 				ast.NewIdent("nil"),
 			},
 		},
@@ -1676,7 +1676,7 @@ func (u UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 						ast.NewIdent("u"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(u.domain.GetUseCaseTypeName()),
+						X: ast.NewIdent(u.entityConfig.GetUseCaseTypeName()),
 					},
 				},
 			},
@@ -1693,10 +1693,10 @@ func (u UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 						},
 					},
 					{
-						Names: []*ast.Ident{ast.NewIdent(u.domain.GetDeleteModel().Variable)},
+						Names: []*ast.Ident{ast.NewIdent(u.entityConfig.GetDeleteModel().Variable)},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetDeleteModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetDeleteModel().Name),
 						},
 					},
 				},
@@ -1706,7 +1706,7 @@ func (u UseCaseGenerator) deleteMethod() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(u.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(u.entityConfig.GetMainModel().Name),
 						},
 					},
 					{
@@ -1756,13 +1756,13 @@ func (u UseCaseGenerator) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: u.domain.ImportPathEntities(),
+				Value: u.entityConfig.ImportPathEntities(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: u.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+				Value: u.entityConfig.AppConfig.ProjectConfig.UUIDImportPath(),
 			},
 		},
 	}

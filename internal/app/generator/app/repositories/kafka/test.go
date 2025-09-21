@@ -9,11 +9,11 @@ import (
 )
 
 type TestGenerator struct {
-	domain *configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewProducerTestGenerator(domain *configs.EntityConfig) *TestGenerator {
-	return &TestGenerator{domain: domain}
+func NewProducerTestGenerator(entityConfig configs.EntityConfig) *TestGenerator {
+	return &TestGenerator{entityConfig: entityConfig}
 }
 
 func (g *TestGenerator) Sync() error {
@@ -24,15 +24,15 @@ func (g *TestGenerator) Sync() error {
 			".",
 			"internal",
 			"app",
-			g.domain.AppConfig.AppName(),
+			g.entityConfig.AppConfig.AppName(),
 			"repositories",
 			"kafka",
-			g.domain.DirName(),
-			g.domain.TestFileName(),
+			g.entityConfig.DirName(),
+			g.entityConfig.TestFileName(),
 		),
 		Name: "producer test",
 	}
-	if err := test.RenderToFile(g.domain); err != nil {
+	if err := test.RenderToFile(&g.entityConfig); err != nil {
 		return err
 	}
 	return nil

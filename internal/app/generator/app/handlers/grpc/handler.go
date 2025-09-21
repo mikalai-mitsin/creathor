@@ -15,12 +15,12 @@ import (
 )
 
 type HandlerGenerator struct {
-	domain configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewHandlerGenerator(domain configs.EntityConfig) *HandlerGenerator {
+func NewHandlerGenerator(entityConfig configs.EntityConfig) *HandlerGenerator {
 	return &HandlerGenerator{
-		domain: domain,
+		entityConfig: entityConfig,
 	}
 }
 
@@ -35,30 +35,30 @@ func (h HandlerGenerator) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: h.domain.ImportPathEntities(),
+				Value: h.entityConfig.ImportPathEntities(),
 			},
 		},
 		&ast.ImportSpec{
-			Name: ast.NewIdent(h.domain.ProtoPackage),
+			Name: ast.NewIdent(h.entityConfig.ProtoPackage),
 			Path: &ast.BasicLit{
 				Kind: token.STRING,
 				Value: fmt.Sprintf(
 					`"%s/pkg/%s/v1"`,
-					h.domain.Module,
-					h.domain.ProtoPackage,
+					h.entityConfig.Module,
+					h.entityConfig.ProtoPackage,
 				),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: h.domain.AppConfig.ProjectConfig.PointerImportPath(),
+				Value: h.entityConfig.AppConfig.ProjectConfig.PointerImportPath(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: h.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+				Value: h.entityConfig.AppConfig.ProjectConfig.UUIDImportPath(),
 			},
 		},
 		&ast.ImportSpec{
@@ -74,7 +74,7 @@ func (h HandlerGenerator) file() *ast.File {
 			},
 		},
 	}
-	for _, param := range h.domain.GetUpdateModel().Params {
+	for _, param := range h.entityConfig.GetUpdateModel().Params {
 		if param.IsSlice() {
 			importSpec = append(importSpec, &ast.ImportSpec{
 				Path: &ast.BasicLit{
@@ -100,36 +100,36 @@ func (h HandlerGenerator) filename() string {
 	return path.Join(
 		"internal",
 		"app",
-		h.domain.AppConfig.AppName(),
+		h.entityConfig.AppConfig.AppName(),
 		"handlers",
 		"grpc",
-		h.domain.DirName(),
-		h.domain.FileName(),
+		h.entityConfig.DirName(),
+		h.entityConfig.FileName(),
 	)
 }
 
 func (h HandlerGenerator) structure() *ast.TypeSpec {
 	return &ast.TypeSpec{
-		Name: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
+		Name: ast.NewIdent(h.entityConfig.GetGRPCHandlerTypeName()),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Type: &ast.SelectorExpr{
-							X: ast.NewIdent(h.domain.ProtoPackage),
+							X: ast.NewIdent(h.entityConfig.ProtoPackage),
 							Sel: &ast.Ident{
 								Name: fmt.Sprintf(
 									"Unimplemented%sServiceServer",
-									h.domain.GetMainModel().Name,
+									h.entityConfig.GetMainModel().Name,
 								),
 							},
 						},
 					},
 					{
 						Names: []*ast.Ident{
-							ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+							ast.NewIdent(h.entityConfig.GetUseCasePrivateVariableName()),
 						},
-						Type: ast.NewIdent(h.domain.GetUseCaseInterfaceName()),
+						Type: ast.NewIdent(h.entityConfig.GetUseCaseInterfaceName()),
 					},
 					{
 						Names: []*ast.Ident{
@@ -150,7 +150,7 @@ func (h HandlerGenerator) syncStruct() error {
 	if err != nil {
 		file = h.file()
 	}
-	structure, structureExists := astfile.FindType(file, h.domain.GetGRPCHandlerTypeName())
+	structure, structureExists := astfile.FindType(file, h.entityConfig.GetGRPCHandlerTypeName())
 	if structure == nil {
 		structure = h.structure()
 	}
@@ -173,15 +173,15 @@ func (h HandlerGenerator) syncStruct() error {
 
 func (h HandlerGenerator) constructor() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("New%s", h.domain.GetGRPCHandlerTypeName())),
+		Name: ast.NewIdent(fmt.Sprintf("New%s", h.entityConfig.GetGRPCHandlerTypeName())),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+							ast.NewIdent(h.entityConfig.GetUseCasePrivateVariableName()),
 						},
-						Type: ast.NewIdent(h.domain.GetUseCaseInterfaceName()),
+						Type: ast.NewIdent(h.entityConfig.GetUseCaseInterfaceName()),
 					},
 					{
 						Names: []*ast.Ident{
@@ -195,7 +195,7 @@ func (h HandlerGenerator) constructor() *ast.FuncDecl {
 				List: []*ast.Field{
 					{
 						Type: &ast.StarExpr{
-							X: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
+							X: ast.NewIdent(h.entityConfig.GetGRPCHandlerTypeName()),
 						},
 					},
 				},
@@ -211,16 +211,16 @@ func (h HandlerGenerator) constructor() *ast.FuncDecl {
 								Type: &ast.Ident{
 									Name: fmt.Sprintf(
 										"%sServiceServer",
-										h.domain.GetMainModel().Name,
+										h.entityConfig.GetMainModel().Name,
 									),
 								},
 								Elts: []ast.Expr{
 									&ast.KeyValueExpr{
 										Key: ast.NewIdent(
-											h.domain.GetUseCasePrivateVariableName(),
+											h.entityConfig.GetUseCasePrivateVariableName(),
 										),
 										Value: ast.NewIdent(
-											h.domain.GetUseCasePrivateVariableName(),
+											h.entityConfig.GetUseCasePrivateVariableName(),
 										),
 									},
 									&ast.KeyValueExpr{
@@ -244,7 +244,7 @@ func (h HandlerGenerator) syncConstructor() error {
 	if err != nil {
 		return err
 	}
-	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCHandlerConstructorName())
+	method, methodExist := astfile.FindFunc(file, h.entityConfig.GetGRPCHandlerConstructorName())
 	if method == nil {
 		method = h.constructor()
 	}
@@ -265,7 +265,7 @@ func (h HandlerGenerator) create() *ast.FuncDecl {
 	args := []ast.Expr{
 		ast.NewIdent("ctx"),
 		&ast.CallExpr{
-			Fun: ast.NewIdent(h.domain.GetGRPCCreateDTOEncodeName()),
+			Fun: ast.NewIdent(h.entityConfig.GetGRPCCreateDTOEncodeName()),
 			Args: []ast.Expr{
 				ast.NewIdent("input"),
 			},
@@ -279,7 +279,7 @@ func (h HandlerGenerator) create() *ast.FuncDecl {
 						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
+						X: ast.NewIdent(h.entityConfig.GetGRPCHandlerTypeName()),
 					},
 				},
 			},
@@ -303,8 +303,8 @@ func (h HandlerGenerator) create() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetCreateModel().Name),
 							},
 						},
 					},
@@ -315,8 +315,8 @@ func (h HandlerGenerator) create() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetMainModel().Name),
 							},
 						},
 					},
@@ -339,7 +339,7 @@ func (h HandlerGenerator) create() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("s"),
-									Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+									Sel: ast.NewIdent(h.entityConfig.GetUseCasePrivateVariableName()),
 								},
 								Sel: ast.NewIdent("Create"),
 							},
@@ -368,7 +368,7 @@ func (h HandlerGenerator) create() *ast.FuncDecl {
 					Results: []ast.Expr{
 						&ast.CallExpr{
 							Fun: ast.NewIdent(
-								h.domain.GetGRPCMainDecodeName(),
+								h.entityConfig.GetGRPCMainDecodeName(),
 							),
 							Args: []ast.Expr{
 								ast.NewIdent("item"),
@@ -431,7 +431,7 @@ func (h HandlerGenerator) get() *ast.FuncDecl {
 						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
+						X: ast.NewIdent(h.entityConfig.GetGRPCHandlerTypeName()),
 					},
 				},
 			},
@@ -455,9 +455,9 @@ func (h HandlerGenerator) get() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: ast.NewIdent(h.domain.ProtoPackage),
+								X: ast.NewIdent(h.entityConfig.ProtoPackage),
 								Sel: ast.NewIdent(
-									fmt.Sprintf("%sGet", h.domain.GetMainModel().Name),
+									fmt.Sprintf("%sGet", h.entityConfig.GetMainModel().Name),
 								),
 							},
 						},
@@ -469,8 +469,8 @@ func (h HandlerGenerator) get() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetMainModel().Name),
 							},
 						},
 					},
@@ -493,7 +493,7 @@ func (h HandlerGenerator) get() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("s"),
-									Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+									Sel: ast.NewIdent(h.entityConfig.GetUseCasePrivateVariableName()),
 								},
 								Sel: ast.NewIdent("Get"),
 							},
@@ -522,7 +522,7 @@ func (h HandlerGenerator) get() *ast.FuncDecl {
 					Results: []ast.Expr{
 						&ast.CallExpr{
 							Fun: ast.NewIdent(
-								h.domain.GetGRPCMainDecodeName(),
+								h.entityConfig.GetGRPCMainDecodeName(),
 							),
 							Args: []ast.Expr{
 								ast.NewIdent("item"),
@@ -564,7 +564,7 @@ func (h HandlerGenerator) list() *ast.FuncDecl {
 	args := []ast.Expr{
 		ast.NewIdent("ctx"),
 		&ast.CallExpr{
-			Fun: ast.NewIdent(h.domain.GetGRPCFilterDTOEncodeName()),
+			Fun: ast.NewIdent(h.entityConfig.GetGRPCFilterDTOEncodeName()),
 			Args: []ast.Expr{
 				ast.NewIdent("filter"),
 			},
@@ -578,7 +578,7 @@ func (h HandlerGenerator) list() *ast.FuncDecl {
 						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
+						X: ast.NewIdent(h.entityConfig.GetGRPCHandlerTypeName()),
 					},
 				},
 			},
@@ -602,8 +602,8 @@ func (h HandlerGenerator) list() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetFilterModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetFilterModel().Name),
 							},
 						},
 					},
@@ -614,9 +614,9 @@ func (h HandlerGenerator) list() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: ast.NewIdent(h.domain.ProtoPackage),
+								X: ast.NewIdent(h.entityConfig.ProtoPackage),
 								Sel: ast.NewIdent(
-									fmt.Sprintf("List%s", h.domain.GetMainModel().Name),
+									fmt.Sprintf("List%s", h.entityConfig.GetMainModel().Name),
 								),
 							},
 						},
@@ -641,7 +641,7 @@ func (h HandlerGenerator) list() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("s"),
-									Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+									Sel: ast.NewIdent(h.entityConfig.GetUseCasePrivateVariableName()),
 								},
 								Sel: ast.NewIdent("List"),
 							},
@@ -669,7 +669,7 @@ func (h HandlerGenerator) list() *ast.FuncDecl {
 				&ast.ReturnStmt{
 					Results: []ast.Expr{
 						&ast.CallExpr{
-							Fun: ast.NewIdent(h.domain.GetGRPCMainListDecodeName()),
+							Fun: ast.NewIdent(h.entityConfig.GetGRPCMainListDecodeName()),
 							Args: []ast.Expr{
 								ast.NewIdent("items"),
 								ast.NewIdent("count"),
@@ -711,7 +711,7 @@ func (h HandlerGenerator) update() *ast.FuncDecl {
 	args := []ast.Expr{
 		ast.NewIdent("ctx"),
 		&ast.CallExpr{
-			Fun: ast.NewIdent(h.domain.GetGRPCUpdateDTOEncodeName()),
+			Fun: ast.NewIdent(h.entityConfig.GetGRPCUpdateDTOEncodeName()),
 			Args: []ast.Expr{
 				ast.NewIdent("input"),
 			},
@@ -725,7 +725,7 @@ func (h HandlerGenerator) update() *ast.FuncDecl {
 						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
+						X: ast.NewIdent(h.entityConfig.GetGRPCHandlerTypeName()),
 					},
 				},
 			},
@@ -749,8 +749,8 @@ func (h HandlerGenerator) update() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetUpdateModel().Name),
 							},
 						},
 					},
@@ -761,8 +761,8 @@ func (h HandlerGenerator) update() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetMainModel().Name),
 							},
 						},
 					},
@@ -785,7 +785,7 @@ func (h HandlerGenerator) update() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("s"),
-									Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+									Sel: ast.NewIdent(h.entityConfig.GetUseCasePrivateVariableName()),
 								},
 								Sel: ast.NewIdent("Update"),
 							},
@@ -814,7 +814,7 @@ func (h HandlerGenerator) update() *ast.FuncDecl {
 					Results: []ast.Expr{
 						&ast.CallExpr{
 							Fun: ast.NewIdent(
-								h.domain.GetGRPCMainDecodeName(),
+								h.entityConfig.GetGRPCMainDecodeName(),
 							),
 							Args: []ast.Expr{
 								ast.NewIdent("item"),
@@ -856,7 +856,7 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 	args := []ast.Expr{
 		ast.NewIdent("ctx"),
 		&ast.CallExpr{
-			Fun: ast.NewIdent(h.domain.GetGRPCDeleteDTOEncodeName()),
+			Fun: ast.NewIdent(h.entityConfig.GetGRPCDeleteDTOEncodeName()),
 			Args: []ast.Expr{
 				ast.NewIdent("input"),
 			},
@@ -870,7 +870,7 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
+						X: ast.NewIdent(h.entityConfig.GetGRPCHandlerTypeName()),
 					},
 				},
 			},
@@ -894,9 +894,9 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X: ast.NewIdent(h.domain.ProtoPackage),
+								X: ast.NewIdent(h.entityConfig.ProtoPackage),
 								Sel: ast.NewIdent(
-									fmt.Sprintf("%sDelete", h.domain.GetMainModel().Name),
+									fmt.Sprintf("%sDelete", h.entityConfig.GetMainModel().Name),
 								),
 							},
 						},
@@ -908,8 +908,8 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 					{
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetMainModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetMainModel().Name),
 							},
 						},
 					},
@@ -923,7 +923,7 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 			List: []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
-						ast.NewIdent(h.domain.GetOneVariableName()),
+						ast.NewIdent(h.entityConfig.GetOneVariableName()),
 						ast.NewIdent("err"),
 					},
 					Tok: token.DEFINE,
@@ -932,7 +932,7 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 							Fun: &ast.SelectorExpr{
 								X: &ast.SelectorExpr{
 									X:   ast.NewIdent("s"),
-									Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+									Sel: ast.NewIdent(h.entityConfig.GetUseCasePrivateVariableName()),
 								},
 								Sel: ast.NewIdent("Delete"),
 							},
@@ -961,10 +961,10 @@ func (h HandlerGenerator) delete() *ast.FuncDecl {
 					Results: []ast.Expr{
 						&ast.CallExpr{
 							Fun: ast.NewIdent(
-								h.domain.GetGRPCMainDecodeName(),
+								h.entityConfig.GetGRPCMainDecodeName(),
 							),
 							Args: []ast.Expr{
-								ast.NewIdent(h.domain.GetOneVariableName()),
+								ast.NewIdent(h.entityConfig.GetOneVariableName()),
 							},
 						},
 						ast.NewIdent("nil"),
@@ -1005,7 +1005,7 @@ func (h HandlerGenerator) syncRegisterMethod() error {
 	if err != nil {
 		return err
 	}
-	method, methodExist := astfile.FindMethod(file, h.domain.GRPCHandlerTypeName(), "RegisterGRPC")
+	method, methodExist := astfile.FindMethod(file, h.entityConfig.GRPCHandlerTypeName(), "RegisterGRPC")
 	if method == nil {
 		method = h.registerGRPC()
 	}
@@ -1032,7 +1032,7 @@ func (h HandlerGenerator) registerGRPC() *ast.FuncDecl {
 						ast.NewIdent("s"),
 					},
 					Type: &ast.StarExpr{
-						X: ast.NewIdent(h.domain.GetGRPCHandlerTypeName()),
+						X: ast.NewIdent(h.entityConfig.GetGRPCHandlerTypeName()),
 					},
 				},
 			},
@@ -1074,8 +1074,8 @@ func (h HandlerGenerator) registerGRPC() *ast.FuncDecl {
 							&ast.UnaryExpr{
 								Op: token.AND,
 								X: &ast.SelectorExpr{
-									X:   ast.NewIdent(h.domain.ProtoPackage),
-									Sel: ast.NewIdent(h.domain.GetGRPCServiceDescriptionName()),
+									X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+									Sel: ast.NewIdent(h.entityConfig.GetGRPCServiceDescriptionName()),
 								},
 							},
 							ast.NewIdent("s"),

@@ -342,10 +342,10 @@ func Test{{ .GRPCHandlerTypeName }}_List(t *testing.T) {
             args: args{
                 ctx: ctx,
                 input: &{{ .ProtoPackage }}.{{ .FilterTypeName }}{
-                    PageNumber: wrapperspb.UInt64(*filter.PageNumber),
-                    PageSize:   wrapperspb.UInt64(*filter.PageSize),
+                    PageNumber: filter.PageNumber,
+                    PageSize:   filter.PageSize,
 {{- if .SearchEnabled }}
-                    Search:     wrapperspb.String(*filter.Search),
+                    Search:     filter.Search,
 {{- end}}
                     OrderBy:    nil,
                 },
@@ -370,10 +370,10 @@ func Test{{ .GRPCHandlerTypeName }}_List(t *testing.T) {
             args: args{
                 ctx: ctx,
                 input: &{{ .ProtoPackage }}.{{ .FilterTypeName }}{
-                    PageNumber: wrapperspb.UInt64(*filter.PageNumber),
-                    PageSize:   wrapperspb.UInt64(*filter.PageSize),
+                    PageNumber: filter.PageNumber,
+                    PageSize:   filter.PageSize,
 {{- if .SearchEnabled }}
-                    Search:     wrapperspb.String(*filter.Search),
+                    Search:     filter.Search,
 {{- end }}
                     OrderBy:    nil,
                 },
@@ -534,10 +534,10 @@ func Test_encode{{ .FilterTypeName }}(t *testing.T) {
             name: "ok",
             args: args{
                 input: &{{ .ProtoPackage }}.{{ .FilterTypeName }}{
-                    PageNumber: wrapperspb.UInt64(2),
-                    PageSize:   wrapperspb.UInt64(5),
+                    PageNumber: pointer.Of(uint64(2)),
+                    PageSize:   pointer.Of(uint64(5)),
 {{- if .SearchEnabled }}
-                    Search:     wrapperspb.String("my name is"),
+                    Search:     pointer.Of("my name is"),
 {{- end}}
                     OrderBy:    []string{"created_at", "id"},
                 },

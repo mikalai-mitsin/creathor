@@ -152,25 +152,25 @@ func (p *Param) SQLType() string {
 func (p *Param) GetGRPCWrapper() string {
 	switch p.Type {
 	case "*int", "*int32", "*int8", "*int16":
-		return "wrapperspb.Int32"
+		return ""
 	case "*int64":
-		return "wrapperspb.Int64"
+		return ""
 	case "*uint8", "*uint16", "*uint32":
-		return "wrapperspb.UInt32"
+		return ""
 	case "*uint64":
-		return "wrapperspb.UInt64"
+		return ""
 	case "*string", "*UUID", "*uuid.UUID", "*GroupID", "*entities.GroupID":
-		return "wrapperspb.String"
-	case "*bool", "*booleand":
-		return "wrapperspb.Bool"
+		return ""
+	case "*bool", "*boolean":
+		return ""
 	case "*float32":
-		return "wrapperspb.Float"
+		return ""
 	case "*float64":
-		return "wrapperspb.Double"
+		return ""
 	case "*time.Time", "time.Time":
 		return "timestamppb.New"
 	case "UUID", "uuid.UUID", "GroupID", "entities.GroupID":
-		return "string"
+		return ""
 	default:
 		return "/* FIXME */"
 	}
@@ -235,6 +235,8 @@ func (p *Param) GRPCType() string {
 		return "bool"
 	case "UUID", "uuid.UUID":
 		return "string"
+	case "*UUID", "*uuid.UUID":
+		return "*string"
 	default:
 		return "/* FIXME */"
 	}
@@ -359,15 +361,15 @@ func (p *Param) GRPCParam() string {
 func (p *Param) ProtoWrapType() string {
 	switch p.Type {
 	case "int8", "int16", "int32", "int":
-		return "google.protobuf.Int32Value"
+		return "optional int32"
 	case "int64":
-		return "google.protobuf.Int64Value"
+		return "optional int64"
 	case "float32":
-		return "google.protobuf.FloatValue"
+		return "optional float"
 	case "float64":
-		return "google.protobuf.DoubleValue"
+		return "optional double"
 	case "uint", "uint8", "uint16", "uint32":
-		return "google.protobuf.UInt32Value"
+		return "optional uint32"
 	case "uint64":
 		return "google.protobuf.UInt64Value"
 	case "[]int8", "[]int16", "[]int32", "[]int":
@@ -379,25 +381,25 @@ func (p *Param) ProtoWrapType() string {
 	case "[]uint64":
 		return "google.protobuf.ListValue"
 	case "string", "UUID", "uuid", "uuid.UUID", "GroupID", "entities.GroupID":
-		return "google.protobuf.StringValue"
+		return "optional string"
 	case "[]string":
 		return "google.protobuf.ListValue"
 	case "time.Time":
 		return "google.protobuf.Timestamp"
 	case "bool":
-		return "google.protobuf.BoolValue"
+		return "optional bool"
 	case "[]bool":
 		return "google.protobuf.ListValue"
 	case "*int8", "*int16", "*int32", "*int":
-		return "google.protobuf.Int32Value"
+		return "optional int32"
 	case "*int64":
-		return "google.protobuf.Int64Value"
+		return "optional int64"
 	case "*float32":
-		return "google.protobuf.FloatValue"
+		return "optional float"
 	case "*float64":
-		return "google.protobuf.DoubleValue"
+		return "optional double"
 	case "*uint", "*uint8", "*uint16", "*uint32":
-		return "google.protobuf.UInt32Value"
+		return "optional uint32"
 	case "*uint64":
 		return "google.protobuf.UInt64Value"
 	case "*[]int8", "*[]int16", "*[]int32", "*[]int":
@@ -409,7 +411,7 @@ func (p *Param) ProtoWrapType() string {
 	case "*[]uint64":
 		return "google.protobuf.ListValue"
 	case "*string", "*uuid", "*UUID", "*uuid.UUID", "*GroupID", "*entities.GroupID":
-		return "google.protobuf.StringValue"
+		return "optional string"
 	case "*[]string":
 		return "google.protobuf.ListValue"
 	case "*time.Time":

@@ -541,24 +541,18 @@ func (h ProtoDecoder) decodeUpdateParams() []ast.Expr {
 		if param.IsSlice() {
 			value = ast.NewIdent("nil")
 		} else {
-			var v ast.Expr
-			v = &ast.SelectorExpr{
+			value = &ast.SelectorExpr{
 				X:   ast.NewIdent("update"),
 				Sel: ast.NewIdent(param.GetName()),
 			}
-			if strings.HasPrefix(param.Type, "*") {
-				v = &ast.StarExpr{
-					X: v,
-				}
-			}
 			if param.GetGRPCWrapperArgumentType() != strings.TrimPrefix(param.Type, "*") {
-				v = &ast.CallExpr{
+				value = &ast.CallExpr{
 					Fun:  ast.NewIdent(param.GetGRPCWrapperArgumentType()),
-					Args: []ast.Expr{v},
+					Args: []ast.Expr{value},
 				}
 			}
 			if param.IsID() {
-				v = &ast.CallExpr{
+				value = &ast.CallExpr{
 					Fun: &ast.SelectorExpr{
 						X: &ast.SelectorExpr{
 							X:   ast.NewIdent("update"),
@@ -567,10 +561,26 @@ func (h ProtoDecoder) decodeUpdateParams() []ast.Expr {
 						Sel: ast.NewIdent("String"),
 					},
 				}
+				if strings.HasPrefix(param.GRPCType(), "*") {
+					value = &ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X:   ast.NewIdent("pointer"),
+							Sel: ast.NewIdent("Of"),
+						},
+						Args: []ast.Expr{value},
+					}
+				}
 			}
-			value = &ast.CallExpr{
-				Fun:  ast.NewIdent(param.GetGRPCWrapper()),
-				Args: []ast.Expr{v},
+			if param.GetGRPCWrapper() != "" {
+				if strings.HasPrefix(param.Type, "*") {
+					value = &ast.StarExpr{
+						X: value,
+					}
+				}
+				value = &ast.CallExpr{
+					Fun:  ast.NewIdent(param.GetGRPCWrapper()),
+					Args: []ast.Expr{value},
+				}
 			}
 		}
 		exprs = append(exprs, &ast.KeyValueExpr{

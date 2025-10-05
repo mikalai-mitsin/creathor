@@ -494,6 +494,7 @@ func (h ProtoDecoder) decodeUpdate() *ast.FuncDecl {
 			},
 		})
 	}
+	stmts = append(stmts, h.updateStmts()...)
 	stmts = append(stmts, &ast.ReturnStmt{
 		Results: []ast.Expr{
 			ast.NewIdent("result"),
@@ -538,7 +539,7 @@ func (h ProtoDecoder) decodeUpdateParams() []ast.Expr {
 	var exprs []ast.Expr
 	for _, param := range h.entityConfig.GetUpdateModel().Params {
 		var value ast.Expr
-		if param.IsSlice() {
+		if param.IsSlice() || param.Type == "*time.Time" || param.Type == "time.Time" || param.Type == "*uuid.UUID" || param.IsSlice() {
 			value = ast.NewIdent("nil")
 		} else {
 			value = &ast.SelectorExpr{
@@ -721,4 +722,200 @@ func (h ProtoDecoder) Sync() error {
 		return err
 	}
 	return nil
+}
+
+func (h ProtoDecoder) updateStmts() []ast.Stmt {
+	var stmts []ast.Stmt
+	for _, param := range h.entityConfig.GetUpdateModel().Params {
+		var body []ast.Stmt
+		switch t := param.Type; {
+		case param.GetName() == "ID":
+			continue
+		case t == "*time.Time", t == "time.Time":
+			body = []ast.Stmt{
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						&ast.SelectorExpr{
+							X:   ast.NewIdent("result"),
+							Sel: ast.NewIdent(param.GetName()),
+						},
+					},
+					Tok: token.ASSIGN,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X:   ast.NewIdent("timestamppb"),
+								Sel: ast.NewIdent("New"),
+							},
+							Args: []ast.Expr{
+								&ast.StarExpr{
+									X: &ast.SelectorExpr{
+										X:   ast.NewIdent("update"),
+										Sel: ast.NewIdent(param.GetName()),
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+			stmts = append(stmts, &ast.IfStmt{
+				Cond: &ast.BinaryExpr{
+					X: &ast.SelectorExpr{
+						X:   ast.NewIdent("update"),
+						Sel: ast.NewIdent(param.GetName()),
+					},
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: body,
+				},
+			})
+		case t == "*uuid.UUID", t == "uuid.UUID":
+			body = []ast.Stmt{
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						&ast.SelectorExpr{
+							X:   ast.NewIdent("result"),
+							Sel: ast.NewIdent(param.GetName()),
+						},
+					},
+					Tok: token.ASSIGN,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X:   ast.NewIdent("pointer"),
+								Sel: ast.NewIdent("Of"),
+							},
+							Args: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.SelectorExpr{
+											X:   ast.NewIdent("update"),
+											Sel: ast.NewIdent(param.GetName()),
+										},
+										Sel: ast.NewIdent("String"),
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+			stmts = append(stmts, &ast.IfStmt{
+				Cond: &ast.BinaryExpr{
+					X: &ast.SelectorExpr{
+						X:   ast.NewIdent("update"),
+						Sel: ast.NewIdent(param.GetName()),
+					},
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: body,
+				},
+			})
+		case param.IsSlice():
+			value := &ast.CallExpr{
+				Fun: ast.NewIdent(param.SliceType()),
+				Args: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X:   ast.NewIdent("item"),
+							Sel: ast.NewIdent(param.GrpcGetFromListValueAs()),
+						},
+					},
+				},
+			}
+			body = []ast.Stmt{
+				&ast.DeclStmt{
+					Decl: &ast.GenDecl{
+						Tok: token.VAR,
+						Specs: []ast.Spec{
+							&ast.ValueSpec{
+								Names: []*ast.Ident{
+									ast.NewIdent("params"),
+								},
+								Type: &ast.ArrayType{
+									Elt: ast.NewIdent(param.SliceType()),
+								},
+							},
+						},
+					},
+				},
+				&ast.RangeStmt{
+					Key:   ast.NewIdent("_"),
+					Value: ast.NewIdent("item"),
+					Tok:   token.DEFINE,
+					X: &ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X:   ast.NewIdent("update"),
+									Sel: ast.NewIdent(param.GRPCGetter()),
+								},
+							},
+							Sel: ast.NewIdent("GetValues"),
+						},
+					},
+					Body: &ast.BlockStmt{
+						List: []ast.Stmt{
+							&ast.AssignStmt{
+								Lhs: []ast.Expr{
+									ast.NewIdent("params"),
+								},
+								Tok: token.ASSIGN,
+								Rhs: []ast.Expr{
+									&ast.CallExpr{
+										Fun: ast.NewIdent("append"),
+										Args: []ast.Expr{
+											ast.NewIdent("params"),
+											value,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						&ast.SelectorExpr{
+							X:   ast.NewIdent("result"),
+							Sel: ast.NewIdent(param.GetName()),
+						},
+					},
+					Tok: token.ASSIGN,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X:   ast.NewIdent("pointer"),
+								Sel: ast.NewIdent("Of"),
+							},
+							Args: []ast.Expr{
+								ast.NewIdent("params"),
+							},
+						},
+					},
+				},
+			}
+			stmts = append(stmts, &ast.IfStmt{
+				Cond: &ast.BinaryExpr{
+					X: &ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X:   ast.NewIdent("update"),
+							Sel: ast.NewIdent(param.GRPCGetter()),
+						},
+					},
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: body,
+				},
+			})
+		}
+	}
+	return stmts
 }

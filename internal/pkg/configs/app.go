@@ -1,6 +1,8 @@
 package configs
 
 import (
+	"fmt"
+
 	"github.com/iancoleman/strcase"
 )
 
@@ -18,6 +20,10 @@ type AppConfig struct {
 
 func (m *AppConfig) AppName() string {
 	return strcase.ToSnake(m.Name)
+}
+
+func (m *AppConfig) Variable() string {
+	return strcase.ToLowerCamel(fmt.Sprintf("%sApp", m.Name))
 }
 
 func (m *AppConfig) AppAlias() string {

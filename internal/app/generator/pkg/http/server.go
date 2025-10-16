@@ -326,16 +326,102 @@ func (u Server) file() *ast.File {
 				},
 				Body: &ast.BlockStmt{
 					List: []ast.Stmt{
+						&ast.GoStmt{
+							Call: &ast.CallExpr{
+								Fun: &ast.FuncLit{
+									Type: &ast.FuncType{
+										Params: &ast.FieldList{},
+									},
+									Body: &ast.BlockStmt{
+										List: []ast.Stmt{
+											&ast.IfStmt{
+												Init: &ast.AssignStmt{
+													Lhs: []ast.Expr{
+														&ast.Ident{
+															Name: "err",
+														},
+													},
+													Tok: token.DEFINE,
+													Rhs: []ast.Expr{
+														&ast.CallExpr{
+															Fun: &ast.SelectorExpr{
+																X: &ast.SelectorExpr{
+																	X: &ast.Ident{
+																		Name: "s",
+																	},
+																	Sel: &ast.Ident{
+																		Name: "server",
+																	},
+																},
+																Sel: &ast.Ident{
+																	Name: "ListenAndServe",
+																},
+															},
+														},
+													},
+												},
+												Cond: &ast.BinaryExpr{
+													X: &ast.Ident{
+														Name: "err",
+													},
+													Op: token.NEQ,
+													Y: &ast.Ident{
+														Name: "nil",
+													},
+												},
+												Body: &ast.BlockStmt{
+													List: []ast.Stmt{
+														&ast.ExprStmt{
+															X: &ast.CallExpr{
+																Fun: &ast.SelectorExpr{
+																	X: &ast.SelectorExpr{
+																		X: &ast.Ident{
+																			Name: "s",
+																		},
+																		Sel: &ast.Ident{
+																			Name: "logger",
+																		},
+																	},
+																	Sel: &ast.Ident{
+																		Name: "Error",
+																	},
+																},
+																Args: []ast.Expr{
+																	&ast.BasicLit{
+																		Kind:  token.STRING,
+																		Value: "\"http server error\"",
+																	},
+																	&ast.CallExpr{
+																		Fun: &ast.SelectorExpr{
+																			X: &ast.Ident{
+																				Name: "log",
+																			},
+																			Sel: &ast.Ident{
+																				Name: "Error",
+																			},
+																		},
+																		Args: []ast.Expr{
+																			&ast.Ident{
+																				Name: "err",
+																			},
+																		},
+																	},
+																},
+															},
+														},
+														&ast.ReturnStmt{},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 						&ast.ReturnStmt{
 							Results: []ast.Expr{
-								&ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.SelectorExpr{
-											X:   ast.NewIdent("s"),
-											Sel: ast.NewIdent("server"),
-										},
-										Sel: ast.NewIdent("ListenAndServe"),
-									},
+								&ast.Ident{
+									Name: "nil",
 								},
 							},
 						},

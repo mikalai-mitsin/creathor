@@ -1,6 +1,6 @@
 CREATE TABLE public.{{ .TableName }}
 (
-    id          uuid                  DEFAULT uuidv7()
+    id          uuid                  DEFAULT uuid_generate_v4()
         CONSTRAINT {{ .TableName }}_pk PRIMARY KEY,
 {{- range $value := .Params }}
     {{ $value.Tag }} {{ $value.SQLType }} NOT NULL,

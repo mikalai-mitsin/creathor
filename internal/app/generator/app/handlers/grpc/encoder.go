@@ -220,8 +220,8 @@ func (h ProtoEncoder) syncEncodeCreate(filename string) error {
 	return nil
 }
 
-func (h ProtoEncoder) updateStmts() []*ast.IfStmt {
-	var stmts []*ast.IfStmt
+func (h ProtoEncoder) updateStmts() []ast.Stmt {
+	var stmts []ast.Stmt
 	for _, param := range h.entityConfig.GetUpdateModel().Params {
 		var body []ast.Stmt
 		switch t := param.Type; {
@@ -432,49 +432,15 @@ func (h ProtoEncoder) updateStmts() []*ast.IfStmt {
 }
 
 func (h ProtoEncoder) encodeUpdate() *ast.FuncDecl {
-	elts := []ast.Expr{}
-	for _, param := range h.entityConfig.GetUpdateModel().Params {
-		switch t := param.Type; {
-		case param.GetName() == "ID":
-			elts = append(elts, &ast.KeyValueExpr{
-				Key: ast.NewIdent("ID"),
-				Value: &ast.CallExpr{
-					Fun: &ast.SelectorExpr{
-						X:   ast.NewIdent("uuid"),
-						Sel: ast.NewIdent("MustParse"),
-					},
-					Args: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X:   ast.NewIdent("input"),
-								Sel: ast.NewIdent("GetId"),
-							},
-						},
-					},
-				},
-			})
-			break
-		case t == "*time.Time", t == "time.Time", t == "*uuid.UUID", t == "uuid.UUID", param.IsSlice():
-			elts = append(elts, &ast.KeyValueExpr{
-				Key:   ast.NewIdent(param.GetName()),
-				Value: ast.NewIdent("nil"),
-			})
-		default:
-			elts = append(elts, &ast.KeyValueExpr{
-				Key: ast.NewIdent(param.GetName()),
-				Value: &ast.SelectorExpr{
-					X:   ast.NewIdent("input"),
-					Sel: ast.NewIdent(param.GetName()),
-				},
-			})
-		}
+	elts := make([]ast.Expr, 0, len(h.entityConfig.GetUpdateModel().Params))
 
+	for _, param := range h.entityConfig.GetUpdateModel().Params {
+		elts = append(elts, h.encodeUpdateField(param))
 	}
+
 	body := []ast.Stmt{
 		&ast.AssignStmt{
-			Lhs: []ast.Expr{
-				ast.NewIdent("update"),
-			},
+			Lhs: []ast.Expr{ast.NewIdent("update")},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
 				&ast.CompositeLit{
@@ -487,45 +453,87 @@ func (h ProtoEncoder) encodeUpdate() *ast.FuncDecl {
 			},
 		},
 	}
-	for _, stmt := range h.updateStmts() {
-		body = append(body, stmt)
-	}
+
+	body = append(body, h.updateStmts()...)
 	body = append(body, &ast.ReturnStmt{
-		Results: []ast.Expr{
-			ast.NewIdent("update"),
-		},
+		Results: []ast.Expr{ast.NewIdent("update")},
 	})
+
 	return &ast.FuncDecl{
 		Name: ast.NewIdent(h.entityConfig.GetGRPCUpdateDTOEncodeName()),
-		Type: &ast.FuncType{
-			Params: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Names: []*ast.Ident{
-							ast.NewIdent("input"),
-						},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
-								Sel: ast.NewIdent(h.entityConfig.GetUpdateModel().Name),
-							},
+		Type: h.encodeUpdateFuncType(),
+		Body: &ast.BlockStmt{List: body},
+	}
+}
+
+func (h ProtoEncoder) encodeUpdateField(param *configs.Param) ast.Expr {
+	if param.GetName() == "ID" {
+		return &ast.KeyValueExpr{
+			Key: ast.NewIdent("ID"),
+			Value: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X:   ast.NewIdent("uuid"),
+					Sel: ast.NewIdent("MustParse"),
+				},
+				Args: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X:   ast.NewIdent("input"),
+							Sel: ast.NewIdent("GetId"),
 						},
 					},
 				},
 			},
-			Results: &ast.FieldList{
-				List: []*ast.Field{
-					{
-						Type: &ast.SelectorExpr{
-							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(h.entityConfig.GetUpdateModel().Name),
+		}
+	}
+
+	switch t := param.Type; {
+	case t == "*time.Time",
+		t == "time.Time",
+		t == "*uuid.UUID",
+		t == "uuid.UUID",
+		param.IsSlice():
+		return &ast.KeyValueExpr{
+			Key:   ast.NewIdent(param.GetName()),
+			Value: ast.NewIdent("nil"),
+		}
+	default:
+		return &ast.KeyValueExpr{
+			Key: ast.NewIdent(param.GetName()),
+			Value: &ast.SelectorExpr{
+				X:   ast.NewIdent("input"),
+				Sel: ast.NewIdent(param.GetName()),
+			},
+		}
+	}
+}
+
+func (h ProtoEncoder) encodeUpdateFuncType() *ast.FuncType {
+	model := h.entityConfig.GetUpdateModel()
+
+	return &ast.FuncType{
+		Params: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Names: []*ast.Ident{ast.NewIdent("input")},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+							Sel: ast.NewIdent(model.Name),
 						},
 					},
 				},
 			},
 		},
-		Body: &ast.BlockStmt{
-			List: body,
+		Results: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Type: &ast.SelectorExpr{
+						X:   ast.NewIdent("entities"),
+						Sel: ast.NewIdent(model.Name),
+					},
+				},
+			},
 		},
 	}
 }

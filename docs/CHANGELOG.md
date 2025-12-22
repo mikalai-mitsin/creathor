@@ -2,6 +2,27 @@
 ## [Unreleased]
 
 
+<a name="v0.7.10"></a>
+## [v0.7.10] - 2025-12-22
+### Feat
+- cleanup proto generator
+- update go.mod
+- use optional for proto
+- use optional for proto
+- cleanup code
+- separate configs
+- use entity to delete
+- move uptrace config to pkg
+- remove i18n
+- add i18n
+
+### Fix
+- running
+- uuid generation
+- add deteled_at to migration
+- tests
+
+
 <a name="v0.7.9"></a>
 ## [v0.7.9] - 2025-09-14
 ### Feat
@@ -558,7 +579,8 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.9...HEAD
+[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.10...HEAD
+[v0.7.10]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.9...v0.7.10
 [v0.7.9]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.8...v0.7.9
 [v0.7.8]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.7...v0.7.8
 [v0.7.7]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.6...v0.7.7

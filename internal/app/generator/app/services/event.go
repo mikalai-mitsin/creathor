@@ -14,20 +14,20 @@ import (
 )
 
 type EventService struct {
-	domain configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewEventService(domain configs.EntityConfig) *EventService {
-	return &EventService{domain: domain}
+func NewEventService(entityConfig configs.EntityConfig) *EventService {
+	return &EventService{entityConfig: entityConfig}
 }
 
 func (u EventService) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
-		u.domain.AppConfig.AppName(),
+		u.entityConfig.AppConfig.AppName(),
 		"services",
-		u.domain.DirName(),
+		u.entityConfig.DirName(),
 		"event.go",
 	)
 }
@@ -54,19 +54,19 @@ func (u EventService) file() *ast.File {
 						},
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: u.domain.EntitiesImportPath(),
+							Value: u.entityConfig.ImportPathEntities(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: u.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+							Value: u.entityConfig.AppConfig.ProjectConfig.UUIDImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: u.domain.AppConfig.ProjectConfig.DTXImportPath(),
+							Value: u.entityConfig.AppConfig.ProjectConfig.DTXImportPath(),
 						},
 					},
 				},
@@ -76,7 +76,7 @@ func (u EventService) file() *ast.File {
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
 						Name: &ast.Ident{
-							Name: u.domain.EventServiceName(),
+							Name: u.entityConfig.EventServiceName(),
 						},
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
@@ -84,11 +84,11 @@ func (u EventService) file() *ast.File {
 									{
 										Names: []*ast.Ident{
 											{
-												Name: u.domain.GetEventProducerPrivateVariableName(),
+												Name: u.entityConfig.GetEventProducerPrivateVariableName(),
 											},
 										},
 										Type: &ast.Ident{
-											Name: u.domain.EventProducerInterfaceName(),
+											Name: u.entityConfig.EventProducerInterfaceName(),
 										},
 									},
 									{
@@ -109,7 +109,7 @@ func (u EventService) file() *ast.File {
 			},
 			&ast.FuncDecl{
 				Name: &ast.Ident{
-					Name: u.domain.EventServiceConstructorName(),
+					Name: u.entityConfig.EventServiceConstructorName(),
 				},
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
@@ -117,11 +117,11 @@ func (u EventService) file() *ast.File {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: u.domain.GetEventProducerPrivateVariableName(),
+										Name: u.entityConfig.GetEventProducerPrivateVariableName(),
 									},
 								},
 								Type: &ast.Ident{
-									Name: u.domain.EventProducerInterfaceName(),
+									Name: u.entityConfig.EventProducerInterfaceName(),
 								},
 							},
 							{
@@ -141,7 +141,7 @@ func (u EventService) file() *ast.File {
 							{
 								Type: &ast.StarExpr{
 									X: &ast.Ident{
-										Name: u.domain.EventServiceName(),
+										Name: u.entityConfig.EventServiceName(),
 									},
 								},
 							},
@@ -156,15 +156,15 @@ func (u EventService) file() *ast.File {
 									Op: token.AND,
 									X: &ast.CompositeLit{
 										Type: &ast.Ident{
-											Name: u.domain.EventServiceName(),
+											Name: u.entityConfig.EventServiceName(),
 										},
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
 												Key: &ast.Ident{
-													Name: u.domain.GetEventProducerPrivateVariableName(),
+													Name: u.entityConfig.GetEventProducerPrivateVariableName(),
 												},
 												Value: &ast.Ident{
-													Name: u.domain.GetEventProducerPrivateVariableName(),
+													Name: u.entityConfig.GetEventProducerPrivateVariableName(),
 												},
 											},
 											&ast.KeyValueExpr{
@@ -194,7 +194,7 @@ func (u EventService) file() *ast.File {
 							},
 							Type: &ast.StarExpr{
 								X: &ast.Ident{
-									Name: u.domain.EventServiceName(),
+									Name: u.entityConfig.EventServiceName(),
 								},
 							},
 						},
@@ -239,7 +239,7 @@ func (u EventService) file() *ast.File {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: u.domain.GetOneVariableName(),
+										Name: u.entityConfig.GetOneVariableName(),
 									},
 								},
 								Type: &ast.SelectorExpr{
@@ -247,7 +247,7 @@ func (u EventService) file() *ast.File {
 										Name: "entities",
 									},
 									Sel: &ast.Ident{
-										Name: u.domain.GetMainModel().Name,
+										Name: u.entityConfig.GetMainModel().Name,
 									},
 								},
 							},
@@ -281,7 +281,7 @@ func (u EventService) file() *ast.File {
 													Name: "s",
 												},
 												Sel: &ast.Ident{
-													Name: u.domain.GetEventProducerPrivateVariableName(),
+													Name: u.entityConfig.GetEventProducerPrivateVariableName(),
 												},
 											},
 											Sel: &ast.Ident{
@@ -293,7 +293,7 @@ func (u EventService) file() *ast.File {
 												Name: "ctx",
 											},
 											&ast.Ident{
-												Name: u.domain.GetOneVariableName(),
+												Name: u.entityConfig.GetOneVariableName(),
 											},
 										},
 									},

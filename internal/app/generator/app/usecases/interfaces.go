@@ -14,11 +14,11 @@ import (
 )
 
 type InterfacesGenerator struct {
-	domain *configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewInterfacesGenerator(domain *configs.EntityConfig) *InterfacesGenerator {
-	return &InterfacesGenerator{domain: domain}
+func NewInterfacesGenerator(entityConfig configs.EntityConfig) *InterfacesGenerator {
+	return &InterfacesGenerator{entityConfig: entityConfig}
 }
 
 func (i InterfacesGenerator) Sync() error {
@@ -26,9 +26,9 @@ func (i InterfacesGenerator) Sync() error {
 	filename := path.Join(
 		"internal",
 		"app",
-		i.domain.AppConfig.AppName(),
+		i.entityConfig.AppConfig.AppName(),
 		"usecases",
-		i.domain.DirName(),
+		i.entityConfig.DirName(),
 		"interfaces.go",
 	)
 	err := os.MkdirAll(path.Dir(filename), 0777)
@@ -39,11 +39,11 @@ func (i InterfacesGenerator) Sync() error {
 	if err != nil {
 		file = i.file()
 	}
-	if !astfile.TypeExists(file, i.domain.GetServiceInterfaceName()) {
+	if !astfile.TypeExists(file, i.entityConfig.GetServiceInterfaceName()) {
 		file.Decls = append(file.Decls, i.appServiceInterface())
 	}
-	if !astfile.TypeExists(file, i.domain.EventServiceInterfaceName()) &&
-		i.domain.AppConfig.ProjectConfig.KafkaEnabled {
+	if !astfile.TypeExists(file, i.entityConfig.EventServiceInterfaceName()) &&
+		i.entityConfig.AppConfig.ProjectConfig.KafkaEnabled {
 		file.Decls = append(file.Decls, i.appEventServiceInterface())
 	}
 	if !astfile.TypeExists(file, "logger") {
@@ -79,7 +79,7 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text:  "//go:generate mockgen -source=interfaces.go -package=usecases -destination=interfaces_mock.go",
+					Text:  "//go:generate mockgen -package=$GOPACKAGE -source=$GOFILE -destination=mock.go",
 				},
 			},
 		},
@@ -93,25 +93,25 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: i.domain.EntitiesImportPath(),
+					Value: i.entityConfig.ImportPathEntities(),
 				},
 			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: i.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+					Value: i.entityConfig.AppConfig.ProjectConfig.UUIDImportPath(),
 				},
 			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: i.domain.AppConfig.ProjectConfig.LogImportPath(),
+					Value: i.entityConfig.AppConfig.ProjectConfig.LogImportPath(),
 				},
 			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: i.domain.AppConfig.ProjectConfig.DTXImportPath(),
+					Value: i.entityConfig.AppConfig.ProjectConfig.DTXImportPath(),
 				},
 			},
 		},
@@ -141,7 +141,7 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetCreateModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetCreateModel().Name),
 							},
 						},
 					},
@@ -151,7 +151,7 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetMainModel().Name),
 							},
 						},
 						{
@@ -185,7 +185,7 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetMainModel().Name),
 							},
 						},
 						{
@@ -209,7 +209,7 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetFilterModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetFilterModel().Name),
 							},
 						},
 					},
@@ -220,7 +220,7 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 							Type: &ast.ArrayType{
 								Elt: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+									Sel: ast.NewIdent(i.entityConfig.GetMainModel().Name),
 								},
 							},
 						},
@@ -254,7 +254,7 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetUpdateModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetUpdateModel().Name),
 							},
 						},
 					},
@@ -264,7 +264,7 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetMainModel().Name),
 							},
 						},
 						{
@@ -293,8 +293,8 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 						},
 						{
 							Type: &ast.SelectorExpr{
-								X:   ast.NewIdent("uuid"),
-								Sel: ast.NewIdent("UUID"),
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.entityConfig.GetDeleteModel().Name),
 							},
 						},
 					},
@@ -304,7 +304,7 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetMainModel().Name),
 							},
 						},
 						{
@@ -319,7 +319,7 @@ func (i InterfacesGenerator) appServiceInterface() *ast.GenDecl {
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: ast.NewIdent(i.domain.GetServiceInterfaceName()),
+				Name: ast.NewIdent(i.entityConfig.GetServiceInterfaceName()),
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: methods,
@@ -336,7 +336,7 @@ func (i InterfacesGenerator) appEventServiceInterface() *ast.GenDecl {
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
 				Name: &ast.Ident{
-					Name: i.domain.EventServiceInterfaceName(),
+					Name: i.entityConfig.EventServiceInterfaceName(),
 				},
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
@@ -372,7 +372,7 @@ func (i InterfacesGenerator) appEventServiceInterface() *ast.GenDecl {
 														Name: "entities",
 													},
 													Sel: &ast.Ident{
-														Name: i.domain.GetMainModel().Name,
+														Name: i.entityConfig.GetMainModel().Name,
 													},
 												},
 											},

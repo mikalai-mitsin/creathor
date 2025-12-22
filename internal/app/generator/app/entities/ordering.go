@@ -2,7 +2,6 @@ package entities
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -16,10 +15,10 @@ import (
 )
 
 type Ordering struct {
-	entityConfig *configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewOrdering(entityConfig *configs.EntityConfig) *Ordering {
+func NewOrdering(entityConfig configs.EntityConfig) *Ordering {
 	return &Ordering{entityConfig: entityConfig}
 }
 
@@ -99,11 +98,7 @@ func (r Ordering) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text: fmt.Sprintf(
-						"//go:generate mockgen -source=%s_interfaces.go -package=repositories -destination=%s_interfaces_mock.go",
-						r.entityConfig.SnakeName(),
-						r.entityConfig.SnakeName(),
-					),
+					Text:  "//go:generate mockgen -package=$GOPACKAGE -source=$GOFILE -destination=mock.go",
 				},
 			},
 		},

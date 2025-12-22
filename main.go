@@ -78,6 +78,7 @@ func initProject(_ *cli.Context) error {
 				configs.NewFilterEntity(entity),
 				configs.NewCreateEntity(entity),
 				configs.NewUpdateEntity(entity),
+				configs.NewDeleteEntity(entity),
 			)
 		}
 		appGenerator := app.NewGenerator(&appConfig)

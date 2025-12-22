@@ -15,22 +15,22 @@ import (
 )
 
 type DTOGenerator struct {
-	domain *configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewDTOGenerator(domain *configs.EntityConfig) *DTOGenerator {
-	return &DTOGenerator{domain: domain}
+func NewDTOGenerator(entityConfig configs.EntityConfig) *DTOGenerator {
+	return &DTOGenerator{entityConfig: entityConfig}
 }
 
 func (g *DTOGenerator) filename() string {
 	return filepath.Join(
 		"internal",
 		"app",
-		g.domain.AppConfig.AppName(),
+		g.entityConfig.AppConfig.AppName(),
 		"handlers",
 		"http",
-		g.domain.DirName(),
-		fmt.Sprintf("%s_dto.go", g.domain.SnakeName()),
+		g.entityConfig.DirName(),
+		fmt.Sprintf("%s_dto.go", g.entityConfig.SnakeName()),
 	)
 }
 
@@ -81,7 +81,6 @@ func (g *DTOGenerator) Sync() error {
 	if err := g.syncUpdateDTOToEntity(); err != nil {
 		return err
 	}
-
 	if err := g.syncCreateDTOStruct(); err != nil {
 		return err
 	}
@@ -89,6 +88,16 @@ func (g *DTOGenerator) Sync() error {
 		return err
 	}
 	if err := g.syncCreateDTOToEntity(); err != nil {
+		return err
+	}
+
+	if err := g.syncDeleteDTOStruct(); err != nil {
+		return err
+	}
+	if err := g.syncDeleteDTOConstructor(); err != nil {
+		return err
+	}
+	if err := g.syncDeleteDTOToEntity(); err != nil {
 		return err
 	}
 	return nil
@@ -128,25 +137,25 @@ func (g *DTOGenerator) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: g.domain.AppConfig.ProjectConfig.ErrsImportPath(),
+							Value: g.entityConfig.AppConfig.ProjectConfig.ErrsImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: g.domain.EntitiesImportPath(),
+							Value: g.entityConfig.ImportPathEntities(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: g.domain.AppConfig.ProjectConfig.PointerImportPath(),
+							Value: g.entityConfig.AppConfig.ProjectConfig.PointerImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: g.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+							Value: g.entityConfig.AppConfig.ProjectConfig.UUIDImportPath(),
 						},
 					},
 					&ast.ImportSpec{
@@ -171,7 +180,7 @@ func (g *DTOGenerator) file() *ast.File {
 
 func (g *DTOGenerator) dtoStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
-		Name: ast.NewIdent(g.domain.GetHTTPItemDTOName()),
+		Name: ast.NewIdent(g.entityConfig.GetHTTPItemDTOName()),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: []*ast.Field{
@@ -215,7 +224,7 @@ func (g *DTOGenerator) dtoStruct() *ast.TypeSpec {
 			},
 		},
 	}
-	for _, param := range g.domain.GetMainModel().Params {
+	for _, param := range g.entityConfig.GetMainModel().Params {
 		ast.Inspect(structure, func(node ast.Node) bool {
 			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
 				for _, field := range st.Fields.List {
@@ -256,7 +265,7 @@ func (g *DTOGenerator) syncDTOStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == g.domain.GetHTTPItemDTOName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == g.entityConfig.GetHTTPItemDTOName() {
 			structure = t
 			structureExists = true
 			return false
@@ -266,7 +275,7 @@ func (g *DTOGenerator) syncDTOStruct() error {
 	if structure == nil {
 		structure = g.dtoStruct()
 	}
-	for _, param := range g.domain.GetMainModel().Params {
+	for _, param := range g.entityConfig.GetMainModel().Params {
 		ast.Inspect(structure, func(node ast.Node) bool {
 			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
 				for _, field := range st.Fields.List {
@@ -310,10 +319,10 @@ func (g *DTOGenerator) syncDTOStruct() error {
 
 func (g *DTOGenerator) dtoConstructor() *ast.FuncDecl {
 	dto := &ast.CompositeLit{
-		Type: ast.NewIdent(g.domain.GetHTTPItemDTOName()),
+		Type: ast.NewIdent(g.entityConfig.GetHTTPItemDTOName()),
 		Elts: []ast.Expr{},
 	}
-	for _, param := range g.domain.GetMainModel().Params {
+	for _, param := range g.entityConfig.GetMainModel().Params {
 		elt := &ast.KeyValueExpr{
 			Key:   ast.NewIdent(param.GetName()),
 			Value: nil,
@@ -343,7 +352,7 @@ func (g *DTOGenerator) dtoConstructor() *ast.FuncDecl {
 		dto.Elts = append(dto.Elts, elt)
 	}
 	constructor := &ast.FuncDecl{
-		Name: ast.NewIdent(g.domain.GetHTTPItemDTOConstructorName()),
+		Name: ast.NewIdent(g.entityConfig.GetHTTPItemDTOConstructorName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -353,7 +362,7 @@ func (g *DTOGenerator) dtoConstructor() *ast.FuncDecl {
 						},
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(g.domain.GetMainModel().Name),
+							Sel: ast.NewIdent(g.entityConfig.GetMainModel().Name),
 						},
 					},
 				},
@@ -361,7 +370,7 @@ func (g *DTOGenerator) dtoConstructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: ast.NewIdent(g.domain.GetHTTPItemDTOName()),
+						Type: ast.NewIdent(g.entityConfig.GetHTTPItemDTOName()),
 					},
 					{
 						Type: ast.NewIdent("error"),
@@ -383,7 +392,7 @@ func (g *DTOGenerator) dtoConstructor() *ast.FuncDecl {
 			},
 		},
 	}
-	for _, param := range g.domain.GetMainModel().Params {
+	for _, param := range g.entityConfig.GetMainModel().Params {
 		if !param.IsSlice() {
 			continue
 		}
@@ -456,7 +465,7 @@ func (g *DTOGenerator) syncDTOConstructor() error {
 	var structureConstructor *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == g.domain.GetHTTPItemDTOConstructorName() {
+			t.Name.String() == g.entityConfig.GetHTTPItemDTOConstructorName() {
 			structureConstructorExists = true
 			structureConstructor = t
 			return false
@@ -466,12 +475,12 @@ func (g *DTOGenerator) syncDTOConstructor() error {
 	if structureConstructor == nil {
 		structureConstructor = g.dtoConstructor()
 	}
-	for _, param := range g.domain.GetMainModel().Params {
+	for _, param := range g.entityConfig.GetMainModel().Params {
 		param := param
 		ast.Inspect(structureConstructor, func(node ast.Node) bool {
 			if cl, ok := node.(*ast.CompositeLit); ok {
 				if i, ok := cl.Type.(*ast.Ident); ok &&
-					i.String() == g.domain.GetHTTPItemDTOName() {
+					i.String() == g.entityConfig.GetHTTPItemDTOName() {
 					_ = i
 					for _, elt := range cl.Elts {
 						elt := elt
@@ -533,7 +542,7 @@ func (g *DTOGenerator) syncDTOConstructor() error {
 
 func (g *DTOGenerator) astDTOListType() *ast.TypeSpec {
 	return &ast.TypeSpec{
-		Name: ast.NewIdent(g.domain.GetHTTPListDTOName()),
+		Name: ast.NewIdent(g.entityConfig.GetHTTPListDTOName()),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: []*ast.Field{
@@ -542,7 +551,7 @@ func (g *DTOGenerator) astDTOListType() *ast.TypeSpec {
 							ast.NewIdent("Items"),
 						},
 						Type: &ast.ArrayType{
-							Elt: ast.NewIdent(g.domain.GetHTTPItemDTOName()),
+							Elt: ast.NewIdent(g.entityConfig.GetHTTPItemDTOName()),
 						},
 						Tag: &ast.BasicLit{
 							Kind:  token.STRING,
@@ -575,7 +584,7 @@ func (g *DTOGenerator) syncDTOListType() error {
 	var dtoListType *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.TypeSpec); ok &&
-			t.Name.String() == g.domain.GetHTTPListDTOName() {
+			t.Name.String() == g.entityConfig.GetHTTPListDTOName() {
 			dtoListType = t
 			structureExists = true
 			return false
@@ -611,7 +620,7 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
 				&ast.CompositeLit{
-					Type: ast.NewIdent(g.domain.GetHTTPListDTOName()),
+					Type: ast.NewIdent(g.entityConfig.GetHTTPListDTOName()),
 					Elts: []ast.Expr{
 						&ast.KeyValueExpr{
 							Key: ast.NewIdent("Items"),
@@ -619,12 +628,12 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 								Fun: ast.NewIdent("make"),
 								Args: []ast.Expr{
 									&ast.ArrayType{
-										Elt: ast.NewIdent(g.domain.GetHTTPItemDTOName()),
+										Elt: ast.NewIdent(g.entityConfig.GetHTTPItemDTOName()),
 									},
 									&ast.CallExpr{
 										Fun: ast.NewIdent("len"),
 										Args: []ast.Expr{
-											ast.NewIdent(g.domain.GetManyVariableName()),
+											ast.NewIdent(g.entityConfig.GetManyVariableName()),
 										},
 									},
 								},
@@ -640,9 +649,9 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 		},
 		&ast.RangeStmt{
 			Key:   ast.NewIdent("i"),
-			Value: ast.NewIdent(g.domain.GetOneVariableName()),
+			Value: ast.NewIdent(g.entityConfig.GetOneVariableName()),
 			Tok:   token.DEFINE,
-			X:     ast.NewIdent(g.domain.GetManyVariableName()),
+			X:     ast.NewIdent(g.entityConfig.GetManyVariableName()),
 			Body: &ast.BlockStmt{
 				List: []ast.Stmt{
 					&ast.AssignStmt{
@@ -653,9 +662,9 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 						Tok: token.DEFINE,
 						Rhs: []ast.Expr{
 							&ast.CallExpr{
-								Fun: ast.NewIdent(g.domain.GetHTTPItemDTOConstructorName()),
+								Fun: ast.NewIdent(g.entityConfig.GetHTTPItemDTOConstructorName()),
 								Args: []ast.Expr{
-									ast.NewIdent(g.domain.GetOneVariableName()),
+									ast.NewIdent(g.entityConfig.GetOneVariableName()),
 								},
 							},
 						},
@@ -671,7 +680,7 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 								&ast.ReturnStmt{
 									Results: []ast.Expr{
 										&ast.CompositeLit{
-											Type: ast.NewIdent(g.domain.GetHTTPListDTOName()),
+											Type: ast.NewIdent(g.entityConfig.GetHTTPListDTOName()),
 										},
 										ast.NewIdent("err"),
 									},
@@ -705,18 +714,18 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 		},
 	}
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(g.domain.GetHTTPListDTOConstructorName()),
+		Name: ast.NewIdent(g.entityConfig.GetHTTPListDTOConstructorName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
 					{
 						Names: []*ast.Ident{
-							ast.NewIdent(g.domain.GetManyVariableName()),
+							ast.NewIdent(g.entityConfig.GetManyVariableName()),
 						},
 						Type: &ast.ArrayType{
 							Elt: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(g.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(g.entityConfig.GetMainModel().Name),
 							},
 						},
 					},
@@ -731,7 +740,7 @@ func (g *DTOGenerator) listDTOConstructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: ast.NewIdent(g.domain.GetHTTPListDTOName()),
+						Type: ast.NewIdent(g.entityConfig.GetHTTPListDTOName()),
 					},
 					{
 						Type: ast.NewIdent("error"),
@@ -755,7 +764,7 @@ func (g *DTOGenerator) syncListDTOConstructor() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == g.domain.GetHTTPFilterDTOConstructorName() {
+			t.Name.String() == g.entityConfig.GetHTTPFilterDTOConstructorName() {
 			methodExist = true
 			method = t
 			return false
@@ -824,7 +833,7 @@ func (g *DTOGenerator) filterDTOStruct() *ast.TypeSpec {
 			},
 		},
 	}
-	if g.domain.SearchEnabled() {
+	if g.entityConfig.SearchEnabled() {
 		fields.List = append(fields.List,
 			&ast.Field{
 				Names: []*ast.Ident{
@@ -838,7 +847,7 @@ func (g *DTOGenerator) filterDTOStruct() *ast.TypeSpec {
 			})
 	}
 	structure := &ast.TypeSpec{
-		Name: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
+		Name: ast.NewIdent(g.entityConfig.GetHTTPFilterDTOName()),
 		Type: &ast.StructType{
 			Fields: fields,
 		},
@@ -859,7 +868,7 @@ func (g *DTOGenerator) syncFilterDTOStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == g.domain.GetHTTPFilterDTOName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == g.entityConfig.GetHTTPFilterDTOName() {
 			structure = t
 			structureExists = true
 			return false
@@ -905,7 +914,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 			Value: ast.NewIdent("nil"),
 		},
 	}
-	if g.domain.SearchEnabled() {
+	if g.entityConfig.SearchEnabled() {
 		exprs = append(exprs, &ast.KeyValueExpr{
 			Key:   ast.NewIdent("Search"),
 			Value: ast.NewIdent("nil"),
@@ -919,7 +928,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
 				&ast.CompositeLit{
-					Type: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
+					Type: ast.NewIdent(g.entityConfig.GetHTTPFilterDTOName()),
 					Elts: exprs,
 				},
 			},
@@ -995,7 +1004,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 								&ast.ReturnStmt{
 									Results: []ast.Expr{
 										&ast.CompositeLit{
-											Type: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
+											Type: ast.NewIdent(g.entityConfig.GetHTTPFilterDTOName()),
 										},
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
@@ -1132,7 +1141,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 								&ast.ReturnStmt{
 									Results: []ast.Expr{
 										&ast.CompositeLit{
-											Type: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
+											Type: ast.NewIdent(g.entityConfig.GetHTTPFilterDTOName()),
 										},
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
@@ -1269,7 +1278,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 								&ast.ReturnStmt{
 									Results: []ast.Expr{
 										&ast.CompositeLit{
-											Type: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
+											Type: ast.NewIdent(g.entityConfig.GetHTTPFilterDTOName()),
 										},
 										&ast.CallExpr{
 											Fun: &ast.SelectorExpr{
@@ -1400,7 +1409,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 			},
 		},
 	}
-	if g.domain.SearchEnabled() {
+	if g.entityConfig.SearchEnabled() {
 		stmts = append(stmts, &ast.IfStmt{
 			Cond: &ast.CallExpr{
 				Fun: &ast.SelectorExpr{
@@ -1474,7 +1483,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 		},
 	})
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(g.domain.GetHTTPFilterDTOConstructorName()),
+		Name: ast.NewIdent(g.entityConfig.GetHTTPFilterDTOConstructorName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -1494,7 +1503,7 @@ func (g *DTOGenerator) filterDTOConstructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
+						Type: ast.NewIdent(g.entityConfig.GetHTTPFilterDTOName()),
 					},
 					{
 						Type: ast.NewIdent("error"),
@@ -1518,7 +1527,7 @@ func (g *DTOGenerator) syncFilterDTOConstructor() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == g.domain.GetHTTPFilterDTOConstructorName() {
+			t.Name.String() == g.entityConfig.GetHTTPFilterDTOConstructorName() {
 			methodExist = true
 			method = t
 			return false
@@ -1573,14 +1582,14 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 							Name: "entities",
 						},
 						Sel: &ast.Ident{
-							Name: g.domain.OrderingTypeName(),
+							Name: g.entityConfig.OrderingTypeName(),
 						},
 					},
 				},
 			},
 		},
 	}
-	if g.domain.SearchEnabled() {
+	if g.entityConfig.SearchEnabled() {
 		exprs = append(exprs, &ast.KeyValueExpr{
 			Key: ast.NewIdent("Search"),
 			Value: &ast.SelectorExpr{
@@ -1599,7 +1608,7 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 				&ast.CompositeLit{
 					Type: &ast.SelectorExpr{
 						X:   ast.NewIdent("entities"),
-						Sel: ast.NewIdent(g.domain.GetFilterModel().Name),
+						Sel: ast.NewIdent(g.entityConfig.GetFilterModel().Name),
 					},
 					Elts: exprs,
 				},
@@ -1656,7 +1665,7 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 											Name: "entities",
 										},
 										Sel: &ast.Ident{
-											Name: g.domain.OrderingTypeName(),
+											Name: g.entityConfig.OrderingTypeName(),
 										},
 									},
 									Args: []ast.Expr{
@@ -1685,7 +1694,7 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 					Names: []*ast.Ident{
 						ast.NewIdent("dto"),
 					},
-					Type: ast.NewIdent(g.domain.GetHTTPFilterDTOName()),
+					Type: ast.NewIdent(g.entityConfig.GetHTTPFilterDTOName()),
 				},
 			},
 		},
@@ -1697,7 +1706,7 @@ func (g *DTOGenerator) filterDTOToEntity() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(g.domain.GetFilterModel().Name),
+							Sel: ast.NewIdent(g.entityConfig.GetFilterModel().Name),
 						},
 					},
 					{
@@ -1722,7 +1731,7 @@ func (g *DTOGenerator) syncFilterDTOToEntity() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "toEntity" {
-			if t.Recv.List[0].Type.(*ast.Ident).String() == g.domain.GetHTTPFilterDTOName() {
+			if t.Recv.List[0].Type.(*ast.Ident).String() == g.entityConfig.GetHTTPFilterDTOName() {
 				methodExists = true
 				method = t
 				return false
@@ -1751,7 +1760,7 @@ func (g *DTOGenerator) syncFilterDTOToEntity() error {
 // Update DTO
 func (g *DTOGenerator) updateDTOStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
-		Name: ast.NewIdent(g.domain.GetHTTPUpdateDTOName()),
+		Name: ast.NewIdent(g.entityConfig.GetHTTPUpdateDTOName()),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: []*ast.Field{
@@ -1769,7 +1778,7 @@ func (g *DTOGenerator) updateDTOStruct() *ast.TypeSpec {
 			},
 		},
 	}
-	for _, param := range g.domain.GetUpdateModel().Params {
+	for _, param := range g.entityConfig.GetUpdateModel().Params {
 		ast.Inspect(structure, func(node ast.Node) bool {
 			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
 				for _, field := range st.Fields.List {
@@ -1810,7 +1819,7 @@ func (g *DTOGenerator) syncUpdateDTOStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == g.domain.GetHTTPUpdateDTOName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == g.entityConfig.GetHTTPUpdateDTOName() {
 			structure = t
 			structureExists = true
 			return false
@@ -1820,7 +1829,7 @@ func (g *DTOGenerator) syncUpdateDTOStruct() error {
 	if structure == nil {
 		structure = g.updateDTOStruct()
 	}
-	for _, param := range g.domain.GetUpdateModel().Params {
+	for _, param := range g.entityConfig.GetUpdateModel().Params {
 		ast.Inspect(structure, func(node ast.Node) bool {
 			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
 				for _, field := range st.Fields.List {
@@ -1871,7 +1880,7 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
 				&ast.CompositeLit{
-					Type: ast.NewIdent(g.domain.GetHTTPUpdateDTOName()),
+					Type: ast.NewIdent(g.entityConfig.GetHTTPUpdateDTOName()),
 				},
 			},
 		},
@@ -1910,7 +1919,7 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 					&ast.ReturnStmt{
 						Results: []ast.Expr{
 							&ast.CompositeLit{
-								Type: ast.NewIdent(g.domain.GetHTTPUpdateDTOName()),
+								Type: ast.NewIdent(g.entityConfig.GetHTTPUpdateDTOName()),
 							},
 							ast.NewIdent("err"),
 						},
@@ -1958,7 +1967,7 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 		},
 	})
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(g.domain.GetHTTPUpdateDTOConstructorName()),
+		Name: ast.NewIdent(g.entityConfig.GetHTTPUpdateDTOConstructorName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -1978,7 +1987,7 @@ func (g *DTOGenerator) updateDTOConstructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: ast.NewIdent(g.domain.GetHTTPUpdateDTOName()),
+						Type: ast.NewIdent(g.entityConfig.GetHTTPUpdateDTOName()),
 					},
 					{
 						Type: ast.NewIdent("error"),
@@ -2002,7 +2011,7 @@ func (g *DTOGenerator) syncUpdateDTOConstructor() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == g.domain.GetHTTPUpdateDTOConstructorName() {
+			t.Name.String() == g.entityConfig.GetHTTPUpdateDTOConstructorName() {
 			methodExist = true
 			method = t
 			return false
@@ -2027,7 +2036,7 @@ func (g *DTOGenerator) syncUpdateDTOConstructor() error {
 
 func (g *DTOGenerator) updateDTOToEntity() *ast.FuncDecl {
 	var exprs []ast.Expr
-	for _, param := range g.domain.GetUpdateModel().Params {
+	for _, param := range g.entityConfig.GetUpdateModel().Params {
 		exprs = append(exprs, &ast.KeyValueExpr{
 			Key: ast.NewIdent(param.GetName()),
 			Value: &ast.SelectorExpr{
@@ -2039,7 +2048,7 @@ func (g *DTOGenerator) updateDTOToEntity() *ast.FuncDecl {
 	model := &ast.CompositeLit{
 		Type: &ast.SelectorExpr{
 			X:   ast.NewIdent("entities"),
-			Sel: ast.NewIdent(g.domain.GetUpdateModel().Name),
+			Sel: ast.NewIdent(g.entityConfig.GetUpdateModel().Name),
 		},
 		Elts: exprs,
 	}
@@ -2050,7 +2059,7 @@ func (g *DTOGenerator) updateDTOToEntity() *ast.FuncDecl {
 					Names: []*ast.Ident{
 						ast.NewIdent("dto"),
 					},
-					Type: ast.NewIdent(g.domain.GetHTTPUpdateDTOName()),
+					Type: ast.NewIdent(g.entityConfig.GetHTTPUpdateDTOName()),
 				},
 			},
 		},
@@ -2062,7 +2071,7 @@ func (g *DTOGenerator) updateDTOToEntity() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(g.domain.GetUpdateModel().Name),
+							Sel: ast.NewIdent(g.entityConfig.GetUpdateModel().Name),
 						},
 					},
 					{
@@ -2104,7 +2113,7 @@ func (g *DTOGenerator) syncUpdateDTOToEntity() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "toEntity" {
-			if t.Recv.List[0].Type.(*ast.Ident).String() == g.domain.GetHTTPUpdateDTOName() {
+			if t.Recv.List[0].Type.(*ast.Ident).String() == g.entityConfig.GetHTTPUpdateDTOName() {
 				methodExists = true
 				method = t
 				return false
@@ -2130,17 +2139,374 @@ func (g *DTOGenerator) syncUpdateDTOToEntity() error {
 	return nil
 }
 
+// Update DTO
+func (g *DTOGenerator) deleteDTOStruct() *ast.TypeSpec {
+	structure := &ast.TypeSpec{
+		Name: ast.NewIdent(g.entityConfig.GetHTTPDeleteDTOName()),
+		Type: &ast.StructType{
+			Fields: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{
+							ast.NewIdent("ID"),
+						},
+						Type: ast.NewIdent("uuid.UUID"),
+						Tag: &ast.BasicLit{
+							Kind:  token.STRING,
+							Value: "`json:\"id\"`",
+						},
+					},
+				},
+			},
+		},
+	}
+	return structure
+}
+
+func (g *DTOGenerator) syncDeleteDTOStruct() error {
+	fileset := token.NewFileSet()
+	filename := g.filename()
+	if err := os.MkdirAll(path.Dir(filename), 0777); err != nil {
+		return err
+	}
+	file, err := parser.ParseFile(fileset, g.filename(), nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	var structureExists bool
+	var structure *ast.TypeSpec
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == g.entityConfig.GetHTTPDeleteDTOName() {
+			structure = t
+			structureExists = true
+			return false
+		}
+		return true
+	})
+	if structure == nil {
+		structure = g.deleteDTOStruct()
+	}
+	for _, param := range g.entityConfig.GetDeleteModel().Params {
+		ast.Inspect(structure, func(node ast.Node) bool {
+			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
+				for _, field := range st.Fields.List {
+					for _, fieldName := range field.Names {
+						if fieldName.Name == param.GetName() {
+							return false
+						}
+					}
+				}
+				st.Fields.List = append(st.Fields.List, &ast.Field{
+					Doc:   nil,
+					Names: []*ast.Ident{ast.NewIdent(param.GetName())},
+					Type:  ast.NewIdent(param.JsonType()),
+					Tag: &ast.BasicLit{
+						Kind:  token.STRING,
+						Value: fmt.Sprintf("`json:\"%s\"`", param.Tag()),
+					},
+					Comment: nil,
+				})
+				return false
+			}
+			return true
+		})
+	}
+	if !structureExists {
+		gd := &ast.GenDecl{
+			Tok:   token.TYPE,
+			Specs: []ast.Spec{structure},
+		}
+		file.Decls = append(file.Decls, gd)
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(g.filename(), buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *DTOGenerator) deleteDTOConstructor() *ast.FuncDecl {
+	stmts := []ast.Stmt{
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				ast.NewIdent(g.entityConfig.GetDeleteModel().Variable),
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CompositeLit{
+					Type: ast.NewIdent(g.entityConfig.GetHTTPDeleteDTOName()),
+				},
+			},
+		},
+		&ast.IfStmt{
+			Init: &ast.AssignStmt{
+				Lhs: []ast.Expr{
+					ast.NewIdent("err"),
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X:   ast.NewIdent("render"),
+							Sel: ast.NewIdent("DecodeJSON"),
+						},
+						Args: []ast.Expr{
+							&ast.SelectorExpr{
+								X:   ast.NewIdent("r"),
+								Sel: ast.NewIdent("Body"),
+							},
+							&ast.UnaryExpr{
+								Op: token.AND,
+								X:  ast.NewIdent(g.entityConfig.GetDeleteModel().Variable),
+							},
+						},
+					},
+				},
+			},
+			Cond: &ast.BinaryExpr{
+				X:  ast.NewIdent("err"),
+				Op: token.NEQ,
+				Y:  ast.NewIdent("nil"),
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							&ast.CompositeLit{
+								Type: ast.NewIdent(g.entityConfig.GetHTTPDeleteDTOName()),
+							},
+							ast.NewIdent("err"),
+						},
+					},
+				},
+			},
+		},
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				&ast.SelectorExpr{
+					X:   ast.NewIdent(g.entityConfig.GetDeleteModel().Variable),
+					Sel: ast.NewIdent("ID"),
+				},
+			},
+			Tok: token.ASSIGN,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X:   ast.NewIdent("uuid"),
+						Sel: ast.NewIdent("MustParse"),
+					},
+					Args: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X:   ast.NewIdent("chi"),
+								Sel: ast.NewIdent("URLParam"),
+							},
+							Args: []ast.Expr{
+								ast.NewIdent("r"),
+								&ast.BasicLit{
+									Kind:  token.STRING,
+									Value: "\"id\"",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	stmts = append(stmts, &ast.ReturnStmt{
+		Results: []ast.Expr{
+			ast.NewIdent(g.entityConfig.GetDeleteModel().Variable),
+			ast.NewIdent("nil"),
+		},
+	})
+	return &ast.FuncDecl{
+		Name: ast.NewIdent(g.entityConfig.GetHTTPDeleteDTOConstructorName()),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Names: []*ast.Ident{
+							ast.NewIdent("r"),
+						},
+						Type: &ast.StarExpr{
+							X: &ast.SelectorExpr{
+								X:   ast.NewIdent("http"),
+								Sel: ast.NewIdent("Request"),
+							},
+						},
+					},
+				},
+			},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: ast.NewIdent(g.entityConfig.GetHTTPDeleteDTOName()),
+					},
+					{
+						Type: ast.NewIdent("error"),
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: stmts,
+		},
+	}
+}
+
+func (g *DTOGenerator) syncDeleteDTOConstructor() error {
+	fileset := token.NewFileSet()
+	file, err := parser.ParseFile(fileset, g.filename(), nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	var methodExist bool
+	var method *ast.FuncDecl
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.FuncDecl); ok &&
+			t.Name.String() == g.entityConfig.GetHTTPDeleteDTOConstructorName() {
+			methodExist = true
+			method = t
+			return false
+		}
+		return true
+	})
+	if method == nil {
+		method = g.deleteDTOConstructor()
+	}
+	if !methodExist {
+		file.Decls = append(file.Decls, method)
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(g.filename(), buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *DTOGenerator) deleteDTOToEntity() *ast.FuncDecl {
+	var exprs []ast.Expr
+	for _, param := range g.entityConfig.GetDeleteModel().Params {
+		exprs = append(exprs, &ast.KeyValueExpr{
+			Key: ast.NewIdent(param.GetName()),
+			Value: &ast.SelectorExpr{
+				X:   ast.NewIdent("dto"),
+				Sel: ast.NewIdent(param.GetName()),
+			},
+		})
+	}
+	model := &ast.CompositeLit{
+		Type: &ast.SelectorExpr{
+			X:   ast.NewIdent("entities"),
+			Sel: ast.NewIdent(g.entityConfig.GetDeleteModel().Name),
+		},
+		Elts: exprs,
+	}
+	method := &ast.FuncDecl{
+		Recv: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Names: []*ast.Ident{
+						ast.NewIdent("dto"),
+					},
+					Type: ast.NewIdent(g.entityConfig.GetHTTPDeleteDTOName()),
+				},
+			},
+		},
+		Name: ast.NewIdent("toEntity"),
+		Type: &ast.FuncType{
+			Params: &ast.FieldList{},
+			Results: &ast.FieldList{
+				List: []*ast.Field{
+					{
+						Type: &ast.SelectorExpr{
+							X:   ast.NewIdent("entities"),
+							Sel: ast.NewIdent(g.entityConfig.GetDeleteModel().Name),
+						},
+					},
+					{
+						Type: ast.NewIdent("error"),
+					},
+				},
+			},
+		},
+		Body: &ast.BlockStmt{
+			List: []ast.Stmt{
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						ast.NewIdent(g.entityConfig.GetDeleteModel().Variable),
+					},
+					Tok: token.DEFINE,
+					Rhs: []ast.Expr{
+						model,
+					},
+				},
+				&ast.ReturnStmt{
+					Results: []ast.Expr{
+						ast.NewIdent(g.entityConfig.GetDeleteModel().Variable),
+						ast.NewIdent("nil"),
+					},
+				},
+			},
+		},
+	}
+	return method
+}
+
+func (g *DTOGenerator) syncDeleteDTOToEntity() error {
+	fileset := token.NewFileSet()
+	file, err := parser.ParseFile(fileset, g.filename(), nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	var methodExists bool
+	var method *ast.FuncDecl
+	ast.Inspect(file, func(node ast.Node) bool {
+		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "toEntity" {
+			if t.Recv.List[0].Type.(*ast.Ident).String() == g.entityConfig.GetHTTPDeleteDTOName() {
+				methodExists = true
+				method = t
+				return false
+			}
+			return true
+		}
+		return true
+	})
+	if method == nil {
+		method = g.deleteDTOToEntity()
+	}
+	// TODO: add range sync
+	if !methodExists {
+		file.Decls = append(file.Decls, method)
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(g.filename(), buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Create DTO
 func (g *DTOGenerator) createDTOStruct() *ast.TypeSpec {
 	structure := &ast.TypeSpec{
-		Name: ast.NewIdent(g.domain.GetHTTPCreateDTOName()),
+		Name: ast.NewIdent(g.entityConfig.GetHTTPCreateDTOName()),
 		Type: &ast.StructType{
 			Fields: &ast.FieldList{
 				List: []*ast.Field{},
 			},
 		},
 	}
-	for _, param := range g.domain.GetCreateModel().Params {
+	for _, param := range g.entityConfig.GetCreateModel().Params {
 		ast.Inspect(structure, func(node ast.Node) bool {
 			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
 				for _, field := range st.Fields.List {
@@ -2181,7 +2547,7 @@ func (g *DTOGenerator) syncCreateDTOStruct() error {
 	var structureExists bool
 	var structure *ast.TypeSpec
 	ast.Inspect(file, func(node ast.Node) bool {
-		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == g.domain.GetHTTPCreateDTOName() {
+		if t, ok := node.(*ast.TypeSpec); ok && t.Name.String() == g.entityConfig.GetHTTPCreateDTOName() {
 			structure = t
 			structureExists = true
 			return false
@@ -2191,7 +2557,7 @@ func (g *DTOGenerator) syncCreateDTOStruct() error {
 	if structure == nil {
 		structure = g.createDTOStruct()
 	}
-	for _, param := range g.domain.GetCreateModel().Params {
+	for _, param := range g.entityConfig.GetCreateModel().Params {
 		ast.Inspect(structure, func(node ast.Node) bool {
 			if st, ok := node.(*ast.StructType); ok && st.Fields != nil {
 				for _, field := range st.Fields.List {
@@ -2242,7 +2608,7 @@ func (g *DTOGenerator) createDTOConstructor() *ast.FuncDecl {
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
 				&ast.CompositeLit{
-					Type: ast.NewIdent(g.domain.GetHTTPCreateDTOName()),
+					Type: ast.NewIdent(g.entityConfig.GetHTTPCreateDTOName()),
 					Elts: []ast.Expr{},
 				},
 			},
@@ -2282,7 +2648,7 @@ func (g *DTOGenerator) createDTOConstructor() *ast.FuncDecl {
 					&ast.ReturnStmt{
 						Results: []ast.Expr{
 							&ast.CompositeLit{
-								Type: ast.NewIdent(g.domain.GetHTTPCreateDTOName()),
+								Type: ast.NewIdent(g.entityConfig.GetHTTPCreateDTOName()),
 							},
 							ast.NewIdent("err"),
 						},
@@ -2298,7 +2664,7 @@ func (g *DTOGenerator) createDTOConstructor() *ast.FuncDecl {
 		},
 	})
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(g.domain.GetHTTPCreateDTOConstructorName()),
+		Name: ast.NewIdent(g.entityConfig.GetHTTPCreateDTOConstructorName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -2318,7 +2684,7 @@ func (g *DTOGenerator) createDTOConstructor() *ast.FuncDecl {
 			Results: &ast.FieldList{
 				List: []*ast.Field{
 					{
-						Type: ast.NewIdent(g.domain.GetHTTPCreateDTOName()),
+						Type: ast.NewIdent(g.entityConfig.GetHTTPCreateDTOName()),
 					},
 					{
 						Type: ast.NewIdent("error"),
@@ -2342,7 +2708,7 @@ func (g *DTOGenerator) syncCreateDTOConstructor() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok &&
-			t.Name.String() == g.domain.GetHTTPCreateDTOConstructorName() {
+			t.Name.String() == g.entityConfig.GetHTTPCreateDTOConstructorName() {
 			methodExist = true
 			method = t
 			return false
@@ -2367,7 +2733,7 @@ func (g *DTOGenerator) syncCreateDTOConstructor() error {
 
 func (g *DTOGenerator) createDTOToEntity() *ast.FuncDecl {
 	var exprs []ast.Expr
-	for _, param := range g.domain.GetCreateModel().Params {
+	for _, param := range g.entityConfig.GetCreateModel().Params {
 		exprs = append(exprs, &ast.KeyValueExpr{
 			Key: ast.NewIdent(param.GetName()),
 			Value: &ast.SelectorExpr{
@@ -2383,7 +2749,7 @@ func (g *DTOGenerator) createDTOToEntity() *ast.FuncDecl {
 					Names: []*ast.Ident{
 						ast.NewIdent("dto"),
 					},
-					Type: ast.NewIdent(g.domain.GetHTTPCreateDTOName()),
+					Type: ast.NewIdent(g.entityConfig.GetHTTPCreateDTOName()),
 				},
 			},
 		},
@@ -2395,7 +2761,7 @@ func (g *DTOGenerator) createDTOToEntity() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(g.domain.GetCreateModel().Name),
+							Sel: ast.NewIdent(g.entityConfig.GetCreateModel().Name),
 						},
 					},
 					{
@@ -2415,7 +2781,7 @@ func (g *DTOGenerator) createDTOToEntity() *ast.FuncDecl {
 						&ast.CompositeLit{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(g.domain.GetCreateModel().Name),
+								Sel: ast.NewIdent(g.entityConfig.GetCreateModel().Name),
 							},
 							Elts: exprs,
 						},
@@ -2443,7 +2809,7 @@ func (g *DTOGenerator) syncCreateDTOToEntity() error {
 	var method *ast.FuncDecl
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.FuncDecl); ok && t.Name.String() == "toEntity" {
-			if t.Recv.List[0].Type.(*ast.Ident).String() == g.domain.GetHTTPCreateDTOName() {
+			if t.Recv.List[0].Type.(*ast.Ident).String() == g.entityConfig.GetHTTPCreateDTOName() {
 				methodExists = true
 				method = t
 				return false

@@ -29,20 +29,20 @@ func astType(t string) ast.Expr {
 }
 
 type Model struct {
-	model  *configs.Entity
-	domain *configs.EntityConfig
+	entity       *configs.Entity
+	entityConfig configs.EntityConfig
 }
 
-func NewModel(model *configs.Entity, domain *configs.EntityConfig) *Model {
+func NewModel(entity *configs.Entity, entityConfig configs.EntityConfig) *Model {
 	return &Model{
-		model:  model,
-		domain: domain,
+		entity:       entity,
+		entityConfig: entityConfig,
 	}
 }
 
 func (m *Model) params() []*ast.Field {
-	fields := make([]*ast.Field, len(m.model.Params))
-	for i, param := range m.model.Params {
+	fields := make([]*ast.Field, len(m.entity.Params))
+	for i, param := range m.entity.Params {
 		fields[i] = &ast.Field{
 			Names: []*ast.Ident{ast.NewIdent(param.GetName())},
 			Type:  astType(param.Type),
@@ -56,27 +56,27 @@ func (m *Model) params() []*ast.Field {
 }
 
 func (m *Model) Sync() error {
-	err := os.MkdirAll(path.Dir(m.domain.FileName()), 0777)
+	err := os.MkdirAll(path.Dir(m.entityConfig.FileName()), 0777)
 	if err != nil {
 		return err
 	}
-	structure := NewStructure(m.domain.FileName(), m.model.Name, m.params(), m.domain)
+	structure := NewStructure(m.entityConfig.FileName(), m.entity.Name, m.params(), m.entityConfig)
 	if err := structure.Sync(); err != nil {
 		return err
 	}
-	if m.model.Validation {
-		validate := NewValidate(structure.spec(), m.domain)
+	if m.entity.Validation {
+		validate := NewValidate(structure.spec(), m.entityConfig)
 		if err := validate.Sync(); err != nil {
 			return err
 		}
 	}
-	if m.model.Mock {
-		mock := NewMock(structure.spec(), m.domain)
+	if m.entity.Mock {
+		mock := NewMock(structure.spec(), m.entityConfig)
 		if err := mock.Sync(); err != nil {
 			return err
 		}
 	}
-	ordering := NewOrdering(m.domain)
+	ordering := NewOrdering(m.entityConfig)
 	if err := ordering.Sync(); err != nil {
 		return err
 	}

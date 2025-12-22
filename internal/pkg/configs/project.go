@@ -36,6 +36,7 @@ func NewProject(configPath string) (*Project, error) {
 		TaskEnabled:    true,
 		UptraceEnabled: false,
 		KafkaEnabled:   false,
+		HTTPEnabled:    false,
 	}
 	file, err := os.ReadFile(configPath)
 	if err != nil {

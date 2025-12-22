@@ -3,6 +3,7 @@ package astfile
 import (
 	"go/ast"
 	"go/token"
+	"slices"
 )
 
 func TypeExists(file ast.Node, typeName string) bool {
@@ -57,6 +58,23 @@ func SetTypeParam(typeSpec *ast.TypeSpec, name, typeName, tag string) {
 		}
 	}
 
+	st.Fields.List = append(st.Fields.List, field)
+}
+
+func SetTypeField(typeSpec *ast.TypeSpec, field *ast.Field) {
+	st, ok := typeSpec.Type.(*ast.StructType)
+	if !ok || st.Fields == nil {
+		return
+	}
+	if slices.ContainsFunc(st.Fields.List, func(stField *ast.Field) bool {
+		return slices.ContainsFunc(stField.Names, func(stName *ast.Ident) bool {
+			return slices.ContainsFunc(field.Names, func(fName *ast.Ident) bool {
+				return stName.Name == fName.Name
+			})
+		})
+	}) {
+		return
+	}
 	st.Fields.List = append(st.Fields.List, field)
 }
 

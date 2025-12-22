@@ -2,11 +2,6 @@ package configs
 
 import (
 	"fmt"
-	"os"
-	"path"
-	"slices"
-	"strconv"
-	"strings"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/iancoleman/strcase"
@@ -40,18 +35,7 @@ func (m *EntityConfig) Validate() error {
 	return nil
 }
 
-func (m *EntityConfig) SearchVector() string {
-	var params []string
-	for _, param := range m.Params {
-		if param.Search {
-			params = append(params, param.Tag())
-		}
-	}
-	vector := fmt.Sprintf("to_tsvector('english', %s)", strings.Join(params, " || "))
-	return vector
-}
-
-func (m *EntityConfig) EntityName() string {
+func (m *EntityConfig) CamelName() string {
 	return strcase.ToCamel(m.Name)
 }
 
@@ -63,84 +47,8 @@ func (m *EntityConfig) AppAlias() string {
 	return strcase.ToLowerCamel(m.Name)
 }
 
-func (m *EntityConfig) CamelCase() string {
-	return strcase.ToCamel(m.Name)
-}
-
-func (m *EntityConfig) ServiceTypeName() string {
-	return fmt.Sprintf("%sService", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) GRPCHandlerTypeName() string {
-	return fmt.Sprintf("%sServiceServer", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) RESTHandlerTypeName() string {
-	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) RESTHandlerPath() string {
-	return strcase.ToSnake(inflection.Plural(m.Name))
-}
-
-func (m *EntityConfig) RESTHandlerVariableName() string {
-	return fmt.Sprintf("%sHandler", strcase.ToLowerCamel(m.Name))
-}
-
-func (m *EntityConfig) GRPCHandlerVariableName() string {
-	return fmt.Sprintf("%sHandler", strcase.ToLowerCamel(m.Name))
-}
-
-func (m *EntityConfig) ServiceVariableName() string {
-	return fmt.Sprintf("%sService", strcase.ToLowerCamel(m.Name))
-}
-
-func (m *EntityConfig) UseCaseTypeName() string {
-	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) UseCaseVariableName() string {
-	return fmt.Sprintf("%sUseCase", strcase.ToLowerCamel(m.Name))
-}
-
-func (m *EntityConfig) RepositoryTypeName() string {
-	return fmt.Sprintf("%sRepository", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) RepositoryVariableName() string {
-	return fmt.Sprintf("%sRepository", strcase.ToLowerCamel(m.Name))
-}
-
-func (m *EntityConfig) FilterTypeName() string {
-	return fmt.Sprintf("%sFilter", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) UpdateTypeName() string {
-	return fmt.Sprintf("%sUpdate", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) CreateTypeName() string {
-	return fmt.Sprintf("%sCreate", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) PostgresDTOTypeName() string {
-	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) PostgresDTOListTypeName() string {
-	return fmt.Sprintf("%sListDTO", strcase.ToCamel(m.Name))
-}
-
 func (m *EntityConfig) KeyName() string {
 	return strcase.ToSnake(m.Name)
-}
-
-func (m *EntityConfig) ProtoFileName() string {
-	return fmt.Sprintf("%s.proto", m.SnakeName())
-}
-
-func (m *EntityConfig) MockFileName() string {
-	return fmt.Sprintf("%s_mock.go", m.SnakeName())
 }
 
 func (m *EntityConfig) SnakeName() string {
@@ -155,172 +63,12 @@ func (m *EntityConfig) TestFileName() string {
 	return fmt.Sprintf("%s_test.go", m.SnakeName())
 }
 
-func (m *EntityConfig) MigrationUpFileName() string {
-	last, err := lastMigration()
-	if err != nil {
-		return ""
-	}
-	return fmt.Sprintf("%06d_%s.up.sql", last+1, m.TableName())
-}
-
-func (m *EntityConfig) MigrationDownFileName() string {
-	last, err := lastMigration()
-	if err != nil {
-		return ""
-	}
-	return fmt.Sprintf("%06d_%s.down.sql", last+1, m.TableName())
-}
-
-func (m *EntityConfig) CamelName() string {
-	return strcase.ToCamel(m.Name)
-}
-
 func (m *EntityConfig) LowerCamelName() string {
 	return strcase.ToLowerCamel(m.Name)
 }
 
 func (m *EntityConfig) DirName() string {
 	return strcase.ToSnake(m.Name)
-}
-
-func (m *EntityConfig) EventProducerConstructorName() string {
-	return fmt.Sprintf("New%s", m.EventProducerTypeName())
-}
-
-func (m *EntityConfig) EventProducerTypeName() string {
-	return fmt.Sprintf("%sEventProducer", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) EventProducerInterfaceName() string {
-	return fmt.Sprintf("%sEventProducer", strcase.ToLowerCamel(m.Name))
-}
-func (m *EntityConfig) GetEventProducerPrivateVariableName() string {
-	return fmt.Sprintf("%sEventProducer", strcase.ToLowerCamel(m.Name))
-}
-
-func (m *EntityConfig) KafkaHandlerConstructorName() string {
-	return fmt.Sprintf("New%s", m.KafkaHandlerTypeName())
-}
-
-func (m *EntityConfig) KafkaHandlerTypeName() string {
-	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) KafkaCreatedConsumerGroup() string {
-	return fmt.Sprintf(
-		"%s.%s.%s",
-		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
-		strcase.ToSnake(m.AppConfig.Name),
-		strcase.ToSnake(m.Name),
-	)
-}
-func (m *EntityConfig) KafkaUpdatedConsumerGroup() string {
-	return fmt.Sprintf(
-		"%s.%s.%s.updated",
-		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
-		strcase.ToSnake(m.AppConfig.Name),
-		strcase.ToSnake(m.Name),
-	)
-}
-func (m *EntityConfig) KafkaDeletedConsumerGroup() string {
-	return fmt.Sprintf(
-		"%s.%s.%s.deleted",
-		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
-		strcase.ToSnake(m.AppConfig.Name),
-		strcase.ToSnake(m.Name),
-	)
-}
-
-func (m *EntityConfig) GetKafkaHandlerPrivateVariableName() string {
-	return fmt.Sprintf("kafka%sHandler", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) TopicName() string {
-	return fmt.Sprintf(
-		"%s.%s.%s.v1",
-		strcase.ToSnake(m.AppConfig.ProjectConfig.Name),
-		strcase.ToSnake(m.AppConfig.Name),
-		strcase.ToSnake(m.Name),
-	)
-}
-
-func (m *EntityConfig) EntitiesImportPath() string {
-	return fmt.Sprintf(`"%s/internal/app/%s/entities/%s"`, m.Module, m.AppName(), m.DirName())
-}
-
-func (m *EntityConfig) GetMainModel() *Entity {
-	index := slices.IndexFunc(
-		m.Entities,
-		func(model *Entity) bool { return model.Type == EntityTypeMain },
-	)
-	if index >= 0 {
-		return m.Entities[index]
-	}
-	return nil
-}
-
-func (m *EntityConfig) TableName() string {
-	return strcase.ToSnake(inflection.Plural(m.Name))
-}
-
-func (m *EntityConfig) SearchEnabled() bool {
-	return slices.ContainsFunc(
-		m.GetMainModel().Params,
-		func(param *Param) bool { return param.Search },
-	)
-}
-
-func (m *EntityConfig) GetCreateModel() *Entity {
-	index := slices.IndexFunc(
-		m.Entities,
-		func(model *Entity) bool { return model.Type == EntityTypeCreate },
-	)
-	if index >= 0 {
-		return m.Entities[index]
-	}
-	return nil
-}
-
-func (m *EntityConfig) GetUpdateModel() *Entity {
-	index := slices.IndexFunc(
-		m.Entities,
-		func(model *Entity) bool { return model.Type == EntityTypeUpdate },
-	)
-	if index > 0 {
-		return m.Entities[index]
-	}
-	return nil
-}
-
-func (m *EntityConfig) GetFilterModel() *Entity {
-	index := slices.IndexFunc(
-		m.Entities,
-		func(model *Entity) bool { return model.Type == EntityTypeFilter },
-	)
-	if index > 0 {
-		return m.Entities[index]
-	}
-	return nil
-}
-
-func (m *EntityConfig) PermissionIDCreate() string {
-	return fmt.Sprintf("PermissionID%sCreate", strcase.ToCamel(m.CamelName()))
-}
-
-func (m *EntityConfig) PermissionIDUpdate() string {
-	return fmt.Sprintf("PermissionID%sUpdate", m.CamelName())
-}
-
-func (m *EntityConfig) PermissionIDDelete() string {
-	return fmt.Sprintf("PermissionID%sDelete", m.CamelName())
-}
-
-func (m *EntityConfig) PermissionIDDetail() string {
-	return fmt.Sprintf("PermissionID%sDetail", m.CamelName())
-}
-
-func (m *EntityConfig) PermissionIDList() string {
-	return fmt.Sprintf("PermissionID%sList", m.CamelName())
 }
 
 func (m *EntityConfig) GetOneVariableName() string {
@@ -331,234 +79,6 @@ func (m *EntityConfig) GetManyVariableName() string {
 	return inflection.Plural(m.GetOneVariableName())
 }
 
-func (m *EntityConfig) GetHTTPPath() string {
-	return strcase.ToSnake(inflection.Plural(m.GetOneVariableName()))
-}
-
-func (m *EntityConfig) GetGRPCHandlerPrivateVariableName() string {
-	return fmt.Sprintf("grpc%sHandler", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) GetGRPCHandlerPublicVariableName() string {
-	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) GetGRPCHandlerTypeName() string {
-	return fmt.Sprintf("%sServiceServer", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) GetGRPCHandlerConstructorName() string {
-	return fmt.Sprintf("New%s", m.GetGRPCHandlerTypeName())
-}
-
-func (m *EntityConfig) GetGRPCServiceDescriptionName() string {
-	return fmt.Sprintf("%sService_ServiceDesc", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) GetGRPCCreateDTOEncodeName() string {
-	return fmt.Sprintf("encode%s", m.GetCreateModel().Name)
-}
-
-func (m *EntityConfig) GetGRPCUpdateDTOEncodeName() string {
-	return fmt.Sprintf("encode%s", m.GetUpdateModel().Name)
-}
-
-func (m *EntityConfig) GetGRPCFilterDTOEncodeName() string {
-	return fmt.Sprintf("encode%s", m.GetFilterModel().Name)
-}
-
-func (m *EntityConfig) GetGRPCMainDecodeName() string {
-	return fmt.Sprintf("decode%s", m.GetMainModel().Name)
-}
-func (m *EntityConfig) GetGRPCMainListDecodeName() string {
-	return fmt.Sprintf("decodeList%s", m.GetMainModel().Name)
-}
-func (m *EntityConfig) GetGRPCUpdateDecodeName() string {
-	return fmt.Sprintf("decode%s", m.GetUpdateModel().Name)
-}
-
-func (m *EntityConfig) GetHTTPHandlerConstructorName() string {
-	return fmt.Sprintf("New%s", m.GetHTTPHandlerTypeName())
-}
-
-func (m *EntityConfig) GetHTTPHandlerTypeName() string {
-	return fmt.Sprintf("%sHandler", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) GetHTTPHandlerPrivateVariableName() string {
-	return fmt.Sprintf("http%sHandler", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) GetHTTPItemDTOName() string {
-	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.GetMainModel().Name))
-}
-func (m *EntityConfig) GetHTTPItemDTOConstructorName() string {
-	return fmt.Sprintf("New%s", m.GetHTTPItemDTOName())
-}
-
-func (m *EntityConfig) GetHTTPUpdateDTOName() string {
-	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.GetUpdateModel().Name))
-}
-
-func (m *EntityConfig) GetHTTPUpdateDTOConstructorName() string {
-	return fmt.Sprintf("New%s", m.GetHTTPUpdateDTOName())
-}
-
-func (m *EntityConfig) GetHTTPCreateDTOName() string {
-	return fmt.Sprintf("%sDTO", strcase.ToCamel(m.GetCreateModel().Name))
-}
-func (m *EntityConfig) GetHTTPCreateDTOConstructorName() string {
-	return fmt.Sprintf("New%s", m.GetHTTPCreateDTOName())
-}
-
-func (m *EntityConfig) GetHTTPListDTOName() string {
-	return fmt.Sprintf("%sListDTO", strcase.ToCamel(m.GetMainModel().Name))
-}
-
-func (m *EntityConfig) GetHTTPListDTOConstructorName() string {
-	return fmt.Sprintf("New%s", strcase.ToCamel(m.GetHTTPListDTOName()))
-}
-
-func (m *EntityConfig) GetUseCasePrivateVariableName() string {
-	return fmt.Sprintf("%sUseCase", strcase.ToLowerCamel(m.Name))
-}
-
-func (m *EntityConfig) GetUseCasePublicVariableName() string {
-	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) GetUseCaseTypeName() string {
-	return fmt.Sprintf("%sUseCase", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) GetUseCaseInterfaceName() string {
-	return fmt.Sprintf("%sUseCase", strcase.ToLowerCamel(m.Name))
-}
-
-func (m *EntityConfig) GetUseCaseConstructorName() string {
-	return fmt.Sprintf("New%s", m.GetUseCaseTypeName())
-}
-
-func (m *EntityConfig) GetServicePrivateVariableName() string {
-	return fmt.Sprintf("%sService", strcase.ToLowerCamel(m.Name))
-}
-
-func (m *EntityConfig) GetServicePublicVariableName() string {
-	return fmt.Sprintf("%sService", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) GetServiceTypeName() string {
-	return fmt.Sprintf("%sService", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) GetServiceInterfaceName() string {
-	return fmt.Sprintf("%sService", strcase.ToLowerCamel(m.Name))
-}
-
-func (m *EntityConfig) GetServiceConstructorName() string {
-	return fmt.Sprintf("New%s", m.GetServiceTypeName())
-}
-
-func (m *EntityConfig) GetRepositoryPrivateVariableName() string {
-	return fmt.Sprintf("%sRepository", strcase.ToLowerCamel(m.Name))
-}
-
-func (m *EntityConfig) GetRepositoryPublicVariableName() string {
-	return fmt.Sprintf("%sRepository", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) GetRepositoryTypeName() string {
-	return fmt.Sprintf("%sRepository", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) GetRepositoryInterfaceName() string {
-	return fmt.Sprintf("%sRepository", strcase.ToLowerCamel(m.Name))
-}
-
-func (m *EntityConfig) GetRepositoryConstructorName() string {
-	return fmt.Sprintf("New%s", m.GetRepositoryTypeName())
-}
-
-func (m *EntityConfig) GetHTTPFilterDTOName() string {
-	return fmt.Sprintf("%sFilterDTO", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) GetHTTPFilterDTOConstructorName() string {
-	return fmt.Sprintf("New%s", m.GetHTTPFilterDTOName())
-}
-
-func (m *EntityConfig) EventServicePrivateVariableName() string {
-	return fmt.Sprintf("%sEventService", m.LowerCamelName())
-}
-
-func (m *EntityConfig) EventServiceInterfaceName() string {
-	return fmt.Sprintf("%sEventService", m.LowerCamelName())
-}
-
-func (m *EntityConfig) EventServiceName() string {
-	return fmt.Sprintf("%sEventService", m.CamelCase())
-}
-
-func (m *EntityConfig) EventServiceConstructorName() string {
-	return fmt.Sprintf("New%s", m.EventServiceName())
-}
-
-func (m *EntityConfig) OrderingTypeName() string {
-	return fmt.Sprintf("%sOrdering", strcase.ToCamel(m.Name))
-}
-
-func (m *EntityConfig) OrderingConsts() map[string]string {
-	consts := map[string]string{}
-	for _, param := range m.GetMainModel().Params {
-		consts[fmt.Sprintf("%s%sASC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(
-			`"%s"`,
-			param.Tag(),
-		)
-		consts[fmt.Sprintf("%s%sDESC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(
-			`"-%s"`,
-			param.Tag(),
-		)
-	}
-	return consts
-}
-
-func (m *EntityConfig) OrderingMap() map[string]string {
-	consts := map[string]string{}
-	for _, param := range m.GetMainModel().Params {
-		consts[fmt.Sprintf("%s%sASC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(
-			`"%s.%s ASC"`,
-			m.TableName(),
-			param.Tag(),
-		)
-		consts[fmt.Sprintf("%s%sDESC", m.OrderingTypeName(), strcase.ToCamel(param.Name))] = fmt.Sprintf(
-			`"%s.%s DESC"`,
-			m.TableName(),
-			param.Tag(),
-		)
-	}
-	return consts
-}
-
-func lastMigration() (int, error) {
-	dir, err := os.ReadDir(path.Join("internal", "pkg", "postgres", "migrations"))
-	if err != nil {
-		return 0, err
-	}
-	var files []string
-	for _, entry := range dir {
-		if !entry.IsDir() {
-			files = append(files, entry.Name())
-		}
-	}
-	last := files[len(files)-1]
-	n, _, _ := strings.Cut(strings.Trim(last, "0"), "_")
-	index, err := strconv.Atoi(n)
-	if err != nil {
-		return 0, err
-	}
-	return index, nil
-}
-
 type EntityType uint8
 
 const (
@@ -566,6 +86,7 @@ const (
 	EntityTypeCreate
 	EntityTypeUpdate
 	EntityTypeFilter
+	EntityTypeDelete
 )
 
 type Entity struct {
@@ -614,7 +135,7 @@ func NewUpdateEntity(entityConfig EntityConfig) *Entity {
 func NewMainEntity(modelConfig EntityConfig) *Entity {
 	model := &Entity{
 		Type:     EntityTypeMain,
-		Name:     modelConfig.EntityName(),
+		Name:     modelConfig.CamelName(),
 		Variable: modelConfig.GetOneVariableName(),
 		Params: []*Param{
 			{
@@ -675,6 +196,23 @@ func NewFilterEntity(modelConfig EntityConfig) *Entity {
 				Name:   "IsDeleted",
 				Type:   "*bool",
 				Search: false,
+			},
+		},
+		Validation: true,
+		Mock:       true,
+	}
+	return model
+}
+
+func NewDeleteEntity(entityConfig EntityConfig) *Entity {
+	model := &Entity{
+		Type:     EntityTypeDelete,
+		Name:     entityConfig.DeleteTypeName(),
+		Variable: "del",
+		Params: []*Param{
+			{
+				Name: "ID",
+				Type: "uuid.UUID",
 			},
 		},
 		Validation: true,

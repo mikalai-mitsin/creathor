@@ -1,10 +1,11 @@
 CREATE TABLE public.{{ .TableName }}
 (
-    id          uuid                  DEFAULT uuidv7()
+    id          uuid                  DEFAULT uuid_generate_v4()
         CONSTRAINT {{ .TableName }}_pk PRIMARY KEY,
 {{- range $value := .Params }}
     {{ $value.Tag }} {{ $value.SQLType }} NOT NULL,
 {{- end }}
+    deleted_at  timestamp,
     updated_at  timestamp    NOT NULL DEFAULT (now() at time zone 'utc'),
     created_at  timestamp    NOT NULL DEFAULT (now() at time zone 'utc')
 );

@@ -83,7 +83,7 @@ func Test{{ .EventProducerTypeName }}_Send(t *testing.T) {
 				{{ .GetOneVariableName }}: {{ .GetOneVariableName }},
 			},
 			setup: func() {
-				data, _ := proto.Marshal(decode{{ .EntityName }}({{ .GetOneVariableName }}))
+				data, _ := proto.Marshal(decode{{ .CamelName }}({{ .GetOneVariableName }}))
 				mockProducer.EXPECT().Send(gomock.Any(), &kafka.Message{
 					Topic: topicName,
 					Value: data,
@@ -103,7 +103,7 @@ func Test{{ .EventProducerTypeName }}_Send(t *testing.T) {
 				{{ .GetOneVariableName }}: {{ .GetOneVariableName }},
 			},
 			setup: func() {
-                data, _ := proto.Marshal(decode{{ .EntityName }}({{ .GetOneVariableName }}))
+                data, _ := proto.Marshal(decode{{ .CamelName }}({{ .GetOneVariableName }}))
 				mockProducer.EXPECT().Send(gomock.Any(), &kafka.Message{
 					Topic: topicName,
 					Value: data,

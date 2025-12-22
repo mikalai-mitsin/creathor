@@ -25,7 +25,7 @@ func {{ .EventProducerConstructorName }}(
 }
 
 func (p *{{ .EventProducerTypeName }}) Send(ctx context.Context, {{ .GetOneVariableName }} entities.{{ .GetMainModel.Name }}) error {
-    data, err := proto.Marshal(decode{{ .EntityName }}({{ .GetOneVariableName }}))
+    data, err := proto.Marshal(decode{{ .CamelName }}({{ .GetOneVariableName }}))
     if err != nil {
         return err
     }

@@ -14,11 +14,11 @@ import (
 )
 
 type InterfacesGenerator struct {
-	domain *configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewInterfacesGenerator(domain *configs.EntityConfig) *InterfacesGenerator {
-	return &InterfacesGenerator{domain: domain}
+func NewInterfacesGenerator(entityConfig configs.EntityConfig) *InterfacesGenerator {
+	return &InterfacesGenerator{entityConfig: entityConfig}
 }
 
 func (i InterfacesGenerator) Sync() error {
@@ -26,11 +26,11 @@ func (i InterfacesGenerator) Sync() error {
 	filename := path.Join(
 		"internal",
 		"app",
-		i.domain.AppConfig.AppName(),
+		i.entityConfig.AppConfig.AppName(),
 		"handlers",
 		"grpc",
-		i.domain.DirName(),
-		fmt.Sprintf("%s_interfaces.go", i.domain.SnakeName()),
+		i.entityConfig.DirName(),
+		fmt.Sprintf("%s_interfaces.go", i.entityConfig.SnakeName()),
 	)
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
@@ -44,7 +44,7 @@ func (i InterfacesGenerator) Sync() error {
 	var usecaseExists bool
 	ast.Inspect(file, func(node ast.Node) bool {
 		if t, ok := node.(*ast.TypeSpec); ok {
-			if t.Name.String() == i.domain.GetUseCaseInterfaceName() {
+			if t.Name.String() == i.entityConfig.GetUseCaseInterfaceName() {
 				usecaseExists = true
 			}
 			if t.Name.String() == "logger" {
@@ -86,11 +86,7 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text: fmt.Sprintf(
-						"//go:generate mockgen -source=%s_interfaces.go -package=handlers -destination=%s_interfaces_mock.go",
-						i.domain.SnakeName(),
-						i.domain.SnakeName(),
-					),
+					Text:  "//go:generate mockgen -package=$GOPACKAGE -source=$GOFILE -destination=mock.go",
 				},
 			},
 		},
@@ -104,19 +100,19 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: i.domain.EntitiesImportPath(),
+					Value: i.entityConfig.ImportPathEntities(),
 				},
 			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: i.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+					Value: i.entityConfig.AppConfig.ProjectConfig.UUIDImportPath(),
 				},
 			},
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: i.domain.AppConfig.ProjectConfig.LogImportPath(),
+					Value: i.entityConfig.AppConfig.ProjectConfig.LogImportPath(),
 				},
 			},
 		},
@@ -139,7 +135,7 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetCreateModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetCreateModel().Name),
 							},
 						},
 					},
@@ -149,7 +145,7 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetMainModel().Name),
 							},
 						},
 						{
@@ -183,7 +179,7 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetMainModel().Name),
 							},
 						},
 						{
@@ -207,7 +203,7 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetFilterModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetFilterModel().Name),
 							},
 						},
 					},
@@ -218,7 +214,7 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 							Type: &ast.ArrayType{
 								Elt: &ast.SelectorExpr{
 									X:   ast.NewIdent("entities"),
-									Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+									Sel: ast.NewIdent(i.entityConfig.GetMainModel().Name),
 								},
 							},
 						},
@@ -246,7 +242,7 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetUpdateModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetUpdateModel().Name),
 							},
 						},
 					},
@@ -256,7 +252,7 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetMainModel().Name),
 							},
 						},
 						{
@@ -279,8 +275,8 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 						},
 						{
 							Type: &ast.SelectorExpr{
-								X:   ast.NewIdent("uuid"),
-								Sel: ast.NewIdent("UUID"),
+								X:   ast.NewIdent("entities"),
+								Sel: ast.NewIdent(i.entityConfig.GetDeleteModel().Name),
 							},
 						},
 					},
@@ -290,7 +286,7 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 						{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(i.domain.GetMainModel().Name),
+								Sel: ast.NewIdent(i.entityConfig.GetMainModel().Name),
 							},
 						},
 						{
@@ -305,7 +301,7 @@ func (i InterfacesGenerator) usecaseInterface() *ast.GenDecl {
 		Tok: token.TYPE,
 		Specs: []ast.Spec{
 			&ast.TypeSpec{
-				Name: ast.NewIdent(i.domain.GetUseCaseInterfaceName()),
+				Name: ast.NewIdent(i.entityConfig.GetUseCaseInterfaceName()),
 				Type: &ast.InterfaceType{
 					Methods: &ast.FieldList{
 						List: methods,

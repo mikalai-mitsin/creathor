@@ -9,23 +9,22 @@ import (
 	"go/token"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
 type ProtoEncoder struct {
-	domain configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewProtoEncoder(domain configs.EntityConfig) *ProtoEncoder {
-	return &ProtoEncoder{domain: domain}
+func NewProtoEncoder(entityConfig configs.EntityConfig) *ProtoEncoder {
+	return &ProtoEncoder{entityConfig: entityConfig}
 }
 
 func (h ProtoEncoder) createParams() []ast.Expr {
 	var exprs []ast.Expr
-	for _, param := range h.domain.GetCreateModel().Params {
+	for _, param := range h.entityConfig.GetCreateModel().Params {
 		var value ast.Expr
 		if param.IsSlice() {
 			switch param.Type {
@@ -81,7 +80,7 @@ func (h ProtoEncoder) createParams() []ast.Expr {
 
 func (h ProtoEncoder) encodeCreate() *ast.FuncDecl {
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("encode%s", h.domain.GetCreateModel().Name)),
+		Name: ast.NewIdent(h.entityConfig.GetGRPCCreateDTOEncodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -91,8 +90,8 @@ func (h ProtoEncoder) encodeCreate() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetCreateModel().Name),
 							},
 						},
 					},
@@ -103,7 +102,7 @@ func (h ProtoEncoder) encodeCreate() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
+							Sel: ast.NewIdent(h.entityConfig.GetCreateModel().Name),
 						},
 					},
 				},
@@ -120,7 +119,7 @@ func (h ProtoEncoder) encodeCreate() *ast.FuncDecl {
 						&ast.CompositeLit{
 							Type: &ast.SelectorExpr{
 								X:   ast.NewIdent("entities"),
-								Sel: ast.NewIdent(h.domain.GetCreateModel().Name),
+								Sel: ast.NewIdent(h.entityConfig.GetCreateModel().Name),
 							},
 							Elts: h.createParams(),
 						},
@@ -142,7 +141,7 @@ func (h ProtoEncoder) syncEncodeCreate(filename string) error {
 	if err != nil {
 		return err
 	}
-	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCCreateDTOEncodeName())
+	method, methodExist := astfile.FindFunc(file, h.entityConfig.GetGRPCCreateDTOEncodeName())
 	if method == nil {
 		method = h.encodeCreate()
 	}
@@ -221,14 +220,14 @@ func (h ProtoEncoder) syncEncodeCreate(filename string) error {
 	return nil
 }
 
-func (h ProtoEncoder) updateStmts() []*ast.IfStmt {
-	var stmts []*ast.IfStmt
-	for _, param := range h.domain.GetUpdateModel().Params {
-		if param.GetName() == "ID" {
-			continue
-		}
+func (h ProtoEncoder) updateStmts() []ast.Stmt {
+	var stmts []ast.Stmt
+	for _, param := range h.entityConfig.GetUpdateModel().Params {
 		var body []ast.Stmt
-		if param.Type == "*time.Time" || param.Type == "time.Time" {
+		switch t := param.Type; {
+		case param.GetName() == "ID":
+			continue
+		case t == "*time.Time", t == "time.Time":
 			body = []ast.Stmt{
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{
@@ -261,7 +260,74 @@ func (h ProtoEncoder) updateStmts() []*ast.IfStmt {
 					},
 				},
 			}
-		} else if param.IsSlice() {
+			stmts = append(stmts, &ast.IfStmt{
+				Cond: &ast.BinaryExpr{
+					X: &ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X:   ast.NewIdent("input"),
+							Sel: ast.NewIdent(param.GRPCGetter()),
+						},
+					},
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: body,
+				},
+			})
+		case t == "*uuid.UUID", t == "uuid.UUID":
+			body = []ast.Stmt{
+				&ast.AssignStmt{
+					Lhs: []ast.Expr{
+						&ast.SelectorExpr{
+							X:   ast.NewIdent("update"),
+							Sel: ast.NewIdent(param.GetName()),
+						},
+					},
+					Tok: token.ASSIGN,
+					Rhs: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X:   ast.NewIdent("pointer"),
+								Sel: ast.NewIdent("Of"),
+							},
+							Args: []ast.Expr{
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X:   ast.NewIdent("uuid"),
+										Sel: ast.NewIdent("MustParse"),
+									},
+									Lparen: 0,
+									Args: []ast.Expr{
+										&ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X:   ast.NewIdent("input"),
+												Sel: ast.NewIdent(param.GRPCGetter()),
+											},
+										},
+									},
+									Ellipsis: 0,
+									Rparen:   0,
+								},
+							},
+						},
+					},
+				},
+			}
+			stmts = append(stmts, &ast.IfStmt{
+				Cond: &ast.BinaryExpr{
+					X: &ast.SelectorExpr{
+						X:   ast.NewIdent("input"),
+						Sel: ast.NewIdent(param.GetName()),
+					},
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
+				},
+				Body: &ast.BlockStmt{
+					List: body,
+				},
+			})
+		case param.IsSlice():
 			value := &ast.CallExpr{
 				Fun: ast.NewIdent(param.SliceType()),
 				Args: []ast.Expr{
@@ -345,85 +411,145 @@ func (h ProtoEncoder) updateStmts() []*ast.IfStmt {
 					},
 				},
 			}
-		} else {
-			var value ast.Expr
-			value = &ast.CallExpr{
-				Fun: &ast.SelectorExpr{
+			stmts = append(stmts, &ast.IfStmt{
+				Cond: &ast.BinaryExpr{
 					X: &ast.CallExpr{
 						Fun: &ast.SelectorExpr{
 							X:   ast.NewIdent("input"),
 							Sel: ast.NewIdent(param.GRPCGetter()),
 						},
 					},
-					Sel: ast.NewIdent("GetValue"),
+					Op: token.NEQ,
+					Y:  ast.NewIdent("nil"),
 				},
-			}
-			if !param.IsID() && strings.TrimPrefix(param.Type, "*") != param.GRPCType() {
-				value = &ast.CallExpr{
-					Fun:  ast.NewIdent(strings.TrimPrefix(param.Type, "*")),
-					Args: []ast.Expr{value},
-				}
-			}
-			if param.IsID() {
-				value = &ast.CallExpr{
-					Fun:  ast.NewIdent("uuid.MustParse"),
-					Args: []ast.Expr{value},
-				}
-			}
-			body = []ast.Stmt{
-				&ast.AssignStmt{
-					Lhs: []ast.Expr{
-						&ast.SelectorExpr{
-							X:   ast.NewIdent("update"),
-							Sel: ast.NewIdent(param.GetName()),
-						},
-					},
-					Tok: token.ASSIGN,
-					Rhs: []ast.Expr{
-						&ast.CallExpr{
-							Fun: &ast.SelectorExpr{
-								X:   ast.NewIdent("pointer"),
-								Sel: ast.NewIdent("Of"),
-							},
-							Args: []ast.Expr{
-								value,
-							},
-						},
-					},
+				Body: &ast.BlockStmt{
+					List: body,
 				},
-			}
+			})
 		}
-		stmts = append(stmts, &ast.IfStmt{
-			Cond: &ast.BinaryExpr{
-				X: &ast.CallExpr{
-					Fun: &ast.SelectorExpr{
-						X:   ast.NewIdent("input"),
-						Sel: ast.NewIdent(param.GRPCGetter()),
-					},
-				},
-				Op: token.NEQ,
-				Y:  ast.NewIdent("nil"),
-			},
-			Body: &ast.BlockStmt{
-				List: body,
-			},
-		})
 	}
 	return stmts
 }
 
 func (h ProtoEncoder) encodeUpdate() *ast.FuncDecl {
+	elts := make([]ast.Expr, 0, len(h.entityConfig.GetUpdateModel().Params))
+
+	for _, param := range h.entityConfig.GetUpdateModel().Params {
+		elts = append(elts, h.encodeUpdateField(param))
+	}
+
+	body := []ast.Stmt{
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{ast.NewIdent("update")},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CompositeLit{
+					Type: &ast.SelectorExpr{
+						X:   ast.NewIdent("entities"),
+						Sel: ast.NewIdent(h.entityConfig.GetUpdateModel().Name),
+					},
+					Elts: elts,
+				},
+			},
+		},
+	}
+
+	body = append(body, h.updateStmts()...)
+	body = append(body, &ast.ReturnStmt{
+		Results: []ast.Expr{ast.NewIdent("update")},
+	})
+
+	return &ast.FuncDecl{
+		Name: ast.NewIdent(h.entityConfig.GetGRPCUpdateDTOEncodeName()),
+		Type: h.encodeUpdateFuncType(),
+		Body: &ast.BlockStmt{List: body},
+	}
+}
+
+func (h ProtoEncoder) encodeUpdateField(param *configs.Param) ast.Expr {
+	if param.GetName() == "ID" {
+		return &ast.KeyValueExpr{
+			Key: ast.NewIdent("ID"),
+			Value: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X:   ast.NewIdent("uuid"),
+					Sel: ast.NewIdent("MustParse"),
+				},
+				Args: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X:   ast.NewIdent("input"),
+							Sel: ast.NewIdent("GetId"),
+						},
+					},
+				},
+			},
+		}
+	}
+
+	switch t := param.Type; {
+	case t == "*time.Time",
+		t == "time.Time",
+		t == "*uuid.UUID",
+		t == "uuid.UUID",
+		param.IsSlice():
+		return &ast.KeyValueExpr{
+			Key:   ast.NewIdent(param.GetName()),
+			Value: ast.NewIdent("nil"),
+		}
+	default:
+		return &ast.KeyValueExpr{
+			Key: ast.NewIdent(param.GetName()),
+			Value: &ast.SelectorExpr{
+				X:   ast.NewIdent("input"),
+				Sel: ast.NewIdent(param.GetName()),
+			},
+		}
+	}
+}
+
+func (h ProtoEncoder) encodeUpdateFuncType() *ast.FuncType {
+	model := h.entityConfig.GetUpdateModel()
+
+	return &ast.FuncType{
+		Params: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Names: []*ast.Ident{ast.NewIdent("input")},
+					Type: &ast.StarExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+							Sel: ast.NewIdent(model.Name),
+						},
+					},
+				},
+			},
+		},
+		Results: &ast.FieldList{
+			List: []*ast.Field{
+				{
+					Type: &ast.SelectorExpr{
+						X:   ast.NewIdent("entities"),
+						Sel: ast.NewIdent(model.Name),
+					},
+				},
+			},
+		},
+	}
+}
+
+func (h ProtoEncoder) encodeDelete() *ast.FuncDecl {
 	body := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
-				ast.NewIdent("update"),
+				ast.NewIdent(h.entityConfig.GetDeleteModel().Variable),
 			},
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
 				&ast.CompositeLit{
 					Type: &ast.SelectorExpr{
 						X:   ast.NewIdent("entities"),
-						Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
+						Sel: ast.NewIdent(h.entityConfig.GetDeleteModel().Name),
 					},
 					Elts: []ast.Expr{
 						&ast.KeyValueExpr{
@@ -448,16 +574,13 @@ func (h ProtoEncoder) encodeUpdate() *ast.FuncDecl {
 			},
 		},
 	}
-	for _, stmt := range h.updateStmts() {
-		body = append(body, stmt)
-	}
 	body = append(body, &ast.ReturnStmt{
 		Results: []ast.Expr{
-			ast.NewIdent("update"),
+			ast.NewIdent(h.entityConfig.GetDeleteModel().Variable),
 		},
 	})
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("encode%s", h.domain.GetUpdateModel().Name)),
+		Name: ast.NewIdent(h.entityConfig.GetGRPCDeleteDTOEncodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -467,8 +590,8 @@ func (h ProtoEncoder) encodeUpdate() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetDeleteModel().Name),
 							},
 						},
 					},
@@ -479,7 +602,7 @@ func (h ProtoEncoder) encodeUpdate() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(h.domain.GetUpdateModel().Name),
+							Sel: ast.NewIdent(h.entityConfig.GetDeleteModel().Name),
 						},
 					},
 				},
@@ -497,7 +620,7 @@ func (h ProtoEncoder) syncEncodeUpdate(filename string) error {
 	if err != nil {
 		return err
 	}
-	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCUpdateDTOEncodeName())
+	method, methodExist := astfile.FindFunc(file, h.entityConfig.GetGRPCUpdateDTOEncodeName())
 	if method == nil {
 		method = h.encodeUpdate()
 	}
@@ -514,7 +637,77 @@ func (h ProtoEncoder) syncEncodeUpdate(filename string) error {
 	return nil
 }
 
+func (h ProtoEncoder) syncEncodeDelete(filename string) error {
+	fileset := token.NewFileSet()
+	file, err := parser.ParseFile(fileset, filename, nil, parser.ParseComments)
+	if err != nil {
+		return err
+	}
+	method, methodExist := astfile.FindFunc(file, h.entityConfig.GetGRPCDeleteDTOEncodeName())
+	if method == nil {
+		method = h.encodeDelete()
+	}
+	if !methodExist {
+		file.Decls = append(file.Decls, method)
+	}
+	buff := &bytes.Buffer{}
+	if err := printer.Fprint(buff, fileset, file); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filename, buff.Bytes(), 0777); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
+	exprs := []ast.Expr{
+		&ast.KeyValueExpr{
+			Key: ast.NewIdent("PageSize"),
+			Value: &ast.SelectorExpr{
+				X:   ast.NewIdent("input"),
+				Sel: ast.NewIdent("PageSize"),
+			},
+		},
+		&ast.KeyValueExpr{
+			Key: ast.NewIdent("PageNumber"),
+			Value: &ast.SelectorExpr{
+				X:   ast.NewIdent("input"),
+				Sel: ast.NewIdent("PageNumber"),
+			},
+		},
+		&ast.KeyValueExpr{
+			Key: ast.NewIdent("IsDeleted"),
+			Value: &ast.SelectorExpr{
+				X:   ast.NewIdent("input"),
+				Sel: ast.NewIdent("IsDeleted"),
+			},
+		},
+		&ast.KeyValueExpr{
+			Key: ast.NewIdent("OrderBy"),
+			Value: &ast.CompositeLit{
+				Type: &ast.ArrayType{
+					Elt: &ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "entities",
+						},
+						Sel: &ast.Ident{
+							Name: h.entityConfig.OrderingTypeName(),
+						},
+					},
+				},
+			},
+		},
+	}
+	if h.entityConfig.SearchEnabled() {
+		exprs = append(exprs, &ast.KeyValueExpr{
+			Key: ast.NewIdent("Search"),
+			Value: &ast.SelectorExpr{
+				X:   ast.NewIdent("input"),
+				Sel: ast.NewIdent("Search"),
+			},
+		})
+	}
 	stmts := []ast.Stmt{
 		&ast.AssignStmt{
 			Lhs: []ast.Expr{
@@ -525,230 +718,12 @@ func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
 				&ast.CompositeLit{
 					Type: &ast.SelectorExpr{
 						X:   ast.NewIdent("entities"),
-						Sel: ast.NewIdent(h.domain.GetFilterModel().Name),
+						Sel: ast.NewIdent(h.entityConfig.GetFilterModel().Name),
 					},
-					Elts: []ast.Expr{
-						&ast.KeyValueExpr{
-							Key:   ast.NewIdent("PageSize"),
-							Value: ast.NewIdent("nil"),
-						},
-						&ast.KeyValueExpr{
-							Key:   ast.NewIdent("PageNumber"),
-							Value: ast.NewIdent("nil"),
-						},
-						&ast.KeyValueExpr{
-							Key:   ast.NewIdent("IsDeleted"),
-							Value: ast.NewIdent("nil"),
-						},
-						&ast.KeyValueExpr{
-							Key: ast.NewIdent("OrderBy"),
-							Value: &ast.CompositeLit{
-								Type: &ast.ArrayType{
-									Elt: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "entities",
-										},
-										Sel: &ast.Ident{
-											Name: h.domain.OrderingTypeName(),
-										},
-									},
-								},
-							},
-						},
-						&ast.KeyValueExpr{
-							Key:   ast.NewIdent("Search"),
-							Value: ast.NewIdent("nil"),
-						},
-					},
+					Elts: exprs,
 				},
 			},
 		},
-		&ast.IfStmt{
-			Cond: &ast.BinaryExpr{
-				X: &ast.CallExpr{
-					Fun: &ast.SelectorExpr{
-						X:   ast.NewIdent("input"),
-						Sel: ast.NewIdent("GetPageSize"),
-					},
-				},
-				Op: token.NEQ,
-				Y:  ast.NewIdent("nil"),
-			},
-			Body: &ast.BlockStmt{
-				List: []ast.Stmt{
-					&ast.AssignStmt{
-						Lhs: []ast.Expr{
-							&ast.SelectorExpr{
-								X:   ast.NewIdent("filter"),
-								Sel: ast.NewIdent("PageSize"),
-							},
-						},
-						Tok: token.ASSIGN,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X:   ast.NewIdent("pointer"),
-									Sel: ast.NewIdent("Of"),
-								},
-								Args: []ast.Expr{
-									&ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X: &ast.CallExpr{
-												Fun: &ast.SelectorExpr{
-													X:   ast.NewIdent("input"),
-													Sel: ast.NewIdent("GetPageSize"),
-												},
-											},
-											Sel: ast.NewIdent("GetValue"),
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		&ast.IfStmt{
-			Cond: &ast.BinaryExpr{
-				X: &ast.CallExpr{
-					Fun: &ast.SelectorExpr{
-						X:   ast.NewIdent("input"),
-						Sel: ast.NewIdent("GetPageNumber"),
-					},
-				},
-				Op: token.NEQ,
-				Y:  ast.NewIdent("nil"),
-			},
-			Body: &ast.BlockStmt{
-				List: []ast.Stmt{
-					&ast.AssignStmt{
-						Lhs: []ast.Expr{
-							&ast.SelectorExpr{
-								X:   ast.NewIdent("filter"),
-								Sel: ast.NewIdent("PageNumber"),
-							},
-						},
-						Tok: token.ASSIGN,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X:   ast.NewIdent("pointer"),
-									Sel: ast.NewIdent("Of"),
-								},
-								Args: []ast.Expr{
-									&ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X: &ast.CallExpr{
-												Fun: &ast.SelectorExpr{
-													X:   ast.NewIdent("input"),
-													Sel: ast.NewIdent("GetPageNumber"),
-												},
-											},
-											Sel: ast.NewIdent("GetValue"),
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		&ast.IfStmt{
-			Cond: &ast.BinaryExpr{
-				X: &ast.CallExpr{
-					Fun: &ast.SelectorExpr{
-						X:   ast.NewIdent("input"),
-						Sel: ast.NewIdent("GetIsDeleted"),
-					},
-				},
-				Op: token.NEQ,
-				Y:  ast.NewIdent("nil"),
-			},
-			Body: &ast.BlockStmt{
-				List: []ast.Stmt{
-					&ast.AssignStmt{
-						Lhs: []ast.Expr{
-							&ast.SelectorExpr{
-								X:   ast.NewIdent("filter"),
-								Sel: ast.NewIdent("IsDeleted"),
-							},
-						},
-						Tok: token.ASSIGN,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X:   ast.NewIdent("pointer"),
-									Sel: ast.NewIdent("Of"),
-								},
-								Args: []ast.Expr{
-									&ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X: &ast.CallExpr{
-												Fun: &ast.SelectorExpr{
-													X:   ast.NewIdent("input"),
-													Sel: ast.NewIdent("GetIsDeleted"),
-												},
-											},
-											Sel: ast.NewIdent("GetValue"),
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	if h.domain.SearchEnabled() {
-		stmts = append(stmts, &ast.IfStmt{
-			Cond: &ast.BinaryExpr{
-				X: &ast.CallExpr{
-					Fun: &ast.SelectorExpr{
-						X:   ast.NewIdent("input"),
-						Sel: ast.NewIdent("GetSearch"),
-					},
-				},
-				Op: token.NEQ,
-				Y:  ast.NewIdent("nil"),
-			},
-			Body: &ast.BlockStmt{
-				List: []ast.Stmt{
-					&ast.AssignStmt{
-						Lhs: []ast.Expr{
-							&ast.SelectorExpr{
-								X:   ast.NewIdent("filter"),
-								Sel: ast.NewIdent("Search"),
-							},
-						},
-						Tok: token.ASSIGN,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{
-								Fun: &ast.SelectorExpr{
-									X:   ast.NewIdent("pointer"),
-									Sel: ast.NewIdent("Of"),
-								},
-								Args: []ast.Expr{
-									&ast.CallExpr{
-										Fun: &ast.SelectorExpr{
-											X: &ast.CallExpr{
-												Fun: &ast.SelectorExpr{
-													X:   ast.NewIdent("input"),
-													Sel: ast.NewIdent("GetSearch"),
-												},
-											},
-											Sel: ast.NewIdent("GetValue"),
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		})
 	}
 	stmts = append(stmts, &ast.RangeStmt{
 		Key: &ast.Ident{
@@ -802,7 +777,7 @@ func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
 											Name: "entities",
 										},
 										Sel: &ast.Ident{
-											Name: h.domain.OrderingTypeName(),
+											Name: h.entityConfig.OrderingTypeName(),
 										},
 									},
 									Args: []ast.Expr{
@@ -824,7 +799,7 @@ func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
 		},
 	})
 	return &ast.FuncDecl{
-		Name: ast.NewIdent(fmt.Sprintf("encode%s", h.domain.GetFilterModel().Name)),
+		Name: ast.NewIdent(h.entityConfig.GetGRPCFilterDTOEncodeName()),
 		Type: &ast.FuncType{
 			Params: &ast.FieldList{
 				List: []*ast.Field{
@@ -834,8 +809,8 @@ func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
 						},
 						Type: &ast.StarExpr{
 							X: &ast.SelectorExpr{
-								X:   ast.NewIdent(h.domain.ProtoPackage),
-								Sel: ast.NewIdent(h.domain.GetFilterModel().Name),
+								X:   ast.NewIdent(h.entityConfig.ProtoPackage),
+								Sel: ast.NewIdent(h.entityConfig.GetFilterModel().Name),
 							},
 						},
 					},
@@ -846,7 +821,7 @@ func (h ProtoEncoder) encodeFilter() *ast.FuncDecl {
 					{
 						Type: &ast.SelectorExpr{
 							X:   ast.NewIdent("entities"),
-							Sel: ast.NewIdent(h.domain.GetFilterModel().Name),
+							Sel: ast.NewIdent(h.entityConfig.GetFilterModel().Name),
 						},
 					},
 				},
@@ -864,7 +839,7 @@ func (h ProtoEncoder) syncEncodeFilter(filename string) error {
 	if err != nil {
 		return err
 	}
-	method, methodExist := astfile.FindFunc(file, h.domain.GetGRPCFilterDTOEncodeName())
+	method, methodExist := astfile.FindFunc(file, h.entityConfig.GetGRPCFilterDTOEncodeName())
 	if method == nil {
 		method = h.encodeFilter()
 	}
@@ -886,30 +861,30 @@ func (h ProtoEncoder) file() *ast.File {
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: h.domain.EntitiesImportPath(),
+				Value: h.entityConfig.ImportPathEntities(),
 			},
 		},
 		&ast.ImportSpec{
-			Name: ast.NewIdent(h.domain.ProtoPackage),
+			Name: ast.NewIdent(h.entityConfig.ProtoPackage),
 			Path: &ast.BasicLit{
 				Kind: token.STRING,
 				Value: fmt.Sprintf(
 					`"%s/pkg/%s/v1"`,
-					h.domain.Module,
-					h.domain.ProtoPackage,
+					h.entityConfig.Module,
+					h.entityConfig.ProtoPackage,
 				),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: h.domain.AppConfig.ProjectConfig.PointerImportPath(),
+				Value: h.entityConfig.AppConfig.ProjectConfig.PointerImportPath(),
 			},
 		},
 		&ast.ImportSpec{
 			Path: &ast.BasicLit{
 				Kind:  token.STRING,
-				Value: h.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+				Value: h.entityConfig.AppConfig.ProjectConfig.UUIDImportPath(),
 			},
 		},
 		&ast.ImportSpec{
@@ -931,7 +906,7 @@ func (h ProtoEncoder) file() *ast.File {
 			},
 		},
 	}
-	for _, param := range h.domain.GetUpdateModel().Params {
+	for _, param := range h.entityConfig.GetUpdateModel().Params {
 		if param.IsSlice() {
 			importSpec = append(importSpec, &ast.ImportSpec{
 				Path: &ast.BasicLit{
@@ -957,10 +932,10 @@ func (h ProtoEncoder) Sync() error {
 	filename := path.Join(
 		"internal",
 		"app",
-		h.domain.AppConfig.AppName(),
+		h.entityConfig.AppConfig.AppName(),
 		"handlers",
 		"grpc",
-		h.domain.DirName(),
+		h.entityConfig.DirName(),
 		"dto.go",
 	)
 	fileset := token.NewFileSet()
@@ -985,6 +960,9 @@ func (h ProtoEncoder) Sync() error {
 		return err
 	}
 	if err := h.syncEncodeUpdate(filename); err != nil {
+		return err
+	}
+	if err := h.syncEncodeDelete(filename); err != nil {
 		return err
 	}
 	return nil

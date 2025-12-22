@@ -58,7 +58,7 @@ func (g *Generator) Sync() error {
 		)
 	}
 	if g.project.UptraceEnabled {
-		generators = append(generators, uptrace.NewProvider(g.project))
+		generators = append(generators, uptrace.NewProvider(*g.project))
 	}
 	for _, gen := range generators {
 		if err := gen.Sync(); err != nil {

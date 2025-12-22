@@ -8,11 +8,11 @@ import (
 )
 
 type TestGenerator struct {
-	domain *configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewTestGenerator(domain *configs.EntityConfig) *TestGenerator {
-	return &TestGenerator{domain: domain}
+func NewTestGenerator(entityConfig configs.EntityConfig) *TestGenerator {
+	return &TestGenerator{entityConfig: entityConfig}
 }
 
 func (g *TestGenerator) Sync() error {
@@ -21,15 +21,15 @@ func (g *TestGenerator) Sync() error {
 		DestinationPath: path.Join(
 			"internal",
 			"app",
-			g.domain.AppConfig.AppName(),
+			g.entityConfig.AppConfig.AppName(),
 			"handlers",
 			"grpc",
-			g.domain.DirName(),
-			g.domain.TestFileName(),
+			g.entityConfig.DirName(),
+			g.entityConfig.TestFileName(),
 		),
 		Name: "test grpc service server",
 	}
-	if err := test.RenderToFile(g.domain); err != nil {
+	if err := test.RenderToFile(&g.entityConfig); err != nil {
 		return err
 	}
 	return nil

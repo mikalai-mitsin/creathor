@@ -16,12 +16,12 @@ import (
 const destinationPath = "."
 
 type HandlerGenerator struct {
-	domain *configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewHandlerGenerator(domain *configs.EntityConfig) *HandlerGenerator {
+func NewHandlerGenerator(entityConfig configs.EntityConfig) *HandlerGenerator {
 	return &HandlerGenerator{
-		domain: domain,
+		entityConfig: entityConfig,
 	}
 }
 
@@ -49,11 +49,11 @@ func (h *HandlerGenerator) filename() string {
 	return path.Join(
 		"internal",
 		"app",
-		h.domain.AppConfig.AppName(),
+		h.entityConfig.AppConfig.AppName(),
 		"handlers",
 		"http",
-		h.domain.DirName(),
-		h.domain.FileName(),
+		h.entityConfig.DirName(),
+		h.entityConfig.FileName(),
 	)
 }
 
@@ -80,20 +80,20 @@ func (h *HandlerGenerator) file() *ast.File {
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: h.domain.AppConfig.ProjectConfig.ErrsImportPath(),
+							Value: h.entityConfig.AppConfig.ProjectConfig.ErrsImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: h.domain.AppConfig.ProjectConfig.UUIDImportPath(),
+							Value: h.entityConfig.AppConfig.ProjectConfig.UUIDImportPath(),
 						},
 					},
 					&ast.ImportSpec{
 						Name: ast.NewIdent("httpServer"),
 						Path: &ast.BasicLit{
 							Kind:  token.STRING,
-							Value: h.domain.AppConfig.ProjectConfig.HTTPImportPath(),
+							Value: h.entityConfig.AppConfig.ProjectConfig.HTTPImportPath(),
 						},
 					},
 					&ast.ImportSpec{
@@ -108,15 +108,15 @@ func (h *HandlerGenerator) file() *ast.File {
 				Tok: token.TYPE,
 				Specs: []ast.Spec{
 					&ast.TypeSpec{
-						Name: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
+						Name: ast.NewIdent(h.entityConfig.GetHTTPHandlerTypeName()),
 						Type: &ast.StructType{
 							Fields: &ast.FieldList{
 								List: []*ast.Field{
 									{
 										Names: []*ast.Ident{
-											ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+											ast.NewIdent(h.entityConfig.GetUseCasePrivateVariableName()),
 										},
-										Type: ast.NewIdent(h.domain.GetUseCaseInterfaceName()),
+										Type: ast.NewIdent(h.entityConfig.GetUseCaseInterfaceName()),
 									},
 									{
 										Names: []*ast.Ident{
@@ -131,15 +131,15 @@ func (h *HandlerGenerator) file() *ast.File {
 				},
 			},
 			&ast.FuncDecl{
-				Name: ast.NewIdent(h.domain.GetHTTPHandlerConstructorName()),
+				Name: ast.NewIdent(h.entityConfig.GetHTTPHandlerConstructorName()),
 				Type: &ast.FuncType{
 					Params: &ast.FieldList{
 						List: []*ast.Field{
 							{
 								Names: []*ast.Ident{
-									ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+									ast.NewIdent(h.entityConfig.GetUseCasePrivateVariableName()),
 								},
-								Type: ast.NewIdent(h.domain.GetUseCaseInterfaceName()),
+								Type: ast.NewIdent(h.entityConfig.GetUseCaseInterfaceName()),
 							},
 							{
 								Names: []*ast.Ident{
@@ -153,7 +153,7 @@ func (h *HandlerGenerator) file() *ast.File {
 						List: []*ast.Field{
 							{
 								Type: &ast.StarExpr{
-									X: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
+									X: ast.NewIdent(h.entityConfig.GetHTTPHandlerTypeName()),
 								},
 							},
 						},
@@ -166,14 +166,14 @@ func (h *HandlerGenerator) file() *ast.File {
 								&ast.UnaryExpr{
 									Op: token.AND,
 									X: &ast.CompositeLit{
-										Type: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
+										Type: ast.NewIdent(h.entityConfig.GetHTTPHandlerTypeName()),
 										Elts: []ast.Expr{
 											&ast.KeyValueExpr{
 												Key: ast.NewIdent(
-													h.domain.GetUseCasePrivateVariableName(),
+													h.entityConfig.GetUseCasePrivateVariableName(),
 												),
 												Value: ast.NewIdent(
-													h.domain.GetUseCasePrivateVariableName(),
+													h.entityConfig.GetUseCasePrivateVariableName(),
 												),
 											},
 											&ast.KeyValueExpr{
@@ -196,7 +196,7 @@ func (h *HandlerGenerator) file() *ast.File {
 								ast.NewIdent("h"),
 							},
 							Type: &ast.StarExpr{
-								X: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
+								X: ast.NewIdent(h.entityConfig.GetHTTPHandlerTypeName()),
 							},
 						},
 					},
@@ -212,11 +212,11 @@ func (h *HandlerGenerator) file() *ast.File {
 						{
 							Text: fmt.Sprintf(
 								"// @Summary Create %s",
-								h.domain.GetOneVariableName(),
+								h.entityConfig.GetOneVariableName(),
 							),
 						},
 						{
-							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+							Text: fmt.Sprintf("// @Tags %s", h.entityConfig.GetOneVariableName()),
 						},
 						{
 							Text: "// @Security BearerAuth",
@@ -230,15 +230,15 @@ func (h *HandlerGenerator) file() *ast.File {
 						{
 							Text: fmt.Sprintf(
 								"// @Param form body %s true \"Create %s request\"",
-								h.domain.GetHTTPCreateDTOName(),
-								h.domain.GetOneVariableName(),
+								h.entityConfig.GetHTTPCreateDTOName(),
+								h.entityConfig.GetOneVariableName(),
 							),
 						},
 						{
 							Text: fmt.Sprintf(
 								"// @Success 201 {object} %s \"Created %s\"",
-								h.domain.GetHTTPItemDTOName(),
-								h.domain.GetOneVariableName(),
+								h.entityConfig.GetHTTPItemDTOName(),
+								h.entityConfig.GetOneVariableName(),
 							),
 						},
 						{
@@ -256,8 +256,8 @@ func (h *HandlerGenerator) file() *ast.File {
 						{
 							Text: fmt.Sprintf(
 								"// @Router /api/v1/%s/%s/ [POST]",
-								h.domain.AppConfig.AppName(),
-								h.domain.GetHTTPPath(),
+								h.entityConfig.AppConfig.AppName(),
+								h.entityConfig.GetHTTPPath(),
 							),
 						},
 					},
@@ -299,7 +299,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
-									Fun: ast.NewIdent(h.domain.GetHTTPCreateDTOConstructorName()),
+									Fun: ast.NewIdent(h.entityConfig.GetHTTPCreateDTOConstructorName()),
 									Args: []ast.Expr{
 										ast.NewIdent("r"),
 									},
@@ -373,7 +373,7 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								ast.NewIdent(h.domain.GetOneVariableName()),
+								ast.NewIdent(h.entityConfig.GetOneVariableName()),
 								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
@@ -383,7 +383,7 @@ func (h *HandlerGenerator) file() *ast.File {
 										X: &ast.SelectorExpr{
 											X: ast.NewIdent("h"),
 											Sel: ast.NewIdent(
-												h.domain.GetUseCasePrivateVariableName(),
+												h.entityConfig.GetUseCasePrivateVariableName(),
 											),
 										},
 										Sel: ast.NewIdent("Create"),
@@ -433,9 +433,9 @@ func (h *HandlerGenerator) file() *ast.File {
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
-									Fun: ast.NewIdent(h.domain.GetHTTPItemDTOConstructorName()),
+									Fun: ast.NewIdent(h.entityConfig.GetHTTPItemDTOConstructorName()),
 									Args: []ast.Expr{
-										ast.NewIdent(h.domain.GetOneVariableName()),
+										ast.NewIdent(h.entityConfig.GetOneVariableName()),
 									},
 								},
 							},
@@ -504,7 +504,7 @@ func (h *HandlerGenerator) file() *ast.File {
 								ast.NewIdent("h"),
 							},
 							Type: &ast.StarExpr{
-								X: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
+								X: ast.NewIdent(h.entityConfig.GetHTTPHandlerTypeName()),
 							},
 						},
 					},
@@ -520,11 +520,11 @@ func (h *HandlerGenerator) file() *ast.File {
 						{
 							Text: fmt.Sprintf(
 								"// @Summary Get %s by id",
-								h.domain.GetOneVariableName(),
+								h.entityConfig.GetOneVariableName(),
 							),
 						},
 						{
-							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+							Text: fmt.Sprintf("// @Tags %s", h.entityConfig.GetOneVariableName()),
 						},
 						{
 							Text: "// @Security BearerAuth",
@@ -541,8 +541,8 @@ func (h *HandlerGenerator) file() *ast.File {
 						{
 							Text: fmt.Sprintf(
 								"// @Success 200 {object} %s \"Requested %s\"",
-								h.domain.GetHTTPItemDTOName(),
-								h.domain.GetOneVariableName(),
+								h.entityConfig.GetHTTPItemDTOName(),
+								h.entityConfig.GetOneVariableName(),
 							),
 						},
 						{
@@ -560,8 +560,8 @@ func (h *HandlerGenerator) file() *ast.File {
 						{
 							Text: fmt.Sprintf(
 								"// @Router /api/v1/%s/%s/{id} [GET]",
-								h.domain.AppConfig.AppName(),
-								h.domain.GetHTTPPath(),
+								h.entityConfig.AppConfig.AppName(),
+								h.entityConfig.GetHTTPPath(),
 							),
 						},
 					},
@@ -626,7 +626,7 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								ast.NewIdent(h.domain.GetOneVariableName()),
+								ast.NewIdent(h.entityConfig.GetOneVariableName()),
 								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
@@ -636,7 +636,7 @@ func (h *HandlerGenerator) file() *ast.File {
 										X: &ast.SelectorExpr{
 											X: ast.NewIdent("h"),
 											Sel: ast.NewIdent(
-												h.domain.GetUseCasePrivateVariableName(),
+												h.entityConfig.GetUseCasePrivateVariableName(),
 											),
 										},
 										Sel: ast.NewIdent("Get"),
@@ -686,9 +686,9 @@ func (h *HandlerGenerator) file() *ast.File {
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
-									Fun: ast.NewIdent(h.domain.GetHTTPItemDTOConstructorName()),
+									Fun: ast.NewIdent(h.entityConfig.GetHTTPItemDTOConstructorName()),
 									Args: []ast.Expr{
-										ast.NewIdent(h.domain.GetOneVariableName()),
+										ast.NewIdent(h.entityConfig.GetOneVariableName()),
 									},
 								},
 							},
@@ -757,7 +757,7 @@ func (h *HandlerGenerator) file() *ast.File {
 								ast.NewIdent("h"),
 							},
 							Type: &ast.StarExpr{
-								X: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
+								X: ast.NewIdent(h.entityConfig.GetHTTPHandlerTypeName()),
 							},
 						},
 					},
@@ -773,11 +773,11 @@ func (h *HandlerGenerator) file() *ast.File {
 						{
 							Text: fmt.Sprintf(
 								"// @Summary List of %s",
-								h.domain.GetManyVariableName(),
+								h.entityConfig.GetManyVariableName(),
 							),
 						},
 						{
-							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+							Text: fmt.Sprintf("// @Tags %s", h.entityConfig.GetOneVariableName()),
 						},
 						{
 							Text: "// @Security BearerAuth",
@@ -791,15 +791,15 @@ func (h *HandlerGenerator) file() *ast.File {
 						{
 							Text: fmt.Sprintf(
 								"// @Param filter query %s true \"Filter of %s\"",
-								h.domain.GetHTTPFilterDTOName(),
-								h.domain.GetManyVariableName(),
+								h.entityConfig.GetHTTPFilterDTOName(),
+								h.entityConfig.GetManyVariableName(),
 							),
 						},
 						{
 							Text: fmt.Sprintf(
 								"// @Success 200 {object} %s \"Filtered list of %s\"",
-								h.domain.GetHTTPListDTOName(),
-								h.domain.GetManyVariableName(),
+								h.entityConfig.GetHTTPListDTOName(),
+								h.entityConfig.GetManyVariableName(),
 							),
 						},
 						{
@@ -817,8 +817,8 @@ func (h *HandlerGenerator) file() *ast.File {
 						{
 							Text: fmt.Sprintf(
 								"// @Router /api/v1/%s/%s/ [GET]",
-								h.domain.AppConfig.AppName(),
-								h.domain.GetHTTPPath(),
+								h.entityConfig.AppConfig.AppName(),
+								h.entityConfig.GetHTTPPath(),
 							),
 						},
 					},
@@ -860,7 +860,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
-									Fun: ast.NewIdent(h.domain.GetHTTPFilterDTOConstructorName()),
+									Fun: ast.NewIdent(h.entityConfig.GetHTTPFilterDTOConstructorName()),
 									Args: []ast.Expr{
 										ast.NewIdent("r"),
 									},
@@ -934,7 +934,7 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								ast.NewIdent(h.domain.GetManyVariableName()),
+								ast.NewIdent(h.entityConfig.GetManyVariableName()),
 								ast.NewIdent("count"),
 								ast.NewIdent("err"),
 							},
@@ -945,7 +945,7 @@ func (h *HandlerGenerator) file() *ast.File {
 										X: &ast.SelectorExpr{
 											X: ast.NewIdent("h"),
 											Sel: ast.NewIdent(
-												h.domain.GetUseCasePrivateVariableName(),
+												h.entityConfig.GetUseCasePrivateVariableName(),
 											),
 										},
 										Sel: ast.NewIdent("List"),
@@ -995,9 +995,9 @@ func (h *HandlerGenerator) file() *ast.File {
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
-									Fun: ast.NewIdent(h.domain.GetHTTPListDTOConstructorName()),
+									Fun: ast.NewIdent(h.entityConfig.GetHTTPListDTOConstructorName()),
 									Args: []ast.Expr{
-										ast.NewIdent(h.domain.GetManyVariableName()),
+										ast.NewIdent(h.entityConfig.GetManyVariableName()),
 										ast.NewIdent("count"),
 									},
 								},
@@ -1067,7 +1067,7 @@ func (h *HandlerGenerator) file() *ast.File {
 								ast.NewIdent("h"),
 							},
 							Type: &ast.StarExpr{
-								X: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
+								X: ast.NewIdent(h.entityConfig.GetHTTPHandlerTypeName()),
 							},
 						},
 					},
@@ -1083,11 +1083,11 @@ func (h *HandlerGenerator) file() *ast.File {
 						{
 							Text: fmt.Sprintf(
 								"// @Summary Update %s",
-								h.domain.GetOneVariableName(),
+								h.entityConfig.GetOneVariableName(),
 							),
 						},
 						{
-							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+							Text: fmt.Sprintf("// @Tags %s", h.entityConfig.GetOneVariableName()),
 						},
 						{
 							Text: "// @Security BearerAuth",
@@ -1104,15 +1104,15 @@ func (h *HandlerGenerator) file() *ast.File {
 						{
 							Text: fmt.Sprintf(
 								"// @Param form body %s true \"Update %s request\"",
-								h.domain.GetHTTPUpdateDTOName(),
-								h.domain.GetOneVariableName(),
+								h.entityConfig.GetHTTPUpdateDTOName(),
+								h.entityConfig.GetOneVariableName(),
 							),
 						},
 						{
 							Text: fmt.Sprintf(
 								"// @Success 200 {object} %s \"Updated %s\"",
-								h.domain.GetHTTPItemDTOName(),
-								h.domain.GetOneVariableName(),
+								h.entityConfig.GetHTTPItemDTOName(),
+								h.entityConfig.GetOneVariableName(),
 							),
 						},
 						{
@@ -1130,8 +1130,8 @@ func (h *HandlerGenerator) file() *ast.File {
 						{
 							Text: fmt.Sprintf(
 								"// @Router /api/v1/%s/%s/{id} [PATCH]",
-								h.domain.AppConfig.AppName(),
-								h.domain.GetHTTPPath(),
+								h.entityConfig.AppConfig.AppName(),
+								h.entityConfig.GetHTTPPath(),
 							),
 						},
 					},
@@ -1173,7 +1173,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
-									Fun: ast.NewIdent(h.domain.GetHTTPUpdateDTOConstructorName()),
+									Fun: ast.NewIdent(h.entityConfig.GetHTTPUpdateDTOConstructorName()),
 									Args: []ast.Expr{
 										ast.NewIdent("r"),
 									},
@@ -1247,7 +1247,7 @@ func (h *HandlerGenerator) file() *ast.File {
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								ast.NewIdent(h.domain.GetOneVariableName()),
+								ast.NewIdent(h.entityConfig.GetOneVariableName()),
 								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
@@ -1257,7 +1257,7 @@ func (h *HandlerGenerator) file() *ast.File {
 										X: &ast.SelectorExpr{
 											X: ast.NewIdent("h"),
 											Sel: ast.NewIdent(
-												h.domain.GetUseCasePrivateVariableName(),
+												h.entityConfig.GetUseCasePrivateVariableName(),
 											),
 										},
 										Sel: ast.NewIdent("Update"),
@@ -1307,9 +1307,9 @@ func (h *HandlerGenerator) file() *ast.File {
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
-									Fun: ast.NewIdent(h.domain.GetHTTPItemDTOConstructorName()),
+									Fun: ast.NewIdent(h.entityConfig.GetHTTPItemDTOConstructorName()),
 									Args: []ast.Expr{
-										ast.NewIdent(h.domain.GetOneVariableName()),
+										ast.NewIdent(h.entityConfig.GetOneVariableName()),
 									},
 								},
 							},
@@ -1378,7 +1378,7 @@ func (h *HandlerGenerator) file() *ast.File {
 								ast.NewIdent("h"),
 							},
 							Type: &ast.StarExpr{
-								X: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
+								X: ast.NewIdent(h.entityConfig.GetHTTPHandlerTypeName()),
 							},
 						},
 					},
@@ -1394,11 +1394,11 @@ func (h *HandlerGenerator) file() *ast.File {
 						{
 							Text: fmt.Sprintf(
 								"// @Summary Delete %s by id",
-								h.domain.GetOneVariableName(),
+								h.entityConfig.GetOneVariableName(),
 							),
 						},
 						{
-							Text: fmt.Sprintf("// @Tags %s", h.domain.GetOneVariableName()),
+							Text: fmt.Sprintf("// @Tags %s", h.entityConfig.GetOneVariableName()),
 						},
 						{
 							Text: "// @Security BearerAuth",
@@ -1415,8 +1415,8 @@ func (h *HandlerGenerator) file() *ast.File {
 						{
 							Text: fmt.Sprintf(
 								"// @Success 200 {object} %s \"Updated %s\"",
-								h.domain.GetHTTPItemDTOName(),
-								h.domain.GetOneVariableName(),
+								h.entityConfig.GetHTTPItemDTOName(),
+								h.entityConfig.GetOneVariableName(),
 							),
 						},
 						{
@@ -1434,8 +1434,8 @@ func (h *HandlerGenerator) file() *ast.File {
 						{
 							Text: fmt.Sprintf(
 								"// @Router /api/v1/%s/%s/{id} [DELETE]",
-								h.domain.AppConfig.AppName(),
-								h.domain.GetHTTPPath(),
+								h.entityConfig.AppConfig.AppName(),
+								h.entityConfig.GetHTTPPath(),
 							),
 						},
 					},
@@ -1471,37 +1471,88 @@ func (h *HandlerGenerator) file() *ast.File {
 					List: []ast.Stmt{
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
-								ast.NewIdent("id"),
+								ast.NewIdent("delDTO"),
+								ast.NewIdent("err"),
+							},
+							Tok: token.DEFINE,
+							Rhs: []ast.Expr{
+								&ast.CallExpr{
+									Fun: ast.NewIdent(h.entityConfig.GetHTTPDeleteDTOConstructorName()),
+									Args: []ast.Expr{
+										ast.NewIdent("r"),
+									},
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.BinaryExpr{
+								X:  ast.NewIdent("err"),
+								Op: token.NEQ,
+								Y:  ast.NewIdent("nil"),
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.ExprStmt{
+										X: &ast.CallExpr{
+											Fun: &ast.SelectorExpr{
+												X:   ast.NewIdent("errs"),
+												Sel: ast.NewIdent("RenderToHTTPResponse"),
+											},
+											Args: []ast.Expr{
+												ast.NewIdent("err"),
+												ast.NewIdent("w"),
+												ast.NewIdent("r"),
+											},
+										},
+									},
+									&ast.ReturnStmt{},
+								},
+							},
+						},
+						&ast.AssignStmt{
+							Lhs: []ast.Expr{
+								ast.NewIdent("del"),
+								ast.NewIdent("err"),
 							},
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
 									Fun: &ast.SelectorExpr{
-										X:   ast.NewIdent("uuid"),
-										Sel: ast.NewIdent("MustParse"),
+										X:   ast.NewIdent("delDTO"),
+										Sel: ast.NewIdent("toEntity"),
 									},
-									Args: []ast.Expr{
-										&ast.CallExpr{
+								},
+							},
+						},
+						&ast.IfStmt{
+							Cond: &ast.BinaryExpr{
+								X:  ast.NewIdent("err"),
+								Op: token.NEQ,
+								Y:  ast.NewIdent("nil"),
+							},
+							Body: &ast.BlockStmt{
+								List: []ast.Stmt{
+									&ast.ExprStmt{
+										X: &ast.CallExpr{
 											Fun: &ast.SelectorExpr{
-												X:   ast.NewIdent("chi"),
-												Sel: ast.NewIdent("URLParam"),
+												X:   ast.NewIdent("errs"),
+												Sel: ast.NewIdent("RenderToHTTPResponse"),
 											},
 											Args: []ast.Expr{
+												ast.NewIdent("err"),
+												ast.NewIdent("w"),
 												ast.NewIdent("r"),
-												&ast.BasicLit{
-													Kind:  token.STRING,
-													Value: `"id"`,
-												},
 											},
 										},
 									},
+									&ast.ReturnStmt{},
 								},
 							},
 						},
 						&ast.AssignStmt{
 							Lhs: []ast.Expr{
 								&ast.Ident{
-									Name: h.domain.GetOneVariableName(),
+									Name: h.entityConfig.GetOneVariableName(),
 								},
 								ast.NewIdent("err"),
 							},
@@ -1511,7 +1562,7 @@ func (h *HandlerGenerator) file() *ast.File {
 									Fun: &ast.SelectorExpr{
 										X: &ast.SelectorExpr{
 											X:   ast.NewIdent("h"),
-											Sel: ast.NewIdent(h.domain.GetUseCasePrivateVariableName()),
+											Sel: ast.NewIdent(h.entityConfig.GetUseCasePrivateVariableName()),
 										},
 										Sel: ast.NewIdent("Delete"),
 									},
@@ -1527,7 +1578,7 @@ func (h *HandlerGenerator) file() *ast.File {
 											},
 										},
 										&ast.Ident{
-											Name: "id",
+											Name: "del",
 										},
 									},
 								},
@@ -1584,9 +1635,9 @@ func (h *HandlerGenerator) file() *ast.File {
 							Tok: token.DEFINE,
 							Rhs: []ast.Expr{
 								&ast.CallExpr{
-									Fun: ast.NewIdent(h.domain.GetHTTPItemDTOConstructorName()),
+									Fun: ast.NewIdent(h.entityConfig.GetHTTPItemDTOConstructorName()),
 									Args: []ast.Expr{
-										ast.NewIdent(h.domain.GetOneVariableName()),
+										ast.NewIdent(h.entityConfig.GetOneVariableName()),
 									},
 								},
 							},
@@ -1689,7 +1740,7 @@ func (h *HandlerGenerator) file() *ast.File {
 								ast.NewIdent("h"),
 							},
 							Type: &ast.StarExpr{
-								X: ast.NewIdent(h.domain.GetHTTPHandlerTypeName()),
+								X: ast.NewIdent(h.entityConfig.GetHTTPHandlerTypeName()),
 							},
 						},
 					},
@@ -1868,7 +1919,7 @@ func (h *HandlerGenerator) file() *ast.File {
 							},
 							Type: &ast.StarExpr{
 								X: &ast.Ident{
-									Name: h.domain.GetHTTPHandlerTypeName(),
+									Name: h.entityConfig.GetHTTPHandlerTypeName(),
 								},
 							},
 						},
@@ -1926,8 +1977,8 @@ func (h *HandlerGenerator) file() *ast.File {
 										Kind: token.STRING,
 										Value: fmt.Sprintf(
 											`"/api/v1/%s/%s"`,
-											h.domain.AppConfig.AppName(),
-											h.domain.GetHTTPPath(),
+											h.entityConfig.AppConfig.AppName(),
+											h.entityConfig.GetHTTPPath(),
 										),
 									},
 									&ast.CallExpr{

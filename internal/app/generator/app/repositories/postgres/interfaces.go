@@ -16,11 +16,11 @@ import (
 )
 
 type InterfacesGenerator struct {
-	domain *configs.EntityConfig
+	entityConfig configs.EntityConfig
 }
 
-func NewInterfacesGenerator(domain *configs.EntityConfig) *InterfacesGenerator {
-	return &InterfacesGenerator{domain: domain}
+func NewInterfacesGenerator(entityConfig configs.EntityConfig) *InterfacesGenerator {
+	return &InterfacesGenerator{entityConfig: entityConfig}
 }
 
 func (r InterfacesGenerator) Sync() error {
@@ -28,11 +28,11 @@ func (r InterfacesGenerator) Sync() error {
 	filename := filepath.Join(
 		"internal",
 		"app",
-		r.domain.AppConfig.AppName(),
+		r.entityConfig.AppConfig.AppName(),
 		"repositories",
 		"postgres",
-		r.domain.DirName(),
-		fmt.Sprintf("%s_interfaces.go", r.domain.SnakeName()),
+		r.entityConfig.DirName(),
+		fmt.Sprintf("%s_interfaces.go", r.entityConfig.SnakeName()),
 	)
 	err := os.MkdirAll(path.Dir(filename), 0777)
 	if err != nil {
@@ -74,11 +74,7 @@ func (r InterfacesGenerator) imports() *ast.GenDecl {
 			List: []*ast.Comment{
 				{
 					Slash: token.NoPos,
-					Text: fmt.Sprintf(
-						"//go:generate mockgen -source=%s_interfaces.go -package=repositories -destination=%s_interfaces_mock.go",
-						r.domain.SnakeName(),
-						r.domain.SnakeName(),
-					),
+					Text:  "//go:generate mockgen -package=$GOPACKAGE -source=$GOFILE -destination=mock.go",
 				},
 			},
 		},
@@ -86,7 +82,7 @@ func (r InterfacesGenerator) imports() *ast.GenDecl {
 			&ast.ImportSpec{
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
-					Value: r.domain.AppConfig.ProjectConfig.LogImportPath(),
+					Value: r.entityConfig.AppConfig.ProjectConfig.LogImportPath(),
 				},
 			},
 		},

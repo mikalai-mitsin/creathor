@@ -36,6 +36,11 @@ func (c *Generator) Sync() error {
 			Name:            "search",
 		},
 		{
+			SourcePath:      "templates/internal/pkg/postgres/middlewares/logger.go.tmpl",
+			DestinationPath: path.Join(destinationPath, "internal", "pkg", "postgres", "middlewares", "logger.go"),
+			Name:            "logger",
+		},
+		{
 			SourcePath: "templates/internal/pkg/postgres/testing.go.tmpl",
 			DestinationPath: path.Join(
 				destinationPath,

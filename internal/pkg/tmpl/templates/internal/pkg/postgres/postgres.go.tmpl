@@ -6,6 +6,8 @@ import (
     "errors"
 
     "{{ .Module }}/internal/pkg/configs"
+    "{{ .Module }}/internal/pkg/postgres/middlewares"
+    "{{ .Module }}/internal/pkg/log"
     "github.com/golang-migrate/migrate/v4"
     _ "github.com/golang-migrate/migrate/v4/database/postgres"
 
@@ -23,8 +25,9 @@ type Config struct {
     MaxIDLEConnections int    `env:"DATABASE_MAX_IDLE_CONNECTIONS" env-default:"10"  toml:"max_idle_connections"`
 }
 
-func NewDatabase(config *Config) (*sqlx.DB, error) {
-    database, err := sqlx.Connect("postgres", config.URI)
+func NewDatabase(config *Config, logger log.Logger) (*sqlx.DB, error) {
+    sql.Register("postgres-mw", sqlmw.Driver(pq.Driver{}, middlewares.NewSqlInterceptor(logger)))
+    database, err := sqlx.Open("postgres-mw", config.URI)
     if err != nil {
         return nil, err
     }

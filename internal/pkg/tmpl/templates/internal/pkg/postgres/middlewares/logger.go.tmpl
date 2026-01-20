@@ -1,0 +1,114 @@
+package middlewares
+
+import (
+	"context"
+	"database/sql/driver"
+	"time"
+
+	"{{ .Module }}/internal/pkg/log"
+)
+
+type SqlInterceptor struct {
+	logger log.Logger
+}
+
+func NewSqlInterceptor(logger log.Logger) *SqlInterceptor {
+	return &SqlInterceptor{logger: logger}
+}
+
+func (in *SqlInterceptor) ConnBeginTx(ctx context.Context, conn driver.ConnBeginTx, txOpts driver.TxOptions) (context.Context, driver.Tx, error) {
+	t, err := conn.BeginTx(ctx, txOpts)
+	return ctx, t, err
+}
+
+func (in *SqlInterceptor) ConnPrepareContext(ctx context.Context, conn driver.ConnPrepareContext, query string) (context.Context, driver.Stmt, error) {
+	startedAt := time.Now()
+	logger := in.logger.Named("postgres").WithContext(ctx)
+	s, err := conn.PrepareContext(ctx, query)
+	logger.Info(
+		"prepare sql query",
+		log.Duration("duration", time.Since(startedAt)),
+		log.String("query", query),
+		log.Error(err),
+	)
+	return ctx, s, err
+}
+
+func (in *SqlInterceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
+	return conn.Ping(ctx)
+}
+
+func (in *SqlInterceptor) ConnExecContext(ctx context.Context, conn driver.ExecerContext, query string, args []driver.NamedValue) (driver.Result, error) {
+	startedAt := time.Now()
+	logger := in.logger.Named("postgres").WithContext(ctx)
+	r, err := conn.ExecContext(ctx, query, args)
+	logger.Info(
+		"executed sql query",
+		log.Duration("duration", time.Since(startedAt)),
+		log.String("query", query),
+				log.Error(err),
+	)
+	return r, err
+}
+
+func (in *SqlInterceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
+	startedAt := time.Now()
+	logger := in.logger.Named("postgres").WithContext(ctx)
+	r, err := conn.QueryContext(ctx, query, args)
+	logger.Info(
+		"executed sql query",
+		log.Duration("duration", time.Since(startedAt)),
+		log.String("query", query),
+				log.Error(err),
+	)
+	return ctx, r, err
+}
+
+func (in *SqlInterceptor) ConnectorConnect(ctx context.Context, connect driver.Connector) (driver.Conn, error) {
+	return connect.Connect(ctx)
+}
+
+func (in *SqlInterceptor) ResultLastInsertId(res driver.Result) (int64, error) {
+	return res.LastInsertId()
+}
+
+func (in *SqlInterceptor) ResultRowsAffected(res driver.Result) (int64, error) {
+	return res.RowsAffected()
+}
+
+func (in *SqlInterceptor) RowsNext(ctx context.Context, rows driver.Rows, dest []driver.Value) error {
+	return rows.Next(dest)
+}
+
+func (in *SqlInterceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
+	return rows.Close()
+}
+
+func (in *SqlInterceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext, _ string, args []driver.NamedValue) (driver.Result, error) {
+	return stmt.ExecContext(ctx, args)
+}
+
+func (in *SqlInterceptor) StmtQueryContext(ctx context.Context, conn driver.StmtQueryContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
+	startedAt := time.Now()
+	logger := in.logger.Named("postgres").WithContext(ctx)
+	rows, err := conn.QueryContext(ctx, args)
+	logger.Info(
+		"executed sql query",
+		log.Duration("duration", time.Since(startedAt)),
+		log.String("query", query),
+				log.Error(err),
+	)
+	return ctx, rows, err
+}
+
+func (in *SqlInterceptor) StmtClose(ctx context.Context, stmt driver.Stmt) error {
+	return stmt.Close()
+}
+
+func (in *SqlInterceptor) TxCommit(ctx context.Context, tx driver.Tx) error {
+	return tx.Commit()
+}
+
+func (in *SqlInterceptor) TxRollback(ctx context.Context, tx driver.Tx) error {
+	return tx.Rollback()
+}

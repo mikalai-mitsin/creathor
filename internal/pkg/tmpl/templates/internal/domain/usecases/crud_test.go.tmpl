@@ -221,6 +221,87 @@ func Test{{ .GetUseCaseTypeName }}_Create(t *testing.T) {
             wantErr: nil,
         },
         {
+            name: "rollback error",
+            setup: func() {
+                mockDtxManager.EXPECT().NewTx().Return(mockTx)
+                mock{{ .ServiceTypeName }}.EXPECT().Create(ctx, mockTx, create).Return({{ .GetOneVariableName }}, nil)
+{{- if .KafkaEnabled }}
+                mock{{ .EventServiceName }}.EXPECT().Send(ctx, mockTx, {{ .GetOneVariableName }}).Return(nil)
+{{- end}}
+                mockTx.EXPECT().
+                    Rollback().
+                    After(mockTx.EXPECT().Commit().Return(nil)).
+                    Return(errs.NewUnexpectedBehaviorError("rollback error"))
+                mockLogger.EXPECT().
+                    Error("cant rollback transaction", log.Error(errs.NewUnexpectedBehaviorError("rollback error")))
+            },
+            fields: fields{
+                {{ .ServiceVariableName }}:      mock{{ .ServiceTypeName }},
+{{- if .KafkaEnabled }}
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
+{{- end}}
+                dtxManager:          mockDtxManager,
+                logger:              mockLogger,
+            },
+            args: args{
+                ctx:    ctx,
+                create: create,
+            },
+            want:    {{ .GetOneVariableName }},
+            wantErr: nil,
+        },
+        {
+            name: "commit error",
+            setup: func() {
+                mockDtxManager.EXPECT().NewTx().Return(mockTx)
+                mock{{ .ServiceTypeName }}.EXPECT().Create(ctx, mockTx, create).Return({{ .GetOneVariableName }}, nil)
+                mock{{ .EventServiceName }}.EXPECT().Send(ctx, mockTx, {{ .GetOneVariableName }}).Return(nil)
+                mockTx.EXPECT().
+                    Rollback().
+                    After(mockTx.EXPECT().Commit().Return(errs.NewUnexpectedBehaviorError("commit error"))).
+                    Return(nil)
+            },
+            fields: fields{
+                {{ .ServiceVariableName }}:      mock{{ .ServiceTypeName }},
+{{- if .KafkaEnabled }}
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
+{{- end}}
+                dtxManager:          mockDtxManager,
+                logger:              mockLogger,
+            },
+            args: args{
+                ctx:    ctx,
+                create: create,
+            },
+            want:    entities.{{ .CamelName }}{},
+            wantErr: errs.NewUnexpectedBehaviorError("commit error"),
+        },
+{{- if .KafkaEnabled }}
+        {
+            name: "send event error",
+            setup: func() {
+                mockDtxManager.EXPECT().NewTx().Return(mockTx)
+                mock{{ .ServiceTypeName }}.EXPECT().Create(ctx, mockTx, create).Return({{ .GetOneVariableName }}, nil)
+                mock{{ .EventServiceName }}.EXPECT().
+                    Send(ctx, mockTx, {{ .GetOneVariableName }}).
+                    Return(errs.NewUnexpectedBehaviorError("event error"))
+                mockTx.EXPECT().Rollback().Return(nil)
+            },
+            fields: fields{
+                {{ .ServiceVariableName }}:      mock{{ .ServiceTypeName }},
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
+                dtxManager:          mockDtxManager,
+                logger:              mockLogger,
+            },
+            args: args{
+                ctx:    ctx,
+                create: create,
+            },
+            want:    entities.{{ .CamelName }}{},
+            wantErr: errs.NewUnexpectedBehaviorError("event error"),
+        },
+{{- end}}
+        {
             name: "create error",
             setup: func() {
                 mockDtxManager.EXPECT().NewTx().Return(mockTx)
@@ -322,6 +403,80 @@ func Test{{ .GetUseCaseTypeName }}_Update(t *testing.T) {
             want:    {{ .GetOneVariableName }},
             wantErr: nil,
         },
+        {
+            name: "rollback error",
+            setup: func() {
+                mockDtxManager.EXPECT().NewTx().Return(mockTx)
+                mock{{ .ServiceTypeName }}.EXPECT().Update(ctx, mockTx, update).Return({{ .GetOneVariableName }}, nil)
+{{- if .KafkaEnabled }}
+                mock{{ .EventServiceName }}.EXPECT().Send(ctx, mockTx, {{ .GetOneVariableName }}).Return(nil)
+{{- end}}
+                mockTx.EXPECT().Rollback().After(mockTx.EXPECT().Commit().Return(nil)).Return(errs.NewUnexpectedBehaviorError("rollback error"))
+                mockLogger.EXPECT().Error("cant rollback transaction", log.Error(errs.NewUnexpectedBehaviorError("rollback error")))
+            },
+            fields: fields{
+                {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
+{{- if .KafkaEnabled }}
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
+{{- end}}
+                dtxManager:       mockDtxManager,
+                logger:           mockLogger,
+            },
+            args: args{
+                ctx:    ctx,
+                update: update,
+            },
+            want:    {{ .GetOneVariableName }},
+            wantErr: nil,
+        },
+        {
+            name: "commit error",
+            setup: func() {
+                mockDtxManager.EXPECT().NewTx().Return(mockTx)
+                mock{{ .ServiceTypeName }}.EXPECT().Update(ctx, mockTx, update).Return({{ .GetOneVariableName }}, nil)
+{{- if .KafkaEnabled }}
+                mock{{ .EventServiceName }}.EXPECT().Send(ctx, mockTx, {{ .GetOneVariableName }}).Return(nil)
+{{- end }}
+                mockTx.EXPECT().Rollback().After(mockTx.EXPECT().Commit().Return(errs.NewUnexpectedBehaviorError("commit error"))).Return(nil)
+            },
+            fields: fields{
+                {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
+{{- if .KafkaEnabled }}
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
+{{- end}}
+                dtxManager:       mockDtxManager,
+                logger:           mockLogger,
+            },
+            args: args{
+                ctx:    ctx,
+                update: update,
+            },
+            want:    entities.{{ .CamelName }}{},
+            wantErr: errs.NewUnexpectedBehaviorError("commit error"),
+        },
+{{- if .KafkaEnabled }}
+        {
+            name: "send event error",
+            setup: func() {
+                mockDtxManager.EXPECT().NewTx().Return(mockTx)
+                mock{{ .ServiceTypeName }}.EXPECT().Update(ctx, mockTx, update).Return({{ .GetOneVariableName }}, nil)
+                mock{{ .EventServiceName }}.EXPECT().Send(ctx, mockTx, {{ .GetOneVariableName }}).Return(errs.NewUnexpectedBehaviorError("event error"))
+                mockTx.EXPECT().Rollback().Return(nil)
+            },
+            fields: fields{
+                {{ .ServiceVariableName }}: mock{{ .ServiceTypeName }},
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
+                dtxManager:       mockDtxManager,
+                logger:           mockLogger,
+            },
+            args: args{
+                ctx:    ctx,
+                update: update,
+            },
+            want:    entities.{{ .CamelName }}{},
+            wantErr: errs.NewUnexpectedBehaviorError("event error"),
+        },
+{{- end}}
         {
             name: "update error",
             setup: func() {
@@ -427,6 +582,89 @@ func Test{{ .GetUseCaseTypeName }}_Delete(t *testing.T) {
             want: {{ .GetOneVariableName }},
             wantErr: nil,
         },
+        {
+            name: "rollback error",
+            setup: func() {
+                mockDtxManager.EXPECT().NewTx().Return(mockTx)
+                mock{{ .ServiceTypeName }}.EXPECT().Delete(ctx, mockTx, del).Return({{ .GetOneVariableName }}, nil)
+{{- if .KafkaEnabled }}
+                mock{{ .EventServiceName }}.EXPECT().Send(ctx, mockTx, {{ .GetOneVariableName }}).Return(nil)
+{{- end}}
+                mockTx.EXPECT().
+                    Rollback().
+                    After(mockTx.EXPECT().Commit().Return(nil)).
+                    Return(errs.NewUnexpectedBehaviorError("rollback error"))
+                mockLogger.EXPECT().
+                    Error("cant rollback transaction", log.Error(errs.NewUnexpectedBehaviorError("rollback error")))
+            },
+            fields: fields{
+                {{ .ServiceVariableName }}:      mock{{ .ServiceTypeName }},
+{{- if .KafkaEnabled }}
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
+{{- end }}
+                dtxManager:      mockDtxManager,
+                logger:          mockLogger,
+            },
+            args: args{
+                ctx:    ctx,
+                del: del,
+            },
+            want:    {{ .GetOneVariableName }},
+            wantErr: nil,
+        },
+        {
+            name: "commit error",
+            setup: func() {
+                mockDtxManager.EXPECT().NewTx().Return(mockTx)
+                mock{{ .ServiceTypeName }}.EXPECT().Delete(ctx, mockTx, del).Return({{ .GetOneVariableName }}, nil)
+{{- if .KafkaEnabled }}
+                mock{{ .EventServiceName }}.EXPECT().Send(ctx, mockTx, {{ .GetOneVariableName }}).Return(nil)
+{{- end}}
+                mockTx.EXPECT().
+                    Rollback().
+                    After(mockTx.EXPECT().Commit().Return(errs.NewUnexpectedBehaviorError("commit error"))).
+                    Return(nil)
+            },
+            fields: fields{
+                {{ .ServiceVariableName }}:      mock{{ .ServiceTypeName }},
+{{- if .KafkaEnabled }}
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
+{{- end}}
+                dtxManager:      mockDtxManager,
+                logger:          mockLogger,
+            },
+            args: args{
+                ctx:    ctx,
+                del: del,
+            },
+            want:    entities.{{ .CamelName }}{},
+            wantErr: errs.NewUnexpectedBehaviorError("commit error"),
+        },
+{{- if .KafkaEnabled }}
+        {
+            name: "send event error",
+            setup: func() {
+                mockDtxManager.EXPECT().NewTx().Return(mockTx)
+                mock{{ .ServiceTypeName }}.EXPECT().Delete(ctx, mockTx, del).Return({{ .GetOneVariableName }}, nil)
+                mock{{ .EventServiceName }}.EXPECT().
+                    Send(ctx, mockTx, {{ .GetOneVariableName }}).
+                    Return(errs.NewUnexpectedBehaviorError("event error"))
+                mockTx.EXPECT().Rollback().Return(nil)
+            },
+            fields: fields{
+                {{ .ServiceVariableName }}:      mock{{ .ServiceTypeName }},
+                {{ .EventServicePrivateVariableName }}: mock{{ .EventServiceName }},
+                dtxManager:      mockDtxManager,
+                logger:          mockLogger,
+            },
+            args: args{
+                ctx:    ctx,
+                del: del,
+            },
+            want:    entities.{{ .CamelName }}{},
+            wantErr: errs.NewUnexpectedBehaviorError("event error"),
+        },
+{{- end}}
         {
             name: "delete error",
             setup: func() {

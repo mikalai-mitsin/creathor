@@ -1937,16 +1937,7 @@ func (h *HandlerGenerator) file() *ast.File {
 										Name: "httpServer",
 									},
 								},
-								Type: &ast.StarExpr{
-									X: &ast.SelectorExpr{
-										X: &ast.Ident{
-											Name: "httpServer",
-										},
-										Sel: &ast.Ident{
-											Name: "Server",
-										},
-									},
-								},
+								Type: ast.NewIdent("server"),
 							},
 						},
 					},

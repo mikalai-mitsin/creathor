@@ -1045,12 +1045,7 @@ func (h HandlerGenerator) registerGRPC() *ast.FuncDecl {
 						Names: []*ast.Ident{
 							ast.NewIdent("grpcServer"),
 						},
-						Type: &ast.StarExpr{
-							X: &ast.SelectorExpr{
-								X:   ast.NewIdent("grpc"),
-								Sel: ast.NewIdent("Server"),
-							},
-						},
+						Type: ast.NewIdent("server"),
 					},
 				},
 			},

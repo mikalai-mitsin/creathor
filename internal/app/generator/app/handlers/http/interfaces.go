@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
@@ -60,6 +61,9 @@ func (i InterfacesGenerator) Sync() error {
 	if !loggerExists {
 		file.Decls = append(file.Decls, i.loggerInterface())
 	}
+	if !astfile.TypeExists(file, "server") {
+		file.Decls = append(file.Decls, i.serverInterface())
+	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
 		return err
@@ -95,6 +99,12 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: `"context"`,
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: `"net/http"`,
 				},
 			},
 			&ast.ImportSpec{
@@ -328,6 +338,41 @@ func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 									},
 									Sel: &ast.Ident{
 										Name: "Logger",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (i InterfacesGenerator) serverInterface() *ast.GenDecl {
+	return &ast.GenDecl{
+		Tok: token.TYPE,
+		Specs: []ast.Spec{
+			&ast.TypeSpec{
+				Name: ast.NewIdent("server"),
+				Type: &ast.InterfaceType{
+					Methods: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{ast.NewIdent("Mount")},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: ast.NewIdent("string"),
+											},
+											{
+												Type: &ast.SelectorExpr{
+													X:   ast.NewIdent("http"),
+													Sel: ast.NewIdent("Handler"),
+												},
+											},
+										},
 									},
 								},
 							},

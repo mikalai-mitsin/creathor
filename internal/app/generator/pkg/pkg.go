@@ -45,6 +45,9 @@ func (g *Generator) Sync() error {
 			kafka.NewConsumerGenerator(g.project),
 			kafka.NewProducerGenerator(g.project),
 		)
+		if g.project.UptraceEnabled {
+			generators = append(generators, kafka.NewTraceGenerator(g.project))
+		}
 	}
 	if g.project.HTTPEnabled {
 		generators = append(generators, http.NewConfig(g.project), http.NewServer(g.project))

@@ -21,6 +21,184 @@ func NewProducerGenerator(project *configs.Project) *ProducerGenerator {
 }
 
 func (u ProducerGenerator) file() *ast.File {
+	stmts := []ast.Stmt{
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				&ast.Ident{
+					Name: "msg",
+				},
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.UnaryExpr{
+					Op: token.AND,
+					X: &ast.CompositeLit{
+						Type: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "sarama",
+							},
+							Sel: &ast.Ident{
+								Name: "ProducerMessage",
+							},
+						},
+						Elts: []ast.Expr{
+							&ast.KeyValueExpr{
+								Key: &ast.Ident{
+									Name: "Topic",
+								},
+								Value: &ast.SelectorExpr{
+									X: &ast.Ident{
+										Name: "message",
+									},
+									Sel: &ast.Ident{
+										Name: "Topic",
+									},
+								},
+							},
+							&ast.KeyValueExpr{
+								Key: &ast.Ident{
+									Name: "Key",
+								},
+								Value: &ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "sarama",
+										},
+										Sel: &ast.Ident{
+											Name: "StringEncoder",
+										},
+									},
+									Args: []ast.Expr{
+										&ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "message",
+											},
+											Sel: &ast.Ident{
+												Name: "Key",
+											},
+										},
+									},
+								},
+							},
+							&ast.KeyValueExpr{
+								Key: &ast.Ident{
+									Name: "Value",
+								},
+								Value: &ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "sarama",
+										},
+										Sel: &ast.Ident{
+											Name: "ByteEncoder",
+										},
+									},
+									Args: []ast.Expr{
+										&ast.SelectorExpr{
+											X: &ast.Ident{
+												Name: "message",
+											},
+											Sel: &ast.Ident{
+												Name: "Value",
+											},
+										},
+									},
+								},
+							},
+							&ast.KeyValueExpr{
+								Key: &ast.Ident{
+									Name: "Headers",
+								},
+								Value: &ast.CallExpr{
+									Fun: &ast.Ident{
+										Name: "make",
+									},
+									Args: []ast.Expr{
+										&ast.ArrayType{
+											Elt: &ast.SelectorExpr{
+												X: &ast.Ident{
+													Name: "sarama",
+												},
+												Sel: &ast.Ident{
+													Name: "RecordHeader",
+												},
+											},
+										},
+										&ast.BasicLit{
+											Kind:  token.INT,
+											Value: "0",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	if u.project.UptraceEnabled {
+		stmts = append(stmts, &ast.ExprStmt{
+			X: &ast.CallExpr{
+				Fun: &ast.Ident{
+					Name: "InjectTraceContext",
+				},
+				Args: []ast.Expr{
+					&ast.Ident{
+						Name: "ctx",
+					},
+					&ast.Ident{
+						Name: "msg",
+					},
+				},
+			},
+		})
+	}
+	stmts = append(stmts,
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				&ast.Ident{
+					Name: "_",
+				},
+				&ast.Ident{
+					Name: "_",
+				},
+				&ast.Ident{
+					Name: "err",
+				},
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "p",
+							},
+							Sel: &ast.Ident{
+								Name: "producer",
+							},
+						},
+						Sel: &ast.Ident{
+							Name: "SendMessage",
+						},
+					},
+					Args: []ast.Expr{
+						&ast.Ident{
+							Name: "msg",
+						},
+					},
+				},
+			},
+		},
+		&ast.ReturnStmt{
+			Results: []ast.Expr{
+				&ast.Ident{
+					Name: "err",
+				},
+			},
+		},
+	)
 	return &ast.File{
 		Package: 1,
 		Name: &ast.Ident{
@@ -501,7 +679,7 @@ func (u ProducerGenerator) file() *ast.File {
 							{
 								Names: []*ast.Ident{
 									{
-										Name: "_",
+										Name: "ctx",
 									},
 								},
 								Type: &ast.SelectorExpr{
@@ -538,139 +716,7 @@ func (u ProducerGenerator) file() *ast.File {
 					},
 				},
 				Body: &ast.BlockStmt{
-					List: []ast.Stmt{
-						&ast.AssignStmt{
-							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "msg",
-								},
-							},
-							Tok: token.DEFINE,
-							Rhs: []ast.Expr{
-								&ast.UnaryExpr{
-									Op: token.AND,
-									X: &ast.CompositeLit{
-										Type: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "sarama",
-											},
-											Sel: &ast.Ident{
-												Name: "ProducerMessage",
-											},
-										},
-										Elts: []ast.Expr{
-											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "Topic",
-												},
-												Value: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "message",
-													},
-													Sel: &ast.Ident{
-														Name: "Topic",
-													},
-												},
-											},
-											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "Key",
-												},
-												Value: &ast.CallExpr{
-													Fun: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "sarama",
-														},
-														Sel: &ast.Ident{
-															Name: "StringEncoder",
-														},
-													},
-													Args: []ast.Expr{
-														&ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "message",
-															},
-															Sel: &ast.Ident{
-																Name: "Key",
-															},
-														},
-													},
-												},
-											},
-											&ast.KeyValueExpr{
-												Key: &ast.Ident{
-													Name: "Value",
-												},
-												Value: &ast.CallExpr{
-													Fun: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "sarama",
-														},
-														Sel: &ast.Ident{
-															Name: "ByteEncoder",
-														},
-													},
-													Args: []ast.Expr{
-														&ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "message",
-															},
-															Sel: &ast.Ident{
-																Name: "Value",
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-						&ast.AssignStmt{
-							Lhs: []ast.Expr{
-								&ast.Ident{
-									Name: "_",
-								},
-								&ast.Ident{
-									Name: "_",
-								},
-								&ast.Ident{
-									Name: "err",
-								},
-							},
-							Tok: token.DEFINE,
-							Rhs: []ast.Expr{
-								&ast.CallExpr{
-									Fun: &ast.SelectorExpr{
-										X: &ast.SelectorExpr{
-											X: &ast.Ident{
-												Name: "p",
-											},
-											Sel: &ast.Ident{
-												Name: "producer",
-											},
-										},
-										Sel: &ast.Ident{
-											Name: "SendMessage",
-										},
-									},
-									Args: []ast.Expr{
-										&ast.Ident{
-											Name: "msg",
-										},
-									},
-								},
-							},
-						},
-						&ast.ReturnStmt{
-							Results: []ast.Expr{
-								&ast.Ident{
-									Name: "err",
-								},
-							},
-						},
-					},
+					List: stmts,
 				},
 			},
 			&ast.FuncDecl{

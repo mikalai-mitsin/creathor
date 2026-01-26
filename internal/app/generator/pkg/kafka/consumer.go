@@ -21,6 +21,327 @@ func NewConsumerGenerator(project *configs.Project) *ConsumerGenerator {
 }
 
 func (u ConsumerGenerator) file() *ast.File {
+	var body []ast.Stmt
+	if u.project.UptraceEnabled {
+		body = append(body, &ast.AssignStmt{
+			Lhs: []ast.Expr{
+				&ast.Ident{
+					Name: "ctx",
+				},
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: ast.NewIdent("ExtractTraceContext"),
+					Args: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "session",
+								},
+								Sel: &ast.Ident{
+									Name: "Context",
+								},
+							},
+						},
+						ast.NewIdent("msg"),
+					},
+				},
+			},
+		})
+	} else {
+		body = append(body, &ast.AssignStmt{
+			Lhs: []ast.Expr{
+				&ast.Ident{
+					Name: "ctx",
+				},
+				&ast.Ident{
+					Name: "cancel",
+				},
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.Ident{
+							Name: "context",
+						},
+						Sel: &ast.Ident{
+							Name: "WithCancel",
+						},
+					},
+					Args: []ast.Expr{
+						&ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "session",
+								},
+								Sel: &ast.Ident{
+									Name: "Context",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+			&ast.DeferStmt{
+				Call: &ast.CallExpr{
+					Fun: &ast.Ident{
+						Name: "cancel",
+					},
+				},
+			})
+	}
+	body = append(body,
+		&ast.AssignStmt{
+			Lhs: []ast.Expr{
+				&ast.Ident{
+					Name: "logger",
+				},
+			},
+			Tok: token.DEFINE,
+			Rhs: []ast.Expr{
+				&ast.CallExpr{
+					Fun: &ast.SelectorExpr{
+						X: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "h",
+							},
+							Sel: &ast.Ident{
+								Name: "logger",
+							},
+						},
+						Sel: &ast.Ident{
+							Name: "WithContext",
+						},
+					},
+					Args: []ast.Expr{
+						&ast.Ident{
+							Name: "ctx",
+						},
+					},
+				},
+			},
+		},
+		&ast.ExprStmt{
+			X: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "logger",
+					},
+					Sel: &ast.Ident{
+						Name: "Info",
+					},
+				},
+				Args: []ast.Expr{
+					&ast.BasicLit{
+						Kind:  token.STRING,
+						Value: "\"received message\"",
+					},
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "log",
+							},
+							Sel: &ast.Ident{
+								Name: "String",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.BasicLit{
+								Kind:  token.STRING,
+								Value: "\"topic\"",
+							},
+							&ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "msg",
+								},
+								Sel: &ast.Ident{
+									Name: "Topic",
+								},
+							},
+						},
+					},
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "log",
+							},
+							Sel: &ast.Ident{
+								Name: "Int32",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.BasicLit{
+								Kind:  token.STRING,
+								Value: "\"partition\"",
+							},
+							&ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "msg",
+								},
+								Sel: &ast.Ident{
+									Name: "Partition",
+								},
+							},
+						},
+					},
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "log",
+							},
+							Sel: &ast.Ident{
+								Name: "Int64",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.BasicLit{
+								Kind:  token.STRING,
+								Value: "\"offset\"",
+							},
+							&ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "msg",
+								},
+								Sel: &ast.Ident{
+									Name: "Offset",
+								},
+							},
+						},
+					},
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "log",
+							},
+							Sel: &ast.Ident{
+								Name: "String",
+							},
+						},
+						Args: []ast.Expr{
+							&ast.BasicLit{
+								Kind:  token.STRING,
+								Value: "\"key\"",
+							},
+							&ast.CallExpr{
+								Fun: &ast.Ident{
+									Name: "string",
+								},
+								Args: []ast.Expr{
+									&ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "msg",
+										},
+										Sel: &ast.Ident{
+											Name: "Key",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		&ast.IfStmt{
+			Init: &ast.AssignStmt{
+				Lhs: []ast.Expr{
+					&ast.Ident{
+						Name: "err",
+					},
+				},
+				Tok: token.DEFINE,
+				Rhs: []ast.Expr{
+					&ast.CallExpr{
+						Fun: &ast.SelectorExpr{
+							X: &ast.Ident{
+								Name: "h",
+							},
+							Sel: &ast.Ident{
+								Name: "handlerFunc",
+							},
+						},
+						Args: []ast.Expr{
+							ast.NewIdent("ctx"),
+							ast.NewIdent("msg"),
+						},
+					},
+				},
+			},
+			Cond: &ast.BinaryExpr{
+				X: &ast.Ident{
+					Name: "err",
+				},
+				Op: token.NEQ,
+				Y: &ast.Ident{
+					Name: "nil",
+				},
+			},
+			Body: &ast.BlockStmt{
+				List: []ast.Stmt{
+					&ast.ExprStmt{
+						X: &ast.CallExpr{
+							Fun: &ast.SelectorExpr{
+								X: &ast.Ident{
+									Name: "logger",
+								},
+								Sel: &ast.Ident{
+									Name: "Error",
+								},
+							},
+							Args: []ast.Expr{
+								&ast.BasicLit{
+									Kind:  token.STRING,
+									Value: "\"handled message error\"",
+								},
+								&ast.CallExpr{
+									Fun: &ast.SelectorExpr{
+										X: &ast.Ident{
+											Name: "log",
+										},
+										Sel: &ast.Ident{
+											Name: "Error",
+										},
+									},
+									Args: []ast.Expr{
+										&ast.Ident{
+											Name: "err",
+										},
+									},
+								},
+							},
+						},
+					},
+					&ast.BranchStmt{
+						Tok: token.CONTINUE,
+					},
+				},
+			},
+		},
+		&ast.ExprStmt{
+			X: &ast.CallExpr{
+				Fun: &ast.SelectorExpr{
+					X: &ast.Ident{
+						Name: "session",
+					},
+					Sel: &ast.Ident{
+						Name: "MarkMessage",
+					},
+				},
+				Args: []ast.Expr{
+					&ast.Ident{
+						Name: "msg",
+					},
+					&ast.BasicLit{
+						Kind:  token.STRING,
+						Value: "\"\"",
+					},
+				},
+			},
+		},
+	)
 	return &ast.File{
 		Package: 1,
 		Name: &ast.Ident{
@@ -1891,286 +2212,7 @@ func (u ConsumerGenerator) file() *ast.File {
 								},
 							},
 							Body: &ast.BlockStmt{
-								List: []ast.Stmt{
-									&ast.AssignStmt{
-										Lhs: []ast.Expr{
-											&ast.Ident{
-												Name: "ctx",
-											},
-										},
-										Tok: token.DEFINE,
-										Rhs: []ast.Expr{
-											&ast.CallExpr{
-												Fun: &ast.SelectorExpr{
-													X: &ast.Ident{
-														Name: "context",
-													},
-													Sel: &ast.Ident{
-														Name: "Background",
-													},
-												},
-											},
-										},
-									},
-									&ast.AssignStmt{
-										Lhs: []ast.Expr{
-											&ast.Ident{
-												Name: "logger",
-											},
-										},
-										Tok: token.DEFINE,
-										Rhs: []ast.Expr{
-											&ast.CallExpr{
-												Fun: &ast.SelectorExpr{
-													X: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "h",
-														},
-														Sel: &ast.Ident{
-															Name: "logger",
-														},
-													},
-													Sel: &ast.Ident{
-														Name: "WithContext",
-													},
-												},
-												Args: []ast.Expr{
-													&ast.Ident{
-														Name: "ctx",
-													},
-												},
-											},
-										},
-									},
-									&ast.ExprStmt{
-										X: &ast.CallExpr{
-											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "logger",
-												},
-												Sel: &ast.Ident{
-													Name: "Info",
-												},
-											},
-											Args: []ast.Expr{
-												&ast.BasicLit{
-													Kind:  token.STRING,
-													Value: "\"received message\"",
-												},
-												&ast.CallExpr{
-													Fun: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "log",
-														},
-														Sel: &ast.Ident{
-															Name: "String",
-														},
-													},
-													Args: []ast.Expr{
-														&ast.BasicLit{
-															Kind:  token.STRING,
-															Value: "\"topic\"",
-														},
-														&ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "msg",
-															},
-															Sel: &ast.Ident{
-																Name: "Topic",
-															},
-														},
-													},
-												},
-												&ast.CallExpr{
-													Fun: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "log",
-														},
-														Sel: &ast.Ident{
-															Name: "Int32",
-														},
-													},
-													Args: []ast.Expr{
-														&ast.BasicLit{
-															Kind:  token.STRING,
-															Value: "\"partition\"",
-														},
-														&ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "msg",
-															},
-															Sel: &ast.Ident{
-																Name: "Partition",
-															},
-														},
-													},
-												},
-												&ast.CallExpr{
-													Fun: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "log",
-														},
-														Sel: &ast.Ident{
-															Name: "Int64",
-														},
-													},
-													Args: []ast.Expr{
-														&ast.BasicLit{
-															Kind:  token.STRING,
-															Value: "\"offset\"",
-														},
-														&ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "msg",
-															},
-															Sel: &ast.Ident{
-																Name: "Offset",
-															},
-														},
-													},
-												},
-												&ast.CallExpr{
-													Fun: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "log",
-														},
-														Sel: &ast.Ident{
-															Name: "String",
-														},
-													},
-													Args: []ast.Expr{
-														&ast.BasicLit{
-															Kind:  token.STRING,
-															Value: "\"key\"",
-														},
-														&ast.CallExpr{
-															Fun: &ast.Ident{
-																Name: "string",
-															},
-															Args: []ast.Expr{
-																&ast.SelectorExpr{
-																	X: &ast.Ident{
-																		Name: "msg",
-																	},
-																	Sel: &ast.Ident{
-																		Name: "Key",
-																	},
-																},
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-									&ast.IfStmt{
-										Init: &ast.AssignStmt{
-											Lhs: []ast.Expr{
-												&ast.Ident{
-													Name: "err",
-												},
-											},
-											Tok: token.DEFINE,
-											Rhs: []ast.Expr{
-												&ast.CallExpr{
-													Fun: &ast.SelectorExpr{
-														X: &ast.Ident{
-															Name: "h",
-														},
-														Sel: &ast.Ident{
-															Name: "handlerFunc",
-														},
-													},
-													Args: []ast.Expr{
-														&ast.CallExpr{
-															Fun: &ast.SelectorExpr{
-																X: &ast.Ident{
-																	Name: "context",
-																},
-																Sel: &ast.Ident{
-																	Name: "Background",
-																},
-															},
-														},
-														&ast.Ident{
-															Name: "msg",
-														},
-													},
-												},
-											},
-										},
-										Cond: &ast.BinaryExpr{
-											X: &ast.Ident{
-												Name: "err",
-											},
-											Op: token.NEQ,
-											Y: &ast.Ident{
-												Name: "nil",
-											},
-										},
-										Body: &ast.BlockStmt{
-											List: []ast.Stmt{
-												&ast.ExprStmt{
-													X: &ast.CallExpr{
-														Fun: &ast.SelectorExpr{
-															X: &ast.Ident{
-																Name: "logger",
-															},
-															Sel: &ast.Ident{
-																Name: "Error",
-															},
-														},
-														Args: []ast.Expr{
-															&ast.BasicLit{
-																Kind:  token.STRING,
-																Value: "\"handled message error\"",
-															},
-															&ast.CallExpr{
-																Fun: &ast.SelectorExpr{
-																	X: &ast.Ident{
-																		Name: "log",
-																	},
-																	Sel: &ast.Ident{
-																		Name: "Error",
-																	},
-																},
-																Args: []ast.Expr{
-																	&ast.Ident{
-																		Name: "err",
-																	},
-																},
-															},
-														},
-													},
-												},
-												&ast.BranchStmt{
-													Tok: token.CONTINUE,
-												},
-											},
-										},
-									},
-									&ast.ExprStmt{
-										X: &ast.CallExpr{
-											Fun: &ast.SelectorExpr{
-												X: &ast.Ident{
-													Name: "session",
-												},
-												Sel: &ast.Ident{
-													Name: "MarkMessage",
-												},
-											},
-											Args: []ast.Expr{
-												&ast.Ident{
-													Name: "msg",
-												},
-												&ast.BasicLit{
-													Kind:  token.STRING,
-													Value: "\"\"",
-												},
-											},
-										},
-									},
-								},
+								List: body,
 							},
 						},
 						&ast.ReturnStmt{

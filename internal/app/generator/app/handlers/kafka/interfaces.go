@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/mikalai-mitsin/creathor/internal/pkg/astfile"
 	"github.com/mikalai-mitsin/creathor/internal/pkg/configs"
 )
 
@@ -59,6 +60,9 @@ func (i InterfacesGenerator) Sync() error {
 	}
 	if !loggerExists {
 		file.Decls = append(file.Decls, i.loggerInterface())
+	}
+	if !astfile.TypeExists(file, "consumer") {
+		file.Decls = append(file.Decls, i.consumerInterface())
 	}
 	buff := &bytes.Buffer{}
 	if err := printer.Fprint(buff, fileset, file); err != nil {
@@ -113,6 +117,12 @@ func (i InterfacesGenerator) imports() *ast.GenDecl {
 				Path: &ast.BasicLit{
 					Kind:  token.STRING,
 					Value: i.entityConfig.AppConfig.ProjectConfig.LogImportPath(),
+				},
+			},
+			&ast.ImportSpec{
+				Path: &ast.BasicLit{
+					Kind:  token.STRING,
+					Value: i.entityConfig.AppConfig.ProjectConfig.KafkaImportPath(),
 				},
 			},
 		},
@@ -328,6 +338,38 @@ func (i InterfacesGenerator) loggerInterface() *ast.GenDecl {
 									},
 									Sel: &ast.Ident{
 										Name: "Logger",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (i InterfacesGenerator) consumerInterface() *ast.GenDecl {
+	return &ast.GenDecl{
+		Tok: token.TYPE,
+		Specs: []ast.Spec{
+			&ast.TypeSpec{
+				Name: ast.NewIdent("consumer"),
+				Type: &ast.InterfaceType{
+					Methods: &ast.FieldList{
+						List: []*ast.Field{
+							{
+								Names: []*ast.Ident{ast.NewIdent("AddHandler")},
+								Type: &ast.FuncType{
+									Params: &ast.FieldList{
+										List: []*ast.Field{
+											{
+												Type: &ast.SelectorExpr{
+													X:   ast.NewIdent("kafka"),
+													Sel: ast.NewIdent("Handler"),
+												},
+											},
+										},
 									},
 								},
 							},

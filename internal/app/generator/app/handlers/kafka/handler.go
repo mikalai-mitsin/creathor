@@ -507,12 +507,7 @@ func (h *HandlerGenerator) file() *ast.File {
 								Names: []*ast.Ident{
 									ast.NewIdent("consumer"),
 								},
-								Type: &ast.StarExpr{
-									X: &ast.SelectorExpr{
-										X:   ast.NewIdent("kafka"),
-										Sel: ast.NewIdent("Consumer"),
-									},
-								},
+								Type: ast.NewIdent("consumer"),
 							},
 						},
 					},

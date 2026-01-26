@@ -2,8 +2,16 @@
 ## [Unreleased]
 
 
+<a name="v0.7.12"></a>
+## [v0.7.12] - 2026-01-26
+### Feat
+- add kafka traces
+- add use case tests
+- add handler interfaces
+
+
 <a name="v0.7.11"></a>
-## [v0.7.11] - 2026-01-08
+## [v0.7.11] - 2026-01-20
 ### Feat
 - add sql logger
 
@@ -585,7 +593,8 @@
 - use err package name
 
 
-[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.11...HEAD
+[Unreleased]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.12...HEAD
+[v0.7.12]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.11...v0.7.12
 [v0.7.11]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.10...v0.7.11
 [v0.7.10]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.9...v0.7.10
 [v0.7.9]: https://github.com/mikalai-mitsin/creathor/compare/v0.7.8...v0.7.9

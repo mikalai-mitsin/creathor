@@ -92,51 +92,52 @@ func initProject(_ *cli.Context) error {
 	return nil
 }
 
+type command struct {
+	name string
+	args []string
+	dir  string
+}
+
 func postInit(project *configs.Project) error {
 	fmt.Println("post init...")
-	var errb bytes.Buffer
+
+	commands := []command{
+		{name: "task", args: []string{"clean"}, dir: destinationPath},
+		{name: "go", args: []string{"generate", "./..."}, dir: destinationPath},
+		{name: "go", args: []string{"mod", "tidy"}, dir: destinationPath},
+		{name: "task", args: []string{"docs"}, dir: destinationPath},
+	}
+
 	if project.GRPCEnabled || project.KafkaEnabled {
-		bufUpdate := exec.Command("buf", "dep", "update")
-		bufUpdate.Dir = path.Join(destinationPath, "api", "proto")
-		bufUpdate.Stderr = &errb
-		fmt.Println(strings.Join(bufUpdate.Args, " "))
-		if err := bufUpdate.Run(); err != nil {
-			fmt.Println(errb.String())
+		bufCommands := []command{
+			{name: "buf", args: []string{"dep", "update"}, dir: path.Join(destinationPath, "api", "proto")},
+			{name: "buf", args: []string{"generate"}, dir: destinationPath},
 		}
-		bufGenerate := exec.Command("buf", "generate")
-		bufGenerate.Dir = destinationPath
-		bufGenerate.Stderr = &errb
-		fmt.Println(strings.Join(bufGenerate.Args, " "))
-		if err := bufGenerate.Run(); err != nil {
-			fmt.Println(errb.String())
+		commands = append(bufCommands, commands...)
+	}
+
+	for _, cmd := range commands {
+		if err := runCommand(cmd); err != nil {
+			fmt.Printf("Warning: command failed: %v\n", err)
 		}
 	}
-	clean := exec.Command("task", "clean")
-	clean.Dir = destinationPath
-	fmt.Println(strings.Join(clean.Args, " "))
-	if err := clean.Run(); err != nil {
+
+	return nil
+}
+
+func runCommand(cmd command) error {
+	execCmd := exec.Command(cmd.name, cmd.args...)
+	execCmd.Dir = cmd.dir
+
+	var errb bytes.Buffer
+	execCmd.Stderr = &errb
+
+	fmt.Println(strings.Join(append([]string{cmd.name}, cmd.args...), " "))
+
+	if err := execCmd.Run(); err != nil {
 		fmt.Println(errb.String())
+		return err
 	}
-	generate := exec.Command("go", "generate", "./...")
-	generate.Dir = destinationPath
-	generate.Stderr = &errb
-	fmt.Println(strings.Join(generate.Args, " "))
-	if err := generate.Run(); err != nil {
-		fmt.Println(errb.String())
-	}
-	tidy := exec.Command("go", "mod", "tidy")
-	tidy.Dir = destinationPath
-	tidy.Stderr = &errb
-	fmt.Println(strings.Join(tidy.Args, " "))
-	if err := tidy.Run(); err != nil {
-		fmt.Println(errb.String())
-	}
-	docs := exec.Command("task", "docs")
-	docs.Dir = destinationPath
-	docs.Stderr = &errb
-	fmt.Println(strings.Join(docs.Args, " "))
-	if err := docs.Run(); err != nil {
-		fmt.Println(errb.String())
-	}
+
 	return nil
 }

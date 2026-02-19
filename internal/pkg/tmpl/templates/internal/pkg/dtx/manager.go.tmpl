@@ -15,6 +15,6 @@ func NewManager(db *sqlx.DB) *Manager {
 }
 
 func (m *Manager) NewTx() TX {
-	tx, _ := m.db.Begin()
+	tx, _ := m.db.Beginx()
 	return NewTXWithSQL(tx)
 }
